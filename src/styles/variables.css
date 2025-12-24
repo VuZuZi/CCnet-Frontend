@@ -1,0 +1,40 @@
+:root {
+  /* Primary Colors - Dark Theme */
+  --color-black: #0F0F0F;
+  --color-dark: #1A1A1A;
+  --color-gray-dark: #2A2A2A;
+  
+  /* Accent Colors */
+  --color-yellow: #FFD166;
+  --color-yellow-light: #FFF3CD;
+  --color-orange: #F4A261;
+  
+  /* Secondary Colors */
+  --color-purple: #C8A2D0;
+  --color-purple-dark: #9D7BA5;
+  --color-green: #B5E48C;
+  --color-green-dark: #8FC063;
+  --color-blue: #8ECAE6;
+  --color-blue-dark: #5BA7C4;
+  
+  /* Neutral Colors */
+  --color-white: #FFFFFF;
+  --color-off-white: #F8F9FA;
+  --color-light-gray: #E9ECEF;
+  --color-gray: #8E8E8E;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.16);
+  
+  /* Spacing */
+  --navbar-height: 72px;
+  --container-max: 1200px;
+  
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+}

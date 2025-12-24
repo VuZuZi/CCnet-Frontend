@@ -1,0 +1,65 @@
+.navbar {
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-light-gray);
+  height: var(--navbar-height);
+  box-shadow: var(--shadow-sm);
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.logoBox {
+  width: 44px;
+  height: 44px;
+  background-color: var(--color-yellow);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.5rem;
+  color: var(--color-black);
+}
+
+.brandName {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-black) !important; 
+  text-decoration: none;
+}
+
+.navLink {
+  color: var(--color-black) !important;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: var(--color-orange) !important;
+}
+
+.userToggle {
+  background: var(--color-light-gray) !important;
+  border: none !important;
+  color: var(--color-black) !important;
+  padding: 6px 12px;
+  border-radius: 20px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatarPlaceholder {
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-yellow);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  font-weight: bold;
+  color: var(--color-black);
+}

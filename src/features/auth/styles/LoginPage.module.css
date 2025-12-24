@@ -1,0 +1,61 @@
+.container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-off-white); 
+}
+
+.card {
+  border: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:focus-within {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-yellow);
+}
+
+.divider {
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+
+.dividerLine {
+  border-color: var(--color-light-gray);
+}
+
+.dividerText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  color: var(--color-gray);
+  white-space: nowrap;
+}
+
+.disabledWrapper {
+  pointer-events: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnPrimary {
+  background-color: var(--color-yellow);
+  color: var(--color-black);
+  font-weight: 600;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background-color: var(--color-orange);
+  transform: translateY(-1px);
+}
+
+.btnPrimary:active:not(:disabled) {
+  transform: translateY(0);
+}

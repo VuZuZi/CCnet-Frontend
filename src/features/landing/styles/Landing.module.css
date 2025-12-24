@@ -1,0 +1,195 @@
+/* --- HERO SECTION --- */
+.heroSection {
+  min-height: calc(100vh - var(--navbar-height));
+  background: linear-gradient(135deg, var(--color-off-white) 0%, #FFFFFF 100%);
+  display: flex;
+  align-items: center;
+  padding: 4rem 0;
+  position: relative;
+}
+
+.heroTitle {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+  color: var(--color-black);
+}
+
+.heroAccent {
+  color: var(--color-orange);
+}
+
+.heroSubtitle {
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  color: var(--color-gray);
+  margin-bottom: 2.5rem;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+/* --- PROGRAM CARD --- */
+.programCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  height: 100%;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.programCard:hover {
+  transform: translateY(-8px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Program Card Variants */
+.cardPurple { background: linear-gradient(135deg, var(--color-purple) 0%, var(--color-purple-dark) 100%); color: var(--color-white); border: none; }
+.cardGreen { background: linear-gradient(135deg, var(--color-green) 0%, var(--color-green-dark) 100%); color: var(--color-black); border: none; }
+.cardBlue { background: linear-gradient(135deg, var(--color-blue) 0%, var(--color-blue-dark) 100%); color: var(--color-white); border: none; }
+.cardYellow { background: linear-gradient(135deg, var(--color-yellow-light) 0%, var(--color-yellow) 100%); color: var(--color-black); border: none; }
+
+.programTag {
+  display: inline-block;
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  align-self: flex-start;
+  color: inherit;
+}
+
+/* --- FEATURES SECTION --- */
+.featuresSection {
+  padding: 6rem 0;
+  background: var(--color-white);
+}
+
+.featureCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-light-gray);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-yellow);
+}
+
+.featureIcon {
+  width: 56px;
+  height: 56px;
+  background: var(--color-yellow);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  font-size: 1.75rem;
+  color: var(--color-black);
+  transition: transform 0.3s ease;
+}
+
+.featureCard:hover .featureIcon {
+  transform: rotate(10deg) scale(1.1);
+}
+
+/* --- USE CASES SECTION --- */
+.useCasesSection {
+  padding: 6rem 0;
+  background: var(--color-white);
+}
+
+.useCaseCard {
+  background: var(--color-white);
+  border: 1px solid var(--color-light-gray); /* Fallback */
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  height: 100%;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.useCaseCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-md);
+}
+
+/* --- STATS SECTION --- */
+.statsSection {
+  padding: 6rem 0;
+  background: var(--color-off-white);
+}
+
+.statsCard {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  text-align: center;
+  border: 1px solid var(--color-light-gray);
+  transition: all 0.3s ease;
+}
+
+.statsCard:hover {
+  border-color: var(--color-yellow);
+  box-shadow: var(--shadow-md);
+  transform: scale(1.05);
+}
+
+.statsNumber {
+  font-size: 3rem;
+  font-weight: 800;
+  color: var(--color-black);
+  margin-bottom: 0.5rem;
+}
+
+/* --- CTA SECTION --- */
+.ctaSection {
+  background: var(--color-black);
+  color: var(--color-white);
+  padding: 5rem 0;
+  border-radius: var(--radius-xl);
+  margin: 4rem 1rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* --- FOOTER --- */
+.footer {
+  background: var(--color-white);
+  border-top: 1px solid var(--color-light-gray);
+  padding: 4rem 0 2rem;
+}
+
+.footerBrand {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--color-black);
+  margin-bottom: 1rem;
+  display: block;
+  text-decoration: none;
+}
+
+.footerLink {
+  color: var(--color-gray);
+  text-decoration: none;
+  margin-bottom: 0.5rem;
+  display: block;
+  transition: color 0.2s;
+}
+
+.footerLink:hover {
+  color: var(--color-orange);
+}
