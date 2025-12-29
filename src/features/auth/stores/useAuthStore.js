@@ -15,9 +15,21 @@ export const useAuthStore = create(
     (set, get) => ({
       ...initialState,
 
-      setAuthSuccess: (user, accessToken) => {
+      setAuthSuccess: (user, accessToken) => { 
         tokenManager.setAccessToken(accessToken);
         set({ user, isAuthenticated: true, isLoading: false }, false, 'auth/loginSuccess');
+      },
+
+      setUser: (user) => {
+        set({ user, isAuthenticated: !!user, isLoading: false }, false, 'auth/setUser');
+      },
+
+      updateProfile: (profilePatch) => {
+        set((state) => ({
+          user: state.user ? { ...state.user, ...profilePatch } : state.user,
+          isAuthenticated: state.isAuthenticated,
+          isLoading: false,
+        }), false, 'auth/updateProfile');
       },
 
       logout: async () => {
@@ -29,6 +41,11 @@ export const useAuthStore = create(
           tokenManager.removeAccessToken();
           set({ user: null, isAuthenticated: false, isLoading: false }, false, 'auth/logout');
         }
+      },
+
+      clearAuth: () => {
+        tokenManager.removeAccessToken();
+        set({ user: null, isAuthenticated: false, isLoading: false }, false, 'auth/clear');
       },
 
       checkAuthSession: async () => {

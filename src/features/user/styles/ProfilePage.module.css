@@ -1,0 +1,62 @@
+.page {
+  min-height: 100vh;
+  background: var(--color-off-white);
+  color: var(--color-black);
+}
+
+.hero {
+  background: var(--color-off-white);
+  padding: 32px 0;
+}
+
+.heroTag {
+  color: var(--color-gray);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.cardDark {
+  background: var(--color-white);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-light-gray);
+  color: var(--color-black);
+  border-radius: var(--radius-lg);
+}
+
+.cardSoft {
+  background: var(--color-white);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-light-gray);
+  color: var(--color-black);
+  border-radius: var(--radius-lg);
+}
+
+.avatar {
+  width: 72px;
+  height: 72px;
+  background: var(--color-light-gray);
+  color: var(--color-black);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.badgeLight {
+  background: var(--color-blue);
+  color: var(--color-black);
+}
+
+.badgeBlue {
+  background: var(--color-yellow);
+  color: var(--color-black);
+}
+
+.chip {
+  background: var(--color-yellow-light);
+  color: #000;
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  font-weight: 600;
+  font-size: 0.85rem;
+}

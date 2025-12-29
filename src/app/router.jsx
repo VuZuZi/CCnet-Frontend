@@ -7,7 +7,7 @@ import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
-import { ProfilePage } from '@/features/auth/pages/ProfilePage';
+import { ProfilePage } from '@/features/user/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 
 export const router = createBrowserRouter([
