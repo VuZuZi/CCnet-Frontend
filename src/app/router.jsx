@@ -3,12 +3,18 @@ import { RootLayout } from '@/shared/components/layouts/RootLayout';
 import { ProtectedRoute } from '@/shared/components/common/ProtectedRoute';
 import { PublicRoute } from '@/shared/components/common/PublicRoute';
 
+
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
 import { ProfilePage } from '@/features/auth/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
+import { CommunityPage } from '@/features/community/pages/CommunityPage'
+import {PostDetailPage} from '@/features/Community/pages/PostDetailPage';
+
+
+
 
 export const router = createBrowserRouter([
   {
@@ -61,6 +67,19 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+      {
+        path: 'community',
+        children: [
+          {
+            index: true,
+            element: <CommunityPage />,
+          },
+          {
+            path: ':postId',
+            element: <PostDetailPage />,
+          },
+        ],
+      },      
     ],
   },
 ]);
