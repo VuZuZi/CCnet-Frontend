@@ -1,8 +1,8 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import { tokenManager } from '@/shared/lib/tokenManager';
-import { authEvents } from '@/shared/lib/httpClient'; 
-import { authAPI } from '../api/authAPI'; 
+import { authEvents } from '@/shared/lib/httpClient';
+import { authAPI } from '../api/authAPI';
 
 const initialState = {
   user: null,
@@ -22,7 +22,7 @@ export const useAuthStore = create(
 
       logout: async () => {
         try {
-          await authAPI.logout(); 
+          await authAPI.logout();
         } catch (error) {
           console.warn('Logout API failed, forcing local logout');
         } finally {
@@ -30,21 +30,29 @@ export const useAuthStore = create(
           set({ user: null, isAuthenticated: false, isLoading: false }, false, 'auth/logout');
         }
       },
-
       checkAuthSession: async () => {
         set({ isLoading: true });
         try {
-          const data = await authAPI.refreshToken();
-          const { accessToken } = data;
-          
-          tokenManager.setAccessToken(accessToken);
-          
-          const user = await authAPI.getMe();
-          
-          set({ user, isAuthenticated: true, isLoading: false }, false, 'auth/restoreSession');
-          
+          const token = tokenManager.getAccessToken();
+          if (token && !tokenManager.isTokenExpired(token)) {
+            const user = tokenManager.decodeToken(token);
+            set({ isAuthenticated: true }, false, 'auth/restoreFast');
+            const userData = await authAPI.getMe();
+            set({ user: userData, isLoading: false }, false, 'auth/restoreFull');
+          } else {
+            console.log('Token expired or missing, attempting refresh...');
+            const data = await authAPI.refreshToken();
+            const { accessToken } = data;
+
+            tokenManager.setAccessToken(accessToken);
+            const user = await authAPI.getMe();
+
+            set({ user, isAuthenticated: true, isLoading: false }, false, 'auth/refreshSuccess');
+          }
         } catch (error) {
-          set({ user: null, isAuthenticated: false, isLoading: false }, false, 'auth/guestSession');
+          console.warn('Session restore failed:', error);
+          tokenManager.removeAccessToken();
+          set({ user: null, isAuthenticated: false, isLoading: false }, false, 'auth/guest');
         }
       },
     }),
@@ -63,5 +71,5 @@ export const authSelectors = {
   isLoading: (state) => state.isLoading,
   userRole: (state) => state.user?.role,
   userEmail: (state) => state.user?.email,
-  userId: (state) => state.user?.id || state.user?.userId, // Support cả 2 trường hợp id
+  userId: (state) => state.user?.id || state.user?.userId,
 };
