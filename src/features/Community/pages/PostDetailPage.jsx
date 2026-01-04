@@ -5,7 +5,10 @@ import { usePostStore } from '../stores/usePostStore'
 
 export function PostDetailPage() {
   const { postId } = useParams()
-  const { post, setPost, loading, setLoading } = usePostStore()
+
+  const postStore = usePostStore()
+  const { post, loading } = postStore
+  const { setPost, setLoading } = postStore
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -29,21 +32,13 @@ export function PostDetailPage() {
   return (
     <div className="container mt-4">
       <div className="card">
-        {/* FULL IMAGE */}
         {post.imageUrl && (
-          <img
-            src={post.imageUrl}
-            alt="post"
-            className="card-img-top"
-          />
+          <img src={post.imageUrl} alt="post" className="card-img-top" />
         )}
 
         <div className="card-body">
-          <h6 className="text-muted">
-            {post.author?.fullName || 'Anonymous'}
-          </h6>
+          <h6 className="text-muted">{post.author?.fullName || 'Anonymous'}</h6>
 
-          {/* TEXT WITH LINE BREAKS */}
           {post.content.split('\n').map((line, i) => (
             <p key={i}>{line}</p>
           ))}

@@ -10,8 +10,9 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
 import { ProfilePage } from '@/features/auth/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
-import { CommunityPage } from '@/features/community/pages/CommunityPage'
-import {PostDetailPage} from '@/features/Community/pages/PostDetailPage';
+import { CommunityPage } from '@/features/community/pages/CommunityPage';
+import { CreatePostPage } from '@/features/community/pages/CreatePostPage';
+import {PostDetailPage} from '@/features/community/pages/PostDetailPage';
 
 
 
@@ -75,11 +76,19 @@ export const router = createBrowserRouter([
             element: <CommunityPage />,
           },
           {
+            path: 'create',
+            element: (
+              <ProtectedRoute>
+                <CreatePostPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
             path: ':postId',
             element: <PostDetailPage />,
           },
         ],
-      },      
+      },   
     ],
   },
 ]);
