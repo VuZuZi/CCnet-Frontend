@@ -1,19 +1,39 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'  // ← Add this import
+import { useNavigate } from 'react-router-dom'
 import { useCreatePost } from '@/features/community/hooks/useCreatePost'
 
 export function CreatePostPage() {
   const [content, setContent] = useState('')
-  const [images, setImages] = useState([])
+  const [images, setImages] = useState([]) 
+  const [uploading, setUploading] = useState(false)
   const { createPost, loading } = useCreatePost()
+  const navigate = useNavigate()
+
   
-  const navigate = useNavigate() 
+  const CLOUD_NAME = 'dehphwer7'  
+  const UPLOAD_PRESET = 'ccnet-unsigned'   
+
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('upload_preset', UPLOAD_PRESET)
+
+    const res = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    )
+
+    if (!res.ok) throw new Error('Upload failed')
+    const data = await res.json()
+    return data.secure_url
+  }
 
   const handleDrop = (e) => {
     e.preventDefault()
-    const files = Array.from(e.dataTransfer.files).filter(file =>
-      file.type.startsWith('image/')
-    )
+    const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'))
     setImages(prev => [...prev, ...files])
   }
 
@@ -23,34 +43,53 @@ export function CreatePostPage() {
   }
 
   const removeImage = (index) => {
-    setImages(images.filter((_, i) => i !== index))
+    setImages(prev => prev.filter((_, i) => i !== index))
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
+
+    const trimmedContent = content.trim()
+    if (!trimmedContent) {
+      alert('Please write something!')
+      return
+    }
+
+    if (images.length === 0) {
+      // No images - post immediately
+      await createPost({ content: trimmedContent, images: [] })
+      navigate('/community')
+      return
+    }
+
+    setUploading(true)
     try {
-      await createPost({ content, images })
-      
+      const imageUrls = await Promise.all(
+        images.map(file => uploadToCloudinary(file))
+      )
 
-      setContent('')
-      setImages([])
-      
+      await createPost({
+        content: trimmedContent,
+        images: imageUrls,
+      })
 
-      navigate('/community') 
-    } catch (error) {
-
-      console.error('Failed to create post:', error)
-      alert('Failed to post. Please try again.')
+      navigate('/community')
+    } catch (err) {
+      console.error(err)
+      alert('Failed to upload images. Try again.')
+    } finally {
+      setUploading(false)
     }
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: '20px auto' }}>
+    <div className="container" style={{ maxWidth: 700, margin: '40px auto' }}>
+      <h2 className="mb-4">Create Post</h2>
+
       <form onSubmit={handleSubmit}>
         <textarea
-          className="form-control mb-3"
-          rows={4}
+          className="form-control mb-4"
+          rows={6}
           placeholder="What's on your mind?"
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -61,12 +100,11 @@ export function CreatePostPage() {
           onDragOver={(e) => e.preventDefault()}
           onDrop={handleDrop}
           onClick={() => document.getElementById('fileInput').click()}
-          className="border rounded p-4 text-center mb-3"
-          style={{ cursor: 'pointer' }}
+          className="border border-dashed rounded p-5 text-center mb-4"
+          style={{ cursor: 'pointer', backgroundColor: '#f8f9fa' }}
         >
-          <strong>Drag & drop images</strong>
-          <div className="text-muted">or click to select</div>
-
+          <p className="mb-2"><strong>Drag & drop images here</strong></p>
+          <p className="text-muted">or click to browse (max 5)</p>
           <input
             id="fileInput"
             type="file"
@@ -78,43 +116,35 @@ export function CreatePostPage() {
         </div>
 
         {images.length > 0 && (
-          <div className="d-flex gap-2 flex-wrap mb-3">
-            {images.map((img, index) => (
-              <div key={index} style={{ position: 'relative' }}>
-                <img
-                  src={URL.createObjectURL(img)}
-                  alt="preview"
-                  style={{
-                    width: 120,
-                    height: 120,
-                    objectFit: 'cover',
-                    borderRadius: 8,
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={() => removeImage(index)}
-                  className="btn-close"
-                  style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    background: 'rgba(0,0,0,0.5)',
-                    borderRadius: '50%',
-                  }}
-                  aria-label="Remove image"
-                />
-              </div>
-            ))}
+          <div className="mb-4">
+            <p className="fw-bold mb-3">Preview ({images.length} images):</p>
+            <div className="d-flex flex-wrap gap-3">
+              {images.map((file, i) => (
+                <div key={i} className="position-relative">
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt="preview"
+                    className="rounded shadow-sm"
+                    style={{ width: 150, height: 150, objectFit: 'cover' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeImage(i)}
+                    className="btn-close position-absolute top-0 end-0 bg-white rounded-circle"
+                    style={{ transform: 'translate(50%, -50%)' }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        <button 
-          type="submit" 
-          className="btn btn-primary w-100" 
-          disabled={loading || !content.trim()}
+        <button
+          type="submit"
+          className="btn btn-primary btn-lg w-100"
+          disabled={loading || uploading || !content.trim()}
         >
-          {loading ? 'Posting...' : 'Post'}
+          {uploading ? 'Uploading images...' : loading ? 'Posting...' : 'Publish Post'}
         </button>
       </form>
     </div>
