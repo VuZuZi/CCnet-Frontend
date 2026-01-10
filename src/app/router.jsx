@@ -9,6 +9,7 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
 import { ProfilePage } from '@/features/auth/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
+import { ProjectOverview } from '@/features/project/pages/ProjectOverview';
 
 export const router = createBrowserRouter([
   {
@@ -58,6 +59,14 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'project/projectOverview',
+        element: (
+          <ProtectedRoute>
+            <ProjectOverview />
           </ProtectedRoute>
         ),
       },

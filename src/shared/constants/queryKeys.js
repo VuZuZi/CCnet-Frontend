@@ -13,6 +13,11 @@ export const queryKeys = {
     detail: (id) => [...queryKeys.users.details(), id],
   },
   
+  projects: {
+    all: ['projects'],
+    list: (filters) => [...queryKeys.projects.all, { filters }],
+  },
+  
   dashboard: {
     all: ['dashboard'],
     stats: () => [...queryKeys.dashboard.all, 'stats'],

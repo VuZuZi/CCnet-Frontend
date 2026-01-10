@@ -18,6 +18,7 @@ export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
   SETTINGS: '/settings',
+  PROJECT_OVERVIEW: '/project/projectOverview',
 };
 
 export const LEGAL_ROUTES = {
