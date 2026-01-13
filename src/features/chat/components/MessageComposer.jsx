@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSendMessage } from '../hooks/useSendMessage';
 import styles from '../styles/ChatWidget.module.css';
@@ -9,14 +9,29 @@ export function MessageComposer({ conversationId, onSent }) {
 
   const [text, setText] = useState('');
   const [files, setFiles] = useState([]);
+
   const fileRef = useRef(null);
+  const inputRef = useRef(null);
 
   const disabled = !conversationId || isLoading;
+
+  const focusInput = () => {
+    requestAnimationFrame(() => {
+      inputRef.current?.focus();
+      setTimeout(() => inputRef.current?.focus(), 0);
+    });
+  };
+
+  useEffect(() => {
+    if (!conversationId) return;
+    if (!isLoading) focusInput();
+  }, [isLoading, conversationId]);
 
   const onPickFiles = (e) => {
     const selected = Array.from(e.target.files || []);
     if (selected.length) setFiles((prev) => [...prev, ...selected]);
     e.target.value = '';
+    focusInput();
   };
 
   const doSend = async () => {
@@ -27,11 +42,13 @@ export function MessageComposer({ conversationId, onSent }) {
     if (!t && files.length === 0) return;
 
     try {
-      const msg = await sendMessageAsync({
+      const res = await sendMessageAsync({
         conversationId: cid,
         text: t,
         attachments: files,
       });
+
+      const msg = res?.data || res;
 
       if (msg?._id) {
         queryClient.setQueryData(['chat', 'messages', cid], (old) => {
@@ -53,8 +70,10 @@ export function MessageComposer({ conversationId, onSent }) {
       setText('');
       setFiles([]);
       onSent?.();
+      focusInput();
     } catch (e) {
       console.error('[sendMessage failed]', e);
+      focusInput();
     }
   };
 
@@ -105,6 +124,7 @@ export function MessageComposer({ conversationId, onSent }) {
         </button>
 
         <textarea
+          ref={inputRef}
           className={styles.textbox}
           placeholder={conversationId ? 'Aa' : 'Chọn một liên hệ để nhắn tin'}
           value={text}
@@ -114,10 +134,18 @@ export function MessageComposer({ conversationId, onSent }) {
           rows={1}
         />
 
-        <button type="submit" className={styles.sendBtn} disabled={disabled} aria-label="Send">
+        <button
+          type="submit"
+          className={styles.sendBtn}
+          disabled={disabled}
+          aria-label="Send"
+          onMouseDown={(e) => e.preventDefault()}
+        >
           {isLoading ? '…' : '➤'}
         </button>
       </div>
     </form>
   );
 }
+
+export default MessageComposer;
