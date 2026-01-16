@@ -129,7 +129,6 @@ export const usePostStore = create((set, get) => ({
       (u) => (u._id || u) === currentUserId
     );
 
-    // Optimistic update: toggle like + remove from dislikes if present
     const updatedLikes = isCurrentlyLiked
       ? post.likes.filter((u) => (u._id || u) !== currentUserId)
       : [...post.likes, { _id: currentUserId }];
@@ -150,7 +149,6 @@ export const usePostStore = create((set, get) => ({
     try {
       await postAPI.toggleLike(postId);
     } catch (error) {
-      // Rollback on failure
       set({ posts });
       console.error("Like failed:", error);
     }
@@ -171,7 +169,6 @@ export const usePostStore = create((set, get) => ({
       (u) => (u._id || u) === currentUserId
     );
 
-    // Optimistic update: toggle dislike + remove from likes if present
     const updatedDislikes = isCurrentlyDisliked
       ? post.dislikes.filter((u) => (u._id || u) !== currentUserId)
       : [...post.dislikes, { _id: currentUserId }];
@@ -192,7 +189,6 @@ export const usePostStore = create((set, get) => ({
     try {
       await postAPI.toggleDislike(postId);
     } catch (error) {
-      // Rollback on failure
       set({ posts });
       console.error("Dislike failed:", error);
     }

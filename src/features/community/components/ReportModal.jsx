@@ -73,13 +73,11 @@ export default function ReportModal({ isOpen, onClose, postId }) {
     };
 
     try {
-      // FIX: Pass the clean ID for the URL and the payload for the body
       await postAPI.reportPost(cleanPostId, payload);
 
       setMessage({ type: "success", text: "Report submitted successfully!" });
       setTimeout(() => {
         onClose();
-        // Reset local state after closing
         setReason("");
         setDescription("");
         setCloudinaryUrls([]);

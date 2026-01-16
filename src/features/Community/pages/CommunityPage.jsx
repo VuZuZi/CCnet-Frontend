@@ -6,7 +6,6 @@ import { usePostStore } from "../stores/usePostStore";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import ReportModal from "../components/ReportModal";
 
-// Safe author name extractor
 const getAuthorName = (author) => {
   if (!author) return "Anonymous";
   if (typeof author === "string") return author;
@@ -60,8 +59,6 @@ export function CommunityPage() {
 
   const { isAuthenticated, user } = useAuthStore();
   const currentUserId = user?._id || user?.id || user?.userId;
-
-  // State for report modal - Store the ID string directly
   const [reportPostId, setReportPostId] = useState(null);
 
   useEffect(() => {
@@ -131,7 +128,6 @@ export function CommunityPage() {
                       key={post._id}
                       className="card shadow-sm border-0 rounded-4 position-relative"
                     >
-                      {/* Report button - Uses stopPropagation to avoid triggering the Link */}
                       <button
                         className="btn btn-sm btn-outline-danger position-absolute top-0 end-0 m-3 z-3 opacity-75 hover-opacity-100"
                         style={{ zIndex: 10 }}
@@ -277,8 +273,6 @@ export function CommunityPage() {
           </InfiniteScroll>
         </div>
       </div>
-
-      {/* Report Modal - Passing the ID directly */}
       <ReportModal
         isOpen={!!reportPostId}
         onClose={() => setReportPostId(null)}
