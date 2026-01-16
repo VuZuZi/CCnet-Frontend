@@ -53,8 +53,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // FIX: Extract string ID if postId is passed as an object, otherwise use as is
-    const cleanPostId = typeof postId === "object" ? postId._id : postId;
+    const cleanPostId = typeof postId === "object" ? postId?._id : postId;
 
     if (!cleanPostId) {
       setMessage({ type: "error", text: "Post ID is missing." });
@@ -67,8 +66,6 @@ export default function ReportModal({ isOpen, onClose, postId }) {
     const payload = {
       reason_code: reason.trim(),
       description: description.trim() || "",
-      target_type: "post",
-      target_ref: cleanPostId,
       evidence_files: cloudinaryUrls,
     };
 
@@ -76,13 +73,14 @@ export default function ReportModal({ isOpen, onClose, postId }) {
       await postAPI.reportPost(cleanPostId, payload);
 
       setMessage({ type: "success", text: "Report submitted successfully!" });
+
       setTimeout(() => {
         onClose();
         setReason("");
         setDescription("");
         setCloudinaryUrls([]);
         setMessage(null);
-      }, 2500);
+      }, 2000);
     } catch (err) {
       setMessage({
         type: "error",

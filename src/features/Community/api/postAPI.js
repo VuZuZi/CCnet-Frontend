@@ -14,6 +14,7 @@ export const postAPI = {
   addComment: (postId, content) =>
     httpClient.post(`/posts/${postId}/comment`, { content }),
 
-  reportPost: (postId, payload) =>
-    httpClient.post(`/posts/${postId}/report`, payload),
+  reportPost: (postId, payload) => {
+    return httpClient.post(`/posts/${postId}/report`, payload);
+  },
 };
