@@ -56,7 +56,6 @@ export function CreatePostPage() {
     }
 
     if (images.length === 0) {
-      // No images - post immediately
       await createPost({ content: trimmedContent, images: [] })
       navigate('/community')
       return
