@@ -18,6 +18,12 @@ export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
   SETTINGS: '/settings',
+  PROJECT_CREATE: '/projects/create',
+};
+
+export const PROJECT_ROUTES = {
+  PROJECTS: '/projects',
+  PROJECT_DETAIL: '/projects/:id',
 };
 
 export const LEGAL_ROUTES = {
@@ -29,6 +35,7 @@ export const ROUTES = {
   ...PUBLIC_ROUTES,
   ...AUTH_ROUTES,
   ...PROTECTED_ROUTES,
+  ...PROJECT_ROUTES,
   ...LEGAL_ROUTES,
 };
 

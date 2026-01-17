@@ -9,6 +9,7 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
 import { ProfilePage } from '@/features/auth/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
+import { ProjectListPage, ProjectDetailPage, CreateProjectPage } from '@/features/project/pages';
 
 export const router = createBrowserRouter([
   {
@@ -60,6 +61,24 @@ export const router = createBrowserRouter([
             <ProfilePage />
           </ProtectedRoute>
         ),
+      },
+
+      // Project Routes
+      {
+        path: 'projects',
+        element: <ProjectListPage />,
+      },
+      {
+        path: 'projects/create',
+        element: (
+          <ProtectedRoute>
+            <CreateProjectPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'projects/:id',
+        element: <ProjectDetailPage />,
       },
     ],
   },
