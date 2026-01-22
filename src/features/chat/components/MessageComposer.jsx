@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSendMessage } from '../hooks/useSendMessage';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import styles from '../styles/ChatWidget.module.css';
 
 export function MessageComposer({ conversationId, onSent }) {
   const queryClient = useQueryClient();
   const { sendMessageAsync, isLoading } = useSendMessage(conversationId);
+
+  const user = useAuthStore(authSelectors.user);
+  const myId = user?.userId || user?._id || user?.id;
 
   const [text, setText] = useState('');
   const [files, setFiles] = useState([]);
@@ -59,11 +63,27 @@ export function MessageComposer({ conversationId, onSent }) {
 
         queryClient.setQueryData(['chat', 'conversations'], (old) => {
           const arr = Array.isArray(old) ? old : [];
-          return arr.map((c) =>
-            String(c?._id) === cid
-              ? { ...c, lastMessage: msg, updatedAt: msg?.createdAt || c.updatedAt }
-              : c
-          );
+          const idx = arr.findIndex((c) => String(c?._id) === cid);
+          if (idx === -1) return arr;
+
+          const current = arr[idx];
+
+          const uc = current?.unreadCounts || {};
+          const ucObj =
+            typeof uc?.get === 'function'
+              ? Object.fromEntries(Array.from(uc.entries()))
+              : { ...(uc || {}) };
+
+          const nextUnreadCounts = myId ? { ...ucObj, [String(myId)]: 0 } : ucObj;
+
+          const updated = {
+            ...current,
+            lastMessage: msg,
+            updatedAt: msg?.createdAt || current.updatedAt,
+            unreadCounts: nextUnreadCounts,
+          };
+
+          return [updated, ...arr.filter((_, i) => i !== idx)];
         });
       }
 

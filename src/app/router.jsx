@@ -10,16 +10,16 @@ import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
 import { ProfilePage } from '@/features/auth/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 
+import { UserProfilePage } from '@/features/users/pages/UserProfilePage';
+import { FollowingPage } from '@/features/users/pages/FollowingPage';
+
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
     children: [
-      {
-        index: true,
-        element: <LandingPage />,
-      },
-      
+      { index: true, element: <LandingPage /> },
+
       {
         path: 'login',
         element: (
@@ -44,7 +44,7 @@ export const router = createBrowserRouter([
           </PublicRoute>
         ),
       },
-      
+
       {
         path: 'dashboard',
         element: (
@@ -58,6 +58,24 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <ProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: 'following',
+        element: (
+          <ProtectedRoute>
+            <FollowingPage />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: 'users/:id',
+        element: (
+          <ProtectedRoute>
+            <UserProfilePage />
           </ProtectedRoute>
         ),
       },
