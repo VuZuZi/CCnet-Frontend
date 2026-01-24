@@ -94,11 +94,20 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleBan = async (id, status) => {
-    const reason = prompt(status ? "Unban reason?" : "Ban reason?");
-    if (reason) {
-      await adminAPI.toggleBan(id, reason);
-      loadData();
+  const handleBan = async (id, currentIsActive) => {
+    const actionName = currentIsActive ? "Ban" : "Unban";
+    const isConfirmed = window.confirm(
+      `Are you sure you want to ${actionName.toLowerCase()} this user?`,
+    );
+
+    if (isConfirmed) {
+      try {
+        await adminAPI.toggleBan(id);
+        loadData();
+      } catch (err) {
+        console.error(`${actionName} failed:`, err);
+        alert(`Failed to ${actionName} user. Check console for details.`);
+      }
     }
   };
 
@@ -300,10 +309,11 @@ export default function AdminDashboard() {
                 </tr>
               </thead>
               <tbody>
+                {/* Inside the Users Tab map loop */}
                 {filteredUsers.map((u) => (
                   <tr key={u._id}>
                     <td className="ps-4">
-                      <strong>{u.username}</strong>
+                      <strong>{u.username || u.fullName}</strong>
                       <br />
                       <small className="text-muted">{u.email}</small>
                     </td>
@@ -314,18 +324,18 @@ export default function AdminDashboard() {
                     </td>
                     <td>
                       <span
-                        className={`badge ${u.isBanned ? "bg-danger" : "bg-success"}`}
+                        className={`badge ${u.isActive ? "bg-success" : "bg-danger"}`}
                       >
-                        {u.isBanned ? "Banned" : "Active"}
+                        {u.isActive ? "Active" : "Banned"}
                       </span>
                     </td>
                     <td>
                       <button
                         className="btn btn-sm"
                         style={theme.yellowBtn}
-                        onClick={() => handleBan(u._id, u.isBanned)}
+                        onClick={() => handleBan(u._id, u.isActive)}
                       >
-                        {u.isBanned ? "Unban" : "Ban"}
+                        {u.isActive ? "Ban" : "Unban"}
                       </button>
                     </td>
                   </tr>
