@@ -18,6 +18,17 @@ export const queryKeys = {
     stats: () => [...queryKeys.dashboard.all, 'stats'],
     activities: () => [...queryKeys.dashboard.all, 'activities'],
   },
+
+  posts: {
+    all: ['posts'],
+    feeds: () => [...queryKeys.posts.all, 'feed'],
+    feed: (filters) => [...queryKeys.posts.feeds(), { ...filters }], 
+    
+    details: () => [...queryKeys.posts.all, 'detail'],
+    detail: (id) => [...queryKeys.posts.details(), id],
+    
+    comments: (postId) => [...queryKeys.posts.detail(postId), 'comments'],
+  }
 };
 
 export const invalidateQueries = {
@@ -35,5 +46,13 @@ export const invalidateQueries = {
   
   user: (queryClient, userId) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(userId) });
+  },
+
+  posts: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.posts.feeds() });
+  },
+
+  postDetail: (queryClient, postId) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(postId) });
   },
 };

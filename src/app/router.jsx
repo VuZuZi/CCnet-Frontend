@@ -10,9 +10,8 @@ import { RegisterPage } from '@/features/auth/pages/RegisterPage';
 import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
 import { ProfilePage } from '@/features/user/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
-import { CommunityPage } from '@/features/community/pages/CommunityPage';
-import { CreatePostPage } from '@/features/community/pages/CreatePostPage';
-import {PostDetailPage} from '@/features/community/pages/PostDetailPage';
+import CommunityPage from '@/features/Community/pages/CommunityPage';
+import { PostDetailPage } from '@/features/Community/pages/PostDetailPage';
 
 
 
@@ -26,7 +25,7 @@ export const router = createBrowserRouter([
         index: true,
         element: <LandingPage />,
       },
-      
+
       {
         path: 'login',
         element: (
@@ -51,7 +50,7 @@ export const router = createBrowserRouter([
           </PublicRoute>
         ),
       },
-      
+
       {
         path: 'dashboard',
         element: (
@@ -70,25 +69,20 @@ export const router = createBrowserRouter([
       },
       {
         path: 'community',
-        children: [
-          {
-            index: true,
-            element: <CommunityPage />,
-          },
-          {
-            path: 'create',
-            element: (
-              <ProtectedRoute>
-                <CreatePostPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: ':postId',
-            element: <PostDetailPage />,
-          },
-        ],
-      },   
+        element: (
+          <ProtectedRoute>
+            <CommunityPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'community/:id',
+        element: (
+          <ProtectedRoute>
+            <PostDetailPage />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
 ]);
