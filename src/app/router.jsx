@@ -16,6 +16,7 @@ import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 
 import { UserProfilePage } from '@/features/users/pages/UserProfilePage';
 import { FollowingPage } from '@/features/users/pages/FollowingPage';
+import { ProjectListPage, ProjectDetailPage, CreateProjectPage } from '@/features/project/pages';
 
 export const router = createBrowserRouter([
   {
@@ -116,6 +117,23 @@ export const router = createBrowserRouter([
             <UserProfilePage />
           </ProtectedRoute>
         ),
+      },
+      // Project Routes
+      {
+        path: 'projects',
+        element: <ProjectListPage />,
+      },
+      {
+        path: 'projects/create',
+        element: (
+          <ProtectedRoute>
+            <CreateProjectPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'projects/:id',
+        element: <ProjectDetailPage />,
       },
     ],
   },
