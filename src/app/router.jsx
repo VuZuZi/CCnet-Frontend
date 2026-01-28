@@ -1,18 +1,20 @@
-import { createBrowserRouter } from "react-router-dom";
-import { RootLayout } from "@/shared/components/layouts/RootLayout";
-import { ProtectedRoute } from "@/shared/components/common/ProtectedRoute";
-import { PublicRoute } from "@/shared/components/common/PublicRoute";
+import { createBrowserRouter } from 'react-router-dom';
+import { RootLayout } from '@/shared/components/layouts/RootLayout';
+import { ProtectedRoute } from '@/shared/components/common/ProtectedRoute';
+import { PublicRoute } from '@/shared/components/common/PublicRoute';
 
-import { LandingPage } from "@/pages/LandingPage";
-import { LoginPage } from "@/features/auth/pages/LoginPage";
-import { RegisterPage } from "@/features/auth/pages/RegisterPage";
-import { VerifyOTPPage } from "@/features/auth/pages/VerifyOTPPage";
-import { ProfilePage } from "@/features/auth/pages/ProfilePage";
-import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
-import { CommunityPage } from "@/features/community/pages/CommunityPage";
-import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
-import { PostDetailPage } from "@/features/community/pages/PostDetailPage";
-import AdminDashboard from "@/features/admin/pages/AdminDashboard";
+
+import { LandingPage } from '@/pages/LandingPage';
+import { LoginPage } from '@/features/auth/pages/LoginPage';
+import { RegisterPage } from '@/features/auth/pages/RegisterPage';
+import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
+import { ProfilePage } from '@/features/user/pages/ProfilePage';
+import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
+import CommunityPage from '@/features/Community/pages/CommunityPage';
+import { PostDetailPage } from '@/features/Community/pages/PostDetailPage';
+
+
+
 
 export const router = createBrowserRouter([
   {
@@ -75,26 +77,21 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "community",
-        children: [
-          {
-            index: true,
-            element: <CommunityPage />,
-          },
-          {
-            path: "create",
-            element: (
-              <ProtectedRoute>
-                <CreatePostPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-            path: ":postId",
-            element: <PostDetailPage />,
-          },
-        ],
+        path: 'community',
+        element: (
+          <ProtectedRoute>
+            <CommunityPage />
+          </ProtectedRoute>
+        ),
       },
+      {
+        path: 'community/:id',
+        element: (
+          <ProtectedRoute>
+            <PostDetailPage />
+          </ProtectedRoute>
+        ),
+       },
     ],
   },
 ]);
