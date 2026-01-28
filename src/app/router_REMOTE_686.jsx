@@ -3,6 +3,7 @@ import { RootLayout } from '@/shared/components/layouts/RootLayout';
 import { ProtectedRoute } from '@/shared/components/common/ProtectedRoute';
 import { PublicRoute } from '@/shared/components/common/PublicRoute';
 
+
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
@@ -11,12 +12,13 @@ import { ProfilePage } from '@/features/user/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import CommunityPage from '@/features/Community/pages/CommunityPage';
 import { PostDetailPage } from '@/features/Community/pages/PostDetailPage';
-import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
-import AdminDashboard from "@/features/admin/pages/AdminDashboard";
+
+
+
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <RootLayout />,
     children: [
       {
@@ -25,7 +27,7 @@ export const router = createBrowserRouter([
       },
 
       {
-        path: "login",
+        path: 'login',
         element: (
           <PublicRoute>
             <LoginPage />
@@ -33,7 +35,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "register",
+        path: 'register',
         element: (
           <PublicRoute>
             <RegisterPage />
@@ -41,7 +43,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "verify-otp",
+        path: 'verify-otp',
         element: (
           <PublicRoute>
             <VerifyOTPPage />
@@ -50,7 +52,7 @@ export const router = createBrowserRouter([
       },
 
       {
-        path: "dashboard",
+        path: 'dashboard',
         element: (
           <ProtectedRoute>
             <DashboardPage />
@@ -58,16 +60,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: "admin",
-        element: (
-          <ProtectedRoute requiredRole="admin">
-            <AdminDashboard />
-          </ProtectedRoute>
-        ),
-      },
-
-      {
-        path: "profile",
+        path: 'profile',
         element: (
           <ProtectedRoute>
             <ProfilePage />
@@ -76,26 +69,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'community',
-        children: [
-          {
-            index: true,
-            element: <CommunityPage />,
-          },
-          {
-
-            path: "create",
-            element: (
-              <ProtectedRoute>
-                <CreatePostPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-
-            path: ":postId",
-            element: <PostDetailPage />,
-          },
-        ],
+        element: (
+          <ProtectedRoute>
+            <CommunityPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'community/:id',
+        element: (
+          <ProtectedRoute>
+            <PostDetailPage />
+          </ProtectedRoute>
+        ),
       },
     ],
   },
