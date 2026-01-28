@@ -77,6 +77,7 @@ function AuthenticatedNav({ user, onLogout }) {
 
       <Dropdown.Menu className="shadow-sm border-0 mt-2">
         <Dropdown.Item as={Link} to={ROUTES.PROFILE}>👤 Profile</Dropdown.Item>
+        <Dropdown.Item as={Link} to={ROUTES.HISTORY_PROJECT}>📜 History Project</Dropdown.Item>
         <Dropdown.Item as={Link} to={ROUTES.DASHBOARD}>📊 Dashboard</Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item onClick={onLogout} className="text-danger">🚪 Logout</Dropdown.Item>

@@ -16,10 +16,12 @@ export const AUTH_ROUTES = {
 
 export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
-  PROFILE: '/profile',
+  // PROFILE: '/profile',
   SETTINGS: '/settings',
 };
-
+export const USER_ROUTES = {
+  PROFILE: '/profile',
+};
 export const LEGAL_ROUTES = {
   PRIVACY: '/privacy',
   TERMS: '/terms',
@@ -30,6 +32,7 @@ export const ROUTES = {
   ...AUTH_ROUTES,
   ...PROTECTED_ROUTES,
   ...LEGAL_ROUTES,
+  ...USER_ROUTES,
 };
 
 export const isProtectedRoute = (path) => {

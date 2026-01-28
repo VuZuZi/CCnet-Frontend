@@ -1,22 +1,16 @@
-import { postAPI } from '../api/postAPI'
-import { useEffect } from 'react'
-import { usePostStore } from '../stores/usePostStore'
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { postAPI } from "../api/postAPI";
+import { queryKeys } from "@/shared/constants/queryKeys"; 
 
-export function useFetchPosts() {
-  const { setPosts, setLoading, setError } = usePostStore()
-
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        setLoading(true)
-        const res = await postAPI.getPosts()
-        setPosts(res.data.data ?? res.data)
-      } catch (e) {
-        setError(e)
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetch()
-  }, [])
-}
+export const useFetchPosts = () => {
+  return useInfiniteQuery({
+    queryKey: [queryKeys.posts], 
+    queryFn: async ({ pageParam }) => {
+      return await postAPI.getNewsFeed({ cursor: pageParam, limit: 10 });
+    },
+    getNextPageParam: (lastPage) => {
+      return lastPage.paging?.hasMore ? lastPage.paging.nextCursor : undefined;
+    },
+    initialPageParam: null, 
+  });
+};

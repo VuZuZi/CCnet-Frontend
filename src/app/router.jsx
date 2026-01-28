@@ -75,6 +75,22 @@ export const router = createBrowserRouter([
         ),
       },
       {
+        path: 'community',
+        element: (
+          <ProtectedRoute>
+            <CommunityPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'community/:id',
+        element: (
+          <ProtectedRoute>
+            <PostDetailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "community",
         children: [
           {
