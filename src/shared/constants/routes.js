@@ -4,6 +4,7 @@ export const PUBLIC_ROUTES = {
   PRICING: '/pricing',
   ABOUT: '/about',
   CONTACT: '/contact',
+  USER_PROFILE: '/users/:id',
 };
 
 export const AUTH_ROUTES = {
@@ -18,6 +19,7 @@ export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
   SETTINGS: '/settings',
+  FOLLOWING: '/following',
 };
 
 export const LEGAL_ROUTES = {

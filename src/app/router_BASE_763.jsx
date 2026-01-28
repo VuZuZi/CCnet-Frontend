@@ -3,6 +3,7 @@ import { RootLayout } from '@/shared/components/layouts/RootLayout';
 import { ProtectedRoute } from '@/shared/components/common/ProtectedRoute';
 import { PublicRoute } from '@/shared/components/common/PublicRoute';
 
+
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
 import { RegisterPage } from '@/features/auth/pages/RegisterPage';
@@ -11,11 +12,9 @@ import { ProfilePage } from '@/features/user/pages/ProfilePage';
 import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import CommunityPage from '@/features/Community/pages/CommunityPage';
 import { PostDetailPage } from '@/features/Community/pages/PostDetailPage';
-import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
-import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 
-import { UserProfilePage } from '@/features/users/pages/UserProfilePage';
-import { FollowingPage } from '@/features/users/pages/FollowingPage';
+
+
 
 export const router = createBrowserRouter([
   {
@@ -79,44 +78,20 @@ export const router = createBrowserRouter([
       },
       {
         path: 'community',
-        children: [
-          {
-            index: true,
-            element: <CommunityPage />,
-          },
-          {
-
-            path: "create",
-            element: (
-              <ProtectedRoute>
-                <CreatePostPage />
-              </ProtectedRoute>
-            ),
-          },
-          {
-
-            path: ":postId",
-            element: <PostDetailPage />,
-          },
-        ],
-      },
-      {
-        path: 'following',
         element: (
           <ProtectedRoute>
-            <FollowingPage />
+            <CommunityPage />
           </ProtectedRoute>
         ),
       },
-
       {
-        path: 'users/:id',
+        path: 'community/:id',
         element: (
           <ProtectedRoute>
-            <UserProfilePage />
+            <PostDetailPage />
           </ProtectedRoute>
         ),
-      },
+       },
     ],
   },
 ]);

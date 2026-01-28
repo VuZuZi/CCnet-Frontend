@@ -1,7 +1,9 @@
+<<<<<<< HEAD
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/shared/components/layouts/RootLayout';
 import { ProtectedRoute } from '@/shared/components/common/ProtectedRoute';
 import { PublicRoute } from '@/shared/components/common/PublicRoute';
+
 
 import { LandingPage } from '@/pages/LandingPage';
 import { LoginPage } from '@/features/auth/pages/LoginPage';
@@ -12,10 +14,23 @@ import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
 import CommunityPage from '@/features/Community/pages/CommunityPage';
 import { PostDetailPage } from '@/features/Community/pages/PostDetailPage';
 import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
-import AdminDashboard from "@/features/admin/pages/AdminDashboard";
+=======
+import { createBrowserRouter } from "react-router-dom";
+import { RootLayout } from "@/shared/components/layouts/RootLayout";
+import { ProtectedRoute } from "@/shared/components/common/ProtectedRoute";
+import { PublicRoute } from "@/shared/components/common/PublicRoute";
 
-import { UserProfilePage } from '@/features/users/pages/UserProfilePage';
-import { FollowingPage } from '@/features/users/pages/FollowingPage';
+import { LandingPage } from "@/pages/LandingPage";
+import { LoginPage } from "@/features/auth/pages/LoginPage";
+import { RegisterPage } from "@/features/auth/pages/RegisterPage";
+import { VerifyOTPPage } from "@/features/auth/pages/VerifyOTPPage";
+import { ProfilePage } from "@/features/auth/pages/ProfilePage";
+import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
+import { CommunityPage } from "@/features/community/pages/CommunityPage";
+import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
+import { PostDetailPage } from "@/features/community/pages/PostDetailPage";
+>>>>>>> parent of 0c3c1a3 (Merge remote-tracking branch 'origin/feature_Post_Dung_1.0' into feature_authen_Hieu_1.0)
+import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 
 export const router = createBrowserRouter([
   {
@@ -78,15 +93,22 @@ export const router = createBrowserRouter([
         ),
       },
       {
+<<<<<<< HEAD
         path: 'community',
+=======
+        path: "community",
+>>>>>>> parent of 0c3c1a3 (Merge remote-tracking branch 'origin/feature_Post_Dung_1.0' into feature_authen_Hieu_1.0)
         children: [
           {
             index: true,
             element: <CommunityPage />,
           },
           {
-
+<<<<<<< HEAD
+            path: 'create',
+=======
             path: "create",
+>>>>>>> parent of 0c3c1a3 (Merge remote-tracking branch 'origin/feature_Post_Dung_1.0' into feature_authen_Hieu_1.0)
             element: (
               <ProtectedRoute>
                 <CreatePostPage />
@@ -94,29 +116,19 @@ export const router = createBrowserRouter([
             ),
           },
           {
-
+<<<<<<< HEAD
+            path: ':postId',
+            element: <PostDetailPage />,
+          },
+        ],
+      },   
+=======
             path: ":postId",
             element: <PostDetailPage />,
           },
         ],
       },
-      {
-        path: 'following',
-        element: (
-          <ProtectedRoute>
-            <FollowingPage />
-          </ProtectedRoute>
-        ),
-      },
-
-      {
-        path: 'users/:id',
-        element: (
-          <ProtectedRoute>
-            <UserProfilePage />
-          </ProtectedRoute>
-        ),
-      },
+>>>>>>> parent of 0c3c1a3 (Merge remote-tracking branch 'origin/feature_Post_Dung_1.0' into feature_authen_Hieu_1.0)
     ],
   },
 ]);
