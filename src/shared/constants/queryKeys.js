@@ -13,22 +13,21 @@ export const queryKeys = {
     detail: (id) => [...queryKeys.users.details(), id],
   },
   
+  projects: {
+    all: ['projects'],
+    lists: () => [...queryKeys.projects.all, 'list'],
+    list: (filters) => [...queryKeys.projects.lists(), { filters }],
+    myLists: () => [...queryKeys.projects.all, 'my-list'],
+    myList: (filters) => [...queryKeys.projects.myLists(), { filters }],
+    details: () => [...queryKeys.projects.all, 'detail'],
+    detail: (id) => [...queryKeys.projects.details(), id],
+  },
+  
   dashboard: {
     all: ['dashboard'],
     stats: () => [...queryKeys.dashboard.all, 'stats'],
     activities: () => [...queryKeys.dashboard.all, 'activities'],
   },
-
-  posts: {
-    all: ['posts'],
-    feeds: () => [...queryKeys.posts.all, 'feed'],
-    feed: (filters) => [...queryKeys.posts.feeds(), { ...filters }], 
-    
-    details: () => [...queryKeys.posts.all, 'detail'],
-    detail: (id) => [...queryKeys.posts.details(), id],
-    
-    comments: (postId) => [...queryKeys.posts.detail(postId), 'comments'],
-  }
 };
 
 export const invalidateQueries = {
@@ -48,11 +47,11 @@ export const invalidateQueries = {
     queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(userId) });
   },
 
-  posts: (queryClient) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.posts.feeds() });
+  projects: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.all });
   },
 
-  postDetail: (queryClient, postId) => {
-    queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(postId) });
+  project: (queryClient, projectId) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
   },
 };
