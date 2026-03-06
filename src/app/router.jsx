@@ -1,33 +1,35 @@
-import { createBrowserRouter } from 'react-router-dom';
-import { RootLayout } from '@/shared/components/layouts/RootLayout';
-import { ProtectedRoute } from '@/shared/components/common/ProtectedRoute';
-import { PublicRoute } from '@/shared/components/common/PublicRoute';
+import { createBrowserRouter } from "react-router-dom";
+import { RootLayout } from "@/shared/components/layouts/RootLayout";
+import { ProtectedRoute } from "@/shared/components/common/ProtectedRoute";
+import { PublicRoute } from "@/shared/components/common/PublicRoute";
 
+// Imports - Pages
+import { LandingPage } from "@/pages/LandingPage";
+import { LoginPage } from "@/features/auth/pages/LoginPage";
+import { RegisterPage } from "@/features/auth/pages/RegisterPage";
+import { VerifyOTPPage } from "@/features/auth/pages/VerifyOTPPage";
+import { ProfilePage } from "@/features/user/pages/ProfilePage"; // Cập nhật đường dẫn đúng
+import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
+import { CommunityPage } from "@/features/community/pages/CommunityPage";
+import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
+import { PostDetailPage } from "@/features/community/pages/PostDetailPage";
+import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 
-import { LandingPage } from '@/pages/LandingPage';
-import { LoginPage } from '@/features/auth/pages/LoginPage';
-import { RegisterPage } from '@/features/auth/pages/RegisterPage';
-import { VerifyOTPPage } from '@/features/auth/pages/VerifyOTPPage';
-import { ProfilePage } from '@/features/user/pages/ProfilePage';
-import { DashboardPage } from '@/features/dashboard/pages/DashboardPage';
-import CommunityPage from '@/features/Community/pages/CommunityPage';
-import { PostDetailPage } from '@/features/Community/pages/PostDetailPage';
-
-
-
+import { UserProfilePage } from "@/features/users/pages/UserProfilePage";
+import { FollowingPage } from "@/features/users/pages/FollowingPage";
+import { ProjectListPage, ProjectDetailPage, CreateProjectPage } from "@/features/project/pages";
 
 export const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <RootLayout />,
     children: [
       {
         index: true,
         element: <LandingPage />,
       },
-
       {
-        path: 'login',
+        path: "login",
         element: (
           <PublicRoute>
             <LoginPage />
@@ -35,7 +37,7 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'register',
+        path: "register",
         element: (
           <PublicRoute>
             <RegisterPage />
@@ -43,16 +45,15 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'verify-otp',
+        path: "verify-otp",
         element: (
           <PublicRoute>
             <VerifyOTPPage />
           </PublicRoute>
         ),
       },
-
       {
-        path: 'dashboard',
+        path: "dashboard",
         element: (
           <ProtectedRoute>
             <DashboardPage />
@@ -60,7 +61,15 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'profile',
+        path: "admin",
+        element: (
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "profile",
         element: (
           <ProtectedRoute>
             <ProfilePage />
@@ -68,20 +77,33 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'community',
-        element: (
-          <ProtectedRoute>
-            <CommunityPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'community/:id',
-        element: (
-          <ProtectedRoute>
-            <PostDetailPage />
-          </ProtectedRoute>
-        ),
+        path: "community",
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute>
+                <CommunityPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "create",
+            element: (
+              <ProtectedRoute>
+                <CreatePostPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ":id",
+            element: (
+              <ProtectedRoute>
+                <PostDetailPage />
+              </ProtectedRoute>
+            ),
+          },
+        ],
       },
     ],
   },

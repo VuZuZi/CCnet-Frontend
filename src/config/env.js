@@ -1,6 +1,7 @@
 const requiredEnvVars = [
   'VITE_API_URL',
-  'VITE_GOOGLE_CLIENT_ID'
+  'VITE_GOOGLE_CLIENT_ID',
+  'VITE_SOCKET_URL'
 ];
 
 const missingVars = requiredEnvVars.filter(
@@ -18,4 +19,5 @@ export const env = {
   GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID,
   ENABLE_LOGGING: import.meta.env.VITE_ENABLE_LOGGING === 'true',
   IS_DEV: import.meta.env.DEV,
+  SOCKET_URL: import.meta.env.VITE_SOCKET_URL,
 };

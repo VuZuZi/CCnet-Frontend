@@ -1,8 +1,8 @@
-import { RouterProvider } from 'react-router-dom';
-import { QueryProvider } from './providers/QueryProvider';
-import { ToastProvider } from '@/shared/contexts/ToastContext';
-import { router } from './router';
-import { useAuthInit } from '@/features/auth/hooks/useAuthInit';
+import { RouterProvider } from "react-router-dom";
+import { QueryProvider } from "./providers/QueryProvider";
+import { ToastProvider } from "@/shared/contexts/ToastContext";
+import { router } from "./router";
+import { useAuthInit } from "@/features/auth/hooks/useAuthInit";
 
 function App() {
   return (
@@ -21,7 +21,10 @@ function AppContent() {
     return (
       <div className="min-vh-100 d-flex justify-content-center align-items-center">
         <div className="text-center">
-          <div className="spinner-border text-primary mb-3" style={{ width: '3rem', height: '3rem' }}>
+          <div
+            className="spinner-border text-primary mb-3"
+            style={{ width: "3rem", height: "3rem" }}
+          >
             <span className="visually-hidden">Loading...</span>
           </div>
           <p className="text-muted">Loading application...</p>
