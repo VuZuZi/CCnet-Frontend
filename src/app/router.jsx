@@ -3,16 +3,21 @@ import { RootLayout } from "@/shared/components/layouts/RootLayout";
 import { ProtectedRoute } from "@/shared/components/common/ProtectedRoute";
 import { PublicRoute } from "@/shared/components/common/PublicRoute";
 
+// Imports - Pages
 import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 import { VerifyOTPPage } from "@/features/auth/pages/VerifyOTPPage";
-import { ProfilePage } from "@/features/auth/pages/ProfilePage";
+import { ProfilePage } from "@/features/user/pages/ProfilePage"; // Cập nhật đường dẫn đúng
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
 import { CommunityPage } from "@/features/community/pages/CommunityPage";
 import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
 import { PostDetailPage } from "@/features/community/pages/PostDetailPage";
 import AdminDashboard from "@/features/admin/pages/AdminDashboard";
+
+import { UserProfilePage } from "@/features/users/pages/UserProfilePage";
+import { FollowingPage } from "@/features/users/pages/FollowingPage";
+import { ProjectListPage, ProjectDetailPage, CreateProjectPage } from "@/features/project/pages";
 
 export const router = createBrowserRouter([
   {
@@ -23,7 +28,6 @@ export const router = createBrowserRouter([
         index: true,
         element: <LandingPage />,
       },
-
       {
         path: "login",
         element: (
@@ -48,7 +52,6 @@ export const router = createBrowserRouter([
           </PublicRoute>
         ),
       },
-
       {
         path: "dashboard",
         element: (
@@ -65,7 +68,6 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-
       {
         path: "profile",
         element: (
@@ -75,27 +77,15 @@ export const router = createBrowserRouter([
         ),
       },
       {
-        path: 'community',
-        element: (
-          <ProtectedRoute>
-            <CommunityPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
-        path: 'community/:id',
-        element: (
-          <ProtectedRoute>
-            <PostDetailPage />
-          </ProtectedRoute>
-        ),
-      },
-      {
         path: "community",
         children: [
           {
             index: true,
-            element: <CommunityPage />,
+            element: (
+              <ProtectedRoute>
+                <CommunityPage />
+              </ProtectedRoute>
+            ),
           },
           {
             path: "create",
@@ -106,8 +96,12 @@ export const router = createBrowserRouter([
             ),
           },
           {
-            path: ":postId",
-            element: <PostDetailPage />,
+            path: ":id",
+            element: (
+              <ProtectedRoute>
+                <PostDetailPage />
+              </ProtectedRoute>
+            ),
           },
         ],
       },

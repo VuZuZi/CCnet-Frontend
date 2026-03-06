@@ -51,3 +51,39 @@
   background-color: var(--color-black);
   color: var(--color-white);
 }
+
+.gray {
+  background-color: #6b7280;
+  color: var(--color-white);
+}
+
+.gray:hover:not(:disabled) {
+  background-color: #4b5563;
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.danger {
+  background-color: #ef4444;
+  color: var(--color-white);
+}
+
+.danger:hover:not(:disabled) {
+  background-color: #dc2626;
+  color: var(--color-white);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.secondary {
+  background-color: #e5e7eb;
+  color: var(--color-black);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: #d1d5db;
+  color: var(--color-black);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}

@@ -42,7 +42,7 @@ export const authAPI = {
   },
 
   async getMe() {
-    const response = await httpClient.get('/user');
-    return response.data.data.user;
-  }
+  const response = await httpClient.get('/auth/me');
+  return response.data.data.user; 
+},
 };
