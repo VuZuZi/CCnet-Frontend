@@ -3,7 +3,6 @@ import { RootLayout } from "@/shared/components/layouts/RootLayout";
 import { ProtectedRoute } from "@/shared/components/common/ProtectedRoute";
 import { PublicRoute } from "@/shared/components/common/PublicRoute";
 
-// Imports - Pages
 import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";
@@ -16,7 +15,11 @@ import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 
 import { UserProfilePage } from "@/features/users/pages/UserProfilePage";
 import { FollowingPage } from "@/features/users/pages/FollowingPage";
-import { ProjectListPage, ProjectDetailPage, CreateProjectPage } from "@/features/project/pages";
+import {
+  ProjectListPage,
+  ProjectDetailPage,
+  CreateProjectPage,
+} from "@/features/project/pages";
 
 export const router = createBrowserRouter([
   {
@@ -75,6 +78,25 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
+
+    
+      {
+        path: "following",
+        element: (
+          <ProtectedRoute>
+            <FollowingPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "users/:id",
+        element: (
+          <ProtectedRoute>
+            <UserProfilePage />
+          </ProtectedRoute>
+        ),
+      },
+
       {
         path: "community",
         children: [
@@ -99,6 +121,36 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute>
                 <PostDetailPage />
+              </ProtectedRoute>
+            ),
+          },
+        ],
+      },
+
+      {
+        path: "projects",
+        children: [
+          {
+            index: true,
+            element: (
+              <ProtectedRoute>
+                <ProjectListPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: "create",
+            element: (
+              <ProtectedRoute>
+                <CreateProjectPage />
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ":id",
+            element: (
+              <ProtectedRoute>
+                <ProjectDetailPage />
               </ProtectedRoute>
             ),
           },
