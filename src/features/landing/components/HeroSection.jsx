@@ -1,24 +1,23 @@
-import { Container, Row, Col } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import PropTypes from 'prop-types'
-import { Button } from '@/shared/components/ui/Button/Button' // Dùng Button Shared xịn
+import { Button } from '@/shared/components/ui/Button/Button'
 import { ProgramCard } from './ProgramCard'
-import styles from '../styles/Landing.module.css' // Import CSS Module
 
 export function HeroSection({ programs }) {
   return (
-    <section className={styles.heroSection}>
-      <Container>
-        <Row className="align-items-center">
-          <Col lg={6} className="fade-in-up mb-5 mb-lg-0">
+    <section className="min-h-[calc(100vh-72px)] bg-gradient-to-br from-off-white to-white flex items-center py-16 relative">
+      <div className="w-full max-w-[1200px] mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <div className="animate-fade-in-up mb-12 lg:mb-0">
             <HeroContent />
-          </Col>
+          </div>
 
-          <Col lg={6}>
+          <div>
             <ProgramCardsGrid programs={programs} />
-          </Col>
-        </Row>
-      </Container>
+          </div>
+
+        </div>
+      </div>
     </section>
   )
 }
@@ -30,23 +29,23 @@ HeroSection.propTypes = {
 function HeroContent() {
   return (
     <>
-      <h1 className={styles.heroTitle}>
+      <h1 className="text-[clamp(3rem,6vw,5rem)] font-extrabold leading-[1.1] mb-6 text-black">
         Grow Bold.<br />
         Move Free.<br />
-        <span className={styles.heroAccent}>Play Hard.</span>
+        <span className="text-orange">Play Hard.</span>
       </h1>
       
-      <p className={styles.heroSubtitle}>
+      <p className="text-[clamp(1.1rem,2vw,1.5rem)] text-gray mb-10 leading-relaxed max-w-[600px]">
         A space where teams discover productivity through movement, collaboration, 
         and innovation.
       </p>
 
-      <div className="d-flex gap-3 flex-wrap mb-4">
+      <div className="flex gap-3 flex-wrap mb-8">
         <Link to="/register">
-            <Button variant="yellow" size="lg">Start Free Trial</Button>
+            <Button variant="yellow" className="!px-8 !py-4 !text-lg">Start Free Trial</Button>
         </Link>
         <Link to="/demo">
-            <Button variant="outlineDark" size="lg">Watch Demo</Button>
+            <Button variant="outlineDark" className="!px-8 !py-4 !text-lg">Watch Demo</Button>
         </Link>
       </div>
     </>
@@ -55,12 +54,12 @@ function HeroContent() {
 
 function ProgramCardsGrid({ programs }) {
   return (
-    <Row className="g-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {programs.map((program) => (
-        <Col md={6} key={program.id}>
+        <div key={program.id}>
           <ProgramCard {...program} />
-        </Col>
+        </div>
       ))}
-    </Row>
+    </div>
   )
 }

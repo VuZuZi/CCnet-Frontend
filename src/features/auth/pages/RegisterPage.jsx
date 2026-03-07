@@ -1,13 +1,9 @@
-/**
- * Register Page
- */
-
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { useRegister } from '../hooks/useRegister';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { validators, VALIDATION_MESSAGES } from '@/shared/constants/validation';
 import { ROUTES } from '@/shared/constants/routes';
+import { Button } from '@/shared/components/ui/Button/Button'; // Import Shared Button
 
 export function RegisterPage() {
   const { register, isLoading, isError, errorMessage } = useRegister();
@@ -42,127 +38,117 @@ export function RegisterPage() {
     }
   };
 
+  const renderError = (field) => (
+    touched[field] && errors[field] ? (
+      <p className="text-[#dc3545] text-sm mt-1 mb-0">{errors[field]}</p>
+    ) : null
+  );
+
   return (
-    <div className="min-vh-100 d-flex align-items-center bg-light">
-      <Container>
-        <Row className="justify-content-center">
-          <Col md={7} lg={6}>
-            <Card className="shadow-sm border-0">
-              <Card.Body className="p-4 p-md-5">
-                {/* Header */}
-                <div className="text-center mb-4">
-                  <h2 className="fw-bold mb-2">Create Account</h2>
-                  <p className="text-muted">Sign up to get started</p>
-                </div>
+    <div className="min-h-screen flex items-center bg-off-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-lg mx-auto">
+        <div className="bg-white rounded-2xl shadow-sm border border-transparent transition-all duration-200 focus-within:shadow-md focus-within:border-yellow p-8 sm:p-10">
+          
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2 text-black">Create Account</h2>
+            <p className="text-gray text-base">Sign up to get started</p>
+          </div>
 
-                {/* Error Alert */}
-                {isError && errorMessage && (
-                  <Alert variant="danger" className="mb-4" dismissible>
-                    <Alert.Heading className="h6 mb-2">Registration Failed</Alert.Heading>
-                    {errorMessage}
-                  </Alert>
-                )}
+          {isError && errorMessage && (
+            <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg mb-6 border border-[#f5c2c7]">
+              <h6 className="font-bold mb-1">Registration Failed</h6>
+              {errorMessage}
+            </div>
+          )}
 
-                {/* Register Form */}
-                <Form onSubmit={handleSubmit}>
-                  <Form.Group className="mb-3">
-                    <Form.Label>Full Name</Form.Label>
-                    <Form.Control
-                      type="text"
-                      placeholder="Enter your full name"
-                      value={values.fullName}
-                      onChange={(e) => handleChange('fullName', e.target.value)}
-                      onBlur={() => handleBlur('fullName')}
-                      isInvalid={touched.fullName && !!errors.fullName}
-                      disabled={isLoading}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.fullName}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+          <form onSubmit={handleSubmit} noValidate>
+            <fieldset disabled={isLoading} className="space-y-6">
+              
+              <div>
+                <label className="block text-sm font-medium text-black mb-1.5">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="Enter your full name"
+                  value={values.fullName}
+                  onChange={(e) => handleChange('fullName', e.target.value)}
+                  onBlur={() => handleBlur('fullName')}
+                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
+                    touched.fullName && !!errors.fullName ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
+                  }`}
+                />
+                {renderError('fullName')}
+              </div>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Email Address</Form.Label>
-                    <Form.Control
-                      type="email"
-                      placeholder="Enter your email"
-                      value={values.email}
-                      onChange={(e) => handleChange('email', e.target.value)}
-                      onBlur={() => handleBlur('email')}
-                      isInvalid={touched.email && !!errors.email}
-                      disabled={isLoading}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.email}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+              <div>
+                <label className="block text-sm font-medium text-black mb-1.5">Email Address</label>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={values.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  onBlur={() => handleBlur('email')}
+                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
+                    touched.email && !!errors.email ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
+                  }`}
+                />
+                {renderError('email')}
+              </div>
 
-                  <Form.Group className="mb-3">
-                    <Form.Label>Password</Form.Label>
-                    <Form.Control
-                      type="password"
-                      placeholder="Create a strong password"
-                      value={values.password}
-                      onChange={(e) => handleChange('password', e.target.value)}
-                      onBlur={() => handleBlur('password')}
-                      isInvalid={touched.password && !!errors.password}
-                      disabled={isLoading}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.password}
-                    </Form.Control.Feedback>
-                    <Form.Text className="text-muted">
-                      Must be 8+ characters with uppercase, lowercase, number & special character
-                    </Form.Text>
-                  </Form.Group>
+              <div>
+                <label className="block text-sm font-medium text-black mb-1.5">Password</label>
+                <input
+                  type="password"
+                  placeholder="Create a strong password"
+                  value={values.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  onBlur={() => handleBlur('password')}
+                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
+                    touched.password && !!errors.password ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
+                  }`}
+                />
+                {renderError('password')}
+                <p className="text-gray text-xs mt-1.5">
+                  Must be 8+ characters with uppercase, lowercase, number & special character
+                </p>
+              </div>
 
-                  <Form.Group className="mb-4">
-                    <Form.Label>Confirm Password</Form.Label>
-                    <Form.Control
-                      type="password"
-                      placeholder="Confirm your password"
-                      value={values.confirmPassword}
-                      onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                      onBlur={() => handleBlur('confirmPassword')}
-                      isInvalid={touched.confirmPassword && !!errors.confirmPassword}
-                      disabled={isLoading}
-                    />
-                    <Form.Control.Feedback type="invalid">
-                      {errors.confirmPassword}
-                    </Form.Control.Feedback>
-                  </Form.Group>
+              <div>
+                <label className="block text-sm font-medium text-black mb-1.5">Confirm Password</label>
+                <input
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={values.confirmPassword}
+                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
+                  onBlur={() => handleBlur('confirmPassword')}
+                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
+                    touched.confirmPassword && !!errors.confirmPassword ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
+                  }`}
+                />
+                {renderError('confirmPassword')}
+              </div>
 
-                  <Button
-                    type="submit"
-                    className="w-100 btn-yellow"
-                    size="lg"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? (
-                      <>
-                        <span className="spinner-border spinner-border-sm me-2" />
-                        Creating account...
-                      </>
-                    ) : (
-                      'Create Account'
-                    )}
-                  </Button>
-                </Form>
+              <Button
+                type="submit"
+                variant="yellow"
+                className="w-full !py-3 !text-lg mt-8"
+                isLoading={isLoading}
+              >
+                Create Account
+              </Button>
 
-                {/* Login Link */}
-                <div className="text-center mt-4">
-                  <p className="text-muted mb-0">
-                    Already have an account?{' '}
-                    <Link to={ROUTES.LOGIN} className="fw-bold text-decoration-none">
-                      Login
-                    </Link>
-                  </p>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+            </fieldset>
+          </form>
+
+          <div className="text-center mt-6">
+            <p className="text-gray text-sm mb-0">
+              Already have an account?{' '}
+              <Link to={ROUTES.LOGIN} className="font-bold text-black hover:text-orange transition-colors">
+                Login
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

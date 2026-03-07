@@ -1,36 +1,35 @@
-import { Container, Row, Col } from 'react-bootstrap'
 import PropTypes from 'prop-types'
-import styles from '../styles/Landing.module.css'
 
 export function FeaturesSection({ features }) {
   return (
-    <section className={styles.featuresSection}>
-      <Container>
-        <Row className="text-center mb-5">
-          <Col>
-            <h2 className="display-5 fw-bold mb-3">
-              Everything You Need to <span className="text-orange">Succeed</span>
-            </h2>
-            <p className="text-muted mx-auto" style={{ maxWidth: '600px', fontSize: '1.125rem' }}>
-              Powerful features designed to help your team collaborate better.
-            </p>
-          </Col>
-        </Row>
+    <section className="py-24 bg-white">
+      <div className="w-full max-w-[1200px] mx-auto px-4">
         
-        <Row className="g-4">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Everything You Need to <span className="text-orange">Succeed</span>
+          </h2>
+          <p className="text-gray mx-auto max-w-[600px] text-lg">
+            Powerful features designed to help your team collaborate better.
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature) => (
-            <Col md={6} lg={4} key={feature.id}>
-              <div className={styles.featureCard}>
-                <div className={styles.featureIcon}>
-                  <feature.icon />
-                </div>
-                <h4 className="fw-bold mb-3">{feature.title}</h4>
-                <p className="text-muted mb-0">{feature.description}</p>
+            <div 
+              key={feature.id}
+              className="group bg-white border border-light-gray rounded-2xl p-8 h-full transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md hover:border-yellow"
+            >
+              <div className="w-14 h-14 bg-yellow rounded-2xl flex items-center justify-center mb-6 text-[1.75rem] text-black transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110">
+                <feature.icon />
               </div>
-            </Col>
+              <h4 className="font-bold text-xl mb-3">{feature.title}</h4>
+              <p className="text-gray mb-0">{feature.description}</p>
+            </div>
           ))}
-        </Row>
-      </Container>
+        </div>
+
+      </div>
     </section>
   )
 }

@@ -1,12 +1,10 @@
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useLocation } from 'react-router-dom';
 import { useLogin } from '../hooks/useLogin';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { validators } from '@/shared/constants/validation';
 import { ROUTES } from '@/shared/constants/routes';
 import { GoogleLoginButton } from '../components/GoogleLoginButton';
-
-import styles from '../styles/LoginPage.module.css'; 
+import { Button } from '@/shared/components/ui/Button/Button'; 
 
 export function LoginPage() {
   const location = useLocation();
@@ -29,126 +27,133 @@ export function LoginPage() {
     }
   };
 
-
   const renderError = (field) => (
     touched[field] && errors[field] ? (
-      <Form.Control.Feedback type="invalid">
-        {errors[field]}
-      </Form.Control.Feedback>
+      <p className="text-[#dc3545] text-sm mt-1 mb-0">{errors[field]}</p>
     ) : null
   );
 
   return (
-    <div className={styles.container}>
-      <Container>
-        <Row className="justify-content-center">
-          <Col md={6} lg={5}>
-            <Card className={styles.card}>
-              <Card.Body className="p-4 p-md-5">
-                
+    <div className="min-h-screen flex items-center bg-off-white py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md mx-auto">
+        
+        {/* Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-transparent transition-all duration-200 focus-within:shadow-md focus-within:border-yellow p-8 sm:p-10">
+          
+          <header className="text-center mb-8">
+            <h2 className="text-3xl font-bold mb-2 text-black">Welcome Back</h2>
+            <p className="text-gray text-base">Login to your account to continue</p>
+          </header>
 
-                <header className="text-center mb-4">
-                  <h2 className="fw-bold mb-2">Welcome Back</h2>
-                  <p className="text-muted">Login to your account to continue</p>
-                </header>
+          <div aria-live="polite">
+            {location.state?.verified && (
+              <div className="bg-[#d1e7dd] text-[#0f5132] p-4 rounded-lg mb-6 border border-[#badbcc]">
+                Email verified successfully! Please login.
+              </div>
+            )}
 
-                <div aria-live="polite">
-                  {location.state?.verified && (
-                    <Alert variant="success" className="mb-4">
-                      Email verified successfully! Please login.
-                    </Alert>
-                  )}
+            {isError && errorMessage && (
+              <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg mb-6 border border-[#f5c2c7] relative">
+                {errorMessage}
+              </div>
+            )}
+          </div>
 
-                  {isError && errorMessage && (
-                    <Alert variant="danger" className="mb-4" dismissible>
-                      {errorMessage}
-                    </Alert>
-                  )}
+          <div className={`mb-6 ${isLoading ? 'pointer-events-none opacity-60 cursor-not-allowed' : ''}`}>
+             <GoogleLoginButton />
+          </div>
+
+          <div className="relative mb-6">
+            <hr className="border-t border-light-gray" />
+            <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white px-4 text-sm text-gray whitespace-nowrap">
+              Or continue with email
+            </span>
+          </div>
+
+          <form onSubmit={handleSubmit} noValidate>
+            <fieldset disabled={isLoading} className="space-y-6">
+              
+              <div>
+                <label htmlFor="login-email" className="block text-sm font-medium text-black mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  id="login-email"
+                  type="email"
+                  placeholder="name@example.com"
+                  value={values.email}
+                  onChange={(e) => handleChange('email', e.target.value)}
+                  onBlur={() => handleBlur('email')}
+                  autoComplete="username"
+                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
+                    touched.email && !!errors.email 
+                      ? 'border-[#dc3545] focus:ring-[#dc3545]' 
+                      : 'border-light-gray focus:ring-yellow'
+                  }`}
+                />
+                {renderError('email')}
+              </div>
+
+              <div>
+                <label htmlFor="login-password" className="block text-sm font-medium text-black mb-1.5">
+                  Password
+                </label>
+                <input
+                  id="login-password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={values.password}
+                  onChange={(e) => handleChange('password', e.target.value)}
+                  onBlur={() => handleBlur('password')}
+                  autoComplete="current-password"
+                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
+                    touched.password && !!errors.password 
+                      ? 'border-[#dc3545] focus:ring-[#dc3545]' 
+                      : 'border-light-gray focus:ring-yellow'
+                  }`}
+                />
+                {renderError('password')}
+              </div>
+
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <input
+                    id="remember-me"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-light-gray text-yellow focus:ring-yellow cursor-pointer"
+                  />
+                  <label htmlFor="remember-me" className="ml-2 block text-sm text-black cursor-pointer">
+                    Remember me
+                  </label>
                 </div>
+                <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm font-medium text-black hover:text-orange transition-colors">
+                  Forgot password?
+                </Link>
+              </div>
 
-                <div className={`mb-4 ${isLoading ? styles.disabledWrapper : ''}`}>
-                   <GoogleLoginButton />
-                </div>
+              <Button
+                type="submit"
+                variant="yellow"
+                className="w-full !py-3 !text-lg"
+                isLoading={isLoading}
+              >
+                Sign In
+              </Button>
 
-                <div className={styles.divider}>
-                  <hr className={styles.dividerLine} />
-                  <span className={styles.dividerText}>Or continue with email</span>
-                </div>
+            </fieldset>
+          </form>
 
+          <div className="text-center mt-6">
+            <p className="text-gray text-sm mb-0">
+              Don't have an account?{' '}
+              <Link to={ROUTES.REGISTER} className="font-bold text-black hover:text-orange transition-colors">
+                Create an account
+              </Link>
+            </p>
+          </div>
 
-                <Form onSubmit={handleSubmit} noValidate>
-                  <fieldset disabled={isLoading}>
-                    <Form.Group className="mb-3" controlId="login-email">
-                      <Form.Label>Email Address</Form.Label>
-                      <Form.Control
-                        type="email"
-                        placeholder="name@example.com"
-                        value={values.email}
-                        onChange={(e) => handleChange('email', e.target.value)}
-                        onBlur={() => handleBlur('email')}
-                        isInvalid={touched.email && !!errors.email}
-                        autoComplete="username" 
-                      />
-                      {renderError('email')}
-                    </Form.Group>
-
-                    <Form.Group className="mb-3" controlId="login-password">
-                      <Form.Label>Password</Form.Label>
-                      <Form.Control
-                        type="password"
-                        placeholder="••••••••"
-                        value={values.password}
-                        onChange={(e) => handleChange('password', e.target.value)}
-                        onBlur={() => handleBlur('password')}
-                        isInvalid={touched.password && !!errors.password}
-                        autoComplete="current-password"
-                      />
-                      {renderError('password')}
-                    </Form.Group>
-
-                    <div className="d-flex justify-content-between align-items-center mb-4">
-                      <Form.Check 
-                        type="checkbox" 
-                        id="remember-me"
-                        label="Remember me" 
-                      />
-                      <Link to={ROUTES.FORGOT_PASSWORD} className="text-decoration-none small">
-                        Forgot password?
-                      </Link>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      className={`w-100 ${styles.btnPrimary}`}
-                      size="lg"
-                      disabled={isLoading}
-                    >
-                      {isLoading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-                          Logging in...
-                        </>
-                      ) : (
-                        'Sign In'
-                      )}
-                    </Button>
-                  </fieldset>
-                </Form>
-
-                <div className="text-center mt-4">
-                  <p className="text-muted mb-0">
-                    Don't have an account?{' '}
-                    <Link to={ROUTES.REGISTER} className="fw-bold text-decoration-none text-dark">
-                      Create an account
-                    </Link>
-                  </p>
-                </div>
-
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+        </div>
+      </div>
     </div>
   );
 }

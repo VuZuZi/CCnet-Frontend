@@ -1,119 +1,116 @@
-/**
- * Dashboard Page
- */
 
-import { Container, Row, Col, Card } from 'react-bootstrap';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
+import { 
+  FolderKanban, 
+  CheckCircle2, 
+  Users, 
+  Trophy, 
+  Sparkles 
+} from 'lucide-react';
 
 export function DashboardPage() {
   const user = useAuthStore(authSelectors.user);
 
   return (
-    <div className="min-vh-100 bg-light py-5">
-      <Container>
-        {/* Welcome Section */}
-        <Row className="mb-4">
-          <Col>
-            <h1 className="fw-bold mb-2">Welcome back, {user.fullName}! 👋</h1>
-            <p className="text-muted">Here's what's happening with your account today.</p>
-          </Col>
-        </Row>
+    <main className="min-h-screen bg-gray-50 py-12">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        
+        <header className="mb-8">
+          <h1 className="mb-2 flex items-center text-3xl font-bold tracking-tight text-gray-900">
+            Welcome back, {user?.fullName || 'User'}! 
+            <Sparkles className="ml-3 h-8 w-8 text-amber-500" aria-hidden="true" />
+          </h1>
+          <p className="text-gray-500">Here's what's happening with your account today.</p>
+        </header>
 
-        {/* Stats Cards */}
-        <Row className="g-4 mb-4">
-          <Col md={6} lg={3}>
-            <StatsCard
-              title="Total Projects"
-              value="12"
-              icon="📁"
-              color="purple"
-            />
-          </Col>
-          <Col md={6} lg={3}>
-            <StatsCard
-              title="Active Tasks"
-              value="24"
-              icon="✅"
-              color="green"
-            />
-          </Col>
-          <Col md={6} lg={3}>
-            <StatsCard
-              title="Team Members"
-              value="8"
-              icon="👥"
-              color="blue"
-            />
-          </Col>
-          <Col md={6} lg={3}>
-            <StatsCard
-              title="Completed"
-              value="156"
-              icon="🎯"
-              color="yellow"
-            />
-          </Col>
-        </Row>
+        <section 
+          className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+          aria-label="Key Statistics"
+        >
+          <StatsCard 
+            title="Total Projects" 
+            value="12" 
+            icon={<FolderKanban className="h-6 w-6" />} 
+            color="purple" 
+          />
+          <StatsCard 
+            title="Active Tasks" 
+            value="24" 
+            icon={<CheckCircle2 className="h-6 w-6" />} 
+            color="green" 
+          />
+          <StatsCard 
+            title="Team Members" 
+            value="8" 
+            icon={<Users className="h-6 w-6" />} 
+            color="blue" 
+          />
+          <StatsCard 
+            title="Completed" 
+            value="156" 
+            icon={<Trophy className="h-6 w-6" />} 
+            color="yellow" 
+          />
+        </section>
 
-        {/* User Info Card */}
-        <Row>
-          <Col lg={6}>
-            <Card className="shadow-sm border-0">
-              <Card.Body className="p-4">
-                <h5 className="fw-bold mb-4">Account Information</h5>
-                <div className="mb-3">
-                  <small className="text-muted d-block mb-1">Email</small>
-                  <strong>{user.email}</strong>
-                </div>
-                <div className="mb-3">
-                  <small className="text-muted d-block mb-1">Role</small>
-                  <span className="badge bg-primary">{user.role}</span>
-                </div>
-                <div>
-                  <small className="text-muted d-block mb-1">User ID</small>
-                  <code className="text-muted">{user.userId}</code>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
-    </div>
+        <section className="grid grid-cols-1 lg:grid-cols-2">
+          <article className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+            <h2 className="mb-6 text-lg font-bold text-gray-900">Account Information</h2>
+            
+            <dl className="space-y-4">
+              <div>
+                <dt className="mb-1 text-sm font-medium text-gray-500">Email</dt>
+                <dd className="font-medium text-gray-900">{user?.email || 'N/A'}</dd>
+              </div>
+              
+              <div>
+                <dt className="mb-1 text-sm font-medium text-gray-500">Role</dt>
+                <dd>
+                  <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+                    {user?.role || 'Guest'}
+                  </span>
+                </dd>
+              </div>
+              
+              <div>
+                <dt className="mb-1 text-sm font-medium text-gray-500">User ID</dt>
+                <dd>
+                  <code className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600">
+                    {user?.userId || 'N/A'}
+                  </code>
+                </dd>
+              </div>
+            </dl>
+          </article>
+        </section>
+
+      </div>
+    </main>
   );
 }
 
-/**
- * Stats Card Component
- */
 function StatsCard({ title, value, icon, color }) {
-  const colorMap = {
-    purple: 'var(--color-purple)',
-    green: 'var(--color-green)',
-    blue: 'var(--color-blue)',
-    yellow: 'var(--color-yellow)',
+  const colorStyles = {
+    purple: 'bg-purple-100 text-purple-700',
+    green: 'bg-emerald-100 text-emerald-700',
+    blue: 'bg-blue-100 text-blue-700',
+    yellow: 'bg-amber-100 text-amber-700',
   };
 
   return (
-    <Card className="shadow-sm border-0 h-100">
-      <Card.Body className="p-4">
-        <div className="d-flex justify-content-between align-items-start mb-3">
-          <div>
-            <p className="text-muted mb-1 small">{title}</p>
-            <h3 className="fw-bold mb-0">{value}</h3>
-          </div>
-          <div
-            className="rounded-circle d-flex align-items-center justify-content-center"
-            style={{
-              width: '48px',
-              height: '48px',
-              background: colorMap[color],
-              fontSize: '1.5rem',
-            }}
-          >
-            {icon}
-          </div>
+    <article className="flex h-full flex-col justify-center rounded-xl border border-gray-100 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="mb-1 text-sm font-medium text-gray-500">{title}</h3>
+          <p className="text-3xl font-bold tracking-tight text-gray-900">{value}</p>
         </div>
-      </Card.Body>
-    </Card>
+        <div 
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${colorStyles[color]}`}
+          aria-hidden="true"
+        >
+          {icon}
+        </div>
+      </div>
+    </article>
   );
 }

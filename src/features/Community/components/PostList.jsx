@@ -2,22 +2,18 @@ import { Link } from 'react-router-dom'
 
 export function PostList({ post }) {
   return (
-    <Link to={`/community/${post._id}`} className="text-decoration-none text-dark">
-      <div className="border rounded p-3 mb-3">
-        <p>{post.content}</p>
+    <Link to={`/community/${post._id}`} className="no-underline text-black block">
+      <div className="border border-light-gray rounded-xl p-4 mb-4 bg-white shadow-sm hover:shadow-md transition-shadow duration-200">
+        <p className="text-dark mb-0 whitespace-pre-wrap">{post.content}</p>
 
         {post.images?.length > 0 && (
-          <div className="d-flex gap-2 mt-2">
+          <div className="flex gap-2 mt-3 overflow-x-auto pb-2">
             {post.images.map((img, i) => (
               <img
                 key={i}
                 src={`${import.meta.env.VITE_API_URL}${img}`}
-                style={{
-                  width: 100,
-                  height: 100,
-                  objectFit: 'cover',
-                  borderRadius: 6,
-                }}
+                alt="Post attachment"
+                className="w-[100px] h-[100px] object-cover rounded-lg shrink-0 border border-light-gray"
               />
             ))}
           </div>

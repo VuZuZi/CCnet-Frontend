@@ -1,24 +1,20 @@
-import { Container, Row, Col } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { Button } from '@/shared/components/ui/Button/Button'
-import styles from '../styles/Landing.module.css'
 
 export function CTASection() {
   return (
-    <Container>
-      <section className={styles.ctaSection}>
-        <Row className="align-items-center justify-content-center">
-          <Col lg={8} className="mb-4 mb-lg-0">
-            <h2 className="display-5 fw-bold mb-3">Ready to Get Started?</h2>
-            <p className="fs-5 opacity-75 mb-4">
-              Join thousands of teams already using our platform.
-            </p>
-            <Link to="/register">
-              <Button variant="yellow" size="lg">Start Free Trial</Button>
-            </Link>
-          </Col>
-        </Row>
+    <div className="w-full max-w-[1200px] mx-auto px-4">
+      <section className="bg-black text-white py-20 rounded-[32px] my-16 text-center relative overflow-hidden">
+        <div className="max-w-3xl mx-auto px-4 flex flex-col items-center">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Ready to Get Started?</h2>
+          <p className="text-xl opacity-75 mb-8">
+            Join thousands of teams already using our platform.
+          </p>
+          <Link to="/register">
+            <Button variant="yellow" className="!px-8 !py-4 !text-lg">Start Free Trial</Button>
+          </Link>
+        </div>
       </section>
-    </Container>
+    </div>
   )
 }

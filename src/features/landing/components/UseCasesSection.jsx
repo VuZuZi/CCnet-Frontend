@@ -1,33 +1,29 @@
-import { Container, Row, Col } from 'react-bootstrap'
 import PropTypes from 'prop-types'
-import styles from '../styles/Landing.module.css'
 
-const COLOR_MAP = {
-  purple: 'var(--color-purple)',
-  green: 'var(--color-green)',
-  blue: 'var(--color-blue)',
-  yellow: 'var(--color-yellow)'
+const colorClasses = {
+  purple: { border: 'border-purple', bg: 'bg-purple', iconColor: 'white' },
+  green: { border: 'border-green', bg: 'bg-green', iconColor: 'black' },
+  blue: { border: 'border-blue', bg: 'bg-blue', iconColor: 'white' },
+  yellow: { border: 'border-yellow', bg: 'bg-yellow', iconColor: 'black' }
 }
 
 export function UseCasesSection({ useCases }) {
   return (
-    <section className={styles.useCasesSection}>
-      <Container>
-        <Row className="text-center mb-5">
-          <Col>
-            <h2 className="display-5 fw-bold mb-3">Built for Every Team</h2>
-            <p className="text-muted fs-5">From startups to enterprises, we've got you covered</p>
-          </Col>
-        </Row>
+    <section className="py-24 bg-white">
+      <div className="w-full max-w-[1200px] mx-auto px-4">
+        
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Built for Every Team</h2>
+          <p className="text-gray text-lg">From startups to enterprises, we've got you covered</p>
+        </div>
 
-        <Row className="g-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {useCases.map((useCase) => (
-            <Col md={6} lg={3} key={useCase.id}>
-              <UseCaseCard {...useCase} />
-            </Col>
+            <UseCaseCard key={useCase.id} {...useCase} />
           ))}
-        </Row>
-      </Container>
+        </div>
+
+      </div>
     </section>
   )
 }
@@ -37,25 +33,19 @@ UseCasesSection.propTypes = {
 }
 
 function UseCaseCard({ icon: Icon, title, description, color }) {
-  const accentColor = COLOR_MAP[color]
+  const classes = colorClasses[color] || colorClasses.yellow
   
   return (
     <div 
-      className={styles.useCaseCard}
-      style={{ borderColor: accentColor }} 
+      className={`bg-white border ${classes.border} rounded-2xl p-8 h-full text-center transition-all duration-300 hover:-translate-y-1.5 hover:shadow-md`}
     >
       <div 
-        className="mx-auto mb-3 d-flex align-items-center justify-content-center"
-        style={{ 
-          width: '64px', height: '64px', 
-          background: accentColor, 
-          borderRadius: '16px' 
-        }}
+        className={`mx-auto mb-4 flex items-center justify-center w-16 h-16 ${classes.bg} rounded-2xl`}
       >
-        <Icon size={32} color={color === 'yellow' || color === 'green' ? 'black' : 'white'} />
+        <Icon size={32} color={classes.iconColor} />
       </div>
-      <h5 className="fw-bold mb-2">{title}</h5>
-      <p className="text-muted small mb-0">{description}</p>
+      <h5 className="font-bold text-lg mb-2">{title}</h5>
+      <p className="text-gray text-sm mb-0">{description}</p>
     </div>
   )
 }

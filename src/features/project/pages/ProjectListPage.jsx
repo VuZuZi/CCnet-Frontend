@@ -1,23 +1,20 @@
 import { useState, useMemo, useCallback } from 'react';
-import { Container, Button } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
 import { useProjects } from '../hooks/useProjects';
 import { ProjectSearchFilter, ProjectGrid } from '../components';
 import { ROUTES } from '@/shared/constants/routes';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import styles from '../styles/ProjectListPage.module.css';
+import { Button } from '@/shared/components/ui/Button/Button';
 
 export function ProjectListPage() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
-  
-  // Local filter state
+
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sortBy, setSortBy] = useState('createdAt');
   const [page, setPage] = useState(1);
 
-  // Fetch projects with filters
   const { projects, pagination, isLoading } = useProjects({
     page,
     limit: 12,
@@ -26,10 +23,9 @@ export function ProjectListPage() {
     sortOrder: 'desc',
   });
 
-  // Filter projects by search (client-side for now)
   const filteredProjects = useMemo(() => {
     if (!search.trim()) return projects;
-    
+
     const searchLower = search.toLowerCase();
     return projects.filter(
       (project) =>
@@ -54,18 +50,18 @@ export function ProjectListPage() {
   }, []);
 
   return (
-    <div className={styles.pageContainer}>
-      <Container>
-        {/* Header Section */}
-        <div className={styles.headerSection}>
-          <div className={styles.headerContent}>
-            <div className={styles.headerText}>
-              <h1>Discover Campaigns</h1>
-              <p>Find and support meaningful causes that make a difference</p>
+    <div className="min-h-screen py-8 bg-off-white px-4 md:px-8">
+      <div className="w-full max-w-[1200px] mx-auto">
+
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div>
+              <h1 className="text-3xl font-bold text-black mb-2">Discover Campaigns</h1>
+              <p className="text-gray m-0">Find and support meaningful causes that make a difference</p>
             </div>
             {isAuthenticated && (
-              <Link to={ROUTES.PROJECT_CREATE}>
-                <Button className={styles.btnCreate}>
+              <Link to={ROUTES.PROJECT_CREATE} className="no-underline w-full md:w-auto">
+                <Button variant="yellow" className="w-full md:w-auto flex items-center justify-center gap-2">
                   <FiPlus size={18} />
                   Create Campaign
                 </Button>
@@ -74,7 +70,6 @@ export function ProjectListPage() {
           </div>
         </div>
 
-        {/* Search & Filter */}
         <ProjectSearchFilter
           searchValue={search}
           onSearchChange={handleSearchChange}
@@ -84,30 +79,27 @@ export function ProjectListPage() {
           onSortChange={handleSortChange}
         />
 
-        {/* Projects Grid */}
-        <ProjectGrid 
-          projects={filteredProjects} 
-          isLoading={isLoading} 
+        <ProjectGrid
+          projects={filteredProjects}
+          isLoading={isLoading}
         />
 
-        {/* Pagination could be added here */}
         {pagination && pagination.totalPages > 1 && (
-          <div className={styles.pagination}>
-            {/* Simple pagination - can be enhanced */}
+          <div className="flex justify-center items-center mt-8 gap-4">
             <Button
-              variant="outline-secondary"
-              size="sm"
+              variant="outlineDark"
+              className="!py-1.5 !px-3 !text-sm"
               disabled={page === 1}
               onClick={() => setPage((p) => p - 1)}
             >
               Previous
             </Button>
-            <span className="mx-3">
+            <span className="text-black font-medium text-sm">
               Page {page} of {pagination.totalPages}
             </span>
             <Button
-              variant="outline-secondary"
-              size="sm"
+              variant="outlineDark"
+              className="!py-1.5 !px-3 !text-sm"
               disabled={page >= pagination.totalPages}
               onClick={() => setPage((p) => p + 1)}
             >
@@ -115,7 +107,7 @@ export function ProjectListPage() {
             </Button>
           </div>
         )}
-      </Container>
+      </div>
     </div>
   );
 }

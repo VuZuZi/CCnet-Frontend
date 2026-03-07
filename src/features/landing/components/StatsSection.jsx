@@ -1,22 +1,21 @@
-import { Container, Row, Col } from 'react-bootstrap'
 import PropTypes from 'prop-types'
-import styles from '../styles/Landing.module.css'
 
 export function StatsSection({ stats }) {
   return (
-    <section className={styles.statsSection}>
-      <Container>
-        <Row className="g-4">
+    <section className="py-24 bg-off-white">
+      <div className="w-full max-w-[1200px] mx-auto px-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
-            <Col md={6} lg={3} key={stat.id}>
-              <div className={styles.statsCard}>
-                <div className={styles.statsNumber}>{stat.value}</div>
-                <div className="text-muted">{stat.label}</div>
-              </div>
-            </Col>
+            <div 
+              key={stat.id}
+              className="bg-white rounded-[24px] p-8 text-center border border-light-gray transition-all duration-300 hover:border-yellow hover:shadow-md hover:scale-105"
+            >
+              <div className="text-5xl font-extrabold text-black mb-2">{stat.value}</div>
+              <div className="text-gray">{stat.label}</div>
+            </div>
           ))}
-        </Row>
-      </Container>
+        </div>
+      </div>
     </section>
   )
 }

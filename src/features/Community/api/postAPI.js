@@ -1,20 +1,40 @@
 import httpClient from "@/shared/lib/httpClient";
 
 export const postAPI = {
-  getPosts: (params = {}) => httpClient.get("/posts", { params }),
+  getPosts: async ({ cursor = null, limit = 10 }) => {
+    const params = { limit };
+    if (cursor) params.cursor = cursor;
+    
+    const res = await httpClient.get("/posts", { params });
+    return res.data; 
+  },
 
-  getPostById: (id) => httpClient.get(`/posts/${id}`),
+  getPostById: async (id) => {
+    const res = await httpClient.get(`/posts/${id}`);
+    return res.data;
+  },
 
-  createPost: (data) => httpClient.post("/posts", data),
+  createPost: async (formData) => {
+    const res = await httpClient.post("/posts", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  },
 
-  toggleLike: (postId) => httpClient.post(`/posts/${postId}/like`),
+  toggleReaction: async (postId, type) => {
+    const res = await httpClient.post(`/posts/${postId}/reaction`, { type });
+    return res.data;
+  },
 
-  toggleDislike: (postId) => httpClient.post(`/posts/${postId}/dislike`),
+  addComment: async (postId, content) => {
+    const res = await httpClient.post(`/posts/${postId}/comments`, { content });
+    return res.data;
+  },
 
-  addComment: (postId, content) =>
-    httpClient.post(`/posts/${postId}/comment`, { content }),
-
-  reportPost: (postId, payload) => {
-    return httpClient.post(`/posts/${postId}/report`, payload);
+  reportPost: async (postId, formData) => {
+    const res = await httpClient.post(`/posts/${postId}/report`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
   },
 };

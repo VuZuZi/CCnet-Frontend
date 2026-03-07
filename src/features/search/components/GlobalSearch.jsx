@@ -1,8 +1,6 @@
-import { Form } from 'react-bootstrap';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGlobalSearch } from '../hooks/useGlobalSearch';
-import styles from './GlobalSearch.module.css';
 
 function buildPersonPath(id) {
   return `/users/${String(id)}`;
@@ -53,10 +51,13 @@ export default function GlobalSearch() {
   if (!isAuthenticated) return null;
 
   return (
-    <div ref={boxRef} className={styles.wrap}>
-      <form onSubmit={onSubmit} className={styles.form}>
-        <Form.Control
-          className={styles.input}
+    // wrap
+    <div ref={boxRef} className="relative w-[360px] max-w-[46vw] mx-[14px]">
+      {/* form */}
+      <form onSubmit={onSubmit} className="relative">
+        <input
+          type="text"
+          className="w-full rounded-full pl-[14px] pr-[36px] py-2 border border-light-gray bg-white text-black focus:outline-none focus:border-yellow focus:ring-1 focus:ring-yellow transition-colors"
           placeholder="Search..."
           value={query}
           onFocus={() => setOpen(true)}
@@ -65,14 +66,24 @@ export default function GlobalSearch() {
             setOpen(true);
           }}
         />
-        <span className={styles.icon}>⌕</span>
+        {/* icon */}
+        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm opacity-60 pointer-events-none">
+          ⌕
+        </span>
       </form>
 
       {visible ? (
-        <div className={styles.dropdown} role="listbox">
+        // dropdown
+        <div 
+          className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-light-gray rounded-xl shadow-sm overflow-hidden z-[1200]" 
+          role="listbox"
+        >
           {(groups || []).map((g) => (
             <div key={g.key}>
-              <div className={styles.groupLabel}>{g.label}</div>
+              {/* groupLabel */}
+              <div className="px-3 py-2 text-xs font-bold opacity-75 bg-light-gray">
+                {g.label}
+              </div>
               {(g.items || []).map((it) => {
                 const letter = String(it.title || '?')
                   .trim()
@@ -80,22 +91,27 @@ export default function GlobalSearch() {
                   .toUpperCase();
 
                 return (
+                  // itemBtn
                   <button
                     key={`${g.key}:${it.kind}:${it.id}`}
                     type="button"
-                    className={styles.itemBtn}
+                    className="w-full text-left bg-transparent border-none py-2.5 px-3 flex gap-2.5 items-center hover:bg-light-gray cursor-pointer transition-colors"
                     onClick={() => onPick(it)}
                   >
-                    <div className={styles.avatar}>
+                    {/* avatar */}
+                    <div className="w-9 h-9 rounded-full bg-yellow text-black flex items-center justify-center font-bold overflow-hidden shrink-0">
                       {it.avatar ? (
-                        <img src={it.avatar} alt={it.title} className={styles.avatarImg} />
+                        <img src={it.avatar} alt={it.title} className="w-full h-full object-cover" />
                       ) : (
                         letter
                       )}
                     </div>
-                    <div className={styles.meta}>
-                      <div className={styles.title}>{it.title}</div>
-                      <div className={styles.sub}>{it.subtitle}</div>
+                    {/* meta */}
+                    <div className="min-w-0 flex-1">
+                      {/* title */}
+                      <div className="font-semibold leading-tight truncate text-black">{it.title}</div>
+                      {/* sub */}
+                      <div className="text-xs opacity-70 truncate text-black">{it.subtitle}</div>
                     </div>
                   </button>
                 );

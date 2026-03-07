@@ -1,4 +1,3 @@
-import { Container, Row, Col, Card } from 'react-bootstrap';
 import { useLocation, useParams } from 'react-router-dom';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation';
@@ -50,45 +49,43 @@ export function UserProfilePage() {
   };
 
   return (
-    <div className="min-vh-100 bg-light py-5">
-      <Container>
-        <Row className="justify-content-center">
-          <Col lg={7}>
-            <Card className="shadow-sm border-0">
-              <Card.Body className="p-4">
-                <div className="d-flex justify-content-between align-items-start gap-3">
-                  <div style={{ minWidth: 0 }}>
-                    <h3 className="fw-bold mb-1">{fullName}</h3>
-                    <div className="text-muted">{email}</div>
-                    <div className="text-muted small mt-2">
-                      Followers: {followers} · Following: {following}
-                    </div>
-                  </div>
+    <div className="min-h-screen bg-off-white py-12 px-4">
+      <div className="w-full max-w-3xl mx-auto">
+        <div className="bg-white shadow-sm border border-light-gray rounded-2xl p-6 md:p-8">
+          
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div className="min-w-0 flex-1">
+              <h3 className="font-bold text-2xl text-black mb-1 truncate">{fullName}</h3>
+              <div className="text-gray truncate">{email}</div>
+              <div className="text-gray text-sm mt-3 font-medium">
+                <span className="text-black">{followers}</span> Followers · <span className="text-black">{following}</span> Following
+              </div>
+            </div>
 
-                  <div className="d-flex gap-2">
-                    <Button
-                      variant={isFollowing ? 'danger' : 'gray'}
-                      disabled={!canAction || isToggleLoading || isFollowFetching}
-                      onClick={onToggleFollow}
-                    >
-                      {isFollowing ? 'UnFollow' : 'Follow'}
-                    </Button>
+            <div className="flex flex-wrap gap-2 mt-2 md:mt-0 shrink-0">
+              <Button
+                variant={isFollowing ? 'danger' : 'gray'}
+                disabled={!canAction || isToggleLoading || isFollowFetching}
+                onClick={onToggleFollow}
+                className="!py-2 !px-4"
+              >
+                {isFollowing ? 'UnFollow' : 'Follow'}
+              </Button>
 
-                    <Button
-                      variant="yellow"
-                      disabled={!canAction || isChatLoading}
-                      onClick={onChat}
-                      isLoading={isChatLoading}
-                    >
-                      Chat
-                    </Button>
-                  </div>
-                </div>
-              </Card.Body>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+              <Button
+                variant="yellow"
+                disabled={!canAction || isChatLoading}
+                onClick={onChat}
+                isLoading={isChatLoading}
+                className="!py-2 !px-4"
+              >
+                Chat
+              </Button>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }

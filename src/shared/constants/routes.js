@@ -19,16 +19,13 @@ export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
   SETTINGS: '/settings',
-<<<<<<< HEAD
   FOLLOWING: '/following',
-=======
   PROJECT_CREATE: '/projects/create',
 };
 
 export const PROJECT_ROUTES = {
   PROJECTS: '/projects',
   PROJECT_DETAIL: '/projects/:id',
->>>>>>> origin/feature_createProject_Tu_1.0
 };
 
 export const LEGAL_ROUTES = {

@@ -4,7 +4,6 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 import App from './app/App';
 import { env } from './config/env'; 
 
-import 'bootstrap/dist/css/bootstrap.min.css';
 import './styles/main.css';
 
 if (!env.GOOGLE_CLIENT_ID) {

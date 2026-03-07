@@ -8,7 +8,6 @@ import { LandingPage } from "@/pages/LandingPage";
 import { LoginPage } from "@/features/auth/pages/LoginPage";
 import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 import { VerifyOTPPage } from "@/features/auth/pages/VerifyOTPPage";
-import { ProfilePage } from "@/features/user/pages/ProfilePage"; // Cập nhật đường dẫn đúng
 import { DashboardPage } from "@/features/dashboard/pages/DashboardPage";
 import { CommunityPage } from "@/features/community/pages/CommunityPage";
 import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
@@ -72,7 +71,7 @@ export const router = createBrowserRouter([
         path: "profile",
         element: (
           <ProtectedRoute>
-            <ProfilePage />
+            <UserProfilePage />
           </ProtectedRoute>
         ),
       },

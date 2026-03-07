@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Container, Row, Col, Card, Form, Button, Alert } from 'react-bootstrap';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiSave, FiFileText } from 'react-icons/fi';
 import { useCreateProject } from '../hooks/useCreateProject';
@@ -9,7 +8,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { ProjectBasicInfoForm } from '../components/ProjectBasicInfoForm';
 import { ProjectGoalsForm } from '../components/ProjectGoalsForm';
 import { ProjectDateForm } from '../components/ProjectDateForm';
-import styles from '../styles/CreateProjectPage.module.css';
+import { Button } from '@/shared/components/ui/Button/Button';
 
 const initialValues = {
   title: '',
@@ -69,108 +68,114 @@ export function CreateProjectPage() {
   };
 
   return (
-    <div className={styles.pageContainer}>
-      <Container>
-        <Row className="justify-content-center">
-          <Col lg={8}>
-            {/* Back Link */}
-            <Link to={ROUTES.PROJECTS} className="text-decoration-none d-inline-flex align-items-center gap-2 mb-4 text-muted">
-              <FiArrowLeft size={18} />
-              <span>Back to Campaigns</span>
-            </Link>
+    <div className="min-h-screen py-8 bg-off-white px-4 md:px-8">
+      <div className="w-full max-w-3xl mx-auto">
+        
+        {/* Back Link */}
+        <Link to={ROUTES.PROJECTS} className="inline-flex items-center gap-2 text-gray hover:text-black mb-6 transition-colors font-medium no-underline">
+          <FiArrowLeft size={18} />
+          <span>Back to Campaigns</span>
+        </Link>
 
-            {/* Page Header */}
-            <div className={styles.pageHeader}>
-              <h1 className={styles.pageTitle}>Create New Campaign</h1>
-              <p className={styles.pageSubtitle}>
-                Start a fundraising campaign to support your cause and make a difference
-              </p>
-            </div>
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-black mb-2">Create New Campaign</h1>
+          <p className="text-gray text-base">
+            Start a fundraising campaign to support your cause and make a difference
+          </p>
+        </div>
 
-            {/* Error Alert */}
-            {isError && errorMessage && (
-              <Alert variant="danger" className="mb-4" dismissible>
-                {errorMessage}
-              </Alert>
-            )}
+        {/* Error Alert */}
+        {isError && errorMessage && (
+          <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg mb-6 border border-[#f5c2c7]">
+            {errorMessage}
+          </div>
+        )}
 
-            {/* Form Card */}
-            <Card className={styles.formCard}>
-              <Form id="create-project-form" onSubmit={handleSubmit} noValidate>
-                <fieldset disabled={isLoading}>
-                  {/* Basic Info Section */}
-                  <ProjectBasicInfoForm
-                    values={values}
-                    errors={errors}
-                    touched={touched}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                  />
+        {/* Form Card */}
+        <div className="bg-white rounded-2xl shadow-sm border border-light-gray transition-all duration-200 focus-within:shadow-md flex flex-col">
+          <form id="create-project-form" onSubmit={handleSubmit} noValidate>
+            <fieldset disabled={isLoading}>
+              
+              {/* Basic Info Section */}
+              <ProjectBasicInfoForm
+                values={values}
+                errors={errors}
+                touched={touched}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+              />
 
-                  {/* Goals Section */}
-                  <ProjectGoalsForm
-                    values={values}
-                    errors={errors}
-                    touched={touched}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                  />
+              {/* Goals Section */}
+              <ProjectGoalsForm
+                values={values}
+                errors={errors}
+                touched={touched}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+              />
 
-                  {/* Date Section */}
-                  <ProjectDateForm
-                    values={values}
-                    errors={errors}
-                    touched={touched}
-                    handleChange={handleChange}
-                    handleBlur={handleBlur}
-                  />
+              {/* Date Section */}
+              <ProjectDateForm
+                values={values}
+                errors={errors}
+                touched={touched}
+                handleChange={handleChange}
+                handleBlur={handleBlur}
+              />
 
-                  {/* Form Footer */}
-                  <div className={styles.formFooter}>
-                    <div className={styles.footerLeft}>
-                      <Button
-                        type="button"
-                        className={styles.btnSecondary}
-                        onClick={() => navigate(ROUTES.PROJECTS)}
-                        disabled={isLoading}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        type="button"
-                        className={styles.btnSecondary}
-                        onClick={handleSaveDraft}
-                        disabled={isLoading}
-                      >
-                        <FiFileText size={16} className="me-2" />
-                        Save as Draft
-                      </Button>
-                    </div>
-                    <Button
-                      type="submit"
-                      className={styles.btnPrimary}
-                      disabled={isLoading}
-                      onClick={handlePublish}
-                    >
-                      {isLoading ? (
-                        <>
-                          <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true" />
-                          Creating...
-                        </>
-                      ) : (
-                        <>
-                          <FiSave size={16} className="me-2" />
-                          Create Campaign
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </fieldset>
-              </Form>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+              {/* Form Footer */}
+              <div className="flex flex-col sm:flex-row justify-between items-center p-6 bg-[#fafafa] rounded-b-2xl gap-4">
+                <div className="flex gap-3 w-full sm:w-auto justify-center sm:justify-start">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => navigate(ROUTES.PROJECTS)}
+                    disabled={isLoading}
+                    className="w-full sm:w-auto"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outlineDark"
+                    onClick={handleSaveDraft}
+                    disabled={isLoading}
+                    className="w-full sm:w-auto flex items-center justify-center gap-2"
+                  >
+                    <FiFileText size={16} />
+                    Save as Draft
+                  </Button>
+                </div>
+                <Button
+                  type="submit"
+                  variant="yellow"
+                  disabled={isLoading}
+                  onClick={handlePublish}
+                  className="w-full sm:w-auto flex items-center justify-center gap-2"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <FiSave size={16} />
+                      Create Campaign
+                    </>
+                  )}
+                </Button>
+              </div>
+
+            </fieldset>
+          </form>
+        </div>
+
+      </div>
     </div>
   );
 }

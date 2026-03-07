@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useSendMessage } from '../hooks/useSendMessage';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import styles from '../styles/ChatWidget.module.css';
 
 export function MessageComposer({ conversationId, onSent }) {
   const queryClient = useQueryClient();
@@ -20,10 +19,9 @@ export function MessageComposer({ conversationId, onSent }) {
   const disabled = !conversationId || isLoading;
 
   const focusInput = () => {
-    requestAnimationFrame(() => {
-      inputRef.current?.focus();
-      setTimeout(() => inputRef.current?.focus(), 0);
-    });
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   useEffect(() => {
@@ -36,6 +34,18 @@ export function MessageComposer({ conversationId, onSent }) {
     if (selected.length) setFiles((prev) => [...prev, ...selected]);
     e.target.value = '';
     focusInput();
+  };
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+    e.target.style.height = 'auto';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
+  const resetTextareaHeight = () => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto';
+    }
   };
 
   const doSend = async () => {
@@ -67,10 +77,8 @@ export function MessageComposer({ conversationId, onSent }) {
           if (idx === -1) return arr;
 
           const current = arr[idx];
-
           const uc = current?.unreadCounts || {};
-          const ucObj =
-            typeof uc?.get === 'function'
+          const ucObj = typeof uc?.get === 'function'
               ? Object.fromEntries(Array.from(uc.entries()))
               : { ...(uc || {}) };
 
@@ -89,6 +97,7 @@ export function MessageComposer({ conversationId, onSent }) {
 
       setText('');
       setFiles([]);
+      resetTextareaHeight();
       onSent?.();
       focusInput();
     } catch (e) {
@@ -110,56 +119,58 @@ export function MessageComposer({ conversationId, onSent }) {
   };
 
   return (
-    <form onSubmit={onSubmit} className={styles.composer}>
-      {files.length > 0 ? (
-        <div className={styles.fileRow}>
+    <form onSubmit={onSubmit} className="shrink-0 border-t border-gray-200 bg-white p-2.5">
+      {files.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
           {files.map((f, idx) => (
-            <span key={`${f.name}-${idx}`} className={styles.fileChip}>
+            <span 
+              key={`${f.name}-${idx}`} 
+              className="inline-flex items-center gap-2 rounded-full border border-[#ffe08a] bg-[#fff6d6] px-2.5 py-1.5 text-xs text-gray-900"
+            >
               📎 {f.name}
               <button
                 type="button"
-                className={styles.fileRemove}
+                className="text-sm font-bold text-gray-900 hover:text-red-600 focus:outline-none"
                 onClick={() => setFiles((p) => p.filter((_, i) => i !== idx))}
-                aria-label="Remove file"
+                aria-label="Xóa file"
               >
                 ✕
               </button>
             </span>
           ))}
         </div>
-      ) : null}
+      )}
 
-      <div className={styles.composerBar}>
+      <div className="flex items-end gap-2">
         <input ref={fileRef} type="file" multiple hidden onChange={onPickFiles} />
 
         <button
           type="button"
-          className={styles.iconBtn}
           disabled={disabled}
           onClick={() => fileRef.current?.click()}
-          aria-label="Attach file"
-          title="Attach"
+          aria-label="Đính kèm file"
+          className="inline-flex h-[38px] w-[38px] shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white transition-colors hover:bg-[#fff6d6] disabled:cursor-not-allowed disabled:opacity-50"
         >
           📎
         </button>
 
         <textarea
           ref={inputRef}
-          className={styles.textbox}
+          rows={1}
           placeholder={conversationId ? 'Aa' : 'Chọn một liên hệ để nhắn tin'}
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={handleTextChange}
           onKeyDown={onKeyDown}
           disabled={disabled}
-          rows={1}
+          className="max-h-[120px] min-h-[38px] flex-1 resize-none overflow-y-auto rounded-3xl border border-gray-200 bg-white px-3.5 py-2 text-sm text-gray-900 outline-none transition-colors placeholder:text-gray-400 focus:border-amber-400 focus:ring-1 focus:ring-amber-400 disabled:cursor-not-allowed disabled:bg-gray-50 [scrollbar-width:none]"
         />
 
         <button
           type="submit"
-          className={styles.sendBtn}
           disabled={disabled}
-          aria-label="Send"
+          aria-label="Gửi tin nhắn"
           onMouseDown={(e) => e.preventDefault()}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#f6c343] font-black text-gray-900 transition-transform hover:scale-105 hover:bg-[#ffd54d] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:scale-100"
         >
           {isLoading ? '…' : '➤'}
         </button>

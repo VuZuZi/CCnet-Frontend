@@ -1,16 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { Navbar } from '../common/Navbar';
-import ChatWidget from '@/features/chat/components/ChatWidget';
 
 export function RootLayout() {
   return (
-    <>
-      <div className="app">
-        <Navbar />
+    <div className="min-h-screen bg-off-white text-black font-sans flex flex-col">
+      <Navbar />
+      <main className="flex-1">
         <Outlet />
-      </div>
-      <ChatWidget />
-    </>
+      </main>
+    </div>
   );
 }
 
