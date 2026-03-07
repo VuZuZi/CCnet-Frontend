@@ -5,20 +5,33 @@ import { useLogout } from '@/features/auth/hooks/useLogout';
 import { ROUTES } from '@/shared/constants/routes';
 import { Button } from '@/shared/components/ui/Button/Button';
 import GlobalSearch from '@/features/search/components/GlobalSearch';
+import ChatWidget from '@/features/chat/components/ChatWidget';
 
 export function Navbar() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const user = useAuthStore(authSelectors.user);
   const { logout } = useLogout();
   const location = useLocation();
-  
-  // State quản lý menu mobile
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Đóng mobile menu khi chuyển trang
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const chatRef = useRef(null);
+
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setIsChatOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (chatRef.current && !chatRef.current.contains(event.target)) {
+        setIsChatOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const navItems = [
     { label: 'Features', to: ROUTES.FEATURES },
@@ -29,10 +42,7 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-light-gray shadow-sm h-[72px] flex items-center">
-      {/* Container giới hạn max width 1200px */}
       <div className="w-full max-w-[1200px] mx-auto px-4 flex items-center justify-between">
-        
-        {/* Brand Logo */}
         <Link to={ROUTES.HOME} className="flex items-center gap-2 no-underline">
           <div className="w-11 h-11 bg-yellow rounded-sm flex items-center justify-center text-black">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -45,12 +55,10 @@ export function Navbar() {
           <span className="font-bold text-xl text-black">CCNet</span>
         </Link>
 
-        {/* Global Search (Ẩn trên mobile, hiện trên md trở lên) */}
         <div className="hidden md:block flex-1 max-w-md mx-4">
           <GlobalSearch />
         </div>
 
-        {/* Hamburger Button (Chỉ hiện trên Mobile/Tablet) */}
         <button
           className="lg:hidden p-2 text-black focus:outline-none"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -64,7 +72,6 @@ export function Navbar() {
           </svg>
         </button>
 
-        {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-6">
           {navItems.map((nav) => (
             <Link
@@ -76,6 +83,29 @@ export function Navbar() {
             </Link>
           ))}
 
+          {isAuthenticated && (
+            <div className="relative" ref={chatRef}>
+              <button
+                type="button"
+                onClick={() => setIsChatOpen((prev) => !prev)}
+                className="relative flex h-11 w-11 items-center justify-center rounded-full bg-light-gray text-black transition-colors hover:bg-gray-200"
+                aria-label="Open chat"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M20 11.5C20 16.1944 16.1944 20 11.5 20C10.0571 20 8.69817 19.6404 7.50739 19.0057L4 20L4.99431 16.4926C4.35962 15.3018 4 13.9429 4 12.5C4 7.80558 7.80558 4 12.5 4C17.1944 4 21 7.80558 21 12.5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+
+              <ChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+            </div>
+          )}
+
           <div className="ml-2">
             {isAuthenticated ? (
               <AuthenticatedNav user={user} onLogout={logout} />
@@ -86,14 +116,12 @@ export function Navbar() {
         </nav>
       </div>
 
-      {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
         <div className="absolute top-[72px] left-0 w-full bg-white border-b border-light-gray shadow-md lg:hidden flex flex-col p-4 gap-4 animate-fade-in-up">
-          {/* Mang cục Search xuống Mobile Menu */}
           <div className="md:hidden">
             <GlobalSearch />
           </div>
-          
+
           <div className="flex flex-col gap-3">
             {navItems.map((nav) => (
               <Link
@@ -105,7 +133,7 @@ export function Navbar() {
               </Link>
             ))}
           </div>
-          
+
           <div className="pt-2">
             {isAuthenticated ? (
               <AuthenticatedNav user={user} onLogout={logout} isMobile />
@@ -119,14 +147,12 @@ export function Navbar() {
   );
 }
 
-// Component Dropdown User
 function AuthenticatedNav({ user, onLogout, isMobile }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
   const getInitials = (name) => name?.substring(0, 2).toUpperCase() || 'U';
 
-  // Lắng nghe sự kiện click ra ngoài để đóng dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -150,30 +176,28 @@ function AuthenticatedNav({ user, onLogout, isMobile }) {
             {getInitials(user.fullName)}
           </div>
         )}
-        {/* Ẩn tên trên màn hình nhỏ, hiện trên màn lớn hoặc khi ở chế độ mobile menu */}
         <span className={`text-sm font-semibold ${isMobile ? 'inline' : 'hidden md:inline'}`}>
           {user.fullName}
         </span>
       </button>
 
-      {/* Box Menu */}
       {isOpen && (
-        <div 
+        <div
           className={`
-            bg-white rounded-md shadow-lg border border-light-gray py-2 z-50 
+            bg-white rounded-md shadow-lg border border-light-gray py-2 z-50
             ${isMobile ? 'mt-3 w-full relative' : 'mt-2 absolute right-0 w-48'}
           `}
         >
-          <Link 
-            to={ROUTES.PROFILE} 
-            className="block px-4 py-2 text-sm text-black hover:bg-light-gray no-underline" 
+          <Link
+            to={ROUTES.PROFILE}
+            className="block px-4 py-2 text-sm text-black hover:bg-light-gray no-underline"
             onClick={() => setIsOpen(false)}
           >
             👤 Profile
           </Link>
-          <Link 
-            to={ROUTES.DASHBOARD} 
-            className="block px-4 py-2 text-sm text-black hover:bg-light-gray no-underline" 
+          <Link
+            to={ROUTES.DASHBOARD}
+            className="block px-4 py-2 text-sm text-black hover:bg-light-gray no-underline"
             onClick={() => setIsOpen(false)}
           >
             📊 Dashboard
@@ -194,7 +218,6 @@ function AuthenticatedNav({ user, onLogout, isMobile }) {
   );
 }
 
-// Component Auth Buttons
 function UnauthenticatedNav({ isMobile }) {
   return (
     <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'items-center'}`}>
