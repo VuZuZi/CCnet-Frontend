@@ -17,10 +17,10 @@ export function useLogin() {
     
     onSuccess: (data) => {
       const { user, tokens } = data.data;
+      
       setAuthSuccess(user, tokens.accessToken);
       
       toast.success(`Welcome back, ${user.fullName}!`);
-      
       devConfig.log('Login successful:', user.email);
       
       navigate(ROUTES.DASHBOARD, { replace: true });
@@ -28,9 +28,7 @@ export function useLogin() {
     
     onError: (error) => {
       const message = getErrorMessage(error);
-      
       toast.error(message);
-      
       devConfig.error('❌ Login failed:', message);
     },
   });

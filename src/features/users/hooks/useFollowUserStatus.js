@@ -2,13 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import { followAPI } from '../api/followAPI';
 
 export function useFollowUserStatus(userId) {
-  const enabled = !!userId && String(userId).length === 24;
+  const enabled = !!userId;
 
   const q = useQuery({
     queryKey: ['follow', 'user', 'status', userId],
     queryFn: () => followAPI.statusUser(userId),
     enabled,
-    staleTime: 0,
+    staleTime: 60 * 1000, 
   });
 
   return {

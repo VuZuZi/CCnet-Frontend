@@ -4,12 +4,12 @@ const unwrap = (payload) => payload?.data ?? payload;
 
 export const followAPI = {
   async followUser(userId) {
-    const res = await httpClient.post(`/follow/users/${userId}`);
+    const res = await httpClient.post(`/follow/users/${userId}/follow`);
     return unwrap(res.data);
   },
 
   async unfollowUser(userId) {
-    const res = await httpClient.delete(`/follow/users/${userId}`);
+    const res = await httpClient.delete(`/follow/users/${userId}/follow`);
     return unwrap(res.data);
   },
 

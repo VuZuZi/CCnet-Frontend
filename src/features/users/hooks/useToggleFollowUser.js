@@ -12,21 +12,52 @@ export function useToggleFollowUser(userId) {
       if (isFollowing) return followAPI.unfollowUser(userId);
       return followAPI.followUser(userId);
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['follow', 'user', 'status', userId] });
-      queryClient.invalidateQueries({ queryKey: ['follow', 'user', 'stats', userId] });
 
-      const ok = !!data?.isFollowing;
-      toast.success(ok ? 'Followed' : 'Unfollowed');
+    onMutate: async (isFollowing) => {
+      const statusKey = ['follow', 'user', 'status', userId];
+      const profileKey = ['profile', userId];
+
+      await queryClient.cancelQueries({ queryKey: statusKey });
+      await queryClient.cancelQueries({ queryKey: profileKey });
+
+      const previousStatus = queryClient.getQueryData(statusKey);
+      const previousProfile = queryClient.getQueryData(profileKey);
+
+      queryClient.setQueryData(statusKey, { isFollowing: !isFollowing });
+
+      if (previousProfile) {
+        queryClient.setQueryData(profileKey, {
+          ...previousProfile,
+          followersCount: isFollowing
+            ? Math.max(0, (previousProfile.followersCount || 0) - 1)
+            : (previousProfile.followersCount || 0) + 1,
+        });
+      }
+
+      return { previousStatus, previousProfile, statusKey, profileKey };
     },
-    onError: (err) => {
+
+    onError: (err, variables, context) => {
+      if (context?.previousStatus) {
+        queryClient.setQueryData(context.statusKey, context.previousStatus);
+      }
+      if (context?.previousProfile) {
+        queryClient.setQueryData(context.profileKey, context.previousProfile);
+      }
       toast.error(getErrorMessage(err));
+    },
+
+    onSettled: (data, error, variables, context) => {
+      queryClient.invalidateQueries({ queryKey: context.statusKey });
+
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: context.profileKey });
+      }, 2000);
     },
   });
 
   return {
     toggle: mutation.mutate,
-    toggleAsync: mutation.mutateAsync,
     isLoading: mutation.isPending,
   };
 }

@@ -1,89 +1,113 @@
-import { useLocation, useParams } from 'react-router-dom';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation';
+import { useParams } from 'react-router-dom';
 import { useChatStore } from '@/features/chat/stores/useChatStore';
-import { useFollowUserStatus } from '../hooks/useFollowUserStatus';
-import { useFollowUserStats } from '../hooks/useFollowUserStats';
-import { useToggleFollowUser } from '../hooks/useToggleFollowUser';
-import { Button } from '@/shared/components/ui/Button/Button';
+import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation';
 
-function isObjectId(id) {
-  return typeof id === 'string' && id.length === 24 && /^[0-9a-fA-F]+$/.test(id);
-}
+import { useProfileIdentity } from '../hooks/useProfileIdentity';
+import { useProfile } from '../hooks/useProfile';
+import { useFollowUserStatus } from '../hooks/useFollowUserStatus';
+import { useToggleFollowUser } from '../hooks/useToggleFollowUser';
+
+import { ProfileHeroCard } from '../components/profile/ProfileHeroCard';
+import { ImpactMetrics } from '../components/profile/ImpactMetrics';
+import { ImpactBadges } from '../components/profile/ImpactBadges';
+import { AboutMeCard } from '../components/profile/AboutMeCard';
+import { SkillsSection } from '../components/profile/SkillsSection';
+import { UpgradeBanner } from '../components/profile/UpgradeBanner';
 
 export function UserProfilePage() {
-  const { id } = useParams();
-  const location = useLocation();
-  const stateUser = location.state?.user || null;
+  const { id: urlId } = useParams();
+  
+  const { isOwnProfile, targetUserId, isAuthReady } = useProfileIdentity(urlId);
 
-  const me = useAuthStore(authSelectors.user);
-  const myId = me?.userId || me?._id || me?.id;
-
+  const { data: userProfile, isLoading: isProfileLoading, isError } = useProfile(isOwnProfile ? null : targetUserId);
+  
+  const { isFollowing } = useFollowUserStatus(isOwnProfile ? null : targetUserId);
+  const { toggle, isLoading: isToggleLoading } = useToggleFollowUser(targetUserId);
+  
   const openConversation = useChatStore((s) => s.openConversation);
   const focusConversation = useChatStore((s) => s.focusConversation);
-
   const { createConversationAsync, isLoading: isChatLoading } = useCreateConversation();
 
-  const userId = String(stateUser?.id || id || '').trim();
-  const fullName = stateUser?.fullName || 'Unknown';
-  const email = stateUser?.email || '';
-
-  const canAction = isObjectId(userId) && String(userId) !== String(myId);
-
-  const { isFollowing, isFetching: isFollowFetching } = useFollowUserStatus(userId);
-  const { followers, following } = useFollowUserStats(userId);
-  const { toggle, isLoading: isToggleLoading } = useToggleFollowUser(userId);
-
-  const onChat = async () => {
-    if (!canAction) return;
-    const convo = await createConversationAsync({ participantId: userId });
-    const cid = String(convo?._id || '').trim();
-    if (!cid) return;
-    openConversation(cid);
-    focusConversation(cid);
+  const handleOpenChat = async () => {
+    if (isOwnProfile || !targetUserId) return;
+    try {
+      const convo = await createConversationAsync({ participantId: targetUserId });
+      const cid = String(convo?._id || '').trim();
+      if (cid) {
+        openConversation(cid);
+        focusConversation(cid);
+      }
+    } catch (error) {
+      console.error("Failed to open chat", error);
+    }
   };
 
-  const onToggleFollow = () => {
-    if (!canAction) return;
-    toggle(isFollowing);
+  const handleToggleFollow = () => {
+    if (!isOwnProfile && targetUserId) {
+      toggle(isFollowing);
+    }
   };
+
+  if (!isAuthReady || isProfileLoading) {
+    return <ProfileSkeletonLoader />;
+  }
+
+  if (isError || !userProfile) {
+    return (
+      <main className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-gray-900">
+        <h2 className="text-2xl font-bold text-gray-700">Profile Not Found</h2>
+        <p className="text-gray-500 mt-2">The user you are looking for does not exist or an error occurred.</p>
+      </main>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-off-white py-12 px-4">
-      <div className="w-full max-w-3xl mx-auto">
-        <div className="bg-white shadow-sm border border-light-gray rounded-2xl p-6 md:p-8">
+    <main className="bg-gray-50 min-h-screen text-gray-900 antialiased py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
-          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-            <div className="min-w-0 flex-1">
-              <h3 className="font-bold text-2xl text-black mb-1 truncate">{fullName}</h3>
-              <div className="text-gray truncate">{email}</div>
-              <div className="text-gray text-sm mt-3 font-medium">
-                <span className="text-black">{followers}</span> Followers · <span className="text-black">{following}</span> Following
-              </div>
-            </div>
+          <section className="lg:col-span-2 space-y-8">
+            <ProfileHeroCard 
+              user={userProfile}
+              isOwnProfile={isOwnProfile}
+              isFollowing={isFollowing}
+              onToggleFollow={handleToggleFollow}
+              onChat={handleOpenChat}
+              isChatLoading={isChatLoading}
+              isFollowLoading={isToggleLoading}
+            />
+            <ImpactMetrics />
+            <ImpactBadges />
+          </section>
 
-            <div className="flex flex-wrap gap-2 mt-2 md:mt-0 shrink-0">
-              <Button
-                variant={isFollowing ? 'danger' : 'gray'}
-                disabled={!canAction || isToggleLoading || isFollowFetching}
-                onClick={onToggleFollow}
-                className="!py-2 !px-4"
-              >
-                {isFollowing ? 'UnFollow' : 'Follow'}
-              </Button>
+          <aside className="space-y-8">
+             <AboutMeCard 
+               about={userProfile.about} 
+               level={userProfile.level} 
+               title={userProfile.title} 
+               createdAt={userProfile.createdAt} 
+             />
+             <SkillsSection skills={userProfile.skills} />
+             <UpgradeBanner isOwnProfile={isOwnProfile} />
+          </aside>
 
-              <Button
-                variant="yellow"
-                disabled={!canAction || isChatLoading}
-                onClick={onChat}
-                isLoading={isChatLoading}
-                className="!py-2 !px-4"
-              >
-                Chat
-              </Button>
-            </div>
-          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
 
+function ProfileSkeletonLoader() {
+  return (
+    <div className="bg-gray-50 min-h-screen py-8 px-4">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8 animate-pulse">
+        <div className="lg:col-span-2 space-y-8">
+          <div className="bg-gray-200 rounded-2xl h-[350px] w-full shadow-sm"></div>
+          <div className="bg-gray-200 rounded-2xl h-[150px] w-full shadow-sm"></div>
+        </div>
+        <div className="space-y-8">
+          <div className="bg-gray-200 rounded-2xl h-[250px] w-full shadow-sm"></div>
+          <div className="bg-gray-200 rounded-2xl h-[200px] w-full shadow-sm"></div>
         </div>
       </div>
     </div>
