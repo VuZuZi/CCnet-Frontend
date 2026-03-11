@@ -38,35 +38,30 @@ export const useAuthStore = create(
           );
         }
       },
+
       checkAuthSession: async () => {
         set({ isLoading: true });
         try {
-          const token = tokenManager.getAccessToken();
-          if (token && !tokenManager.isTokenExpired(token)) {
-            const user = tokenManager.decodeToken(token);
-            set({ isAuthenticated: true }, false, "auth/restoreFast");
-            const userData = await authAPI.getMe();
-            set(
-              { user: userData, isLoading: false },
-              false,
-              "auth/restoreFull",
-            );
-          } else {
-            console.log("Token expired or missing, attempting refresh...");
+          let token = tokenManager.getAccessToken();
+
+          if (!token || tokenManager.isTokenExpired(token)) {
+            console.log("Token missing/expired. Attempting silent refresh via Cookie...");
             const data = await authAPI.refreshToken();
-            const { accessToken } = data;
+            const { accessToken } = data.data;
 
             tokenManager.setAccessToken(accessToken);
-            const user = await authAPI.getMe();
-
-            set(
-              { user, isAuthenticated: true, isLoading: false },
-              false,
-              "auth/refreshSuccess",
-            );
+            token = accessToken;
           }
+
+          const user = await authAPI.getMe();
+
+          set(
+            { user, isAuthenticated: true, isLoading: false },
+            false,
+            "auth/sessionRestored",
+          );
         } catch (error) {
-          console.warn("Session restore failed:", error);
+          console.warn("Silent refresh failed. User remains a guest.");
           tokenManager.removeAccessToken();
           set(
             { user: null, isAuthenticated: false, isLoading: false },
@@ -74,6 +69,16 @@ export const useAuthStore = create(
             "auth/guest",
           );
         }
+      },
+
+      updateUser: (updatedData) => {
+        set(
+          (state) => ({
+            user: { ...state.user, ...updatedData }
+          }),
+          false,
+          "auth/updateUser"
+        );
       },
     }),
     { name: "AuthStore" },

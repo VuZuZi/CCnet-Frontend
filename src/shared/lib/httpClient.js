@@ -1,17 +1,11 @@
 import axios from "axios";
 import { env } from "@/config/env";
 import { tokenManager } from "./tokenManager";
+import { apiConfig } from "@/config/api.config"; 
 
 export const authEvents = new EventTarget();
 
-const httpClient = axios.create({
-  baseURL: env.API_URL,
-  timeout: 30000,
-  withCredentials: true,
-  headers: {
-    "Content-Type": "application/json",
-  },
-});
+const httpClient = axios.create(apiConfig);
 
 httpClient.interceptors.request.use(
   (config) => {
@@ -21,7 +15,7 @@ httpClient.interceptors.request.use(
     }
 
     if (env.ENABLE_LOGGING) {
-      console.log(` [${config.method?.toUpperCase()}] ${config.url}`);
+      console.log(`[${config.method?.toUpperCase()}] ${config.url}`);
     }
 
     return config;
@@ -80,10 +74,10 @@ httpClient.interceptors.response.use(
 
     try {
       const { data } = await httpClient.post("/auth/refresh-token");
+      
       const newAccessToken = data.data.accessToken;
 
       tokenManager.setAccessToken(newAccessToken);
-
       processQueue(null, newAccessToken);
 
       originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -100,18 +94,9 @@ httpClient.interceptors.response.use(
 );
 
 export const getErrorMessage = (error) => {
-  if (error.response?.data?.message) {
-    return error.response.data.message;
-  }
-
-  if (error.response?.data?.error) {
-    return error.response.data.error;
-  }
-
-  if (error.message === "Network Error") {
-    return "Network error. Please check your connection.";
-  }
-
+  if (error.response?.data?.message) return error.response.data.message;
+  if (error.response?.data?.error) return error.response.data.error;
+  if (error.message === "Network Error") return "Network error. Please check your connection.";
   return error.message || "An unexpected error occurred.";
 };
 
