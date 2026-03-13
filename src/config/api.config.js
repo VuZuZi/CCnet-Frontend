@@ -1,24 +1,8 @@
-
-const validateEnv = () => {
-  const required = ['VITE_API_URL'];
-  const missing = required.filter(key => !import.meta.env[key]);
-  
-  if (missing.length > 0) {
-    throw new Error(
-      `Missing required environment variables: ${missing.join(', ')}`
-    );
-  }
-};
-
-if (import.meta.env.DEV) {
-  validateEnv();
-}
-
+import { env } from './env';
 
 export const apiConfig = {
-  baseURL: import.meta.env.VITE_API_URL,
-  
-  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
+  baseURL: env.API_URL,
+  timeout: env.API_TIMEOUT,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

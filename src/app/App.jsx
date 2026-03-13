@@ -19,15 +19,10 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <div className="min-vh-100 d-flex justify-content-center align-items-center">
-        <div className="text-center">
-          <div
-            className="spinner-border text-primary mb-3"
-            style={{ width: "3rem", height: "3rem" }}
-          >
-            <span className="visually-hidden">Loading...</span>
-          </div>
-          <p className="text-muted">Loading application...</p>
+      <div className="flex items-center justify-center min-h-screen bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-slate-500 font-medium animate-pulse">Khởi tạo hệ thống...</p>
         </div>
       </div>
     );

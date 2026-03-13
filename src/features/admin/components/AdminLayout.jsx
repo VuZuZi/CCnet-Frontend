@@ -1,95 +1,109 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
+import { LayoutDashboard, Users, Rocket, Flag, LogOut, Menu } from "lucide-react";
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import { useLogout } from "@/features/auth/hooks/useLogout";
 
-const AdminLayout = ({ children, activeTab, setActiveTab }) => {
+const MENU_ITEMS = [
+  { path: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { path: "/admin/users", label: "User Management", icon: Users, end: false },
+  { path: "/admin/projects", label: "Projects", icon: Rocket, end: false },
+  { path: "/admin/reports", label: "Reports & Logs", icon: Flag, end: false },
+];
+
+export function AdminLayout() {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-
-  const menuItems = [
-    { id: "overview", label: "Dashboard", icon: "dashboard" },
-    { id: "users", label: "User Management", icon: "group" },
-    { id: "projects", label: "Projects", icon: "rocket_launch" },
-    { id: "reports", label: "Reports & Logs", icon: "flag" },
-  ];
+  const user = useAuthStore(authSelectors.user);
+  const { logout } = useLogout();
 
   return (
-    <div className="min-h-screen bg-slate-50 flex">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
       {/* Sidebar */}
       <aside
-        className={`bg-white border-r border-slate-200 transition-all duration-300 ${isSidebarOpen ? "w-64" : "w-20"} flex flex-col`}
+        className={`bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 ${
+          isSidebarOpen ? "w-64" : "w-20"
+        }`}
       >
-        <div className="p-6 flex items-center gap-3">
-          <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center text-white font-bold">
-            CC
+        <div className="h-20 flex items-center justify-center border-b border-slate-100 px-4 gap-3">
+          <div className="h-10 w-10 bg-primary rounded-xl flex items-center justify-center text-slate-900 shadow-sm shrink-0">
+            <Rocket size={20} strokeWidth={2.5} />
           </div>
           {isSidebarOpen && (
-            <span className="font-bold text-xl tracking-tight text-slate-800">
+            <span className="font-extrabold text-xl tracking-tight truncate">
               CCNet Admin
             </span>
           )}
         </div>
 
-        <nav className="flex-1 px-4 space-y-2 mt-4">
-          {menuItems.map((item) => (
-            <button
-              key={item.id} // <--- THIS is the fix. Ensure 'item.id' exists and is unique.
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                activeTab === item.id
-                  ? "bg-amber-500 text-white shadow-lg shadow-amber-200"
-                  : "text-slate-500 hover:bg-amber-100"
-              }`}
-            >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              {isSidebarOpen && (
-                <span className="font-medium">{item.label}</span>
-              )}
-            </button>
-          ))}
+        <nav className="flex-1 px-3 space-y-2 mt-6 overflow-y-auto">
+          {MENU_ITEMS.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.end}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-3 rounded-xl transition-all ${
+                    isActive
+                      ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
+                      : "text-slate-500 hover:bg-amber-50 hover:text-amber-600"
+                  }`
+                }
+              >
+                <Icon size={20} className="shrink-0" />
+                {isSidebarOpen && <span className="font-semibold truncate">{item.label}</span>}
+              </NavLink>
+            );
+          })}
         </nav>
 
         <div className="p-4 border-t border-slate-100">
-          <Link
-            to="/logout"
-            className="flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all"
+          <button
+            onClick={logout}
+            className="w-full flex items-center gap-3 px-3 py-3 text-red-500 hover:bg-red-50 rounded-xl transition-all font-semibold"
           >
-            <span className="material-symbols-outlined">logout</span>
-            {isSidebarOpen && <span className="font-medium">Logout</span>}
-          </Link>
+            <LogOut size={20} className="shrink-0" />
+            {isSidebarOpen && <span>Logout</span>}
+          </button>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col">
-        {/* Top Header */}
-        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8">
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-6 z-10 sticky top-0">
           <button
             onClick={() => setSidebarOpen(!isSidebarOpen)}
-            className="p-2 hover:bg-slate-100 rounded-lg text-slate-500"
+            className="p-2 hover:bg-slate-100 rounded-lg text-slate-500 transition-colors"
           >
-            <span className="material-symbols-outlined">menu_open</span>
+            <Menu size={24} />
           </button>
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-800">System Admin</p>
-              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest">
+              <p className="text-sm font-bold text-slate-800">{user?.fullName || "System Admin"}</p>
+              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block animate-pulse"></span>
                 Online
               </p>
             </div>
-            <div className="h-10 w-10 rounded-full bg-slate-200 border-2 border-white shadow-sm overflow-hidden">
-              <img
-                src="https://ui-avatars.com/api/?name=Admin&background=random"
-                alt="Avatar"
-              />
-            </div>
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Avatar" className="h-10 w-10 rounded-full object-cover border-2 border-slate-100" />
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center font-bold text-slate-600">
+                {user?.fullName?.substring(0, 2).toUpperCase() || "AD"}
+              </div>
+            )}
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="p-8">{children}</main>
+        <main className="flex-1 p-8 overflow-y-auto bg-slate-50">
+          <div className="max-w-7xl mx-auto">
+            <Outlet />
+          </div>
+        </main>
       </div>
     </div>
   );
-};
+}
 
 export default AdminLayout;

@@ -63,7 +63,10 @@ httpClient.interceptors.response.use(
         failedQueue.push({ resolve, reject });
       })
         .then((token) => {
-          originalRequest.headers.Authorization = `Bearer ${token}`;
+          originalRequest.headers = {
+            ...originalRequest.headers,
+            Authorization: `Bearer ${token}`
+          };
           return httpClient(originalRequest);
         })
         .catch((err) => Promise.reject(err));
@@ -73,14 +76,25 @@ httpClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } = await httpClient.post("/auth/refresh-token");
+      const { data } = await axios.post(
+        "/auth/refresh-token", 
+        {}, 
+        {
+          baseURL: apiConfig.baseURL,
+          withCredentials: true
+        }
+      );
       
       const newAccessToken = data.data.accessToken;
 
       tokenManager.setAccessToken(newAccessToken);
       processQueue(null, newAccessToken);
 
-      originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+      originalRequest.headers = {
+        ...originalRequest.headers,
+        Authorization: `Bearer ${newAccessToken}`
+      };
+      
       return httpClient(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);

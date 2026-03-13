@@ -1,137 +1,67 @@
-import { FiZap, FiShield, FiTrendingUp, FiUsers, FiLayers, FiCheck } from 'react-icons/fi'
+import { Users, HeartHandshake, ShieldCheck, UserCheck, LineChart, ClipboardCheck } from 'lucide-react';
 
-
-export const programs = [
+export const impactJourneys = [
   {
-    id: 'feather-rally',
-    ageRange: '7-11 years',
-    title: 'Feather Rally Club',
-    description: 'Light, fast, agile – a badminton club with play and vision training.',
-    emoji: '🏸',
-    cardClass: 'card-purple',
-    animationDelay: '0s'
+    id: 'connect',
+    icon: Users,
+    title: 'Connect & Follow',
+    description: 'Join vibrant communities and follow impact makers who align with your personal values.',
+    iconBg: 'bg-purple-100',
+    iconColor: 'text-purple-600',
   },
   {
-    id: 'boxy-beats',
-    ageRange: '8-13 years',
-    title: 'Boxy Beats Club',
-    description: 'Sharp moves and strong minds through playful boxing basics.',
-    emoji: '🥊',
-    cardClass: 'card-green',
-    animationDelay: '0.5s'
+    id: 'fund',
+    icon: HeartHandshake,
+    title: 'Fund & Volunteer',
+    description: 'Directly contribute funds or offer your unique skills to projects that need immediate support.',
+    iconBg: 'bg-green-100',
+    iconColor: 'text-green-600',
   },
   {
-    id: 'sky-gym',
-    ageRange: '9-14 years',
-    title: 'Sky Gym Academy',
-    description: 'Fun strength and flexibility training on bars and the floor.',
-    emoji: '🤸',
-    cardClass: 'card-blue',
-    animationDelay: '1s'
-  },
-  {
-    id: 'dance-studio',
-    ageRange: 'All ages',
-    title: 'Dance Studio',
-    description: 'Express yourself through rhythm, movement, and creativity.',
-    emoji: '💃',
-    cardClass: 'card-yellow',
-    animationDelay: '1.5s'
+    id: 'organize',
+    icon: ShieldCheck,
+    title: 'Become an Organizer',
+    description: 'Launch your own social movement, lead change, and manage your impact with full transparency.',
+    iconBg: 'bg-blue-100',
+    iconColor: 'text-blue-600',
   }
-]
+];
 
-
-export const features = [
+export const mockProjects = [
   {
-    id: 'lightning-fast',
-    icon: FiZap,
-    title: 'Lightning Fast',
-    description: 'Built with cutting-edge technology for blazing fast performance that scales with your needs.'
+    id: '1',
+    category: 'Environment',
+    categoryColor: 'bg-green-500',
+    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    title: 'Amazon Reforestation Initiative',
+    description: 'Help us plant 50,000 native trees in the degraded areas of the Amazon basin.',
+    progress: 85,
+    target: '$50,000'
   },
   {
-    id: 'secure',
-    icon: FiShield,
-    title: 'Secure by Default',
-    description: 'CCNet-grade security with JWT authentication, token rotation, and data encryption.'
+    id: '2',
+    category: 'Education',
+    categoryColor: 'bg-blue-500',
+    image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    title: 'Community Literacy Program',
+    description: 'Providing essential reading materials and tutoring for underprivileged youth.',
+    progress: 45,
+    target: '$12,000'
   },
   {
-    id: 'analytics',
-    icon: FiTrendingUp,
-    title: 'Real-time Analytics',
-    description: 'Track performance metrics and gain insights with beautiful, real-time dashboards.'
-  },
-  {
-    id: 'collaboration',
-    icon: FiUsers,
-    title: 'Team Collaboration',
-    description: 'Work together seamlessly with role-based access control and team workspaces.'
-  },
-  {
-    id: 'modular',
-    icon: FiLayers,
-    title: 'Modular Architecture',
-    description: 'Extensible platform that grows with your business. Add features as you need them.'
-  },
-  {
-    id: 'uptime',
-    icon: FiCheck,
-    title: '99.9% Uptime',
-    description: 'Reliable infrastructure with automatic backups and disaster recovery built-in.'
+    id: '3',
+    category: 'Health',
+    categoryColor: 'bg-red-500',
+    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+    title: 'Mobile Health Clinic',
+    description: 'A mobile unit to provide free medical checkups for remote rural communities.',
+    progress: 60,
+    target: '$25,000'
   }
-]
+];
 
-
-export const stats = [
-  { id: 'users', value: '10K+', label: 'Active Users' },
-  { id: 'tasks', value: '50K+', label: 'Tasks Completed' },
-  { id: 'uptime', value: '99.9%', label: 'Uptime SLA' },
-  { id: 'support', value: '24/7', label: 'Support Available' }
-]
-
-
-export const useCases = [
-  {
-    id: 'startups',
-    icon: FiLayers,
-    title: 'Startups',
-    description: 'Move fast and build amazing products',
-    color: 'purple'
-  },
-  {
-    id: 'agencies',
-    icon: FiUsers,
-    title: 'Agencies',
-    description: 'Manage multiple clients seamlessly',
-    color: 'green'
-  },
-  {
-    id: 'scaleups',
-    icon: FiTrendingUp,
-    title: 'Scale-ups',
-    description: 'Grow your business efficiently',
-    color: 'blue'
-  },
-  {
-    id: 'ccnet',
-    icon: FiShield,
-    title: 'CCNet',
-    description: 'CCNet-grade security and support',
-    color: 'yellow'
-  }
-]
-
-
-export const footerNavigation = {
-  product: [
-    { label: 'Features', path: '/features' },
-    { label: 'Pricing', path: '/pricing' }
-  ],
-  company: [
-    { label: 'About', path: '/about' },
-    { label: 'Contact', path: '/contact' }
-  ],
-  legal: [
-    { label: 'Privacy', path: '/privacy' },
-    { label: 'Terms', path: '/terms' }
-  ]
-}
+export const transparencyPromises = [
+  { id: 'kyc', icon: UserCheck, text: 'Every organizer is KYC verified.' },
+  { id: 'ledger', icon: LineChart, text: 'Every transaction is tracked on our public ledger.' },
+  { id: 'proof', icon: ClipboardCheck, text: 'Every project requires proof of disbursement to release funds.' },
+];

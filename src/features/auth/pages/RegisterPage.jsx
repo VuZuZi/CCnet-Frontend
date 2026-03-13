@@ -3,7 +3,8 @@ import { useRegister } from '../hooks/useRegister';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { validators, VALIDATION_MESSAGES } from '@/shared/constants/validation';
 import { ROUTES } from '@/shared/constants/routes';
-import { Button } from '@/shared/components/ui/Button/Button'; // Import Shared Button
+import { Button } from '@/shared/components/ui/Button/Button';
+import { AuthLayout } from '@/shared/components/layouts/AuthLayout';
 
 export function RegisterPage() {
   const { register, isLoading, isError, errorMessage } = useRegister();
@@ -40,115 +41,118 @@ export function RegisterPage() {
 
   const renderError = (field) => (
     touched[field] && errors[field] ? (
-      <p className="text-[#dc3545] text-sm mt-1 mb-0">{errors[field]}</p>
+      <p className="text-red-500 text-xs mt-1.5 ml-4 font-medium">{errors[field]}</p>
     ) : null
   );
 
   return (
-    <div className="min-h-screen flex items-center bg-off-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-lg mx-auto">
-        <div className="bg-white rounded-2xl shadow-sm border border-transparent transition-all duration-200 focus-within:shadow-md focus-within:border-yellow p-8 sm:p-10">
+    <AuthLayout 
+      title="Create an account" 
+      subtitle="Đăng ký tài khoản để tham gia mạng lưới tình nguyện và lan tỏa yêu thương."
+    >
+      {isError && errorMessage && (
+        <div className="bg-red-50 text-red-700 p-4 rounded-2xl mb-6 border border-red-100 font-medium text-sm">
+          {errorMessage}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col h-full mt-4">
+        <fieldset disabled={isLoading} className="space-y-4">
           
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold mb-2 text-black">Create Account</h2>
-            <p className="text-gray text-base">Sign up to get started</p>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Full Name</label>
+            <input
+              type="text"
+              placeholder="Nhập họ và tên của bạn"
+              value={values.fullName}
+              onChange={(e) => handleChange('fullName', e.target.value)}
+              onBlur={() => handleBlur('fullName')}
+              className={`block w-full rounded-full border bg-slate-50/50 py-3.5 px-6 text-slate-900 text-sm focus:outline-none focus:ring-4 transition-all ${
+                touched.fullName && !!errors.fullName 
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10 focus:bg-white' 
+                  : 'border-slate-200 focus:border-amber-500 focus:ring-amber-500/10 hover:border-slate-300 focus:bg-white'
+              }`}
+            />
+            {renderError('fullName')}
           </div>
 
-          {isError && errorMessage && (
-            <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg mb-6 border border-[#f5c2c7]">
-              <h6 className="font-bold mb-1">Registration Failed</h6>
-              {errorMessage}
-            </div>
-          )}
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Email</label>
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={values.email}
+              onChange={(e) => handleChange('email', e.target.value)}
+              onBlur={() => handleBlur('email')}
+              className={`block w-full rounded-full border bg-slate-50/50 py-3.5 px-6 text-slate-900 text-sm focus:outline-none focus:ring-4 transition-all ${
+                touched.email && !!errors.email 
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10 focus:bg-white' 
+                  : 'border-slate-200 focus:border-amber-500 focus:ring-amber-500/10 hover:border-slate-300 focus:bg-white'
+              }`}
+            />
+            {renderError('email')}
+          </div>
 
-          <form onSubmit={handleSubmit} noValidate>
-            <fieldset disabled={isLoading} className="space-y-6">
-              
-              <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Full Name</label>
-                <input
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={values.fullName}
-                  onChange={(e) => handleChange('fullName', e.target.value)}
-                  onBlur={() => handleBlur('fullName')}
-                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
-                    touched.fullName && !!errors.fullName ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
-                  }`}
-                />
-                {renderError('fullName')}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Email Address</label>
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={values.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  onBlur={() => handleBlur('email')}
-                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
-                    touched.email && !!errors.email ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
-                  }`}
-                />
-                {renderError('email')}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Password</label>
-                <input
-                  type="password"
-                  placeholder="Create a strong password"
-                  value={values.password}
-                  onChange={(e) => handleChange('password', e.target.value)}
-                  onBlur={() => handleBlur('password')}
-                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
-                    touched.password && !!errors.password ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
-                  }`}
-                />
-                {renderError('password')}
-                <p className="text-gray text-xs mt-1.5">
-                  Must be 8+ characters with uppercase, lowercase, number & special character
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Confirm Password</label>
-                <input
-                  type="password"
-                  placeholder="Confirm your password"
-                  value={values.confirmPassword}
-                  onChange={(e) => handleChange('confirmPassword', e.target.value)}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  className={`block w-full rounded-md border py-2 px-3 text-black focus:outline-none focus:ring-1 focus:border-yellow transition-colors ${
-                    touched.confirmPassword && !!errors.confirmPassword ? 'border-[#dc3545] focus:ring-[#dc3545]' : 'border-light-gray focus:ring-yellow'
-                  }`}
-                />
-                {renderError('confirmPassword')}
-              </div>
-
-              <Button
-                type="submit"
-                variant="yellow"
-                className="w-full !py-3 !text-lg mt-8"
-                isLoading={isLoading}
-              >
-                Create Account
-              </Button>
-
-            </fieldset>
-          </form>
-
-          <div className="text-center mt-6">
-            <p className="text-gray text-sm mb-0">
-              Already have an account?{' '}
-              <Link to={ROUTES.LOGIN} className="font-bold text-black hover:text-orange transition-colors">
-                Login
-              </Link>
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Password</label>
+            <input
+              type="password"
+              placeholder="Tạo mật khẩu an toàn"
+              value={values.password}
+              onChange={(e) => handleChange('password', e.target.value)}
+              onBlur={() => handleBlur('password')}
+              className={`block w-full rounded-full border bg-slate-50/50 py-3.5 px-6 text-slate-900 text-sm focus:outline-none focus:ring-4 transition-all ${
+                touched.password && !!errors.password 
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10 focus:bg-white' 
+                  : 'border-slate-200 focus:border-amber-500 focus:ring-amber-500/10 hover:border-slate-300 focus:bg-white'
+              }`}
+            />
+            {renderError('password')}
+            <p className="text-slate-400 text-[11px] mt-1.5 ml-4 font-medium">
+              Tối thiểu 8 ký tự, bao gồm chữ hoa, chữ thường, số & ký tự đặc biệt.
             </p>
           </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Confirm Password</label>
+            <input
+              type="password"
+              placeholder="Nhập lại mật khẩu"
+              value={values.confirmPassword}
+              onChange={(e) => handleChange('confirmPassword', e.target.value)}
+              onBlur={() => handleBlur('confirmPassword')}
+              className={`block w-full rounded-full border bg-slate-50/50 py-3.5 px-6 text-slate-900 text-sm focus:outline-none focus:ring-4 transition-all ${
+                touched.confirmPassword && !!errors.confirmPassword 
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10 focus:bg-white' 
+                  : 'border-slate-200 focus:border-amber-500 focus:ring-amber-500/10 hover:border-slate-300 focus:bg-white'
+              }`}
+            />
+            {renderError('confirmPassword')}
+          </div>
+
+          <Button
+            type="submit"
+            variant="primary"
+            className="w-full !py-4 !text-base !rounded-full !mt-6 shadow-lg shadow-amber-500/20 font-bold"
+            isLoading={isLoading}
+          >
+            Tạo Tài Khoản
+          </Button>
+
+        </fieldset>
+
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-slate-100 text-xs font-semibold text-slate-500">
+          <p>
+            Đã có tài khoản?{' '}
+            <Link to={ROUTES.LOGIN} className="text-slate-900 hover:text-amber-600 underline underline-offset-2 transition-colors">
+              Đăng nhập
+            </Link>
+          </p>
+          <Link to="#" className="hover:text-slate-900 underline underline-offset-2 transition-colors">
+            Terms & Conditions
+          </Link>
         </div>
-      </div>
-    </div>
+      </form>
+    </AuthLayout>
   );
 }
