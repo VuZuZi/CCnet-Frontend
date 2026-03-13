@@ -12,7 +12,7 @@ const initialState = {
 
 export const useAuthStore = create(
   devtools(
-    (set, get) => ({
+    (set) => ({
       ...initialState,
 
       setAuthSuccess: (user, accessToken) => {
@@ -20,23 +20,18 @@ export const useAuthStore = create(
         set(
           { user, isAuthenticated: true, isLoading: false },
           false,
-          "auth/loginSuccess",
+          "auth/loginSuccess"
         );
       },
 
-      logout: async () => {
-        try {
-          await authAPI.logout();
-        } catch (error) {
-          console.warn("Logout API failed, forcing local logout");
-        } finally {
-          tokenManager.removeAccessToken();
-          set(
-            { user: null, isAuthenticated: false, isLoading: false },
-            false,
-            "auth/logout",
-          );
-        }
+      // TÁCH LOGIC API RA KHỎI STORE. CHỈ DÙNG ĐỂ RESET STATE.
+      clearAuth: () => {
+        tokenManager.removeAccessToken();
+        set(
+          { user: null, isAuthenticated: false, isLoading: false },
+          false,
+          "auth/clearAuth"
+        );
       },
 
       checkAuthSession: async () => {
@@ -45,7 +40,6 @@ export const useAuthStore = create(
           let token = tokenManager.getAccessToken();
 
           if (!token || tokenManager.isTokenExpired(token)) {
-            console.log("Token missing/expired. Attempting silent refresh via Cookie...");
             const data = await authAPI.refreshToken();
             const { accessToken } = data.data;
 
@@ -58,15 +52,14 @@ export const useAuthStore = create(
           set(
             { user, isAuthenticated: true, isLoading: false },
             false,
-            "auth/sessionRestored",
+            "auth/sessionRestored"
           );
         } catch (error) {
-          console.warn("Silent refresh failed. User remains a guest.");
           tokenManager.removeAccessToken();
           set(
             { user: null, isAuthenticated: false, isLoading: false },
             false,
-            "auth/guest",
+            "auth/guest"
           );
         }
       },
@@ -81,17 +74,13 @@ export const useAuthStore = create(
         );
       },
     }),
-    { name: "AuthStore" },
-  ),
+    { name: "AuthStore" }
+  )
 );
 
+// Lắng nghe event "logout" từ httpClient Interceptor (khi Token hết hạn)
 authEvents.addEventListener("logout", () => {
-  tokenManager.removeAccessToken();
-  useAuthStore.setState({
-    user: null,
-    isAuthenticated: false,
-    isLoading: false,
-  });
+  useAuthStore.getState().clearAuth();
 });
 
 export const authSelectors = {

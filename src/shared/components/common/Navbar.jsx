@@ -1,216 +1,239 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Search, MessageCircle, Bell, ChevronDown, Menu, X, User as UserIcon, LayoutDashboard, LogOut } from 'lucide-react';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { ROUTES } from '@/shared/constants/routes';
-import { Button } from '@/shared/components/ui/Button/Button';
-import GlobalSearch from '@/features/search/components/GlobalSearch';
+import { Button, cn } from '@/shared/components/ui/Button/Button';
 import ChatWidget from '@/features/chat/components/ChatWidget';
+import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
+
+const NAV_LINKS = [
+  { label: 'Project', to: ROUTES.PROJECTS },
+  { label: 'Community', to: ROUTES.COMMUNITY || '/community' },
+  { label: 'NeedHelp', to: '/need-help' },
+];
 
 export function Navbar() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const user = useAuthStore(authSelectors.user);
   const { logout } = useLogout();
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isChatOpen, setIsChatOpen] = useState(false);
-  const chatRef = useRef(null);
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setIsChatOpen(false);
   }, [location.pathname]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (chatRef.current && !chatRef.current.contains(event.target)) {
-        setIsChatOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const navItems = [
-    { label: 'Features', to: ROUTES.FEATURES },
-    ...(isAuthenticated ? [{ label: 'Following', to: ROUTES.FOLLOWING }] : []),
-    { label: 'Pricing', to: ROUTES.PRICING },
-    { label: 'About', to: ROUTES.ABOUT },
-  ];
+  const handleSearch = (e) => {
+    e.preventDefault();
+  };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-light-gray shadow-sm h-[72px] flex items-center">
-      <div className="w-full max-w-[1200px] mx-auto px-4 flex items-center justify-between">
-        <Link to={ROUTES.HOME} className="flex items-center gap-2 no-underline">
-          <div className="w-11 h-11 bg-yellow rounded-sm flex items-center justify-center text-black">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect width="10" height="10" fill="currentColor" />
-              <rect y="14" width="10" height="10" fill="currentColor" />
-              <rect x="14" width="10" height="10" fill="currentColor" />
-              <rect x="14" y="14" width="10" height="10" fill="currentColor" />
-            </svg>
-          </div>
-          <span className="font-bold text-xl text-black">CCNet</span>
-        </Link>
+    <nav className="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-20 items-center gap-4 lg:gap-8">
 
-        <div className="hidden md:block flex-1 max-w-md mx-4">
-          <GlobalSearch />
-        </div>
-
-        <button
-          className="lg:hidden p-2 text-black focus:outline-none"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            {isMobileMenuOpen ? (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
-
-        <nav className="hidden lg:flex items-center gap-6">
-          {navItems.map((nav) => (
-            <Link
-              key={nav.label}
-              to={nav.to}
-              className="text-black font-medium hover:text-orange transition-colors duration-200 no-underline"
-            >
-              {nav.label}
+          <div className="flex items-center gap-8">
+            <Link to={ROUTES.HOME} className="flex-shrink-0 flex items-center gap-2 outline-none group">
+              <div className="group-hover:scale-105 transition-transform">
+                <CCNetLogo className="w-10 h-10" />
+              </div>
+              <span className="font-bold text-xl tracking-tight hidden sm:block text-slate-900">CCNet</span>
             </Link>
-          ))}
 
-          {isAuthenticated && (
-            <div className="relative" ref={chatRef}>
-              <button
-                type="button"
-                onClick={() => setIsChatOpen((prev) => !prev)}
-                className="relative flex h-11 w-11 items-center justify-center rounded-full bg-light-gray text-black transition-colors hover:bg-gray-200"
-                aria-label="Open chat"
-              >
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M20 11.5C20 16.1944 16.1944 20 11.5 20C10.0571 20 8.69817 19.6404 7.50739 19.0057L4 20L4.99431 16.4926C4.35962 15.3018 4 13.9429 4 12.5C4 7.80558 7.80558 4 12.5 4C17.1944 4 21 7.80558 21 12.5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-
-              <ChatWidget isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
+            <div className="hidden lg:flex items-center gap-6 font-medium text-sm">
+              {NAV_LINKS.map((link) => {
+                const isActive = location.pathname.startsWith(link.to);
+                return (
+                  <Link
+                    key={link.label}
+                    to={link.to}
+                    className={cn(
+                      "transition-colors",
+                      isActive ? "text-amber-500 font-bold" : "text-slate-600 hover:text-amber-500"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                );
+              })}
             </div>
-          )}
-
-          <div className="ml-2">
-            {isAuthenticated ? (
-              <AuthenticatedNav user={user} onLogout={logout} />
-            ) : (
-              <UnauthenticatedNav />
-            )}
           </div>
-        </nav>
+
+          <div className="flex-1 max-w-xl hidden md:block mx-auto">
+            <form onSubmit={handleSearch} className="relative group">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="text-slate-400 group-focus-within:text-amber-500 transition-colors" size={20} />
+              </div>
+              <input
+                type="text"
+                className="block w-full pl-10 pr-3 py-3 border-none rounded-xl bg-slate-100 text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all shadow-inner"
+                placeholder="Search projects, non-profits, or impact stories..."
+              />
+            </form>
+          </div>
+
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+            {isAuthenticated ? (
+              <>
+                <ChatAction />
+                <NotificationAction />
+
+                <button className="p-2 rounded-full hover:bg-slate-100 text-slate-500 md:hidden transition-colors">
+                  <Search size={24} />
+                </button>
+
+                <div className="pl-2 border-l border-slate-200 hidden sm:block">
+                  <UserDropdown user={user} onLogout={logout} />
+                </div>
+              </>
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link to={ROUTES.LOGIN} className="hidden sm:block font-medium text-slate-600 hover:text-slate-900">Log in</Link>
+                <Link to={ROUTES.REGISTER}>
+                  <Button variant="primary" size="sm" className="!rounded-xl">Get Started</Button>
+                </Link>
+              </div>
+            )}
+
+            <button
+              className="lg:hidden p-2 text-slate-600 hover:text-slate-900 focus:outline-none ml-2"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
+            </button>
+          </div>
+        </div>
       </div>
 
       {isMobileMenuOpen && (
-        <div className="absolute top-[72px] left-0 w-full bg-white border-b border-light-gray shadow-md lg:hidden flex flex-col p-4 gap-4 animate-fade-in-up">
+        <div className="lg:hidden absolute top-20 left-0 w-full bg-white border-b border-slate-200 shadow-xl py-4 px-4 flex flex-col gap-4 animate-in slide-in-from-top-2">
           <div className="md:hidden">
-            <GlobalSearch />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+              <input
+                type="text"
+                className="w-full pl-10 pr-4 py-2 bg-slate-100 rounded-lg outline-none focus:ring-2 focus:ring-amber-500/50"
+                placeholder="Search..."
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3">
-            {navItems.map((nav) => (
-              <Link
-                key={nav.label}
-                to={nav.to}
-                className="text-black font-medium py-2 border-b border-light-gray hover:text-orange no-underline"
-              >
-                {nav.label}
+          <div className="flex flex-col gap-2 border-b border-slate-100 pb-4">
+            {NAV_LINKS.map((link) => {
+              const isActive = location.pathname.startsWith(link.to);
+              return (
+                <Link
+                  key={link.label}
+                  to={link.to}
+                  className={cn(
+                    "font-medium py-2 px-2 rounded-lg transition-colors",
+                    isActive ? "bg-amber-50 text-amber-600" : "text-slate-700 hover:bg-slate-50 hover:text-amber-500"
+                  )}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {isAuthenticated ? (
+            <div className="flex flex-col gap-2 pt-2">
+              <div className="flex items-center gap-3 px-2 mb-4">
+                <Avatar user={user} size="md" />
+                <div>
+                  <p className="font-bold text-slate-900 text-sm">{user?.fullName}</p>
+                  <p className="text-xs text-slate-500 capitalize">{user?.role || 'User'}</p>
+                </div>
+              </div>
+              <Link to={ROUTES.PROFILE} className="flex items-center gap-3 py-2 px-2 text-slate-700 hover:bg-slate-50 rounded-lg">
+                <UserIcon size={18} /> Profile
               </Link>
-            ))}
-          </div>
-
-          <div className="pt-2">
-            {isAuthenticated ? (
-              <AuthenticatedNav user={user} onLogout={logout} isMobile />
-            ) : (
-              <UnauthenticatedNav isMobile />
-            )}
-          </div>
+              <Link to={ROUTES.DASHBOARD} className="flex items-center gap-3 py-2 px-2 text-slate-700 hover:bg-slate-50 rounded-lg">
+                <LayoutDashboard size={18} /> Dashboard
+              </Link>
+              <button onClick={logout} className="flex items-center gap-3 py-2 px-2 text-red-600 hover:bg-red-50 rounded-lg text-left">
+                <LogOut size={18} /> Log out
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3 pt-2">
+              <Link to={ROUTES.LOGIN} className="w-full text-center py-2 font-medium text-slate-700 bg-slate-100 rounded-lg">Log in</Link>
+            </div>
+          )}
         </div>
       )}
-    </header>
+    </nav>
   );
 }
 
-function AuthenticatedNav({ user, onLogout, isMobile }) {
+function ChatAction() {
   const [isOpen, setIsOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const getInitials = (name) => name?.substring(0, 2).toUpperCase() || 'U';
-
+  const ref = useRef(null);
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   return (
-    <div className="relative" ref={dropdownRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 bg-light-gray px-3 py-1.5 rounded-full hover:bg-gray-200 transition-colors cursor-pointer border-none"
-      >
-        {user.avatar ? (
-          <img src={user.avatar} alt={user.fullName} className="w-8 h-8 object-cover rounded-full" />
-        ) : (
-          <div className="w-8 h-8 bg-yellow rounded-full flex items-center justify-center text-sm font-bold text-black">
-            {getInitials(user.fullName)}
-          </div>
-        )}
-        <span className={`text-sm font-semibold ${isMobile ? 'inline' : 'hidden md:inline'}`}>
-          {user.fullName}
-        </span>
+    <div className="relative" ref={ref}>
+      <button onClick={() => setIsOpen(!isOpen)} className="p-2 rounded-full hover:bg-slate-100 text-slate-500 relative transition-colors">
+        <MessageCircle size={24} />
+        <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
       </button>
+      <ChatWidget isOpen={isOpen} onClose={() => setIsOpen(false)} />
+    </div>
+  );
+}
+
+function NotificationAction() {
+  return (
+    <button className="p-2 rounded-full hover:bg-slate-100 text-slate-500 relative transition-colors">
+      <Bell size={24} />
+      <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white"></span>
+    </button>
+  );
+}
+
+function UserDropdown({ user, onLogout }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => { if (ref.current && !ref.current.contains(e.target)) setIsOpen(false); };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div className="relative ml-2" ref={ref}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity"
+      >
+        <Avatar user={user} size="sm" />
+        <div className="hidden lg:block text-left leading-tight">
+          <span className="block text-sm font-bold text-slate-900">{user?.fullName || 'Alex Doe'}</span>
+          <span className="block text-xs text-slate-500 capitalize">{user?.role || 'Impact Donor'}</span>
+        </div>
+        <ChevronDown className="text-slate-400 hidden lg:block" size={16} />
+      </div>
 
       {isOpen && (
-        <div
-          className={`
-            bg-white rounded-md shadow-lg border border-light-gray py-2 z-50
-            ${isMobile ? 'mt-3 w-full relative' : 'mt-2 absolute right-0 w-48'}
-          `}
-        >
-          <Link
-            to={ROUTES.PROFILE}
-            className="block px-4 py-2 text-sm text-black hover:bg-light-gray no-underline"
-            onClick={() => setIsOpen(false)}
-          >
-            👤 Profile
+        <div className="absolute right-0 mt-4 w-56 bg-white rounded-xl shadow-lg border border-slate-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+          <Link to={ROUTES.PROFILE} onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <UserIcon size={16} /> Profile
           </Link>
-          <Link
-            to={ROUTES.DASHBOARD}
-            className="block px-4 py-2 text-sm text-black hover:bg-light-gray no-underline"
-            onClick={() => setIsOpen(false)}
-          >
-            📊 Dashboard
+          <Link to={ROUTES.DASHBOARD} onClick={() => setIsOpen(false)} className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-colors">
+            <LayoutDashboard size={16} /> Dashboard
           </Link>
-          <div className="h-[1px] bg-light-gray my-1 w-full"></div>
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              onLogout();
-            }}
-            className="w-full text-left px-4 py-2 text-sm text-[#ef4444] hover:bg-light-gray border-none bg-transparent cursor-pointer"
-          >
-            🚪 Logout
+          <div className="h-px bg-slate-100 my-1 mx-4"></div>
+          <button onClick={() => { setIsOpen(false); onLogout(); }} className="flex w-full items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors text-left">
+            <LogOut size={16} /> Sign out
           </button>
         </div>
       )}
@@ -218,20 +241,16 @@ function AuthenticatedNav({ user, onLogout, isMobile }) {
   );
 }
 
-function UnauthenticatedNav({ isMobile }) {
-  return (
-    <div className={`flex gap-3 ${isMobile ? 'flex-col' : 'items-center'}`}>
-      <Link to={ROUTES.LOGIN} className={isMobile ? 'w-full' : ''}>
-        <Button variant="outlineDark" className={`!py-2 !px-4 ${isMobile ? 'w-full' : ''}`}>
-          Login
-        </Button>
-      </Link>
+function Avatar({ user, size = 'sm' }) {
+  const sizeClass = size === 'sm' ? 'w-10 h-10' : 'w-12 h-12';
+  const initials = user?.fullName?.substring(0, 2).toUpperCase() || 'U';
 
-      <Link to={ROUTES.REGISTER} className={isMobile ? 'w-full' : ''}>
-        <Button variant="yellow" className={`!py-2 !px-4 ${isMobile ? 'w-full' : ''}`}>
-          Get Started
-        </Button>
-      </Link>
+  if (user?.avatar) {
+    return <img src={user.avatar} alt="Avatar" className={cn(sizeClass, "rounded-full border-2 border-white shadow-sm object-cover bg-slate-100")} />;
+  }
+  return (
+    <div className={cn(sizeClass, "bg-amber-100 rounded-full flex items-center justify-center text-sm font-bold text-amber-700 border-2 border-white shadow-sm")}>
+      {initials}
     </div>
   );
 }

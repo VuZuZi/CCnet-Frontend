@@ -13,8 +13,8 @@ export function GoogleLoginButton() {
   };
 
   const handleError = () => {
-    toast.error('Google Sign In was unsuccessful. Please try again.');
-    console.error('Google Login Failed');
+    toast.error('Đăng nhập Google thất bại. Vui lòng thử lại.');
+    console.error('[Google Auth Error] Login Failed');
   };
 
   return (
@@ -25,7 +25,7 @@ export function GoogleLoginButton() {
         theme="outline"
         size="large"
         text="continue_with"
-        shape="rectangular"
+        shape="pill" 
       />
     </div>
   );

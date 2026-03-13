@@ -1,10 +1,11 @@
+import { ROLES } from './roles';
+
 export const PUBLIC_ROUTES = {
   HOME: '/',
   FEATURES: '/features',
   PRICING: '/pricing',
   ABOUT: '/about',
   CONTACT: '/contact',
-  USER_PROFILE: '/users/:id',
 };
 
 export const AUTH_ROUTES = {
@@ -12,25 +13,26 @@ export const AUTH_ROUTES = {
   REGISTER: '/register',
   VERIFY_OTP: '/verify-otp',
   FORGOT_PASSWORD: '/forgot-password',
-  RESET_PASSWORD: '/reset-password',
 };
 
 export const PROTECTED_ROUTES = {
   DASHBOARD: '/dashboard',
   PROFILE: '/profile',
-  SETTINGS: '/settings',
   FOLLOWING: '/following',
-  PROJECT_CREATE: '/projects/create',
+  COMMUNITY: '/community',
 };
 
 export const PROJECT_ROUTES = {
-  PROJECTS: '/projects',
-  PROJECT_DETAIL: '/projects/:id',
+  PROJECTS: '/projects', 
+  PROJECT_DETAIL: '/projects/:id', 
+  PROJECT_CREATE: '/projects/create',
 };
 
-export const LEGAL_ROUTES = {
-  PRIVACY: '/privacy',
-  TERMS: '/terms',
+export const ADMIN_ROUTES = {
+  ADMIN_DASHBOARD: '/admin',
+  ADMIN_USERS: '/admin/users',
+  ADMIN_PROJECTS: '/admin/projects',
+  ADMIN_REPORTS: '/admin/reports',
 };
 
 export const ROUTES = {
@@ -38,20 +40,43 @@ export const ROUTES = {
   ...AUTH_ROUTES,
   ...PROTECTED_ROUTES,
   ...PROJECT_ROUTES,
-  ...LEGAL_ROUTES,
+  ...ADMIN_ROUTES,
 };
 
 export const isProtectedRoute = (path) => {
-  return Object.values(PROTECTED_ROUTES).includes(path);
+  const protectedPaths = Object.values(PROTECTED_ROUTES);
+  const adminPaths = Object.values(ADMIN_ROUTES);
+  
+  const isBaseProtected = protectedPaths.some(p => path.startsWith(p));
+  const isAdminProtected = adminPaths.some(p => path.startsWith(p));
+  
+  const isProjectCreate = path === PROJECT_ROUTES.PROJECT_CREATE;
+
+  return isBaseProtected || isAdminProtected || isProjectCreate;
 };
 
 export const isAuthRoute = (path) => {
-  return Object.values(AUTH_ROUTES).includes(path);
+  return Object.values(AUTH_ROUTES).some(p => path.startsWith(p));
 };
 
-export const getRedirectPath = (intendedPath) => {
+export const getDefaultRouteByRole = (role) => {
+  switch (role) {
+    case ROLES.ADMIN:
+    case ROLES.MANAGER:
+      return ADMIN_ROUTES.ADMIN_DASHBOARD; 
+      
+    case ROLES.ORGANIZER:
+      return PROTECTED_ROUTES.DASHBOARD;
+      
+    case ROLES.USER:
+    default:
+      return PROJECT_ROUTES.PROJECTS; 
+  }
+};
+
+export const getRedirectPath = (intendedPath, role) => {
   if (intendedPath && isProtectedRoute(intendedPath)) {
     return intendedPath;
   }
-  return PROTECTED_ROUTES.DASHBOARD;
+  return getDefaultRouteByRole(role);
 };
