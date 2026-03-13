@@ -4,51 +4,108 @@ import { adminAPI } from "../api/adminAPI";
 export const useAdminDashboard = (activeTab) => {
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
-    try {
-      if (activeTab === "overview") {
-        const res = await adminAPI.getStats();
-        setStats(res?.data?.data || res?.data || null);
 
-        // Optional: Fetch reports even on overview to show the 'Recent Activity' count
+    try {
+      // DASHBOARD OVERVIEW
+      if (activeTab === "overview") {
+        const statsRes = await adminAPI.getStats();
+        setStats(statsRes?.data?.data || statsRes?.data || null);
+
         const reportRes = await adminAPI.getReports();
         setReports(reportRes?.data?.data || reportRes?.data || []);
-      } else if (activeTab === "reports") {
-        const res = await adminAPI.getReports();
-        setReports(res?.data?.data || res?.data || []);
       }
-      // ... rest of your logic
+
+      // USER MANAGEMENT
+      else if (activeTab === "users") {
+        const res = await adminAPI.getUsers();
+        setUsers(res?.data?.data || []);
+      }
+
+      // PROJECT MANAGEMENT
+      else if (activeTab === "projects") {
+        const res = await adminAPI.getProjects();
+        setProjects(res?.data?.data || []);
+      }
+
+      // REPORT MANAGEMENT
+      else if (activeTab === "reports") {
+        const res = await adminAPI.getReports();
+        setReports(res?.data?.data || []);
+      }
     } catch (err) {
-      console.error("Data load failed:", err);
+      console.error("Admin data load failed:", err);
     } finally {
       setLoading(false);
     }
   }, [activeTab]);
 
-  // ... rest of the hook
+  // Auto reload when tab changes
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // 🔴 Ban / Unban User (Instant UI Update)
+  const toggleBanUser = async (userId) => {
+    try {
+      const res = await adminAPI.toggleBan(userId);
+
+      const updatedUser = res?.data?.data;
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId
+            ? { ...user, ...updatedUser, isBanned: !user.isBanned }
+            : user,
+        ),
+      );
+    } catch (err) {
+      console.error("User ban toggle failed:", err);
+    }
+  };
+
+  // 🗑 Delete project
+  const deleteProject = async (projectId) => {
+    try {
+      await adminAPI.deleteProject(projectId);
+
+      // Remove project from UI instantly
+      setProjects((prev) =>
+        prev.filter((project) => project._id !== projectId),
+      );
+    } catch (err) {
+      console.error("Project deletion failed:", err);
+    }
+  };
+
+  // 🚩 Resolve report
   const handleResolveReport = async (reportId, actions, note) => {
     try {
       await adminAPI.resolveReport(reportId, actions, note);
-      await loadData();
+
+      // Remove resolved report from UI
+      setReports((prev) => prev.filter((report) => report._id !== reportId));
     } catch (err) {
-      console.error("Resolution failed:", err);
+      console.error("Report resolution failed:", err);
     }
   };
 
   return {
     stats,
     users,
+    projects,
     reports,
     loading,
+
+    toggleBanUser,
+    deleteProject,
     handleResolveReport,
+
     refresh: loadData,
   };
 };

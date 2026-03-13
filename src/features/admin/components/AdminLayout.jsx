@@ -1,7 +1,17 @@
 import { useState } from "react";
 import { NavLink, Outlet } from "react-router-dom";
-import { LayoutDashboard, Users, Rocket, Flag, LogOut, Menu } from "lucide-react";
-import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import {
+  LayoutDashboard,
+  Users,
+  Rocket,
+  Flag,
+  LogOut,
+  Menu,
+} from "lucide-react";
+import {
+  useAuthStore,
+  authSelectors,
+} from "@/features/auth/stores/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useLogout";
 
 const MENU_ITEMS = [
@@ -52,7 +62,9 @@ export function AdminLayout() {
                 }
               >
                 <Icon size={20} className="shrink-0" />
-                {isSidebarOpen && <span className="font-semibold truncate">{item.label}</span>}
+                {isSidebarOpen && (
+                  <span className="font-semibold truncate">{item.label}</span>
+                )}
               </NavLink>
             );
           })}
@@ -80,14 +92,20 @@ export function AdminLayout() {
 
           <div className="flex items-center gap-4">
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-bold text-slate-800">{user?.fullName || "System Admin"}</p>
+              <p className="text-sm font-bold text-slate-800">
+                {user?.fullName || "System Admin"}
+              </p>
               <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest flex items-center justify-end gap-1">
                 <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full inline-block animate-pulse"></span>
                 Online
               </p>
             </div>
             {user?.avatar ? (
-              <img src={user.avatar} alt="Avatar" className="h-10 w-10 rounded-full object-cover border-2 border-slate-100" />
+              <img
+                src={user.avatar}
+                alt="Avatar"
+                className="h-10 w-10 rounded-full object-cover border-2 border-slate-100"
+              />
             ) : (
               <div className="h-10 w-10 rounded-full bg-slate-100 border-2 border-white shadow-sm flex items-center justify-center font-bold text-slate-600">
                 {user?.fullName?.substring(0, 2).toUpperCase() || "AD"}

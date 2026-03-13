@@ -16,17 +16,31 @@ import { CreatePostPage } from "@/features/community/pages/CreatePostPage";
 import { PostDetailPage } from "@/features/community/pages/PostDetailPage";
 import { UserProfilePage } from "@/features/users/pages/UserProfilePage";
 import { FollowingPage } from "@/features/users/pages/FollowingPage";
-import { ProjectListPage, ProjectDetailPage, CreateProjectPage } from "@/features/project/pages";
+import AdminDashboard from "@/features/admin/pages/AdminDashboard";
+import UserManagement from "@/features/admin/pages/UserManagement";
+import ProjectManagement from "@/features/admin/pages/ProjectManagement";
+import ReportManagement from "@/features/admin/pages/ReportManagement";
+import {
+  ProjectListPage,
+  ProjectDetailPage,
+  CreateProjectPage,
+} from "@/features/project/pages";
 
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
-    <h2 className="text-2xl font-bold text-slate-400">Trang {title} (Đang xây dựng)</h2>
+    <h2 className="text-2xl font-bold text-slate-400">
+      Trang {title} (Đang xây dựng)
+    </h2>
   </div>
 );
 
 export const router = createBrowserRouter([
   {
-    element: <PublicRoute><Outlet /></PublicRoute>,
+    element: (
+      <PublicRoute>
+        <Outlet />
+      </PublicRoute>
+    ),
     children: [
       { path: "login", element: <LoginPage /> },
       { path: "register", element: <RegisterPage /> },
@@ -37,19 +51,23 @@ export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
-      { path: "/", element: <AuthGateway /> }, 
-      
+      { path: "/", element: <AuthGateway /> },
+
       { path: "projects", element: <ProjectListPage /> },
       { path: "projects/:id", element: <ProjectDetailPage /> },
       { path: "users/:id", element: <UserProfilePage /> },
-      
+
       {
-        element: <ProtectedRoute allowedRoles={CONSUMER_ROLES}><Outlet /></ProtectedRoute>,
+        element: (
+          <ProtectedRoute allowedRoles={CONSUMER_ROLES}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
         children: [
           { path: "dashboard", element: <DashboardPage /> },
           { path: "profile", element: <UserProfilePage /> },
           { path: "following", element: <FollowingPage /> },
-          { path: "projects/create", element: <CreateProjectPage /> }, 
+          { path: "projects/create", element: <CreateProjectPage /> },
           { path: "community", element: <CommunityPage /> },
           { path: "community/create", element: <CreatePostPage /> },
           { path: "community/:id", element: <PostDetailPage /> },
@@ -66,18 +84,20 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <MockAdminPage title="Tổng Quan (Dashboard)" /> },
-      { path: "users", element: <MockAdminPage title="Quản Lý Người Dùng" /> },
-      { path: "projects", element: <MockAdminPage title="Kiểm Duyệt Dự Án" /> },
-      { path: "reports", element: <MockAdminPage title="Báo Cáo Hệ Thống" /> },
+      { index: true, element: <AdminDashboard /> },
+      { path: "users", element: <UserManagement /> },
+      { path: "projects", element: <ProjectManagement /> },
+      { path: "reports", element: <ReportManagement /> },
     ],
   },
-  
+
   {
     path: "*",
-    element: <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-400">
-      <h1 className="text-6xl font-black mb-4">404</h1>
-      <p className="text-xl font-medium">Trang không tồn tại</p>
-    </div>
-  }
+    element: (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-400">
+        <h1 className="text-6xl font-black mb-4">404</h1>
+        <p className="text-xl font-medium">Trang không tồn tại</p>
+      </div>
+    ),
+  },
 ]);
