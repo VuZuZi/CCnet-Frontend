@@ -8,22 +8,23 @@ export function useMessages(conversationId) {
   const isAuthLoading = useAuthStore(authSelectors.isLoading);
   const user = useAuthStore(authSelectors.user);
 
-  const enabled = Boolean(conversationId && isAuthenticated && !isAuthLoading && user);
+  const cid = String(conversationId || '');
+  const enabled = Boolean(cid && isAuthenticated && !isAuthLoading && user);
 
   const query = useQuery({
-    queryKey: ['chat', 'messages', String(conversationId || '')],
+    queryKey: ['chat', 'messages', cid],
     enabled,
     retry: false,
-    staleTime: 5_000,
+    staleTime: Infinity,
     refetchOnWindowFocus: false,
     queryFn: async () => {
-      const list = await chatAPI.getMessages(conversationId);
+      const list = await chatAPI.getMessages(cid);
       return Array.isArray(list) ? list : [];
     },
   });
 
   return {
-    messages: query.data || [],
+    messages: Array.isArray(query.data) ? query.data : [],
     isLoading: query.isLoading,
     isError: query.isError,
     errorMessage: query.error ? getErrorMessage(query.error) : null,
