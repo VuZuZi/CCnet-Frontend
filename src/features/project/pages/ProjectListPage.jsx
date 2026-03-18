@@ -1,113 +1,101 @@
-import { useState, useMemo, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { FiPlus } from 'react-icons/fi';
-import { useProjects } from '../hooks/useProjects';
-import { ProjectSearchFilter, ProjectGrid } from '../components';
-import { ROUTES } from '@/shared/constants/routes';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { Button } from '@/shared/components/ui/Button/Button';
+import { useState, useMemo, useEffect } from 'react';
+import InfiniteScroll from 'react-infinite-scroll-component';
+import { useExploreProjects } from '../hooks/useProjectQueries';
+import { PageLoader } from '@/shared/components/ui/PageLoader';
+import { Loader2 } from 'lucide-react';
+import { useDebounce } from '@/shared/hooks/useDebounce';
+
+import { OrganizerWorkspaceBar } from '../components/OrganizerWorkspaceBar';
+import { FeaturedProject } from '../components/FeaturedProject';
+import { CategoryExplore } from '../components/CategoryExplore';
+import { VolunteerCall } from '../components/VolunteerCall';
+import { ProjectFilterBar } from '../components/ProjectFilterBar';
+import { ProjectCard } from '../components/ProjectCard';
 
 export function ProjectListPage() {
-  const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
+  const [localLocation, setLocalLocation] = useState('');
+  const debouncedLocation = useDebounce(localLocation, 500); 
+  
+  const [filters, setFilters] = useState({ category: '', location: '' });
 
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [sortBy, setSortBy] = useState('createdAt');
-  const [page, setPage] = useState(1);
+  useEffect(() => {
+    setFilters(prev => ({ ...prev, location: debouncedLocation }));
+  }, [debouncedLocation]);
 
-  const { projects, pagination, isLoading } = useProjects({
-    page,
-    limit: 12,
-    status: statusFilter || undefined,
-    sortBy,
-    sortOrder: 'desc',
-  });
+  const { 
+    data, 
+    fetchNextPage, 
+    hasNextPage, 
+    isLoading, 
+    isFetching, 
+    isError 
+  } = useExploreProjects(filters);
 
-  const filteredProjects = useMemo(() => {
-    if (!search.trim()) return projects;
+  const projects = useMemo(() => {
+    return data?.pages.flatMap((page) => page.projects) || [];
+  }, [data]);
 
-    const searchLower = search.toLowerCase();
-    return projects.filter(
-      (project) =>
-        project.title?.toLowerCase().includes(searchLower) ||
-        project.description?.toLowerCase().includes(searchLower)
-    );
-  }, [projects, search]);
+  const handleCategoryChange = (e) => {
+    setFilters(prev => ({ ...prev, category: e.target.value }));
+  };
 
-  const handleSearchChange = useCallback((value) => {
-    setSearch(value);
-    setPage(1);
-  }, []);
-
-  const handleStatusChange = useCallback((value) => {
-    setStatusFilter(value);
-    setPage(1);
-  }, []);
-
-  const handleSortChange = useCallback((value) => {
-    setSortBy(value);
-    setPage(1);
-  }, []);
+  if (isLoading && !projects.length) return <PageLoader />;
+  if (isError) return <div className="text-center py-20 text-red-500 font-bold">Đã có lỗi xảy ra khi tải dữ liệu!</div>;
 
   return (
-    <div className="min-h-screen py-8 bg-off-white px-4 md:px-8">
-      <div className="w-full max-w-[1200px] mx-auto">
+    <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        
+        <OrganizerWorkspaceBar />
+        <FeaturedProject />
+        <CategoryExplore />
+        <VolunteerCall />
 
-        <div className="mb-8">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-black mb-2">Discover Campaigns</h1>
-              <p className="text-gray m-0">Find and support meaningful causes that make a difference</p>
+        <div className="mt-16">
+          <ProjectFilterBar 
+            localLocation={localLocation}
+            setLocalLocation={setLocalLocation}
+            filters={filters}
+            onCategoryChange={handleCategoryChange}
+            isFetching={isFetching}
+          />
+
+          {projects.length === 0 ? (
+            <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
+              <p className="text-slate-500 font-medium text-lg">Không tìm thấy dự án nào phù hợp với bộ lọc.</p>
+              <button 
+                onClick={() => { setFilters({category: '', location: ''}); setLocalLocation(''); }} 
+                className="mt-4 px-6 py-2 bg-slate-100 text-slate-700 rounded-full font-semibold hover:bg-slate-200 transition-colors"
+              >
+                Xóa bộ lọc
+              </button>
             </div>
-            {isAuthenticated && (
-              <Link to={ROUTES.PROJECT_CREATE} className="no-underline w-full md:w-auto">
-                <Button variant="yellow" className="w-full md:w-auto flex items-center justify-center gap-2">
-                  <FiPlus size={18} />
-                  Create Campaign
-                </Button>
-              </Link>
-            )}
-          </div>
+          ) : (
+            <InfiniteScroll
+              dataLength={projects.length}
+              next={fetchNextPage}
+              hasMore={!!hasNextPage}
+              loader={
+                <div className="col-span-full text-center py-8 text-slate-400 font-medium flex items-center justify-center gap-2">
+                  <Loader2 className="animate-spin" size={16} /> Đang tải thêm dự án...
+                </div>
+              }
+              endMessage={
+                <div className="col-span-full text-center py-10">
+                  <span className="bg-slate-200 text-slate-500 px-4 py-2 rounded-full text-sm font-medium">Bạn đã xem hết danh sách dự án! 🎉</span>
+                </div>
+              }
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"
+              style={{ overflow: 'visible' }}
+            >
+              {projects.map((project) => (
+                <ProjectCard key={project._id} project={project} />
+              ))}
+            </InfiniteScroll>
+          )}
         </div>
 
-        <ProjectSearchFilter
-          searchValue={search}
-          onSearchChange={handleSearchChange}
-          statusFilter={statusFilter}
-          onStatusChange={handleStatusChange}
-          sortBy={sortBy}
-          onSortChange={handleSortChange}
-        />
-
-        <ProjectGrid
-          projects={filteredProjects}
-          isLoading={isLoading}
-        />
-
-        {pagination && pagination.totalPages > 1 && (
-          <div className="flex justify-center items-center mt-8 gap-4">
-            <Button
-              variant="outlineDark"
-              className="!py-1.5 !px-3 !text-sm"
-              disabled={page === 1}
-              onClick={() => setPage((p) => p - 1)}
-            >
-              Previous
-            </Button>
-            <span className="text-black font-medium text-sm">
-              Page {page} of {pagination.totalPages}
-            </span>
-            <Button
-              variant="outlineDark"
-              className="!py-1.5 !px-3 !text-sm"
-              disabled={page >= pagination.totalPages}
-              onClick={() => setPage((p) => p + 1)}
-            >
-              Next
-            </Button>
-          </div>
-        )}
       </div>
-    </div>
+    </main>
   );
 }

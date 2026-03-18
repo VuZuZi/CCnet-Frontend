@@ -1,33 +1,77 @@
 import httpClient from '@/shared/lib/httpClient';
 
+
+const sanitizeMediaPayload = (mediaArray) => {
+  if (!Array.isArray(mediaArray)) return [];
+
+  return mediaArray
+    .map(media => {
+      const cleanMedia = {
+        _id: media._id || undefined,
+        url: media.url || undefined,
+        publicId: media.publicId || undefined,
+        originalName: media.originalName || undefined,
+        mimetype: media.mimetype || undefined,
+        size: media.size ? Number(media.size) : undefined
+      };
+
+      Object.keys(cleanMedia).forEach(key => {
+        if (cleanMedia[key] === undefined) {
+          delete cleanMedia[key];
+        }
+      });
+
+      return cleanMedia;
+    })
+    .filter(media => media._id || (media.url && media.publicId));
+};
+
+const prepareProjectPayload = (data) => {
+  const payload = { ...data };
+
+  payload.coverMedia = sanitizeMediaPayload(data.coverMedia);
+  payload.documents = sanitizeMediaPayload(data.documents);
+
+  if (!payload.deletedDocumentIds || payload.deletedDocumentIds.length === 0) {
+    delete payload.deletedDocumentIds;
+  }
+
+  if (payload.startDate) payload.startDate = new Date(payload.startDate).toISOString();
+  if (payload.endDate) payload.endDate = new Date(payload.endDate).toISOString();
+
+  return payload;
+};
+
 export const projectAPI = {
-  async createProject(data) {
-    const response = await httpClient.post('/projects', data);
-    return response.data;
+  createDraft: async (data) => {
+    const payload = prepareProjectPayload(data);
+    const response = await httpClient.post('/project', payload);
+    return response.data?.data;
   },
 
-  async getProjects(params = {}) {
-    const response = await httpClient.get('/projects', { params });
-    return response.data;
+  updateDraft: async ({ id, data }) => {
+    const payload = prepareProjectPayload(data);
+    const response = await httpClient.put(`/project/${id}/draft`, payload);
+    return response.data?.data;
   },
 
-  async getMyProjects(params = {}) {
-    const response = await httpClient.get('/projects/my', { params });
-    return response.data;
+  submitForApproval: async (id) => {
+    const response = await httpClient.post(`/project/${id}/submit`);
+    return response.data?.data;
   },
 
-  async getProjectById(id) {
-    const response = await httpClient.get(`/projects/${id}`);
-    return response.data;
+  getFeatured: async () => {
+    const response = await httpClient.get('/project/featured');
+    return response.data?.data;
   },
 
-  async updateProject(id, data) {
-    const response = await httpClient.put(`/projects/${id}`, data);
-    return response.data;
+  getExplore: async (params) => {
+    const response = await httpClient.get('/project/explore', { params });
+    return response.data?.data;
   },
 
-  async deleteProject(id) {
-    const response = await httpClient.delete(`/projects/${id}`);
-    return response.data;
-  },
+  getDetail: async (id) => {
+    const response = await httpClient.get(`/project/${id}`);
+    return response.data?.data;
+  }
 };
