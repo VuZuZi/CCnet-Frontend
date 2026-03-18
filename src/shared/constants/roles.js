@@ -2,7 +2,7 @@
 export const ROLES = {
   ADMIN: 'admin',
   MANAGER: 'manager',
-  ORGANIZER: 'organizer',
+  ORGANIZER: 'Organizer',
   USER: 'user',
 };
 

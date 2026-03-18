@@ -1,102 +1,83 @@
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiUsers, FiTarget } from 'react-icons/fi';
-import { ROUTES } from '@/shared/constants/routes';
-import { formatCurrency, formatDate } from '@/shared/lib/formatters';
+import { MapPin } from 'lucide-react';
 
 export function ProjectCard({ project }) {
-  const {
-    projectId,
-    title,
-    description,
-    financialGoal,
-    currentAmount,
-    status,
-    startDate,
-    endDate,
-  } = project;
-
-  const progressPercent = financialGoal > 0 
-    ? Math.min((currentAmount / financialGoal) * 100, 100) 
+  const progressPercent = project.targetAmount > 0 
+    ? Math.min(Math.round((project.currentAmount / project.targetAmount) * 100), 100)
     : 0;
 
-  const getStatusStyle = () => {
-    const statusStyles = {
-      active: 'bg-[#b5e48c]/90 text-green-dark',
-      pending: 'bg-[#ffd166]/90 text-[#856404]',
-      draft: 'bg-[#e9ecef]/90 text-gray',
-      completed: 'bg-[#8ecae6]/90 text-blue-dark',
-      cancelled: 'bg-[#dc3545]/90 text-white',
+  const getCategoryStyles = (cat) => {
+    const styles = {
+      'Y_TE': 'bg-card-blue-bg text-blue-800',
+      'GIAO_DUC': 'bg-card-purple-bg text-purple-800',
+      'MOI_TRUONG': 'bg-card-green-bg text-green-800',
+      'THIEN_TAI': 'bg-red-50 text-red-800',
+      'XAY_DUNG': 'bg-card-yellow-bg text-amber-800',
     };
-    return statusStyles[status] || 'bg-[#e9ecef]/90 text-gray';
+    return styles[cat] || 'bg-slate-100 text-slate-800';
   };
 
-  const getDaysRemaining = () => {
-    if (!endDate) return null;
-    const end = new Date(endDate);
-    const now = new Date();
-    const diff = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
-    return diff > 0 ? diff : 0;
-  };
-
-  const daysRemaining = getDaysRemaining();
+  const catStyle = getCategoryStyles(project.category);
 
   return (
-    <Link to={`${ROUTES.PROJECTS}/${projectId}`} className="block h-full no-underline group">
-      <div className="bg-white border-none shadow-sm rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-md h-full flex flex-col">
-        
-        <div className="h-[160px] bg-gradient-to-br from-yellow to-orange relative flex items-center justify-center">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-white">
-            <FiTarget size={32} />
-          </div>
-          <span className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-medium capitalize ${getStatusStyle()}`}>
-            {status}
+    <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-shadow group h-full">
+      <div className="h-48 bg-slate-200 relative overflow-hidden flex-shrink-0">
+        <img 
+          src={project.coverMedia?.url || '/placeholder-project.jpg'} 
+          alt={project.title}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+        />
+        <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm ${catStyle}`}>
+          {project.category || 'Khác'}
+        </span>
+        {project.isUrgent && (
+          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
+            KHẨN CẤP
           </span>
+        )}
+      </div>
+
+      <div className="p-6 flex-1 flex flex-col">
+        <h4 className="font-bold text-slate-900 mb-2 text-lg line-clamp-2 group-hover:text-amber-600 transition-colors">
+          <Link to={`/projects/${project._id}`} className="focus:outline-none before:absolute before:inset-0">
+            {project.title}
+          </Link>
+        </h4>
+        
+        <div className="flex items-center gap-1.5 text-slate-500 text-sm mb-6">
+          <MapPin size={16} />
+          <span className="truncate">{project.location?.address || 'Chưa cập nhật địa điểm'}</span>
         </div>
 
-        <div className="p-5 flex flex-col flex-1">
-          <h3 className="text-lg font-semibold text-black mb-2 line-clamp-2 transition-colors group-hover:text-orange">
-            {title}
-          </h3>
-          <p className="text-gray text-sm mb-4 line-clamp-2 flex-1">
-            {description || 'No description provided'}
-          </p>
-
-          {financialGoal > 0 && (
-            <div className="mb-4">
-              <div className="flex justify-between mb-1.5 text-[13px]">
-                <span className="font-semibold text-black">
-                  {formatCurrency(currentAmount)}
-                </span>
-                <span className="text-gray">
-                  of {formatCurrency(financialGoal)}
-                </span>
-              </div>
-              <div className="h-1.5 rounded-full bg-light-gray overflow-hidden">
-                <div 
-                  className="h-full bg-green rounded-full transition-all duration-300 ease-in-out" 
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="flex justify-between pt-4 border-t border-light-gray mt-auto">
-            {startDate && (
-              <div className="flex items-center gap-1.5 text-gray text-[13px]">
-                <FiCalendar size={14} className="shrink-0" />
-                <span>{formatDate(startDate)}</span>
-              </div>
-            )}
-            {daysRemaining !== null && status === 'active' && (
-              <div className="flex items-center gap-1.5 text-gray text-[13px]">
-                <FiUsers size={14} className="shrink-0" />
-                <span>{daysRemaining} days left</span>
-              </div>
-            )}
+        <div className="mt-auto relative z-10">
+          <div className="flex justify-between text-sm font-bold mb-2">
+            <span className="text-slate-900">
+              {project.currentAmount?.toLocaleString()} đ <span className="text-slate-500 text-xs font-normal">đã góp</span>
+            </span>
+            <span className="text-amber-500">{progressPercent}%</span>
+          </div>
+          
+          <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-6">
+            <div 
+              className="h-full bg-amber-400 rounded-full transition-all duration-1000 ease-out"
+              style={{ width: `${progressPercent}%` }}
+            ></div>
+          </div>
+          
+          <div className="flex gap-3">
+            <Link 
+              to={`/projects/${project._id}`}
+              className="flex-1 py-3 px-4 text-center text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+            >
+              Chi tiết
+            </Link>
+            <button className="flex-1 py-3 px-4 text-sm font-bold text-slate-900 bg-amber-400 rounded-xl hover:bg-amber-500 transition-colors shadow-sm shadow-amber-500/20">
+              Đóng góp
+            </button>
           </div>
         </div>
-
       </div>
-    </Link>
+    </div>
   );
 }

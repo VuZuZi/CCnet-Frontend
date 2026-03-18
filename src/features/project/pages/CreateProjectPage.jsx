@@ -1,181 +1,123 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiSave, FiFileText } from 'react-icons/fi';
-import { useCreateProject } from '../hooks/useCreateProject';
-import { useFormValidation } from '@/shared/hooks/useFormValidation';
-import { validators } from '@/shared/constants/validation';
-import { ROUTES } from '@/shared/constants/routes';
-import { ProjectBasicInfoForm } from '../components/ProjectBasicInfoForm';
-import { ProjectGoalsForm } from '../components/ProjectGoalsForm';
-import { ProjectDateForm } from '../components/ProjectDateForm';
-import { Button } from '@/shared/components/ui/Button/Button';
+import { useEffect, useState } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
+import { useProjectDraftStore } from '../stores/useProjectDraftStore';
+import { useProjectDetail } from '../hooks/useProjectQueries';
+import { format } from 'date-fns';
+import { CheckCircle2 } from 'lucide-react';
+import Step1Story from '../components/Step1Story';
+import Step2Budget from '../components/Step2Budget';
+import Step3Preview from '../components/Step3Preview';
 
-const initialValues = {
-  title: '',
-  description: '',
-  financialGoal: '',
-  startDate: '',
-  endDate: '',
-};
-
-const validationSchema = {
-  title: [validators.projectTitle],
-  description: [validators.projectDescription],
-  financialGoal: [validators.financialGoal],
-  endDate: [validators.endDateAfterStart],
-};
+const STEPS = [
+    { id: 1, title: 'Story & Evidence' },
+    { id: 2, title: 'Budget & Volunteers' },
+    { id: 3, title: 'Preview & Submit' }
+];
 
 export function CreateProjectPage() {
-  const navigate = useNavigate();
-  const { createProject, isLoading, isError, errorMessage } = useCreateProject();
-  const [saveAsDraft, setSaveAsDraft] = useState(false);
+    const { id } = useParams();
+    const location = useLocation();
+    const isEditMode = !!id || location.pathname.includes('edit');
 
-  const { 
-    values, 
-    errors, 
-    touched, 
-    handleChange, 
-    handleBlur, 
-    validateAll 
-  } = useFormValidation(initialValues, validationSchema);
+    const { currentStep, updateFormData, setProjectId, resetDraft, projectId } = useProjectDraftStore();
+    const [isHydrated, setIsHydrated] = useState(!isEditMode);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    if (validateAll()) {
-      const projectData = {
-        title: values.title.trim(),
-        description: values.description?.trim() || '',
-        financialGoal: values.financialGoal ? parseFloat(values.financialGoal) : 0,
-        startDate: values.startDate || null,
-        endDate: values.endDate || null,
-        status: saveAsDraft ? 'draft' : 'pending',
-      };
-      
-      createProject(projectData);
+    const { data: draftData, isLoading, isError } = useProjectDetail(id);
+
+    useEffect(() => {
+        if (!isEditMode) {
+            if (projectId) resetDraft();
+            setIsHydrated(true);
+            return;
+        }
+
+        if (isEditMode && draftData) {
+            const parseDateLocal = (isoString) => {
+                if (!isoString) return '';
+                return format(new Date(isoString), 'yyyy-MM-dd');
+            };
+
+            const normalizedData = {
+                title: draftData.title || '',
+                category: draftData.category || '',
+                location: draftData.location || null,
+                description: draftData.description || '',
+                isFundraising: draftData.targetAmount > 0,
+                targetAmount: draftData.targetAmount || 0,
+                startDate: parseDateLocal(draftData.startDate),
+                endDate: parseDateLocal(draftData.endDate),
+                needsVolunteers: draftData.needsVolunteers || false,
+                milestones: draftData.milestones?.length ? draftData.milestones : [],
+                volunteerRoles: draftData.volunteerRoles || [],
+                coverMedia: draftData.coverMedia ? [draftData.coverMedia] : [],
+                documents: draftData.documents || [],
+                deletedDocumentIds: []
+            };
+
+            updateFormData(normalizedData);
+            setProjectId(id);
+            setIsHydrated(true);
+        }
+    }, [isEditMode, draftData]);
+
+    if (isEditMode && isLoading) {
+        return <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">Đang đồng bộ dữ liệu bản nháp từ máy chủ...</div>;
     }
-  };
 
-  const handleSaveDraft = () => {
-    setSaveAsDraft(true);
-    setTimeout(() => {
-      document.getElementById('create-project-form')?.requestSubmit();
-    }, 0);
-  };
+    if (isEditMode && isError) {
+        return <div className="min-h-screen flex items-center justify-center font-bold text-red-500">Lỗi: Không tìm thấy bản nháp hoặc bạn không có quyền truy cập.</div>;
+    }
 
-  const handlePublish = () => {
-    setSaveAsDraft(false);
-  };
+    if (!isHydrated) return null;
 
-  return (
-    <div className="min-h-screen py-8 bg-off-white px-4 md:px-8">
-      <div className="w-full max-w-3xl mx-auto">
-        
-        {/* Back Link */}
-        <Link to={ROUTES.PROJECTS} className="inline-flex items-center gap-2 text-gray hover:text-black mb-6 transition-colors font-medium no-underline">
-          <FiArrowLeft size={18} />
-          <span>Back to Campaigns</span>
-        </Link>
+    return (
+        <div className="bg-[#f3f4f6] py-8 min-h-screen">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Page Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black mb-2">Create New Campaign</h1>
-          <p className="text-gray text-base">
-            Start a fundraising campaign to support your cause and make a difference
-          </p>
-        </div>
+                <div className="flex items-center justify-between mb-8">
+                    <div className="flex items-center w-full max-w-2xl relative">
+                        {STEPS.map((step, index) => {
+                            const isActive = currentStep === step.id;
+                            const isCompleted = currentStep > step.id;
+                            const isLast = index === STEPS.length - 1;
 
-        {/* Error Alert */}
-        {isError && errorMessage && (
-          <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg mb-6 border border-[#f5c2c7]">
-            {errorMessage}
-          </div>
-        )}
+                            return (
+                                <div key={step.id} className="flex items-center flex-1">
+                                    <div className="flex flex-col items-center flex-1 relative z-10">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300
+                                            ${isActive ? 'bg-[#fbbf24] text-white' :
+                                                isCompleted ? 'bg-[#fbbf24] text-white' :
+                                                    'bg-slate-200 text-slate-500'}`}
+                                        >
+                                            {isCompleted ? '✓' : step.id}
+                                        </div>
+                                        <span className={`text-sm mt-2 absolute top-8 whitespace-nowrap transition-colors
+                                            ${isActive ? 'font-bold text-slate-900' : 'font-medium text-slate-500'}`}>
+                                            {step.title}
+                                        </span>
+                                    </div>
+                                    {!isLast && (
+                                        <div className={`h-1 flex-1 -mx-4 rounded-full z-0 transition-colors duration-300
+                                            ${isCompleted ? 'bg-[#fbbf24]' : 'bg-slate-200'}`}
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-light-gray transition-all duration-200 focus-within:shadow-md flex flex-col">
-          <form id="create-project-form" onSubmit={handleSubmit} noValidate>
-            <fieldset disabled={isLoading}>
-              
-              {/* Basic Info Section */}
-              <ProjectBasicInfoForm
-                values={values}
-                errors={errors}
-                touched={touched}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-              />
-
-              {/* Goals Section */}
-              <ProjectGoalsForm
-                values={values}
-                errors={errors}
-                touched={touched}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-              />
-
-              {/* Date Section */}
-              <ProjectDateForm
-                values={values}
-                errors={errors}
-                touched={touched}
-                handleChange={handleChange}
-                handleBlur={handleBlur}
-              />
-
-              {/* Form Footer */}
-              <div className="flex flex-col sm:flex-row justify-between items-center p-6 bg-[#fafafa] rounded-b-2xl gap-4">
-                <div className="flex gap-3 w-full sm:w-auto justify-center sm:justify-start">
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => navigate(ROUTES.PROJECTS)}
-                    disabled={isLoading}
-                    className="w-full sm:w-auto"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outlineDark"
-                    onClick={handleSaveDraft}
-                    disabled={isLoading}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2"
-                  >
-                    <FiFileText size={16} />
-                    Save as Draft
-                  </Button>
+                    <div className="hidden md:flex items-center text-sm text-slate-500 gap-1.5 ml-8 mt-2">
+                        <CheckCircle2 size={18} className="text-slate-400" />
+                        Draft saved just now
+                    </div>
                 </div>
-                <Button
-                  type="submit"
-                  variant="yellow"
-                  disabled={isLoading}
-                  onClick={handlePublish}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2"
-                >
-                  {isLoading ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-black" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Creating...
-                    </>
-                  ) : (
-                    <>
-                      <FiSave size={16} />
-                      Create Campaign
-                    </>
-                  )}
-                </Button>
-              </div>
 
-            </fieldset>
-          </form>
+                <div className="mt-12 pb-32">
+                    {currentStep === 1 && <Step1Story />}
+                    {currentStep === 2 && <Step2Budget />}
+                    {currentStep === 3 && <Step3Preview />}
+                </div>
+            </div>
         </div>
-
-      </div>
-    </div>
-  );
+    );
 }
