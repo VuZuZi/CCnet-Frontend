@@ -1,7 +1,6 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
 import { Suspense, lazy } from "react";
 
-// Tầng Layout & Guard (Giữ nguyên eager load để không bị giật giao diện)
 import { RootLayout } from "@/shared/components/layouts/RootLayout";
 import { AdminLayout } from "@/features/admin/components/AdminLayout";
 import { ProtectedRoute } from "@/shared/components/common/ProtectedRoute";
@@ -10,6 +9,10 @@ import { AuthGateway } from "@/shared/components/common/AuthGateway";
 import { ROLES, ADMIN_ROLES, CONSUMER_ROLES } from "@/shared/constants/roles";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 
+import AdminDashboard from "@/features/admin/pages/AdminDashboard";
+import UserManagement from "@/features/admin/pages/UserManagement";
+import ProjectManagement from "@/features/admin/pages/ProjectManagement";
+import ReportManagement from "@/features/admin/pages/ReportManagement";
 
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage").then(m => ({ default: m.LoginPage || m.default })));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage").then(m => ({ default: m.RegisterPage || m.default })));
@@ -89,10 +92,10 @@ export const router = createBrowserRouter([
       </ProtectedRoute>
     ),
     children: [
-      { index: true, element: <MockAdminPage title="Tổng Quan (Dashboard)" /> },
-      { path: "users", element: <MockAdminPage title="Quản Lý Người Dùng" /> },
-      { path: "projects", element: <MockAdminPage title="Kiểm Duyệt Dự Án" /> },
-      { path: "reports", element: <MockAdminPage title="Báo Cáo Hệ Thống" /> },
+      { index: true, element: <AdminDashboard /> },
+      { path: "users", element: <UserManagement /> },
+      { path: "projects", element: <ProjectManagement /> },
+      { path: "reports", element: <ReportManagement /> },
     ],
   },
   
