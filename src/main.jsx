@@ -5,6 +5,7 @@ import App from './app/App';
 import { env } from './config/env'; 
 
 import './styles/main.css';
+import 'leaflet/dist/leaflet.css';
 
 if (!env.GOOGLE_CLIENT_ID) {
   console.error('Google Client ID is missing in .env file!');

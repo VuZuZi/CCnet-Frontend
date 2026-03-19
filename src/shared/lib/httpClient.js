@@ -28,6 +28,7 @@ let failedQueue = [];
 
 const processQueue = (error, token = null) => {
   failedQueue.forEach((prom) => {
+    if (prom.timeoutId) clearTimeout(prom.timeoutId);
     if (error) {
       prom.reject(error);
     } else {
@@ -41,6 +42,15 @@ httpClient.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    if (!originalRequest._retryCount) originalRequest._retryCount = 0;
+    const shouldRetry = apiConfig.retry?.shouldRetry?.(error) && originalRequest._retryCount < apiConfig.retry.maxRetries;
+    
+    if (shouldRetry && error.response?.status !== 401) {
+      originalRequest._retryCount += 1;
+      return new Promise(resolve => setTimeout(resolve, apiConfig.retry.retryDelay || 1000))
+        .then(() => httpClient(originalRequest));
+    }
 
     if (error.response?.status !== 401 || originalRequest._retry) {
       const errorMessage = error.response?.data?.message || error.message;
@@ -60,13 +70,13 @@ httpClient.interceptors.response.use(
 
     if (isRefreshing) {
       return new Promise((resolve, reject) => {
-        failedQueue.push({ resolve, reject });
+        const timeoutId = setTimeout(() => {
+            reject(new Error("Refresh token timeout. Vui lòng kiểm tra kết nối mạng."));
+        }, 10000); 
+        failedQueue.push({ resolve, reject, timeoutId });
       })
         .then((token) => {
-          originalRequest.headers = {
-            ...originalRequest.headers,
-            Authorization: `Bearer ${token}`
-          };
+          originalRequest.headers = { ...originalRequest.headers, Authorization: `Bearer ${token}` };
           return httpClient(originalRequest);
         })
         .catch((err) => Promise.reject(err));
@@ -79,22 +89,14 @@ httpClient.interceptors.response.use(
       const { data } = await axios.post(
         "/auth/refresh-token", 
         {}, 
-        {
-          baseURL: apiConfig.baseURL,
-          withCredentials: true
-        }
+        { baseURL: apiConfig.baseURL, withCredentials: true }
       );
       
       const newAccessToken = data.data.accessToken;
-
       tokenManager.setAccessToken(newAccessToken);
       processQueue(null, newAccessToken);
 
-      originalRequest.headers = {
-        ...originalRequest.headers,
-        Authorization: `Bearer ${newAccessToken}`
-      };
-      
+      originalRequest.headers = { ...originalRequest.headers, Authorization: `Bearer ${newAccessToken}` };
       return httpClient(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);

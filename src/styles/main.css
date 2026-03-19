@@ -17,8 +17,21 @@
   --color-light-gray: #E9ECEF;
   --color-gray: #8E8E8E;
 
+  --color-accent-purple: #a78bfa;
+  --color-accent-green: #86efac;
+  --color-accent-blue: #93c5fd;
+  --color-accent-yellow: #fcd34d;
+  
+  --color-card-purple-bg: #f3e8ff;
+  --color-card-green-bg: #dcfce7;
+  --color-card-blue-bg: #e0f2fe;
+  --color-card-yellow-bg: #fef3c7;
+
   --animate-fade-in-up: fadeInUp 0.8s ease-out;
   --animate-float: float 4s ease-in-out infinite;
+
+  --font-display: 'Inter', sans-serif;
+  --font-sans: 'Inter', sans-serif;
 
   @keyframes fadeInUp {
     from { opacity: 0; transform: translateY(30px); }

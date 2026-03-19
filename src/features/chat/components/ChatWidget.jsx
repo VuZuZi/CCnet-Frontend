@@ -7,6 +7,12 @@ import { useChatStore, chatSelectors } from '../stores/useChatStore';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { connectChatSocket, disconnectChatSocket, CHAT_EVENTS } from '../lib/socketClient';
 
+function getSenderId(sender) {
+  if (!sender) return '';
+  if (typeof sender === 'string') return String(sender);
+  return String(sender?._id || sender?.id || sender?.userId || '');
+}
+
 export default function ChatWidget({ isOpen, onClose }) {
   const queryClient = useQueryClient();
 
@@ -14,7 +20,6 @@ export default function ChatWidget({ isOpen, onClose }) {
   const isAuthLoading = useAuthStore(authSelectors.isLoading);
   const user = useAuthStore(authSelectors.user);
 
- 
   const myId = user?._id || user?.id || user?.userId;
 
   const openConversationIds = useChatStore(chatSelectors.openConversationIds) || [];
@@ -60,51 +65,44 @@ export default function ChatWidget({ isOpen, onClose }) {
     const joinUserRoom = () => {
       const uid = myIdRef.current;
       if (!uid) return;
-      socket.emit('user:join', String(uid), () => {});
+
+      socket.emit(CHAT_EVENTS.USER_JOIN, String(uid), (ack) => {
+        console.log('[chat socket] user join ack:', ack);
+      });
     };
 
-    const onConnect = () => joinUserRoom();
+    const onConnect = () => {
+      joinUserRoom();
+    };
 
-    const onRealtime = (payload) => {
-      const conversationId = payload?.conversationId;
+    const onNotify = (payload) => {
+      const conversationId = String(payload?.conversationId || '');
       const message = payload?.message;
       if (!conversationId || !message) return;
 
-      const cid = String(conversationId);
-      const senderId =
-        message?.senderId?._id ||
-        message?.senderId?.userId ||
-        message?.senderId?.id ||
-        message?.senderId;
-
-      const me = myIdRef.current;
-      const isMyMessage = me && senderId && String(senderId) === String(me);
+      const me = myIdRef.current ? String(myIdRef.current) : '';
+      const senderId = getSenderId(message?.senderId);
+      const isMyMessage = me && senderId === me;
 
       queryClient.setQueryData(['chat', 'conversations'], (oldData) => {
         const arr = Array.isArray(oldData) ? oldData : [];
-        const idx = arr.findIndex((c) => String(c?._id) === cid);
-
+        const idx = arr.findIndex((c) => String(c?._id) === conversationId);
         if (idx === -1) return arr;
 
         const current = arr[idx];
-        const uc = current?.unreadCounts || {};
-        const ucObj =
-          typeof uc?.get === 'function'
-            ? Object.fromEntries(Array.from(uc.entries()))
-            : { ...uc };
-
-        let nextUnreadCounts = { ...ucObj };
+        const prevUnreadCounts = current?.unreadCounts || {};
+        const nextUnreadCounts = { ...prevUnreadCounts };
 
         if (me) {
           if (isMyMessage) {
-            nextUnreadCounts[String(me)] = 0;
+            nextUnreadCounts[me] = 0;
           } else {
-            const isOpened = openIdsRef.current.some((x) => String(x) === cid);
-            const isFocused = String(focusedIdRef.current || '') === cid;
-            const shouldCountUnread = !(isOpened || isFocused);
+            const isOpened = openIdsRef.current.some((id) => String(id) === conversationId);
+            const isFocused = String(focusedIdRef.current || '') === conversationId;
+            const shouldIncrease = !(isOpened || isFocused);
 
-            nextUnreadCounts[String(me)] = shouldCountUnread
-              ? (ucObj[String(me)] || 0) + 1
+            nextUnreadCounts[me] = shouldIncrease
+              ? Number(prevUnreadCounts?.[me] || 0) + 1
               : 0;
           }
         }
@@ -112,31 +110,24 @@ export default function ChatWidget({ isOpen, onClose }) {
         const updated = {
           ...current,
           lastMessage: message,
-          updatedAt: message?.createdAt || current.updatedAt,
+          updatedAt: message?.createdAt || current?.updatedAt,
           unreadCounts: nextUnreadCounts,
         };
 
         return [updated, ...arr.filter((_, i) => i !== idx)];
       });
-
-      queryClient.setQueryData(['chat', 'messages', cid], (oldData) => {
-        const arr = Array.isArray(oldData) ? oldData : null;
-        if (!arr) return oldData;
-        if (arr.some((m) => String(m?._id) === String(message?._id))) return arr;
-        return [...arr, message];
-      });
     };
 
     socket.on('connect', onConnect);
-    socket.on(CHAT_EVENTS.MESSAGE_NEW, onRealtime);
-    socket.on(CHAT_EVENTS.NOTIFY, onRealtime);
+    socket.on(CHAT_EVENTS.NOTIFY, onNotify);
 
-    if (socket.connected) joinUserRoom();
+    if (socket.connected) {
+      joinUserRoom();
+    }
 
     return () => {
       socket.off('connect', onConnect);
-      socket.off(CHAT_EVENTS.MESSAGE_NEW, onRealtime);
-      socket.off(CHAT_EVENTS.NOTIFY, onRealtime);
+      socket.off(CHAT_EVENTS.NOTIFY, onNotify);
     };
   }, [isAuthenticated, isAuthLoading, queryClient]);
 
