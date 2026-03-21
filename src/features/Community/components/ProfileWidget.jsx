@@ -1,0 +1,50 @@
+// src/features/Community/components/ProfileWidget.jsx
+import React from "react";
+import { Link } from "react-router-dom";
+// Đảm bảo đường dẫn này đúng tới file useAuthStore.js của bạn
+import { useAuthStore } from "../../auth/stores/useAuthStore";
+
+const ProfileWidget = () => {
+  // 1. Lấy dữ liệu user thực tế từ store
+  const { user } = useAuthStore();
+
+  // 2. Logic lấy tên và chữ cái đầu nếu không có ảnh
+  const fullName = user?.fullName || user?.username || "Guest";
+  const userInitial = fullName.charAt(0).toUpperCase();
+
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 transition-all hover:shadow-md">
+      <div className="flex items-center gap-4">
+        {/* Avatar động: Ưu tiên dùng user.avatar */}
+        {user?.avatar ? (
+          <img
+            src={user.avatar}
+            alt={fullName}
+            className="size-12 rounded-full object-cover ring-2 ring-primary/20 shrink-0"
+          />
+        ) : (
+          <div className="size-12 rounded-full bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center shrink-0 ring-2 ring-yellow-50 text-lg">
+            {userInitial}
+          </div>
+        )}
+
+        <div className="flex flex-col">
+          <h1 className="text-slate-900 text-base font-bold leading-tight">
+            {fullName}
+          </h1>
+          <p className="text-slate-500 text-xs font-medium">
+            {user?.role || "USER"}
+          </p>
+        </div>
+      </div>
+      <Link
+        to={`/profile/${user?._id || ""}`}
+        className="block w-full mt-4 bg-primary text-white text-center text-sm font-bold py-2.5 rounded-xl hover:bg-yellow-500 transition-all"
+      >
+        View Profile
+      </Link>
+    </div>
+  );
+};
+
+export default ProfileWidget;
