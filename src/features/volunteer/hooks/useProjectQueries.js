@@ -1,5 +1,5 @@
 import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
-import { projectAPI } from '../api/projectAPI';
+import { projectAPI } from '../api/volunteerAPI';
 
 export const useFeaturedProjects = () => {
   return useQuery({
