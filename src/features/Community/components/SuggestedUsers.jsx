@@ -1,51 +1,96 @@
 import React from "react";
+import {
+  useSuggestedUsers,
+  useFollowStatus,
+  useFollowMutations,
+} from "../hooks/useFollow";
+import { useAuthStore } from "../../auth/stores/useAuthStore";
+
+const UserItem = ({ user }) => {
+  const { data: statusRes, isLoading } = useFollowStatus(user._id);
+  const { follow, unfollow } = useFollowMutations();
+  const isFollowing = statusRes?.isFollowing || false;
+
+  const handleToggleFollow = () => {
+    if (isFollowing) {
+      unfollow.mutate(user._id);
+    } else {
+      follow.mutate(user._id);
+    }
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        {user.avatar ? (
+          <div
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0"
+            style={{ backgroundImage: `url("${user.avatar}")` }}
+          />
+        ) : (
+          <div className="bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center rounded-full size-8 shrink-0 text-xs">
+            {(user.fullName || user.username || "U").charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="flex flex-col">
+          <p className="text-slate-900 text-xs font-bold line-clamp-1">
+            {user.fullName || user.username}
+          </p>
+          <p className="text-slate-400 text-[10px] line-clamp-1">
+            {user.role || "Member"}
+          </p>
+        </div>
+      </div>
+
+      <button
+        onClick={handleToggleFollow}
+        disabled={follow.isPending || unfollow.isPending || isLoading}
+        className={`font-bold text-xs px-3 py-1.5 rounded-full transition-colors disabled:opacity-50 shrink-0 ml-2 ${
+          isFollowing
+            ? "bg-slate-100 text-slate-700 hover:bg-slate-200"
+            : "text-primary hover:bg-yellow-50"
+        }`}
+      >
+        {isLoading || follow.isPending || unfollow.isPending
+          ? "..."
+          : isFollowing
+            ? "Following"
+            : "Follow"}
+      </button>
+    </div>
+  );
+};
 
 const SuggestedUsers = () => {
+  const { user: currentUser } = useAuthStore();
+  const { data: usersData, isLoading, isError } = useSuggestedUsers(5);
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center text-sm text-slate-400 animate-pulse">
+        Loading suggestions...
+      </div>
+    );
+  }
+
+  if (isError || !usersData) return null;
+
+  const users = Array.isArray(usersData) ? usersData : usersData.users || [];
+  const filteredUsers = users.filter(
+    (u) => u._id !== (currentUser?._id || currentUser?.id),
+  );
+
+  if (filteredUsers.length === 0) return null;
+
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
       <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-1">
         Suggested for you
       </h3>
       <div className="space-y-4">
-        {/* User 1 */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8"
-              style={{
-                backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuDbPqhEHKm8qyaiKKiJR0pAjb9HVgcWXnmlpezFizU3m5BPKHzOHQKxqNp5dqMUHOzgS6zRknmxZMvLSMDcVRX6XXOy-dzmMudn8mIejLbH9XbkQqx__dmwJ-os5AJ1xNnmXHjL0TtJq08p39lZXXieklWvXfy03giMhS7uCABFRZbrQprATpORwT3Auvb_ceJzo0Vc4Uv2frs1UF6rVSvmuhteP8bCZ3aTE7ViWQC0fKasjL9j0D8irbB3_PQt26gUynSvEJfrlNPK")',
-              }}
-            ></div>
-            <div className="flex flex-col">
-              <p className="text-slate-900 text-xs font-bold">Sarah Jenkins</p>
-              <p className="text-slate-400 text-[10px]">Climate Activist</p>
-            </div>
-          </div>
-          <button className="text-primary font-bold text-xs hover:underline">
-            Follow
-          </button>
-        </div>
-
-        {/* User 2 */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div
-              className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8"
-              style={{
-                backgroundImage:
-                  'url("https://lh3.googleusercontent.com/aida-public/AB6AXuCWatg2XpGwke4LhqR936wEmmb-nRaL__viV9IkFnIXi4FFqYGL7WETpOH-TmFslsEkm_bcIP1Dk-7RXsVSJg928GbF3znuIk6yt1N41vFgY-JsArzkf5yITwN8945rpJBMJ6L5_Dwa7tlScNUdGh046JCEFRJ-DDzyaUc6Q70ZJ27WET_IB8E0YeubOTWUVNuh1CHJVBGMl7COm9UahPn_bwy47a6koIkIR7VbEAkqNCoROF4mLQf7o4G5UXpYo8Zs_xumctAgl3nd")',
-              }}
-            ></div>
-            <div className="flex flex-col">
-              <p className="text-slate-900 text-xs font-bold">Dr. Mark Tuan</p>
-              <p className="text-slate-400 text-[10px]">Medical Outreach</p>
-            </div>
-          </div>
-          <button className="text-primary font-bold text-xs hover:underline">
-            Follow
-          </button>
-        </div>
+        {filteredUsers.map((user) => (
+          <UserItem key={user._id} user={user} />
+        ))}
       </div>
     </div>
   );

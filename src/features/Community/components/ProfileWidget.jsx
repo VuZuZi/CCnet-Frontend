@@ -1,21 +1,16 @@
-// src/features/Community/components/ProfileWidget.jsx
 import React from "react";
 import { Link } from "react-router-dom";
-// Đảm bảo đường dẫn này đúng tới file useAuthStore.js của bạn
 import { useAuthStore } from "../../auth/stores/useAuthStore";
 
 const ProfileWidget = () => {
-  // 1. Lấy dữ liệu user thực tế từ store
   const { user } = useAuthStore();
 
-  // 2. Logic lấy tên và chữ cái đầu nếu không có ảnh
   const fullName = user?.fullName || user?.username || "Guest";
   const userInitial = fullName.charAt(0).toUpperCase();
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 transition-all hover:shadow-md">
       <div className="flex items-center gap-4">
-        {/* Avatar động: Ưu tiên dùng user.avatar */}
         {user?.avatar ? (
           <img
             src={user.avatar}
