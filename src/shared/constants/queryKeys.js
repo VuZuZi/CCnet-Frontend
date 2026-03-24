@@ -23,6 +23,18 @@ export const queryKeys = {
     detail: (id) => [...queryKeys.projects.details(), id],
   },
   
+  helpRequests: {
+    all: ['helpRequests'],
+    lists: () => [...queryKeys.helpRequests.all, 'list'],
+    list: (filters) => [...queryKeys.helpRequests.lists(), { filters }],
+    myLists: () => [...queryKeys.helpRequests.all, 'my-list'],
+    myList: (filters) => [...queryKeys.helpRequests.myLists(), { filters }],
+    urgent: () => [...queryKeys.helpRequests.all, 'urgent'],
+    nearby: (params) => [...queryKeys.helpRequests.all, 'nearby', params],
+    details: () => [...queryKeys.helpRequests.all, 'detail'],
+    detail: (id) => [...queryKeys.helpRequests.details(), id],
+  },
+
   dashboard: {
     all: ['dashboard'],
     stats: () => [...queryKeys.dashboard.all, 'stats'],
@@ -53,5 +65,13 @@ export const invalidateQueries = {
 
   project: (queryClient, projectId) => {
     queryClient.invalidateQueries({ queryKey: queryKeys.projects.detail(projectId) });
+  },
+
+  helpRequests: (queryClient) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.helpRequests.all });
+  },
+
+  helpRequest: (queryClient, helpRequestId) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.helpRequests.detail(helpRequestId) });
   },
 };
