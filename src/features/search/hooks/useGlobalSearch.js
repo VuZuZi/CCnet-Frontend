@@ -12,8 +12,11 @@ export function useGlobalSearch({ debounceMs = 180, limit = 8 } = {}) {
   const [debounced, setDebounced] = useState('');
 
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(String(query || '').trim()), debounceMs);
-    return () => clearTimeout(t);
+    const timer = setTimeout(() => {
+      setDebounced(String(query || '').trim());
+    }, debounceMs);
+
+    return () => clearTimeout(timer);
   }, [query, debounceMs]);
 
   const enabled = isAuthenticated && debounced.length > 0;
@@ -28,16 +31,19 @@ export function useGlobalSearch({ debounceMs = 180, limit = 8 } = {}) {
 
   const groups = useMemo(() => {
     const data = q.data || {};
+
     const usersRaw = Array.isArray(data.users) ? data.users : [];
-    const users = meId ? usersRaw.filter((u) => String(u.id) !== String(meId)) : usersRaw;
+    const users = meId
+      ? usersRaw.filter((u) => String(u.id) !== String(meId))
+      : usersRaw;
 
     const projects = Array.isArray(data.projects) ? data.projects : [];
     const orgs = Array.isArray(data.orgs) ? data.orgs : [];
 
-    const g = [];
+    const result = [];
 
     if (users.length) {
-      g.push({
+      result.push({
         key: 'people',
         label: 'People',
         items: users.map((u) => ({
@@ -52,7 +58,7 @@ export function useGlobalSearch({ debounceMs = 180, limit = 8 } = {}) {
     }
 
     if (projects.length) {
-      g.push({
+      result.push({
         key: 'projects',
         label: 'Projects',
         items: projects.map((p) => ({
@@ -67,7 +73,7 @@ export function useGlobalSearch({ debounceMs = 180, limit = 8 } = {}) {
     }
 
     if (orgs.length) {
-      g.push({
+      result.push({
         key: 'orgs',
         label: 'Organizations',
         items: orgs.map((o) => ({
@@ -81,7 +87,7 @@ export function useGlobalSearch({ debounceMs = 180, limit = 8 } = {}) {
       });
     }
 
-    return g;
+    return result;
   }, [q.data, meId]);
 
   return {
@@ -92,5 +98,8 @@ export function useGlobalSearch({ debounceMs = 180, limit = 8 } = {}) {
     isLoading: q.isLoading,
     isFetching: q.isFetching,
     isError: q.isError,
+    error: q.error,
   };
 }
+
+export default useGlobalSearch;
