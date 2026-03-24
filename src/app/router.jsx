@@ -89,6 +89,26 @@ const CreateProjectPage = lazy(() =>
     default: m.CreateProjectPage || m.default,
   })),
 );
+const NeedHelpPage = lazy(() =>
+  import("@/features/needHelp/pages/NeedHelpPage").then((m) => ({
+    default: m.NeedHelpPage || m.default,
+  })),
+);
+const HelpRequestDetailPage = lazy(() =>
+  import("@/features/needHelp/pages/HelpRequestDetailPage").then((m) => ({
+    default: m.HelpRequestDetailPage || m.default,
+  })),
+);
+const CreateHelpRequestPage = lazy(() =>
+  import("@/features/needHelp/pages/CreateHelpRequestPage").then((m) => ({
+    default: m.CreateHelpRequestPage || m.default,
+  })),
+);
+const EditHelpRequestPage = lazy(() =>
+  import("@/features/needHelp/pages/EditHelpRequestPage").then((m) => ({
+    default: m.EditHelpRequestPage || m.default,
+  })),
+);
 
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
@@ -126,6 +146,8 @@ export const router = createBrowserRouter([
       { path: "projects", element: withSuspense(ProjectListPage) },
       { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
       { path: "users/:id", element: withSuspense(UserProfilePage) },
+      { path: "need-help", element: withSuspense(NeedHelpPage) },
+      { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
 
       {
         element: (
@@ -158,6 +180,14 @@ export const router = createBrowserRouter([
           { path: "community", element: withSuspense(CommunityPage) },
           { path: "community/create", element: withSuspense(CreatePostPage) },
           { path: "community/:id", element: withSuspense(PostDetailPage) },
+          {
+            path: "need-help/create",
+            element: withSuspense(CreateHelpRequestPage),
+          },
+          {
+            path: "need-help/:id/edit",
+            element: withSuspense(EditHelpRequestPage),
+          },
         ],
       },
 
