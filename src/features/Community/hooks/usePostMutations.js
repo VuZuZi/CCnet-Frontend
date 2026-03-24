@@ -89,7 +89,8 @@ export const usePostMutations = () => {
   });
 
   const reportPost = useMutation({
-    mutationFn: ({ postId, formData }) => postAPI.reportPost(postId, formData),
+    mutationFn: ({ postId, payload }) =>
+      postAPI.reportPost({ postId, payload }),
   });
 
   return {

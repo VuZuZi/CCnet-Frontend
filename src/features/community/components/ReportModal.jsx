@@ -16,35 +16,44 @@ export default function ReportModal({ isOpen, onClose, postId }) {
     setEvidenceFiles((prev) => [...prev, ...selectedFiles].slice(0, 5));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!postId) return;
+    if (!postId || !reason.trim()) return;
 
     setMessage(null);
-    const formData = new FormData();
-    formData.append("reason_code", reason.trim());
-    formData.append("description", description.trim());
-    
-    evidenceFiles.forEach((file) => {
-      formData.append("evidence_files", file); 
-    });
 
-    try {
-      await reportPost.mutateAsync({ postId, formData });
-      setMessage({ type: "success", text: "Report submitted successfully!" });
-      setTimeout(() => {
-        onClose();
-        setReason("");
-        setDescription("");
-        setEvidenceFiles([]);
-        setMessage(null);
-      }, 2000);
-    } catch (err) {
-      setMessage({
-        type: "error",
-        text: err.response?.data?.message || "Failed to submit report.",
-      });
-    }
+    // Dùng Object JSON bình thường
+    const payload = {
+      reason_code: reason.trim(),
+      description: description.trim(),
+      report_ref: "post",
+      target_type: "post",
+    };
+
+    reportPost.mutate(
+      { postId, payload }, // Truyền chữ payload vào đây
+      {
+        onSuccess: () => {
+          setMessage({
+            type: "success",
+            text: "Report submitted successfully!",
+          });
+          setTimeout(() => {
+            onClose();
+            setReason("");
+            setDescription("");
+            setEvidenceFiles([]);
+            setMessage(null);
+          }, 2000);
+        },
+        onError: (err) => {
+          setMessage({
+            type: "error",
+            text: err.response?.data?.message || "Failed to submit report.",
+          });
+        },
+      },
+    );
   };
 
   if (!isOpen) return null;
@@ -54,12 +63,16 @@ export default function ReportModal({ isOpen, onClose, postId }) {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b border-light-gray flex justify-between items-center bg-white">
           <h5 className="font-bold text-xl m-0">Report Post</h5>
-          <button className="text-2xl cursor-pointer" onClick={onClose}>&times;</button>
+          <button className="text-2xl cursor-pointer" onClick={onClose}>
+            &times;
+          </button>
         </div>
 
         <div className="p-6 overflow-y-auto">
           {message && (
-            <div className={`p-4 rounded-lg mb-5 ${message.type === "success" ? "bg-[#d1e7dd] text-[#0f5132]" : "bg-[#f8d7da] text-[#842029]"}`}>
+            <div
+              className={`p-4 rounded-lg mb-5 ${message.type === "success" ? "bg-[#d1e7dd] text-[#0f5132]" : "bg-[#f8d7da] text-[#842029]"}`}
+            >
               {message.text}
             </div>
           )}
@@ -82,7 +95,9 @@ export default function ReportModal({ isOpen, onClose, postId }) {
             </div>
 
             <div className="mb-5">
-              <label className="block text-sm font-medium mb-2">Additional details</label>
+              <label className="block text-sm font-medium mb-2">
+                Additional details
+              </label>
               <textarea
                 className="w-full rounded-md border border-light-gray py-2.5 px-3"
                 rows="4"
@@ -93,7 +108,9 @@ export default function ReportModal({ isOpen, onClose, postId }) {
             </div>
 
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Evidence (max 5 images)</label>
+              <label className="block text-sm font-medium mb-2">
+                Evidence (max 5 images)
+              </label>
               <input
                 type="file"
                 multiple
@@ -103,11 +120,19 @@ export default function ReportModal({ isOpen, onClose, postId }) {
                 disabled={reportPost.isPending}
               />
               {evidenceFiles.length > 0 && (
-                 <p className="text-sm text-gray mt-2">{evidenceFiles.length} file(s) selected.</p>
+                <p className="text-sm text-gray mt-2">
+                  {evidenceFiles.length} file(s) selected.
+                </p>
               )}
             </div>
 
-            <Button type="submit" variant="danger" className="w-full !py-3" disabled={reportPost.isPending || !reason.trim()} isLoading={reportPost.isPending}>
+            <Button
+              type="submit"
+              variant="danger"
+              className="w-full !py-3"
+              disabled={reportPost.isPending || !reason.trim()}
+              isLoading={reportPost.isPending}
+            >
               Submit Report
             </Button>
           </form>

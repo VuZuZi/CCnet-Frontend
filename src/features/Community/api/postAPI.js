@@ -48,12 +48,9 @@ export const postAPI = {
     return data;
   },
 
-  reportPost: async (postId, formData) => {
-    const { data } = await httpClient.post(
-      `/posts/${postId}/report`,
-      formData,
-      multipartConfig,
-    );
-    return data;
+  reportPost: async ({ postId, payload }) => {
+    // Đổi tên biến thành payload cho chuẩn
+    const response = await httpClient.post(`/posts/${postId}/report`, payload);
+    return response.data;
   },
 };
