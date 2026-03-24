@@ -7,6 +7,7 @@ import {
   Flag,
   LogOut,
   Menu,
+  ShieldCheck,
 } from "lucide-react";
 import {
   useAuthStore,
@@ -17,6 +18,7 @@ import { useLogout } from "@/features/auth/hooks/useLogout";
 const MENU_ITEMS = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { path: "/admin/users", label: "User Management", icon: Users, end: false },
+  { path: "/admin/organizers", label: "Organizer Requests", icon: ShieldCheck, end: false },
   { path: "/admin/projects", label: "Projects", icon: Rocket, end: false },
   { path: "/admin/reports", label: "Reports & Logs", icon: Flag, end: false },
 ];
@@ -28,7 +30,6 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
-      {/* Sidebar */}
       <aside
         className={`bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 ${
           isSidebarOpen ? "w-64" : "w-20"

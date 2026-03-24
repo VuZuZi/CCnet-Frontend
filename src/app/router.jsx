@@ -13,6 +13,8 @@ import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 import UserManagement from "@/features/admin/pages/UserManagement";
 import ProjectManagement from "@/features/admin/pages/ProjectManagement";
 import ReportManagement from "@/features/admin/pages/ReportManagement";
+import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
+import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
@@ -40,10 +42,19 @@ const UserProfilePage = lazy(() =>
     default: m.UserProfilePage || m.default,
   })),
 );
-
 const FollowingPage = lazy(() =>
-  import("@/features/community/pages/FollowingPage").then((m) => ({
+  import("@/features/users/pages/FollowingPage").then((m) => ({
     default: m.FollowingPage || m.default,
+  })),
+);
+const BecomeOrganizerPage = lazy(() =>
+  import("@/features/users/pages/BecomeOrganizerPage").then((m) => ({
+    default: m.BecomeOrganizerPage || m.default,
+  })),
+);
+const MyOrganizerRequestPage = lazy(() =>
+  import("@/features/users/pages/MyOrganizerRequestPage").then((m) => ({
+    default: m.MyOrganizerRequestPage || m.default,
   })),
 );
 
@@ -118,13 +129,31 @@ export const router = createBrowserRouter([
 
       {
         element: (
+          <ProtectedRoute>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: "profile", element: withSuspense(UserProfilePage) },
+          {
+            path: "organizer/apply",
+            element: withSuspense(BecomeOrganizerPage),
+          },
+          {
+            path: "organizer/request",
+            element: withSuspense(MyOrganizerRequestPage),
+          },
+        ],
+      },
+
+      {
+        element: (
           <ProtectedRoute allowedRoles={CONSUMER_ROLES}>
             <Outlet />
           </ProtectedRoute>
         ),
         children: [
           { path: "dashboard", element: withSuspense(DashboardPage) },
-          { path: "profile", element: withSuspense(UserProfilePage) },
           { path: "following", element: withSuspense(FollowingPage) },
           { path: "community", element: withSuspense(CommunityPage) },
           { path: "community/create", element: withSuspense(CreatePostPage) },
@@ -163,6 +192,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: "users", element: <UserManagement /> },
+      { path: "organizers", element: <OrganizerRequestsPage /> },
+      { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
       { path: "reports", element: <ReportManagement /> },
     ],
