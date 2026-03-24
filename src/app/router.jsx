@@ -19,68 +19,96 @@ import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestD
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
     default: m.LoginPage || m.default,
-  }))
+  })),
 );
 const RegisterPage = lazy(() =>
   import("@/features/auth/pages/RegisterPage").then((m) => ({
     default: m.RegisterPage || m.default,
-  }))
+  })),
 );
 const VerifyOTPPage = lazy(() =>
   import("@/features/auth/pages/VerifyOTPPage").then((m) => ({
     default: m.VerifyOTPPage || m.default,
-  }))
+  })),
 );
 
 const DashboardPage = lazy(() =>
   import("@/features/dashboard/pages/DashboardPage").then((m) => ({
     default: m.DashboardPage || m.default,
-  }))
+  })),
 );
 const UserProfilePage = lazy(() =>
   import("@/features/users/pages/UserProfilePage").then((m) => ({
     default: m.UserProfilePage || m.default,
-  }))
+  })),
 );
 const FollowingPage = lazy(() =>
   import("@/features/users/pages/FollowingPage").then((m) => ({
     default: m.FollowingPage || m.default,
-  }))
+  })),
 );
 const BecomeOrganizerPage = lazy(() =>
   import("@/features/users/pages/BecomeOrganizerPage").then((m) => ({
     default: m.BecomeOrganizerPage || m.default,
-  }))
+  })),
 );
 const MyOrganizerRequestPage = lazy(() =>
   import("@/features/users/pages/MyOrganizerRequestPage").then((m) => ({
     default: m.MyOrganizerRequestPage || m.default,
-  }))
+  })),
 );
 
 const CommunityPage = lazy(() =>
   import("@/features/community/pages/CommunityPage").then((m) => ({
     default: m.CommunityPage || m.default,
-  }))
+  })),
 );
 const CreatePostPage = lazy(() =>
   import("@/features/community/pages/CreatePostPage").then((m) => ({
     default: m.CreatePostPage || m.default,
-  }))
+  })),
 );
 const PostDetailPage = lazy(() =>
   import("@/features/community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
-  }))
+  })),
 );
 
-const ProjectListPage = lazy(() => import("@/features/project/pages/ProjectListPage").then(m => ({ default: m.ProjectListPage || m.default })));
-const ProjectDetailPage = lazy(() => import("@/features/project/pages/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage || m.default })));
-const CreateProjectPage = lazy(() => import("@/features/project/pages/CreateProjectPage").then(m => ({ default: m.CreateProjectPage || m.default })));
-const NeedHelpPage = lazy(() => import("@/features/needHelp/pages/NeedHelpPage").then(m => ({ default: m.NeedHelpPage || m.default })));
-const HelpRequestDetailPage = lazy(() => import("@/features/needHelp/pages/HelpRequestDetailPage").then(m => ({ default: m.HelpRequestDetailPage || m.default })));
-const CreateHelpRequestPage = lazy(() => import("@/features/needHelp/pages/CreateHelpRequestPage").then(m => ({ default: m.CreateHelpRequestPage || m.default })));
-const EditHelpRequestPage = lazy(() => import("@/features/needHelp/pages/EditHelpRequestPage").then(m => ({ default: m.EditHelpRequestPage || m.default })));
+const ProjectListPage = lazy(() =>
+  import("@/features/project/pages/ProjectListPage").then((m) => ({
+    default: m.ProjectListPage || m.default,
+  })),
+);
+const ProjectDetailPage = lazy(() =>
+  import("@/features/project/pages/ProjectDetailPage").then((m) => ({
+    default: m.ProjectDetailPage || m.default,
+  })),
+);
+const CreateProjectPage = lazy(() =>
+  import("@/features/project/pages/CreateProjectPage").then((m) => ({
+    default: m.CreateProjectPage || m.default,
+  })),
+);
+const NeedHelpPage = lazy(() =>
+  import("@/features/needHelp/pages/NeedHelpPage").then((m) => ({
+    default: m.NeedHelpPage || m.default,
+  })),
+);
+const HelpRequestDetailPage = lazy(() =>
+  import("@/features/needHelp/pages/HelpRequestDetailPage").then((m) => ({
+    default: m.HelpRequestDetailPage || m.default,
+  })),
+);
+const CreateHelpRequestPage = lazy(() =>
+  import("@/features/needHelp/pages/CreateHelpRequestPage").then((m) => ({
+    default: m.CreateHelpRequestPage || m.default,
+  })),
+);
+const EditHelpRequestPage = lazy(() =>
+  import("@/features/needHelp/pages/EditHelpRequestPage").then((m) => ({
+    default: m.EditHelpRequestPage || m.default,
+  })),
+);
 
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
@@ -120,7 +148,6 @@ export const router = createBrowserRouter([
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
-      
 
       {
         element: (
@@ -153,8 +180,14 @@ export const router = createBrowserRouter([
           { path: "community", element: withSuspense(CommunityPage) },
           { path: "community/create", element: withSuspense(CreatePostPage) },
           { path: "community/:id", element: withSuspense(PostDetailPage) },
-          { path: "need-help/create", element: withSuspense(CreateHelpRequestPage) },
-          { path: "need-help/:id/edit", element: withSuspense(EditHelpRequestPage) },
+          {
+            path: "need-help/create",
+            element: withSuspense(CreateHelpRequestPage),
+          },
+          {
+            path: "need-help/:id/edit",
+            element: withSuspense(EditHelpRequestPage),
+          },
         ],
       },
 

@@ -1,39 +1,85 @@
+import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { usePosts } from "../hooks/usePosts";
-import { PostCard } from "./PostCard";
+import PostCard from "./PostCard";
 
-export function PostFeed({ currentUserId, onReport }) {
-  const { data, fetchNextPage, hasNextPage, isLoading, isError, error } = usePosts(10);
+const PostFeed = ({ currentUserId, onReport }) => {
+  const { data, fetchNextPage, hasNextPage, isLoading, isError, error } =
+    usePosts(10);
 
-  if (isLoading) return <p className="text-center py-8 text-gray">Loading posts...</p>;
-  if (isError) return <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg">{error.message}</div>;
+  if (isLoading) return <PostFeedSkeleton />;
 
-  const posts = data?.pages.flatMap(page => page.data) || [];
-
-  if (posts.length === 0) {
+  if (isError)
     return (
-      <div className="bg-white rounded-2xl shadow-sm border border-light-gray p-8 text-center">
-        <p className="text-gray mb-0">No posts yet. Be the first!</p>
+      <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-100 text-sm font-medium">
+        ⚠️ Error: {error.message}
       </div>
     );
-  }
+
+  const posts = data?.pages.flatMap((page) => page.data) || [];
+
+  if (posts.length === 0)
+    return (
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-10 text-center">
+        <span className="material-symbols-outlined text-slate-300 text-5xl mb-2">
+          post_add
+        </span>
+        <p className="text-slate-500 font-medium">
+          No posts yet. Be the first to share something!
+        </p>
+      </div>
+    );
 
   return (
     <InfiniteScroll
       dataLength={posts.length}
       next={fetchNextPage}
       hasMore={!!hasNextPage}
-      loader={<p className="text-center py-4 text-yellow">Loading more...</p>}
-      endMessage={<p className="text-center text-gray py-8">You've reached the end of the feed ✨</p>}
+      scrollThreshold={0.8}
+      loader={
+        <div className="space-y-4 py-6">
+          <p className="text-center text-primary font-bold animate-pulse text-sm">
+            Loading older posts...
+          </p>
+        </div>
+      }
+      endMessage={
+        <div className="text-center py-10">
+          <p className="text-slate-400 font-bold text-sm">
+            ✨ You've reached the end of the feed
+          </p>
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="mt-2 text-primary text-xs font-bold hover:underline"
+          >
+            Back to top
+          </button>
+        </div>
+      }
     >
-      {posts.map((post) => (
-        <PostCard 
-          key={post._id} 
-          post={post} 
-          currentUserId={currentUserId} 
-          onReport={onReport} 
-        />
-      ))}
+      <div className="space-y-6">
+        {posts.map((post) => (
+          <PostCard
+            key={post._id}
+            post={post}
+            currentUserId={currentUserId}
+            onReport={onReport}
+          />
+        ))}
+      </div>
     </InfiniteScroll>
   );
-}
+};
+
+const PostFeedSkeleton = () => (
+  <div className="space-y-6 animate-pulse">
+    {[1, 2, 3].map((i) => (
+      <div
+        key={i}
+        className="bg-white rounded-2xl h-64 border border-slate-100"
+      />
+    ))}
+  </div>
+);
+
+export default PostFeed;

@@ -1,81 +1,104 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { postAPI } from '../api/postAPI';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { postAPI } from "../api/postAPI";
 
 export const usePostMutations = () => {
   const queryClient = useQueryClient();
 
-  const createPostMutation = useMutation({
+  const refreshPosts = (postId) => {
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    if (postId) queryClient.invalidateQueries({ queryKey: ["post", postId] });
+  };
+
+  const createPost = useMutation({
     mutationFn: (formData) => postAPI.createPost(formData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
+    onSuccess: () => refreshPosts(),
   });
 
-  const reportPostMutation = useMutation({
-    mutationFn: ({ postId, formData }) => postAPI.reportPost(postId, formData),
-  });
-
-  const addCommentMutation = useMutation({
+  const addComment = useMutation({
     mutationFn: ({ postId, content }) => postAPI.addComment(postId, content),
-    onSuccess: (res, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-      queryClient.invalidateQueries({ queryKey: ['post', variables.postId] });
-    },
+    onSuccess: (_, { postId }) => refreshPosts(postId),
   });
 
-  const toggleReactionMutation = useMutation({
+  const deletePost = useMutation({
+    mutationFn: (postId) => postAPI.deletePost(postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      const previousPosts = queryClient.getQueryData(["posts"]);
+
+      queryClient.setQueryData(["posts"], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          pages: old.pages.map((page) => ({
+            ...page,
+            data: page.data.filter((post) => post._id !== postId),
+          })),
+        };
+      });
+      return { previousPosts };
+    },
+    onError: (err, id, context) =>
+      queryClient.setQueryData(["posts"], context.previousPosts),
+    onSettled: () => refreshPosts(),
+  });
+
+  const toggleReaction = useMutation({
     mutationFn: ({ postId, type }) => postAPI.toggleReaction(postId, type),
     onMutate: async ({ postId, type }) => {
-      await queryClient.cancelQueries({ queryKey: ['posts'] });
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      const previousPosts = queryClient.getQueryData(["posts"]);
 
-      const previousPosts = queryClient.getQueryData(['posts']);
-
-      queryClient.setQueryData(['posts'], (oldData) => {
-        if (!oldData) return oldData;
-        
+      queryClient.setQueryData(["posts"], (old) => {
+        if (!old) return old;
         return {
-          ...oldData,
-          pages: oldData.pages.map((page) => ({
+          ...old,
+          pages: old.pages.map((page) => ({
             ...page,
             data: page.data.map((post) => {
               if (post._id !== postId) return post;
-              
-              let newLikes = post.stats?.likes || 0;
-              let currentUserReaction = post.userReaction;
 
-              if (currentUserReaction === type) {
-                currentUserReaction = null;
-                if (type === 'like') newLikes -= 1;
+              let { likes = 0 } = post.stats || {};
+              const currentReaction = post.userReaction;
+
+              if (currentReaction === type) {
+                if (type === "like") likes--;
               } else {
-                if (type === 'like') newLikes += 1;
-                if (currentUserReaction === 'like' && type === 'dislike') newLikes -= 1;
-                currentUserReaction = type;
+                if (type === "like") likes++;
+                if (currentReaction === "like" && type === "dislike") likes--;
               }
 
               return {
                 ...post,
-                userReaction: currentUserReaction,
-                stats: { ...post.stats, likes: Math.max(0, newLikes) },
+                userReaction: currentReaction === type ? null : type,
+                stats: { ...post.stats, likes: Math.max(0, likes) },
               };
             }),
           })),
         };
       });
-
       return { previousPosts };
     },
-    onError: (err, newTodo, context) => {
-      queryClient.setQueryData(['posts'], context.previousPosts);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['posts'] });
-    },
+    onError: (err, vars, context) =>
+      queryClient.setQueryData(["posts"], context.previousPosts),
+    onSettled: () => refreshPosts(),
+  });
+
+  const updatePost = useMutation({
+    mutationFn: ({ postId, formData }) => postAPI.updatePost(postId, formData),
+    onSuccess: (_, { postId }) => refreshPosts(postId),
+  });
+
+  const reportPost = useMutation({
+    mutationFn: ({ postId, payload }) =>
+      postAPI.reportPost({ postId, payload }),
   });
 
   return {
-    createPost: createPostMutation,
-    reportPost: reportPostMutation,
-    addComment: addCommentMutation,
-    toggleReaction: toggleReactionMutation,
+    createPost,
+    reportPost,
+    addComment,
+    toggleReaction,
+    updatePost,
+    deletePost,
   };
 };
