@@ -21,8 +21,6 @@ export default function ReportModal({ isOpen, onClose, postId }) {
     if (!postId || !reason.trim()) return;
 
     setMessage(null);
-
-    // Dùng Object JSON bình thường
     const payload = {
       reason_code: reason.trim(),
       description: description.trim(),
@@ -31,7 +29,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
     };
 
     reportPost.mutate(
-      { postId, payload }, // Truyền chữ payload vào đây
+      { postId, payload },
       {
         onSuccess: () => {
           setMessage({
