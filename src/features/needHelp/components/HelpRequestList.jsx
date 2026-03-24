@@ -31,7 +31,7 @@ export function HelpRequestList({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center rounded-[28px] border border-slate-200 bg-white py-20 shadow-sm">
+      <div className="flex items-center justify-center rounded-[28px] border border-slate-200 bg-white py-24 shadow-sm">
         <Loader2 className="animate-spin text-amber-500" size={32} />
       </div>
     );
@@ -39,7 +39,7 @@ export function HelpRequestList({
 
   if (helpRequests.length === 0) {
     return (
-      <div className="rounded-[28px] border-2 border-dashed border-slate-200 bg-white py-16 text-center">
+      <div className="rounded-[28px] border-2 border-dashed border-slate-200 bg-white py-20 text-center">
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500">
           <FileSearch size={28} />
         </div>
@@ -71,13 +71,15 @@ export function HelpRequestList({
   }
 
   return (
-    <div className="space-y-2">
-      {helpRequests.map((helpRequest) => (
-        <HelpRequestCard key={helpRequest._id} helpRequest={helpRequest} />
-      ))}
+    <div className="space-y-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {helpRequests.map((helpRequest) => (
+          <HelpRequestCard key={helpRequest._id} helpRequest={helpRequest} />
+        ))}
+      </div>
 
       {totalPages > 1 && (
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
           <button
             type="button"
             onClick={() => onPageChange(Math.max(1, currentPage - 1))}

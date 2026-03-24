@@ -59,10 +59,25 @@ export function HelpRequestCard({ helpRequest }) {
   return (
     <Link
       to={`/need-help/${helpRequest._id}`}
-      className={`group block rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition-all hover:border-amber-200 hover:shadow-md sm:p-4 border-l-4 ${urgencyBorder}`}
+      className={`group block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md border-l-4 ${urgencyBorder}`}
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-        <div className="flex h-20 w-full flex-shrink-0 overflow-hidden rounded-xl bg-slate-100 sm:w-28">
+      <div className="relative h-32 w-full overflow-hidden bg-slate-100">
+        <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5">
+          <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyle}`}>
+            {statusLabel}
+          </span>
+        </div>
+
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5">
+          <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm">
+            {categoryLabel}
+          </span>
+          <span className="rounded-full bg-amber-50/95 px-2.5 py-1 text-[11px] font-semibold text-amber-700 shadow-sm">
+            {helpRequest.urgencyLevel}
+          </span>
+        </div>
+
+        <div className="h-full w-full">
           {coverImage ? (
             <img
               src={coverImage}
@@ -71,57 +86,47 @@ export function HelpRequestCard({ helpRequest }) {
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-100 to-sky-100 text-sm font-bold text-slate-600">
+            <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-100 via-orange-50 to-sky-100 text-sm font-bold text-slate-600">
               {getInitials(requesterName)}
             </div>
           )}
         </div>
+      </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyle}`}>
-              {statusLabel}
-            </span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-              {categoryLabel}
-            </span>
-            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-medium text-amber-700">
-              {helpRequest.urgencyLevel}
-            </span>
+      <div className="p-3.5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors group-hover:text-amber-600">
+              {helpRequest.title}
+            </h3>
+            <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-slate-600">
+              {helpRequest.story}
+            </p>
           </div>
 
-          <div className="mt-2.5 flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <h3 className="line-clamp-1 text-base font-bold leading-tight text-slate-900 transition-colors group-hover:text-amber-600 sm:text-lg">
-                {helpRequest.title}
-              </h3>
-              <p className="mt-1.5 line-clamp-1 text-sm leading-5 text-slate-600">
-                {helpRequest.story}
-              </p>
-            </div>
-
-            <div className="hidden flex-shrink-0 items-center gap-2 text-sm font-semibold text-slate-400 group-hover:text-amber-600 lg:flex">
-              View
-              <ChevronRight size={16} />
-            </div>
+          <div className="hidden flex-shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors group-hover:text-amber-600 2xl:flex">
+            View
+            <ChevronRight size={16} />
           </div>
+        </div>
 
-          <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-slate-500 sm:text-sm">
-            <span className="inline-flex items-center gap-2">
-              <UserRound size={14} className="text-slate-400" />
-              {requesterName}
-            </span>
-            <span className="inline-flex items-center gap-2">
-              <MapPin size={14} className="text-slate-400" />
-              {locationAddress}
-            </span>
-            <span className="inline-flex items-center gap-2 font-medium text-slate-700">
+        <div className="mt-3 grid grid-cols-1 gap-1.5 border-t border-slate-100 pt-3 text-xs text-slate-500 sm:text-sm">
+          <span className="inline-flex items-center gap-2 truncate">
+            <UserRound size={14} className="text-slate-400" />
+            <span className="truncate">{requesterName}</span>
+          </span>
+          <span className="inline-flex items-center gap-2 truncate">
+            <MapPin size={14} className="text-slate-400" />
+            <span className="truncate">{locationAddress}</span>
+          </span>
+          <div className="mt-0.5 flex items-center justify-between gap-2">
+            <span className="inline-flex items-center gap-2 truncate font-semibold text-slate-700">
               <CircleDollarSign size={14} className="text-amber-500" />
-              {helpRequest.amountNeeded ? formatCurrency(helpRequest.amountNeeded) : 'Flexible support'}
+              <span className="truncate">{helpRequest.amountNeeded ? formatCurrency(helpRequest.amountNeeded) : 'Flexible support'}</span>
             </span>
-            <span className="inline-flex items-center gap-2">
-              <CalendarDays size={14} className="text-slate-400" />
-              {formatDate(helpRequest.createdAt) || 'Recently submitted'}
+            <span className="inline-flex flex-shrink-0 items-center gap-1.5 text-xs">
+              <CalendarDays size={13} className="text-slate-400" />
+              {formatDate(helpRequest.createdAt) || 'Recently'}
             </span>
           </div>
         </div>

@@ -11,6 +11,10 @@ export function HelpRequestFilterBar({
 }) {
   return (
     <div className="space-y-2">
+      <p className="text-sm text-slate-500">
+        Use filters to quickly find the most relevant requests for you.
+      </p>
+
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1.8fr)_repeat(2,minmax(0,0.8fr))_auto]">
         <div className="relative">
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

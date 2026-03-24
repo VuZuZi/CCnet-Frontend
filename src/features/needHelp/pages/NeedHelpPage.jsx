@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { CircleAlert } from 'lucide-react';
 
 import { useHelpRequests } from '../hooks/useHelpRequestQueries';
@@ -8,7 +8,7 @@ import { HelpRequestFilterBar } from '../components/HelpRequestFilterBar';
 import { HelpRequestList } from '../components/HelpRequestList';
 
 export function NeedHelpPage() {
-  const [page, setPage] = useState(1);
+  const [pageState, setPageState] = useState({ value: 1, filterKey: null });
 
   const {
     filters,
@@ -19,6 +19,9 @@ export function NeedHelpPage() {
     hasActiveFilters,
   } = useHelpRequestFilters();
 
+  const filterKey = useMemo(() => JSON.stringify(filters), [filters]);
+  const page = pageState.filterKey === filterKey ? pageState.value : 1;
+
   const {
     data,
     isLoading,
@@ -26,18 +29,9 @@ export function NeedHelpPage() {
     error,
   } = useHelpRequests(filters, page, 12);
 
-  useEffect(() => {
-    setPage(1);
-  }, [filters]);
-
-  const { loadedCount, totalCount } = useMemo(() => {
-    const requests = data?.data || [];
-
-    return {
-      loadedCount: requests.length,
-      totalCount: data?.pagination?.total || requests.length,
-    };
-  }, [data]);
+  const handlePageChange = (nextPage) => {
+    setPageState({ value: nextPage, filterKey });
+  };
 
   if (isError) {
     return (
@@ -64,9 +58,9 @@ export function NeedHelpPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-      <section className="rounded-[30px] border border-slate-200 bg-white shadow-sm">
+      <div className="rounded-[30px] border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 p-6 sm:p-8">
-          <HelpRequestHeader loadedCount={loadedCount} totalCount={totalCount} />
+          <HelpRequestHeader />
         </div>
 
         <div className="p-6 sm:p-8">
@@ -79,13 +73,13 @@ export function NeedHelpPage() {
             onResetFilters={resetFilters}
           />
         </div>
-      </section>
+      </div>
 
       <section className="mt-6">
         <HelpRequestList
           data={data}
           page={page}
-          onPageChange={setPage}
+          onPageChange={handlePageChange}
           isLoading={isLoading}
           hasActiveFilters={hasActiveFilters}
           onResetFilters={resetFilters}
