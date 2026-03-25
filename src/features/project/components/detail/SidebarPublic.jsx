@@ -1,11 +1,13 @@
 // src/features/project/components/SidebarPublic.jsx
 import { Heart, Share2, Flag } from 'lucide-react';
 import { ApplyVolunteerButton } from '@/features/volunteer/components/ApplyVolunteerButton';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 
 export function SidebarPublic({ project }) {
     const currentAmount = project?.currentAmount || 0;
     const targetAmount = project?.targetAmount || 1;
     const progressPercent = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+    const user = useAuthStore(authSelectors.user);
 
     return (
         <div className="sticky top-28 bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl flex flex-col gap-8">
@@ -41,6 +43,7 @@ export function SidebarPublic({ project }) {
 
                 {/* Volunteer Button */}
                 <ApplyVolunteerButton
+                    user={user}
                     projectId={project?._id || project?.id}
                     projectName={project?.name}
                 />
