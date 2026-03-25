@@ -11,10 +11,8 @@ export const VolunteerApplicationModal = ({
   projectName,
   onSuccess
 }) => {
-  // ✅ Gọi hook bên trong component để lấy user
+  // Gọi hook bên trong component để lấy user
   const user = useAuthStore((state) => state.user);
-  console.log(user);
-
   useEffect(() => {
     const handleEsc = (e) => {
       if (e.key === 'Escape') {

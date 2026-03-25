@@ -81,11 +81,8 @@ export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel 
       ...formData,
       availability: formData.availability.join(', '),
     };
-    console.log("vòa đây");
 
     try {
-      console.log("vòa đây");
-
       await createApplication(submitData);
       onSuccess?.();
     } catch (error) {
