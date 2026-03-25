@@ -15,18 +15,22 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   // Fetch application status nếu đã đăng nhập
   const { data: application, isLoading } = useQuery({
     queryKey: ['volunteer-application', projectId, user?.id],
-    queryFn: () => volunteerAPI.getApplicationByProject(projectId),
+    queryFn: async () => {
+      console.log('🔍 Calling API with projectId:', projectId);
+      const result = await volunteerAPI.getApplicationByProject(projectId);
+      console.log('📦 API Result:', result);
+      return result;
+    },
     enabled: !!isAuthenticated && !!user?.id,
-    retry: false,
   });
 
   const hasApplied = !!application;
   const applicationStatus = application?.status;
-  console.log("----------" + applicationStatus);
+  // console.log("----------" + applicationStatus);
 
   const getStatusConfig = () => {
     switch (applicationStatus) {
-      case 'pending':
+      case 'PENDING':
         return {
           text: 'Đang chờ xét duyệt',
           icon: Clock,

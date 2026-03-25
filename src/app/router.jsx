@@ -30,6 +30,7 @@ const ProjectListPage = lazy(() => import("@/features/project/pages/ProjectListP
 const ProjectDetailPage = lazy(() => import("@/features/project/pages/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage || m.default })));
 const CreateProjectPage = lazy(() => import("@/features/project/pages/CreateProjectPage").then(m => ({ default: m.CreateProjectPage || m.default })));
 
+
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
     <h2 className="text-2xl font-bold text-slate-400">Trang {title} (Đang xây dựng)</h2>

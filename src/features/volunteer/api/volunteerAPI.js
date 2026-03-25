@@ -3,12 +3,34 @@ import httpClient from '@/shared/lib/httpClient';
 
 export const volunteerAPI = {
     // API để lấy application của user cho project
-    getApplicationByProject: async () => {
+
+    getApplicationByProject: async (projectId) => {
+        console.log('🔵 [API] getApplicationByProject called with projectId:', projectId);
+        console.log('🔵 [API] projectId type:', typeof projectId);
+        console.log('🔵 [API] projectId length:', projectId?.length);
+
+        if (!projectId) {
+            console.error('❌ [API] projectId is undefined or empty!');
+            return null;
+        }
+
         try {
-            const response = await httpClient.get(`/volunteer/application`);
+            const url = `/volunteer/application`;
+            const config = {
+                params: { opportunityId: projectId }
+            };
+            console.log('🔵 [API] Request config:', { url, config });
+
+            const response = await httpClient.get(url, config);
+            console.log('✅ [API] Response status:', response.status);
+            console.log('✅ [API] Response data:', response.data);
             return response.data?.data;
         } catch (error) {
-            // Nếu 404 (chưa có đơn) thì trả về null
+            console.error('❌ [API] Error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
             if (error.response?.status === 404) {
                 return null;
             }

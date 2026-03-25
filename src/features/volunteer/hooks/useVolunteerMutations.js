@@ -24,9 +24,7 @@ export const useVolunteerMutations = () => {
     });
 
     return {
-        // ✅ Export mutateAsync thay vì mutate
         createApplication: createApplicationMutation.mutateAsync,
-        // Hoặc export cả hai
         createApplicationAsync: createApplicationMutation.mutateAsync,
         createApplicationSync: createApplicationMutation.mutate,
         isCreating: createApplicationMutation.isLoading,
