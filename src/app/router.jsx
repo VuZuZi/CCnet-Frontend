@@ -13,6 +13,9 @@ import AdminDashboard from "@/features/admin/pages/AdminDashboard";
 import UserManagement from "@/features/admin/pages/UserManagement";
 import ProjectManagement from "@/features/admin/pages/ProjectManagement";
 import ReportManagement from "@/features/admin/pages/ReportManagement";
+import ApplyPage from "@/features/volunteer/pages/";
+
+// import VolunteerManagement from "@/features/volunteer/pages/VolunteerManagement";
 
 const LoginPage = lazy(() => import("@/features/auth/pages/LoginPage").then(m => ({ default: m.LoginPage || m.default })));
 const RegisterPage = lazy(() => import("@/features/auth/pages/RegisterPage").then(m => ({ default: m.RegisterPage || m.default })));
@@ -29,6 +32,8 @@ const PostDetailPage = lazy(() => import("@/features/community/pages/PostDetailP
 const ProjectListPage = lazy(() => import("@/features/project/pages/ProjectListPage").then(m => ({ default: m.ProjectListPage || m.default })));
 const ProjectDetailPage = lazy(() => import("@/features/project/pages/ProjectDetailPage").then(m => ({ default: m.ProjectDetailPage || m.default })));
 const CreateProjectPage = lazy(() => import("@/features/project/pages/CreateProjectPage").then(m => ({ default: m.CreateProjectPage || m.default })));
+
+const VolunteerDetailPage = lazy(() => import("@/features/volunteer/pages/PostDetailPage").then(m => ({ default: m.PostDetailPage || m.default })));
 
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
@@ -55,12 +60,12 @@ export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
-      { path: "/", element: <AuthGateway /> }, 
-      
+      { path: "/", element: <AuthGateway /> },
+
       { path: "projects", element: withSuspense(ProjectListPage) },
       { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
       { path: "users/:id", element: withSuspense(UserProfilePage) },
-      
+
       {
         element: <ProtectedRoute allowedRoles={CONSUMER_ROLES}><Outlet /></ProtectedRoute>,
         children: [
@@ -98,7 +103,7 @@ export const router = createBrowserRouter([
       { path: "reports", element: <ReportManagement /> },
     ],
   },
-  
+
   {
     path: "*",
     element: (
