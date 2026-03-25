@@ -110,7 +110,28 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
       return;
     }
 
-    if (hasApplied && (applicationStatus === 'PENDING' || applicationStatus === 'APPROVED')) {
+
+    // ✅ Kiểm tra nếu đã có đơn
+    if (hasApplied && applicationStatus === 'PENDING') {
+      alert('Bạn đã có đơn đăng ký đang chờ xét duyệt');
+      return;
+    }
+
+    if (hasApplied && applicationStatus === 'APPROVED') {
+      alert('Bạn đã được chấp nhận tham gia dự án này');
+      return;
+    }
+
+    // Nếu đơn bị từ chối, cho phép đăng ký lại
+    if (hasApplied && applicationStatus === 'REJECTED') {
+      // Cho phép tạo mới - cần xóa đơn cũ hoặc cho phép tạo mới
+      setShowModal(true);
+      return;
+    }
+
+    // Nếu đơn đã bị hủy, cho phép đăng ký lại
+    if (hasApplied && applicationStatus === 'CANCELLED') {
+      setShowModal(true);
       return;
     }
 

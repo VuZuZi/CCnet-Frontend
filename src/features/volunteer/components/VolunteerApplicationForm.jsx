@@ -87,6 +87,15 @@ export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel 
       onSuccess?.();
     } catch (error) {
       console.error('Submit failed:', error);
+
+      // ✅ Xử lý lỗi duplicate
+      if (error?.response?.status === 400 && error?.response?.data?.message?.includes('Already applied')) {
+        alert('Bạn đã đăng ký dự án này rồi!');
+      } else if (error?.message?.includes('E11000') || error?.response?.data?.message?.includes('duplicate')) {
+        alert('Bạn đã đăng ký dự án này rồi! Vui lòng kiểm tra lại.');
+      } else {
+        alert('Đăng ký thất bại. Vui lòng thử lại sau.');
+      }
     }
   };
 
