@@ -2,13 +2,42 @@
 import httpClient from '@/shared/lib/httpClient';
 
 export const volunteerAPI = {
-    // API để lấy application của user cho project
+    // ✅ SỬA: API để lấy danh sách đơn đang chờ của project
+    getProjectPendingApplications: async (projectId) => {
+        console.log('🔵 [API] getProjectPendingApplications called with projectId:', projectId);
+        if (!projectId) {
+            console.error('❌ [API] projectId is required');
+            return { data: [] };
+        }
+        try {
+            // ✅ Đúng endpoint
+            const url = `/volunteer/projects/${projectId}`;
+            console.log('🔵 [API] GET URL:', url);
 
+            const response = await httpClient.get(url);
+            console.log('✅ [API] Response:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('❌ [API] Error:', {
+                status: error.response?.status,
+                data: error.response?.data,
+                message: error.message
+            });
+
+            if (error.response?.status === 404) {
+                return { data: { data: [], total: 0 } };
+            }
+            throw error;
+        }
+    },
+
+    // API để lấy application của user cho project
     getApplicationByProject: async (projectId) => {
         if (!projectId) {
             console.error('❌ [API] projectId is undefined or empty!');
             return null;
         }
+        console.log('🔵 [API] getApplicationByProject called with projectId:', projectId);
 
         try {
             const url = `/volunteer/application`;
@@ -18,8 +47,7 @@ export const volunteerAPI = {
             console.log('🔵 [API] Request config:', { url, config });
 
             const response = await httpClient.get(url, config);
-            // console.log('✅ [API] Response status:', response.status);
-            // console.log('✅ [API] Response data:', response.data);
+            console.log('✅ [API] Response:', response.data);
             return response.data?.data;
         } catch (error) {
             console.error('❌ [API] Error:', {
@@ -45,9 +73,10 @@ export const volunteerAPI = {
             throw error;
         }
     },
+
+    // Cập nhật application
     updateApplication: async (applicationId, data) => {
         console.log('🔵 [API] updateApplication called with:', applicationId, data);
-
         try {
             const response = await httpClient.patch(`/volunteer/applications/${applicationId}`, data);
             return response.data?.data;
@@ -56,15 +85,12 @@ export const volunteerAPI = {
             throw error;
         }
     },
-    // HỦY ĐƠN - Dùng PUT hoặc PATCH
+
+    // Hủy đơn
     cancelApplication: async (applicationId) => {
         console.log('🔵 [API] cancelApplication called with:', applicationId);
-
         try {
-            // const response = await httpClient.put(`/volunteer/applications/${applicationId}/cancel`);
-            // Hoặc dùng PATCH
             const response = await httpClient.patch(`/volunteer/applications/${applicationId}/cancel`);
-
             return response.data?.data;
         } catch (error) {
             console.error('❌ [API] Cancel error:', error);
