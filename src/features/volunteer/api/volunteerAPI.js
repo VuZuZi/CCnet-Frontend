@@ -2,19 +2,22 @@
 import httpClient from '@/shared/lib/httpClient';
 
 export const volunteerAPI = {
-    // ✅ SỬA: API để lấy danh sách đơn đang chờ của project
-    getProjectPendingApplications: async (projectId) => {
-        console.log('🔵 [API] getProjectPendingApplications called with projectId:', projectId);
+    // ✅ THÊM METHOD MỚI: Lấy danh sách đơn theo project và status
+    getProjectApplications: async (projectId, status = null) => {
+        console.log('🔵 [API] getProjectApplications called:', { projectId, status });
+
         if (!projectId) {
             console.error('❌ [API] projectId is required');
             return { data: [] };
         }
-        try {
-            // ✅ Đúng endpoint
-            const url = `/volunteer/projects/${projectId}`;
-            console.log('🔵 [API] GET URL:', url);
 
-            const response = await httpClient.get(url);
+        try {
+            const url = `/volunteer/projects/${projectId}`;
+            const params = {};
+            if (status) params.status = status;
+
+            console.log('🔵 [API] GET URL:', url, 'params:', params);
+            const response = await httpClient.get(url, { params });
             console.log('✅ [API] Response:', response.data);
             return response.data;
         } catch (error) {
@@ -23,12 +26,17 @@ export const volunteerAPI = {
                 data: error.response?.data,
                 message: error.message
             });
-
             if (error.response?.status === 404) {
-                return { data: { data: [], total: 0 } };
+                return { data: [] };
             }
             throw error;
         }
+    },
+
+    // ✅ SỬA: API để lấy danh sách đơn đang chờ của project (dùng method trên)
+    getProjectPendingApplications: async (projectId) => {
+        console.log('🔵 [API] getProjectPendingApplications called with projectId:', projectId);
+        return volunteerAPI.getProjectApplications(projectId, 'PENDING');
     },
 
     // API để lấy application của user cho project

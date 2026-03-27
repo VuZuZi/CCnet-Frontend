@@ -9,10 +9,9 @@ import { useVolunteerMutations } from '@/features/volunteer/hooks/useVolunteerMu
 export const VolunteerManager = ({ projectId }) => {
     const [activeSubTab, setActiveSubTab] = useState('pending');
     const [selectedApp, setSelectedApp] = useState(null);
-    console.log("------------------")
+    console.log("ssssssssssssssss"+ projectId)
     // Lấy danh sách đơn theo trạng thái
     const { useProjectApplications } = useVolunteerQueries();
-    console.log(useProjectApplications(projectId))
     const { data: pendingData, isLoading: pendingLoading, refetch: refetchPending } =
         useProjectApplications(projectId, 'PENDING');
     const { data: activeData, isLoading: activeLoading } =

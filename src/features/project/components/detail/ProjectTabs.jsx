@@ -1,16 +1,15 @@
 // src/features/project/components/detail/ProjectTabs.jsx
 
 export function ProjectTabs({ activeTab, setActiveTab, isOrganizer }) {
-    // ✅ Chỉ hiển thị tab pending nếu là organizer
     const tabs = [
         { id: 'story', label: 'Story' },
         { id: 'community', label: 'Community Feed' },
         { id: 'financials', label: isOrganizer ? 'Financial Management' : 'Transparency & Financials' },
     ];
 
-    // ✅ Thêm tab pending chỉ khi là organizer
+    // ✅ Thêm tab Volunteer Manager chỉ khi là organizer
     if (isOrganizer) {
-        tabs.push({ id: 'pending', label: 'Pending Applications' }); // ✅ Sửa typo: bỏ "aa"
+        tabs.push({ id: 'volunteer', label: 'Volunteer Manager' });
     }
 
     return (

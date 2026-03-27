@@ -1,3 +1,4 @@
+// src/features/project/pages/ProjectDetailPage.jsx
 import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjectDetail } from '../hooks/useProjectQueries';
@@ -8,7 +9,7 @@ import { ProjectCover } from '../components/detail/ProjectCover';
 import { ProjectHeader } from '../components/detail/ProjectHeader';
 import { ProjectTabs } from '../components/detail/ProjectTabs';
 import { TabStory } from '../components/detail/TabStory';
-import { TabPending } from '@/features/volunteer/components/tabPending.jsx';
+import { VolunteerManager } from '../components/detail/VolunteerManager';  // ✅ Import VolunteerManager
 import { SidebarPublic } from '../components/detail/SidebarPublic';
 import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
 
@@ -30,45 +31,61 @@ export function ProjectDetailPage() {
 
   const isOrganizer = identity === 'ORGANIZER';
 
-  return (
-    <div className="min-h-screen bg-gray-50 pb-20">
-      <main className="pt-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
-
-        <div className="lg:w-[65%] w-full space-y-8">
-          <ProjectCover project={project} isOrganizer={isOrganizer} />
-          <ProjectHeader project={project} isOrganizer={isOrganizer} />
-          <ProjectTabs activeTab={activeTab} setActiveTab={setActiveTab} isOrganizer={isOrganizer} />
-
-          {activeTab === 'story' ? (
-              <TabStory project={project} />
-          ) : activeTab === 'pending' ? (
-              <TabPending projectId={id} />  // ✅ Tab pending
-          ) : (
+  // ✅ Hàm render nội dung theo tab
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'story':
+        return <TabStory project={project} />;
+      case 'volunteer':  // ✅ Xử lý tab volunteer
+        return <VolunteerManager projectId={project._id} />;
+      case 'financials':
+        return (
             <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
-              Nội dung tab đang được xây dựng... (Nợ kỹ thuật)
+              Nội dung Financials đang được xây dựng...
             </div>
-          )}
+        );
+      case 'community':
+        return (
+            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
+              Nội dung Community Feed đang được xây dựng...
+            </div>
+        );
+      default:
+        return (
+            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
+              Nội dung đang được xây dựng...
+            </div>
+        );
+    }
+  };
 
+  return (
+      <div className="min-h-screen bg-gray-50 pb-20">
+        <main className="pt-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
-          {/* -------------------------------------------------------------------------------------- */}
-          {/* -------------------------------------------------------------------------------------- */}
-          {/* -------------------------------------------------------------------------------------- */}
-          {/* -------------------------------------------------------------------------------------- */}
-          {/* -------------------------------------------------------------------------------------- */}
-          {/* -------------------------------------------------------------------------------------- */}
-          {/* -------------------------------------------------------------------------------------- */}
+          <div className="lg:w-[65%] w-full space-y-8">
+            <ProjectCover project={project} isOrganizer={isOrganizer} />
+            <ProjectHeader project={project} isOrganizer={isOrganizer} />
+            <ProjectTabs
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                isOrganizer={isOrganizer}
+            />
 
-        </div>
+            {/* ✅ Render nội dung theo tab */}
+            {renderTabContent()}
 
-        <div className="lg:w-[35%] w-full">
-          {isOrganizer ? (
-            <SidebarOrganizer project={project} />
-          ) : (
-            <SidebarPublic project={project} />
-          )}
-        </div>
+          </div>
 
-      </main>
-    </div>
+          <div className="lg:w-[35%] w-full">
+            {isOrganizer ? (
+                <SidebarOrganizer project={project} />
+            ) : (
+                <SidebarPublic project={project} />
+            )}
+          </div>
+
+        </main>
+      </div>
   );
 }

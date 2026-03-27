@@ -4,12 +4,23 @@ import { volunteerAPI } from '../api/volunteerAPI';
 
 export const useVolunteerQueries = () => {
 
+    // ✅ THÊM METHOD MỚI: Lấy danh sách đơn theo project và status
+    const useProjectApplications = (projectId, status = null) => {
+        console.log('🔍 useProjectApplications called with:', { projectId, status });
+
+        return useQuery({
+            queryKey: ['project-applications', projectId, status],
+            queryFn: () => volunteerAPI.getProjectApplications(projectId, status),
+            enabled: !!projectId,
+        });
+    };
+
     // 1. Lấy danh sách đơn đang chờ của project
     const useProjectPendingApplications = (projectId) => {
         return useQuery({
             queryKey: ['pending-applications', projectId],
             queryFn: () => volunteerAPI.getProjectPendingApplications(projectId),
-            enabled: !!projectId,  // Chỉ chạy khi có projectId
+            enabled: !!projectId,
         });
     };
 
@@ -37,10 +48,11 @@ export const useVolunteerQueries = () => {
             queryKey: ['application-detail', applicationId],
             queryFn: () => volunteerAPI.getApplicationById(applicationId),
             enabled: !!applicationId,
-        });;
-}
+        });
+    };
 
     return {
+        useProjectApplications,           // ✅ Thêm vào return
         useProjectPendingApplications,
         useApplicationStatus,
         useMyApplications,
