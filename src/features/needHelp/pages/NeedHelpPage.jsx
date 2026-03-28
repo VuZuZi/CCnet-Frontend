@@ -1,9 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { CircleAlert } from 'lucide-react';
 
 import { useHelpRequests } from '../hooks/useHelpRequestQueries';
 import { useHelpRequestFilters } from '../hooks/useHelpRequestFilters';
 import { HelpRequestHeader } from '../components/HelpRequestHeader';
+import { NeedHelpDiscoverySections } from '../components/NeedHelpDiscoverySections';
 import { HelpRequestFilterBar } from '../components/HelpRequestFilterBar';
 import { HelpRequestList } from '../components/HelpRequestList';
 
@@ -27,11 +28,16 @@ export function NeedHelpPage() {
     isLoading,
     isError,
     error,
-  } = useHelpRequests(filters, page, 12);
+  } = useHelpRequests(filters, page, 15);
 
   const handlePageChange = (nextPage) => {
     setPageState({ value: nextPage, filterKey });
   };
+
+  const scrollToRequestSection = useCallback(() => {
+    const requestListSection = document.getElementById('need-help-request-list');
+    requestListSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, []);
 
   if (isError) {
     return (
@@ -58,12 +64,20 @@ export function NeedHelpPage() {
 
   return (
     <main className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-      <div className="rounded-[30px] border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-100 p-6 sm:p-8">
-          <HelpRequestHeader />
-        </div>
+      <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+        <HelpRequestHeader />
+      </div>
 
-        <div className="p-6 sm:p-8">
+      <section className="mt-6">
+        <NeedHelpDiscoverySections
+          onFilterChange={updateFilter}
+          onResetFilters={resetFilters}
+          onJumpToList={scrollToRequestSection}
+        />
+      </section>
+
+      <div id="need-help-request-list" className="mt-6 rounded-[30px] border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-100 p-6 sm:p-8">
           <HelpRequestFilterBar
             localSearch={localSearch}
             setLocalSearch={setLocalSearch}
@@ -71,6 +85,7 @@ export function NeedHelpPage() {
             onFilterChange={updateFilter}
             hasActiveFilters={hasActiveFilters}
             onResetFilters={resetFilters}
+            onCreateClick={scrollToRequestSection}
           />
         </div>
       </div>

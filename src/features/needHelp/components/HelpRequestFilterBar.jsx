@@ -1,4 +1,5 @@
-import { AlertTriangle, FilterX, Layers, Search } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { AlertTriangle, FilterX, Layers, Plus, Search } from 'lucide-react';
 import { CATEGORY_OPTIONS, URGENCY_OPTIONS } from '../hooks/useHelpRequestFilters';
 
 export function HelpRequestFilterBar({
@@ -8,12 +9,24 @@ export function HelpRequestFilterBar({
   onFilterChange,
   hasActiveFilters,
   onResetFilters,
+  onCreateClick,
 }) {
   return (
-    <div className="space-y-2">
-      <p className="text-sm text-slate-500">
-        Use filters to quickly find the most relevant requests for you.
-      </p>
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-slate-500">
+          Use filters to quickly find the most relevant requests for you.
+        </p>
+
+        <Link
+          to="/need-help/create"
+          onClick={onCreateClick}
+          className="inline-flex h-10 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-500"
+        >
+          <Plus size={16} />
+          Create Request
+        </Link>
+      </div>
 
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1.8fr)_repeat(2,minmax(0,0.8fr))_auto]">
         <div className="relative">
@@ -67,7 +80,7 @@ export function HelpRequestFilterBar({
           <button
             type="button"
             onClick={onResetFilters}
-            className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             <FilterX size={16} />
             Reset
