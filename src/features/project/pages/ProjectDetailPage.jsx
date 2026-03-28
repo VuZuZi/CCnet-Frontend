@@ -9,7 +9,7 @@ import { ProjectCover } from '../components/detail/ProjectCover';
 import { ProjectHeader } from '../components/detail/ProjectHeader';
 import { ProjectTabs } from '../components/detail/ProjectTabs';
 import { TabStory } from '../components/detail/TabStory';
-import { VolunteerManager } from '../components/detail/VolunteerManager';  // ✅ Import VolunteerManager
+import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';  // ✅ Import VolunteerManager
 import { SidebarPublic } from '../components/detail/SidebarPublic';
 import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
 

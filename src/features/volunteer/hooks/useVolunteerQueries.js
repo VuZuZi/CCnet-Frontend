@@ -4,13 +4,16 @@ import { volunteerAPI } from '../api/volunteerAPI';
 
 export const useVolunteerQueries = () => {
 
-    // ✅ THÊM METHOD MỚI: Lấy danh sách đơn theo project và status
+    //  THÊM METHOD MỚI: Lấy danh sách đơn theo project và status
     const useProjectApplications = (projectId, status = null) => {
-        console.log('🔍 useProjectApplications called with:', { projectId, status });
-
         return useQuery({
             queryKey: ['project-applications', projectId, status],
-            queryFn: () => volunteerAPI.getProjectApplications(projectId, status),
+            queryFn: async () => {
+                console.log(' [HOOK] Fetching data for status:', status);
+                const result = await volunteerAPI.getProjectApplications(projectId, status);
+                console.log(' [HOOK] Result for status', status, ':', result);
+                return result;
+            },
             enabled: !!projectId,
         });
     };
@@ -52,7 +55,7 @@ export const useVolunteerQueries = () => {
     };
 
     return {
-        useProjectApplications,           // ✅ Thêm vào return
+        useProjectApplications,
         useProjectPendingApplications,
         useApplicationStatus,
         useMyApplications,

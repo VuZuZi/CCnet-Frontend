@@ -9,31 +9,22 @@ import { useVolunteerMutations } from '@/features/volunteer/hooks/useVolunteerMu
 export const TabPending = ({ projectId }) => {
     const [isExpanded, setIsExpanded] = useState(false);
     const [selectedApp, setSelectedApp] = useState(null);
-
-    console.log('🔍 TabPending - projectId:', projectId);
-
     // Lấy danh sách đơn đang chờ
     const { useProjectPendingApplications } = useVolunteerQueries();
     const { data, isLoading, error, refetch } = useProjectPendingApplications(projectId);
 
-    // Debug data
     useEffect(() => {
         if (data) {
-            console.log('🔍 Data from API:', data);
-            console.log('🔍 Data type:', typeof data);
-            console.log('🔍 Is array?', Array.isArray(data));
-
             // Kiểm tra cấu trúc
             if (data && typeof data === 'object') {
-                console.log('🔍 Data keys:', Object.keys(data));
-
+                console.log(' Data keys:', Object.keys(data));
                 // Kiểm tra các trường có thể chứa mảng
                 if (data.data) {
-                    console.log('🔍 data.data:', data.data);
-                    console.log('🔍 data.data is array?', Array.isArray(data.data));
+                    console.log(' data.data:', data.data);
+                    console.log(' data.data is array?', Array.isArray(data.data));
                 }
                 if (data.applications) {
-                    console.log('🔍 data.applications:', data.applications);
+                    console.log(' data.applications:', data.applications);
                 }
             }
         }
@@ -66,12 +57,7 @@ export const TabPending = ({ projectId }) => {
     };
 
     const applications = getApplications();
-    console.log('📋 Final applications:', applications);
-    console.log('📋 Is array?', Array.isArray(applications));
-    console.log('📋 Length:', applications?.length);
-
     const { updateApplication, isUpdating } = useVolunteerMutations();
-
     const handleApprove = (applicationId) => {
         if (confirm('Xác nhận duyệt đơn đăng ký này?')) {
             updateApplication(
@@ -79,7 +65,6 @@ export const TabPending = ({ projectId }) => {
                 {
                     onSuccess: () => {
                         refetch();
-                        alert('Duyệt đơn thành công');
                     },
                     onError: (error) => {
                         alert(error.response?.data?.message || 'Duyệt đơn thất bại');

@@ -14,15 +14,12 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
 
   // Fetch application status
   const { data: application, isLoading, refetch } = useQuery({
     queryKey: ['volunteer-application', projectId, user?.id],
     queryFn: async () => {
-      console.log('🔍 Calling API with projectId:', projectId);
       const result = await volunteerAPI.getApplicationByProject(projectId);
-      console.log('📦 API Result:', result);
       return result;
     },
     enabled: !!isAuthenticated && !!user?.id,
@@ -31,17 +28,14 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   // Mutation để hủy đơn
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      console.log('🔍 Cancelling application:', application?.id);
       return await volunteerAPI.cancelApplication(application?.id);
     },
     onSuccess: (data) => {
-      console.log('✅ Cancel success:', data);
       alert('Đã hủy đơn đăng ký thành công');
       setShowCancelConfirm(false);
       refetch();
     },
     onError: (error) => {
-      console.error('❌ Cancel error:', error);
       alert('Hủy đơn thất bại: ' + (error.response?.data?.message || error.message || 'Vui lòng thử lại'));
     }
   });
@@ -49,17 +43,14 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   // Mutation để cập nhật đơn
   const updateMutation = useMutation({
     mutationFn: async (updateData) => {
-      console.log('🔍 Updating application:', application?.id, updateData);
       return await volunteerAPI.updateApplication(application?.id, updateData);
     },
     onSuccess: (data) => {
-      console.log('✅ Update success:', data);
       alert('Cập nhật đơn đăng ký thành công');
       setShowEditModal(false);
       refetch();
     },
     onError: (error) => {
-      console.error('❌ Update error:', error);
       alert('Cập nhật thất bại: ' + (error.response?.data?.message || error.message || 'Vui lòng thử lại'));
     }
   });

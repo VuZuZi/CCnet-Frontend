@@ -9,21 +9,13 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
     const progressPercent = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
 
     const projectId = project?._id;
-    console.log('🔍 project?._id:', projectId);
-
-    // ✅ Ref cho phần tử cần cuộn đến
+    //  Ref cho phần tử cần cuộn đến
     const pendingCountRef = useRef(null);
-
     const { useProjectPendingApplications } = useVolunteerQueries();
-    const { data: pendingData, isLoading, error, refetch } = useProjectPendingApplications(projectId);
-
+    const { data: pendingData, isLoading, error } = useProjectPendingApplications(projectId);
     useEffect(() => {
-        console.log('🔍 pendingData:', pendingData);
-        console.log('🔍 isLoading:', isLoading);
-        console.log('🔍 error:', error);
-
         if (pendingData) {
-            console.log('✅ pendingData structure:', {
+            console.log(' pendingData structure:', {
                 hasData: !!pendingData.data,
                 dataKeys: pendingData.data ? Object.keys(pendingData.data) : 'no data',
                 dataData: pendingData?.data?.data,
@@ -50,9 +42,8 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
     };
 
     const pendingAppsCount = getPendingCount();
-    console.log('📊 pendingAppsCount:', pendingAppsCount);
 
-    // ✅ Hàm xử lý khi click vào Pending Volunteers - cuộn đến số lượng
+    //  Hàm xử lý khi click vào Pending Volunteers - cuộn đến số lượng
     const handlePendingVolunteersClick = () => {
         // Cuộn đến phần tử chứa số lượng
         if (pendingCountRef.current) {
@@ -60,7 +51,6 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                 behavior: 'smooth',
                 block: 'center'
             });
-
             // Thêm hiệu ứng highlight
             pendingCountRef.current.classList.add('ring-4', 'ring-green-300', 'scale-110');
             setTimeout(() => {
@@ -69,13 +59,11 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                 }
             }, 1000);
         }
-
         // Nếu có callback để điều hướng đến tab volunteer
         if (onNavigateToVolunteerTab) {
             onNavigateToVolunteerTab('volunteer', 'pending');
         }
     };
-
     return (
         <div className="sticky top-28 bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl flex flex-col gap-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
@@ -104,7 +92,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
             {/* Pending Volunteers Card - Click vào text để cuộn */}
             <div className="bg-green-100/50 p-4 rounded-2xl flex items-center justify-between border border-green-100">
-                {/* ✅ Phần text có thể click */}
+                {/*  Phần text có thể click */}
                 <div
                     className="flex items-center gap-3 cursor-pointer group"
                     onClick={handlePendingVolunteersClick}
@@ -122,7 +110,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                     </div>
                 </div>
 
-                {/* ✅ Số lượng - có ref để cuộn đến */}
+                {/*  Số lượng - có ref để cuộn đến */}
                 <div
                     ref={pendingCountRef}
                     className="bg-green-500 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300"
