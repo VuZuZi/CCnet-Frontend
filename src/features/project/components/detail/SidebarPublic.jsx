@@ -1,13 +1,17 @@
-import { Heart, Users, Share2, Flag } from 'lucide-react';
+// src/features/project/components/SidebarPublic.jsx
+import { Heart, Share2, Flag } from 'lucide-react';
+import { ApplyVolunteerButton } from '@/features/volunteer/components/ApplyVolunteerButton';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 
 export function SidebarPublic({ project }) {
     const currentAmount = project?.currentAmount || 0;
     const targetAmount = project?.targetAmount || 1;
     const progressPercent = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+    const user = useAuthStore(authSelectors.user);
 
     return (
         <div className="sticky top-28 bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl flex flex-col gap-8">
-
+            {/* Progress Section */}
             <div className="space-y-3">
                 <div className="text-3xl font-extrabold text-gray-900 tracking-tight">
                     {currentAmount.toLocaleString()}đ <span className="text-gray-500 text-lg font-medium">raised of {targetAmount.toLocaleString()}đ</span>
@@ -19,6 +23,7 @@ export function SidebarPublic({ project }) {
                 </div>
             </div>
 
+            {/* Stats Section */}
             <div className="grid grid-cols-2 gap-4">
                 <div className="bg-gray-50 p-4 rounded-2xl flex flex-col items-center justify-center border border-gray-100">
                     <span className="text-2xl font-bold text-gray-900">{project?.stats?.donorCount?.toLocaleString() || 0}</span>
@@ -30,17 +35,23 @@ export function SidebarPublic({ project }) {
                 </div>
             </div>
 
+            {/* Action Buttons */}
             <div className="flex flex-col gap-4">
                 <button className="w-full py-5 text-xl font-bold text-black bg-amber-400 rounded-2xl hover:bg-amber-500 transition-colors shadow-lg shadow-yellow-500/30 flex justify-center items-center gap-2">
                     <Heart className="w-6 h-6 fill-current" /> Donate Now
                 </button>
-                <button className="w-full py-4 text-base font-bold text-gray-700 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-colors flex justify-center items-center gap-2">
-                    <Users className="w-5 h-5" /> Apply to Volunteer
-                </button>
+
+                {/* Volunteer Button */}
+                <ApplyVolunteerButton
+                    user={user}
+                    projectId={project?._id || project?.id}
+                    projectName={project?.name}
+                />
             </div>
 
             <hr className="border-gray-100" />
 
+            {/* Social Actions */}
             <div className="flex justify-center gap-8">
                 <button className="flex flex-col items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors group">
                     <div className="w-12 h-12 rounded-full bg-gray-50 flex items-center justify-center group-hover:bg-red-50 transition-colors">
@@ -61,7 +72,6 @@ export function SidebarPublic({ project }) {
                     <span className="text-xs font-semibold">Report</span>
                 </button>
             </div>
-
         </div>
     );
 }
