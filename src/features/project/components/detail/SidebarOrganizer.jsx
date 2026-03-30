@@ -1,18 +1,21 @@
 // src/features/project/components/detail/SidebarOrganizer.jsx
 import { useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ShieldCheck, Users, Lock, Edit, MessageSquare } from 'lucide-react';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
 
 export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
+    const { t } = useTranslation();
+
     const currentAmount = project?.currentAmount || 0;
     const targetAmount = project?.targetAmount || 1;
     const progressPercent = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
 
     const projectId = project?._id;
-    //  Ref cho phần tử cần cuộn đến
     const pendingCountRef = useRef(null);
     const { useProjectPendingApplications } = useVolunteerQueries();
     const { data: pendingData, isLoading, error } = useProjectPendingApplications(projectId);
+
     useEffect(() => {
         if (pendingData) {
             console.log(' pendingData structure:', {
@@ -43,15 +46,12 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
     const pendingAppsCount = getPendingCount();
 
-    //  Hàm xử lý khi click vào Pending Volunteers - cuộn đến số lượng
     const handlePendingVolunteersClick = () => {
-        // Cuộn đến phần tử chứa số lượng
         if (pendingCountRef.current) {
             pendingCountRef.current.scrollIntoView({
                 behavior: 'smooth',
                 block: 'center'
             });
-            // Thêm hiệu ứng highlight
             pendingCountRef.current.classList.add('ring-4', 'ring-green-300', 'scale-110');
             setTimeout(() => {
                 if (pendingCountRef.current) {
@@ -59,24 +59,24 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                 }
             }, 1000);
         }
-        // Nếu có callback để điều hướng đến tab volunteer
         if (onNavigateToVolunteerTab) {
             onNavigateToVolunteerTab('volunteer', 'pending');
         }
     };
+
     return (
         <div className="sticky top-28 bg-white p-6 sm:p-8 rounded-3xl border border-gray-100 shadow-xl flex flex-col gap-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100">
-                <h2 className="font-bold text-lg text-gray-900">Command Center</h2>
+                <h2 className="font-bold text-lg text-gray-900">{t('project.command_center')}</h2>
                 <div className="flex items-center gap-1.5 bg-gray-900 text-white px-3 py-1 rounded-full shadow-sm">
                     <ShieldCheck className="w-4 h-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Organizer Mode</span>
+                    <span className="text-xs font-bold uppercase tracking-wider">{t('project.organizer_mode')}</span>
                 </div>
             </div>
 
             <div className="space-y-3">
                 <div className="flex justify-between items-end">
-                    <p className="text-sm font-medium text-gray-500">Funds in Escrow</p>
+                    <p className="text-sm font-medium text-gray-500">{t('project.funds_in_escrow')}</p>
                 </div>
                 <div className="text-4xl font-extrabold text-gray-900 tracking-tight">
                     {currentAmount.toLocaleString()}đ
@@ -85,14 +85,13 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                     <div className="h-full bg-purple-400 rounded-full relative transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
                 </div>
                 <div className="flex justify-between text-xs text-gray-500 font-medium">
-                    <span>{progressPercent}% Funded</span>
-                    <span>Goal: {targetAmount.toLocaleString()}đ</span>
+                    <span>{progressPercent}% {t('project.funded')}</span>
+                    <span>{t('project.goal')}: {targetAmount.toLocaleString()}đ</span>
                 </div>
             </div>
 
-            {/* Pending Volunteers Card - Click vào text để cuộn */}
+            {/* Pending Volunteers Card */}
             <div className="bg-green-100/50 p-4 rounded-2xl flex items-center justify-between border border-green-100">
-                {/*  Phần text có thể click */}
                 <div
                     className="flex items-center gap-3 cursor-pointer group"
                     onClick={handlePendingVolunteersClick}
@@ -102,15 +101,14 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                     </div>
                     <div>
                         <p className="text-sm font-medium text-green-800 group-hover:text-green-900 transition-colors">
-                            Pending Volunteers
+                            {t('project.pending_applications')}
                         </p>
                         <p className="text-xs text-green-600 mt-0.5 group-hover:text-green-700 transition-colors">
-                            Review applications
+                            {t('project.review_applications')}
                         </p>
                     </div>
                 </div>
 
-                {/*  Số lượng - có ref để cuộn đến */}
                 <div
                     ref={pendingCountRef}
                     className="bg-green-500 text-white text-sm font-bold w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300"
@@ -125,17 +123,19 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
             <div className="flex flex-col gap-3 pt-2">
                 <button className="w-full py-4 text-base font-bold text-gray-500 bg-gray-100 rounded-2xl cursor-not-allowed flex justify-center items-center gap-2 border border-transparent">
-                    <Lock className="w-5 h-5" /> Request Disbursement
+                    <Lock className="w-5 h-5" /> {t('project.request_disbursement') || 'Request Disbursement'}
                 </button>
-                <p className="text-xs text-center text-gray-500">Submit Phase 1 evidence to unlock.</p>
+                <p className="text-xs text-center text-gray-500">
+                    {t('project.submit_evidence') || 'Submit Phase 1 evidence to unlock.'}
+                </p>
 
                 <hr className="border-gray-100 my-2" />
 
                 <button className="w-full py-3.5 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 transition-colors flex justify-center items-center gap-2">
-                    <Edit className="w-4 h-4" /> Edit Project Details
+                    <Edit className="w-4 h-4" /> {t('common.edit')}
                 </button>
                 <button className="w-full py-3.5 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 transition-colors flex justify-center items-center gap-2">
-                    <MessageSquare className="w-4 h-4" /> Open Project Group Chat
+                    <MessageSquare className="w-4 h-4" /> {t('project.open_chat') || 'Open Project Group Chat'}
                 </button>
             </div>
 

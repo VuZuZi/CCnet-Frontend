@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useGlobalSearch } from '../hooks/useGlobalSearch';
 
 function buildPersonPath(id) {
@@ -11,6 +12,7 @@ function buildProjectPath(id) {
 }
 
 export default function GlobalSearch() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const {
     query,
@@ -76,7 +78,7 @@ export default function GlobalSearch() {
         <input
           type="text"
           className="w-full rounded-full border border-light-gray bg-white py-2 pl-[14px] pr-[36px] text-black transition-colors focus:border-yellow focus:outline-none focus:ring-1 focus:ring-yellow"
-          placeholder="Search..."
+          placeholder={`${t('common.search')}...`}
           value={query}
           onFocus={() => setOpen(true)}
           onChange={(e) => {
@@ -95,7 +97,7 @@ export default function GlobalSearch() {
           role="listbox"
         >
           {isLoading ? (
-            <div className="px-3 py-3 text-sm text-black/70">Searching...</div>
+            <div className="px-3 py-3 text-sm text-black/70">{t('common.loading')}</div>
           ) : groups.length > 0 ? (
             groups.map((group) => (
               <div key={group.key}>

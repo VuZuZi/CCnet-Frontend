@@ -195,7 +195,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
             <StatusIcon className="w-5 h-5" />
             {statusConfig.text}
             {applicationStatus === 'REJECTED' && (
-              <span className="text-xs ml-1">(Đăng ký lại)</span>
+              <span className="text-xs ml-1"></span>
             )}
           </button>
 

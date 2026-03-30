@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   Search,
   MessageCircle,
@@ -18,14 +19,16 @@ import { Button, cn } from '@/shared/components/ui/Button/Button';
 import ChatWidget from '@/features/chat/components/ChatWidget';
 import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
 import GlobalSearch from '@/features/search/components/GlobalSearch';
+import { LanguageSwitcher } from '@/i18n/components/LanguageSwitcher';
 
 const NAV_LINKS = [
-  { label: 'Project', to: ROUTES.PROJECTS },
-  { label: 'Community', to: ROUTES.COMMUNITY || '/community' },
-  { label: 'NeedHelp', to: '/need-help' },
+  { label: 'navigation.projects', to: ROUTES.PROJECTS },
+  { label: 'navigation.community', to: ROUTES.COMMUNITY || '/community' },
+  { label: 'navigation.need_help', to: '/need-help' },
 ];
 
 export function Navbar() {
+  const { t } = useTranslation();
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const user = useAuthStore(authSelectors.user);
   const { logout } = useLogout();
@@ -63,13 +66,13 @@ export function Navbar() {
                     key={link.label}
                     to={link.to}
                     className={cn(
-                      'transition-colors',
+                      'transition-colors whitespace-nowrap',
                       isActive
                         ? 'font-bold text-amber-500'
                         : 'text-slate-600 hover:text-amber-500'
                     )}
                   >
-                    {link.label}
+                    {t(link.label)}
                   </Link>
                 );
               })}
@@ -81,6 +84,10 @@ export function Navbar() {
           </div>
 
           <div className="flex flex-shrink-0 items-center space-x-2 sm:space-x-4">
+            <div className="hidden lg:block">
+              <LanguageSwitcher />
+            </div>
+
             {isAuthenticated ? (
               <>
                 <ChatAction />
@@ -98,13 +105,13 @@ export function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   to={ROUTES.LOGIN}
-                  className="hidden font-medium text-slate-600 hover:text-slate-900 sm:block"
+                  className="hidden whitespace-nowrap font-medium text-slate-600 hover:text-slate-900 sm:block"
                 >
-                  Log in
+                  {t('navigation.login')}
                 </Link>
                 <Link to={ROUTES.REGISTER}>
                   <Button variant="primary" size="sm" className="!rounded-xl">
-                    Get Started
+                    {t('navigation.register')}
                   </Button>
                 </Link>
               </div>
@@ -131,7 +138,7 @@ export function Navbar() {
               <input
                 type="text"
                 className="w-full rounded-lg bg-slate-100 py-2 pl-10 pr-4 outline-none focus:ring-2 focus:ring-amber-500/50"
-                placeholder="Search..."
+                placeholder={`${t('common.search')}...`}
               />
             </div>
           </div>
@@ -151,10 +158,14 @@ export function Navbar() {
                       : 'text-slate-700 hover:bg-slate-50 hover:text-amber-500'
                   )}
                 >
-                  {link.label}
+                  {t(link.label)}
                 </Link>
               );
             })}
+          </div>
+
+          <div className="border-b border-slate-100 pb-4">
+            <LanguageSwitcher className="w-full" />
           </div>
 
           {isAuthenticated ? (
@@ -175,21 +186,21 @@ export function Navbar() {
                 to={ROUTES.PROFILE}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50"
               >
-                <UserIcon size={18} /> Profile
+                <UserIcon size={18} /> {t('navigation.profile')}
               </Link>
 
               <Link
                 to={ROUTES.DASHBOARD}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50"
               >
-                <LayoutDashboard size={18} /> Dashboard
+                <LayoutDashboard size={18} /> {t('navigation.dashboard')}
               </Link>
 
               <button
                 onClick={logout}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-left text-red-600 hover:bg-red-50"
               >
-                <LogOut size={18} /> Log out
+                <LogOut size={18} /> {t('navigation.logout')}
               </button>
             </div>
           ) : (
@@ -198,7 +209,7 @@ export function Navbar() {
                 to={ROUTES.LOGIN}
                 className="w-full rounded-lg bg-slate-100 py-2 text-center font-medium text-slate-700"
               >
-                Log in
+                {t('navigation.login')}
               </Link>
             </div>
           )}
@@ -247,6 +258,7 @@ function NotificationAction() {
 }
 
 function UserDropdown({ user, onLogout }) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
 
@@ -286,7 +298,7 @@ function UserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <UserIcon size={16} /> Profile
+            <UserIcon size={16} /> {t('navigation.profile')}
           </Link>
 
           <Link
@@ -294,7 +306,7 @@ function UserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LayoutDashboard size={16} /> Dashboard
+            <LayoutDashboard size={16} /> {t('navigation.dashboard')}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-slate-100" />
@@ -306,7 +318,7 @@ function UserDropdown({ user, onLogout }) {
             }}
             className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           >
-            <LogOut size={16} /> Sign out
+            <LogOut size={16} /> {t('navigation.logout')}
           </button>
         </div>
       )}
