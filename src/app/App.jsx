@@ -1,17 +1,20 @@
 import { RouterProvider } from "react-router-dom";
 import { QueryProvider } from "./providers/QueryProvider";
 import { ToastProvider } from "@/shared/contexts/ToastContext";
-import { useTranslation } from 'react-i18next';
+import { useTranslation, I18nextProvider } from 'react-i18next';
+import i18n from '@/i18n';
 import { router } from "./router";
 import { useAuthInit } from "@/features/auth/hooks/useAuthInit";
 
 function App() {
   return (
-    <QueryProvider>
-      <ToastProvider>
-        <AppContent />
-      </ToastProvider>
-    </QueryProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryProvider>
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
+      </QueryProvider>
+    </I18nextProvider>
   );
 }
 

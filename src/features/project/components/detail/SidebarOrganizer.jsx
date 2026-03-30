@@ -84,9 +84,9 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                 <div className="w-full h-3 bg-purple-100 rounded-full overflow-hidden mt-2">
                     <div className="h-full bg-purple-400 rounded-full relative transition-all duration-1000" style={{ width: `${progressPercent}%` }}></div>
                 </div>
-                <div className="flex justify-between text-xs text-gray-500 font-medium">
-                    <span>{progressPercent}% {t('project.funded')}</span>
-                    <span>{t('project.goal')}: {targetAmount.toLocaleString()}đ</span>
+                <div className="flex justify-between text-xs font-medium">
+                    <span className="text-purple-600">{progressPercent}% {t('project.funded')}</span>
+                    <span className="text-gray-500">{t('project.goal')}: {targetAmount.toLocaleString()}đ</span>
                 </div>
             </div>
 
@@ -123,10 +123,10 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
             <div className="flex flex-col gap-3 pt-2">
                 <button className="w-full py-4 text-base font-bold text-gray-500 bg-gray-100 rounded-2xl cursor-not-allowed flex justify-center items-center gap-2 border border-transparent">
-                    <Lock className="w-5 h-5" /> {t('project.request_disbursement') || 'Request Disbursement'}
+                    <Lock className="w-5 h-5" /> {t('project.request_disbursement')}
                 </button>
                 <p className="text-xs text-center text-gray-500">
-                    {t('project.submit_evidence') || 'Submit Phase 1 evidence to unlock.'}
+                    {t('project.submit_evidence')}
                 </p>
 
                 <hr className="border-gray-100 my-2" />
@@ -135,7 +135,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
                     <Edit className="w-4 h-4" /> {t('common.edit')}
                 </button>
                 <button className="w-full py-3.5 text-sm font-bold text-gray-700 bg-white border-2 border-gray-200 rounded-2xl hover:border-gray-300 transition-colors flex justify-center items-center gap-2">
-                    <MessageSquare className="w-4 h-4" /> {t('project.open_chat') || 'Open Project Group Chat'}
+                    <MessageSquare className="w-4 h-4" /> {t('project.open_chat')}
                 </button>
             </div>
 

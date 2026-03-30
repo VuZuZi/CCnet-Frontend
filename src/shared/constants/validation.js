@@ -1,6 +1,6 @@
 export const VALIDATION_PATTERNS = {
   EMAIL: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-  PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/,
+  PASSWORD: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]{8,}$/,
   PHONE: /^\+?[1-9]\d{1,14}$/,
   ALPHANUMERIC: /^[a-zA-Z0-9]+$/,
   OTP: /^\d{6}$/,
@@ -16,46 +16,46 @@ export const VALIDATION_LIMITS = {
 };
 
 export const VALIDATION_MESSAGES = {
-  REQUIRED: 'This field is required',
-  
+  REQUIRED: 'validation.required',
+
   EMAIL: {
-    INVALID: 'Please enter a valid email address',
-    REQUIRED: 'Email is required',
+    INVALID: 'validation.email.invalid',
+    REQUIRED: 'validation.email.required',
   },
-  
+
   PASSWORD: {
-    REQUIRED: 'Password is required',
-    MIN_LENGTH: `Password must be at least ${VALIDATION_LIMITS.PASSWORD.MIN} characters`,
-    WEAK: 'Password must contain uppercase, lowercase, number, and special character',
-    MISMATCH: 'Passwords do not match',
+    REQUIRED: 'validation.password.required',
+    MIN_LENGTH: 'validation.password.min_length',
+    WEAK: 'validation.password.weak',
+    MISMATCH: 'validation.password.mismatch',
   },
-  
+
   FULL_NAME: {
-    REQUIRED: 'Full name is required',
-    MIN_LENGTH: `Name must be at least ${VALIDATION_LIMITS.FULL_NAME.MIN} characters`,
-    MAX_LENGTH: `Name must not exceed ${VALIDATION_LIMITS.FULL_NAME.MAX} characters`,
+    REQUIRED: 'validation.full_name.required',
+    MIN_LENGTH: 'validation.full_name.min_length',
+    MAX_LENGTH: 'validation.full_name.max_length',
   },
-  
+
   OTP: {
-    REQUIRED: 'OTP is required',
-    INVALID: `OTP must be ${VALIDATION_LIMITS.OTP.LENGTH} digits`,
+    REQUIRED: 'validation.otp.required',
+    INVALID: 'validation.otp.invalid',
   },
 
   PROJECT: {
     TITLE: {
-      REQUIRED: 'Campaign title is required',
-      MIN_LENGTH: `Title must be at least ${VALIDATION_LIMITS.PROJECT_TITLE.MIN} characters`,
-      MAX_LENGTH: `Title must not exceed ${VALIDATION_LIMITS.PROJECT_TITLE.MAX} characters`,
+      REQUIRED: 'validation.project.title.required',
+      MIN_LENGTH: 'validation.project.title.min_length',
+      MAX_LENGTH: 'validation.project.title.max_length',
     },
     DESCRIPTION: {
-      MAX_LENGTH: `Description must not exceed ${VALIDATION_LIMITS.PROJECT_DESCRIPTION.MAX} characters`,
+      MAX_LENGTH: 'validation.project.description.max_length',
     },
     FINANCIAL_GOAL: {
-      INVALID: 'Financial goal must be a positive number',
+      INVALID: 'validation.project.financial_goal.invalid',
     },
     DATE: {
-      INVALID: 'Please enter a valid date',
-      END_BEFORE_START: 'End date must be after start date',
+      INVALID: 'validation.project.date.invalid',
+      END_BEFORE_START: 'validation.project.date.end_before_start',
     },
   },
 };
@@ -68,7 +68,7 @@ export const validators = {
     }
     return null;
   },
-  
+
   password: (value) => {
     if (!value) return VALIDATION_MESSAGES.PASSWORD.REQUIRED;
     if (value.length < VALIDATION_LIMITS.PASSWORD.MIN) {
@@ -79,7 +79,7 @@ export const validators = {
     }
     return null;
   },
-  
+
   fullName: (value) => {
     if (!value) return VALIDATION_MESSAGES.FULL_NAME.REQUIRED;
     if (value.length < VALIDATION_LIMITS.FULL_NAME.MIN) {
@@ -90,7 +90,7 @@ export const validators = {
     }
     return null;
   },
-  
+
   otp: (value) => {
     if (!value) return VALIDATION_MESSAGES.OTP.REQUIRED;
     if (!VALIDATION_PATTERNS.OTP.test(value)) {
@@ -98,7 +98,7 @@ export const validators = {
     }
     return null;
   },
-  
+
   required: (value) => {
     if (!value || (typeof value === 'string' && !value.trim())) {
       return VALIDATION_MESSAGES.REQUIRED;

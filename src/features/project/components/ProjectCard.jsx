@@ -1,8 +1,9 @@
 import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
-
+import { useTranslation } from 'react-i18next';
 export function ProjectCard({ project }) {
-  const progressPercent = project.targetAmount > 0 
+  const { t } = useTranslation();
+  const progressPercent = project.targetAmount > 0
     ? Math.min(Math.round((project.currentAmount / project.targetAmount) * 100), 100)
     : 0;
 
@@ -20,20 +21,24 @@ export function ProjectCard({ project }) {
   const catStyle = getCategoryStyles(project.category);
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-shadow group h-full">
+    <div className="relative bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-shadow group h-full">
       <div className="h-48 bg-slate-200 relative overflow-hidden flex-shrink-0">
-        <img 
-          src={project.coverMedia?.url || '/placeholder-project.jpg'} 
+        <img
+          src={project.coverMedia?.url || '/placeholder-project.jpg'}
           alt={project.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&q=80';
+          }}
         />
         <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm ${catStyle}`}>
-          {project.category || 'Khác'}
+          {t(`common.category.${project.category || 'Khac'}`)}
         </span>
         {project.isUrgent && (
           <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
-            KHẨN CẤP
+            {t('common.urgent')}
           </span>
         )}
       </div>
@@ -44,36 +49,36 @@ export function ProjectCard({ project }) {
             {project.title}
           </Link>
         </h4>
-        
+
         <div className="flex items-center gap-1.5 text-slate-500 text-sm mb-6">
           <MapPin size={16} />
-          <span className="truncate">{project.location?.address || 'Chưa cập nhật địa điểm'}</span>
+          <span className="truncate">{project.location?.address || t('common.noLocation')}</span>
         </div>
 
         <div className="mt-auto relative z-10">
           <div className="flex justify-between text-sm font-bold mb-2">
             <span className="text-slate-900">
-              {project.currentAmount?.toLocaleString()} đ <span className="text-slate-500 text-xs font-normal">đã góp</span>
+              {project.currentAmount?.toLocaleString()} đ <span className="text-slate-500 text-xs font-normal">{t('common.donated')}</span>
             </span>
             <span className="text-amber-500">{progressPercent}%</span>
           </div>
-          
+
           <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-6">
-            <div 
+            <div
               className="h-full bg-amber-400 rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${progressPercent}%` }}
             ></div>
           </div>
-          
+
           <div className="flex gap-3">
-            <Link 
+            <Link
               to={`/projects/${project._id}`}
               className="flex-1 py-3 px-4 text-center text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              Chi tiết
+              {t('common.detail')}
             </Link>
             <button className="flex-1 py-3 px-4 text-sm font-bold text-slate-900 bg-amber-400 rounded-xl hover:bg-amber-500 transition-colors shadow-sm shadow-amber-500/20">
-              Đóng góp
+              {t('common.donate')}
             </button>
           </div>
         </div>

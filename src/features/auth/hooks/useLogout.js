@@ -10,10 +10,12 @@ export function useLogout() {
   const toast = useToast();
 
   const executeLogout = () => {
+    console.log('[Logout] Executing logout...');
     clearAuth();
-    queryClient.clear(); 
+    queryClient.clear();
     toast.info('You have been logged out');
-    
+
+    console.log('[Logout] Redirecting to:', ROUTES.HOME);
     window.location.replace(ROUTES.HOME);
   };
 

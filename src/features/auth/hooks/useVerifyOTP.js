@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../stores/useAuthStore';
 import { authAPI } from '../api/authAPI';
 import { getErrorMessage } from '@/shared/lib/httpClient';
 import { ROUTES } from '@/shared/constants/routes';
@@ -7,20 +8,23 @@ import { useToast } from '@/shared/contexts/ToastContext';
 
 export function useVerifyOTP() {
   const navigate = useNavigate();
+  const { setAuthSuccess } = useAuthStore();
   const toast = useToast();
 
   const mutation = useMutation({
     mutationFn: authAPI.verifyOTP,
-    
-    onSuccess: () => {
-      toast.success('Email verified successfully! Please login.');
-      
-      navigate(ROUTES.LOGIN, { 
-        state: { verified: true },
-        replace: true 
-      });
+
+    onSuccess: (response) => {
+      const { user, tokens } = response.data;
+
+      // ✅ Tự động đăng nhập sau khi xác thực thành công
+      setAuthSuccess(user, tokens.accessToken);
+
+      toast.success(t('auth.verify_success'));
+
+      navigate('/', { replace: true });
     },
-    
+
     onError: (error) => {
       const message = getErrorMessage(error);
       toast.error(message);

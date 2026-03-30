@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useSubmitProject } from '../hooks/useProjectMutations';
 import { useToast } from '@/shared/contexts/ToastContext';
@@ -15,13 +16,14 @@ import {
 } from 'lucide-react';
 
 export default function Step3Preview() {
+  const { t } = useTranslation();
   const { formData, prevStep, projectId } = useProjectDraftStore();
   const { mutate: submitProject, isPending } = useSubmitProject();
   const toast = useToast();
 
   const handleFinalSubmit = () => {
     if (!projectId) {
-      toast.error('Critical Error: Project ID missing! Please save Step 1 again.');
+      toast.error(t('project.error_project_id_missing'));
       return;
     }
     submitProject(projectId);
@@ -70,26 +72,26 @@ export default function Step3Preview() {
             <Info className="text-blue-600" size={24} />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-blue-900 mb-2">Almost there! Review your project before submission.</h3>
+          <h3 className="text-lg font-bold text-blue-900 mb-2">{t('project.review_project_title')}</h3>
           <p className="text-blue-800/80 leading-relaxed text-sm">
-            Upon submission, your project will undergo an AI Risk Assessment and Manager review. This usually takes 24-48 hours. Funds will be secured in our Escrow system.
+            {t('project.review_project_desc')}
           </p>
         </div>
       </div>
 
       <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-         <StatusPill isComplete={isStoryComplete} label="Story Completed" />
-         <StatusPill isComplete={isEvidenceUploaded} label="Evidence Uploaded" />
-         <StatusPill isComplete={isBudgetSet} label="Budget & Milestones Set" />
-         <StatusPill isComplete={isVolunteersAdded} label="Volunteer Roles Added" />
+         <StatusPill isComplete={isStoryComplete} label={t('project.story_completed')} />
+         <StatusPill isComplete={isEvidenceUploaded} label={t('project.evidence_uploaded')} />
+         <StatusPill isComplete={isBudgetSet} label={t('project.budget_milestones_set')} />
+         <StatusPill isComplete={isVolunteersAdded} label={t('project.volunteer_roles_added')} />
       </div>
 
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm mt-8">
-        <h2 className="text-xl font-bold text-slate-900 mb-6 text-center sm:text-left">Live Preview</h2>
+        <h2 className="text-xl font-bold text-slate-900 mb-6 text-center sm:text-left">{t('project.live_preview')}</h2>
         
         <div className="max-w-md mx-auto border border-slate-200 rounded-3xl overflow-hidden bg-white shadow-lg relative group transition-all duration-300 hover:shadow-xl">
             <div className="absolute top-4 right-4 z-10 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase border border-white/20 shadow-lg flex items-center gap-1.5">
-                <Eye size={14} /> PREVIEW ONLY
+                <Eye size={14} /> {t('project.preview_only')}
             </div>
 
             <div className="relative h-56 w-full bg-slate-800">
@@ -101,10 +103,10 @@ export default function Step3Preview() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4">
                     <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded-md mb-2.5 inline-block shadow-sm">
-                        {formData.category || 'Category'}
+                        {formData.category ? t(`project.categories.${formData.category}`) : t('project.category_placeholder')}
                     </span>
                     <h3 className="text-white font-bold text-xl leading-tight line-clamp-2">
-                        {formData.title || 'Your Project Title Will Appear Here'}
+                        {formData.title || t('project.title_placeholder')}
                     </h3>
                 </div>
             </div>
@@ -112,14 +114,14 @@ export default function Step3Preview() {
             <div className="p-6 space-y-6">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center overflow-hidden border border-emerald-200 flex-shrink-0">
-                        <span className="font-bold text-emerald-700">You</span>
+                        <span className="font-bold text-emerald-700">{t('common.you')}</span>
                     </div>
                     <div>
-                        <p className="text-xs text-slate-500">Organized by</p>
-                        <p className="font-bold text-sm text-slate-900">Your Organization</p>
+                        <p className="text-xs text-slate-500">{t('project.organized_by')}</p>
+                        <p className="font-bold text-sm text-slate-900">{t('project.your_organization')}</p>
                     </div>
                     <div className="ml-auto">
-                        <BadgeCheck className="text-blue-500" size={20} title="Verified Organizer" />
+                        <BadgeCheck className="text-blue-500" size={20} title={t('project.verified_organizer')} />
                     </div>
                 </div>
 
@@ -131,7 +133,7 @@ export default function Step3Preview() {
                                     0 <span className="text-sm font-bold text-slate-500">VND</span>
                                 </p>
                                 <p className="text-xs text-slate-500 mt-1">
-                                    raised of {Number(formData.targetAmount || 0).toLocaleString()} VND goal
+                                    {t('project.raised_of', { amount: Number(formData.targetAmount || 0).toLocaleString() })}
                                 </p>
                             </div>
                             <div className="text-right">
@@ -144,22 +146,22 @@ export default function Step3Preview() {
                     </div>
                 ) : (
                     <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
-                        <p className="text-emerald-700 font-bold">Volunteer Only Project</p>
-                        <p className="text-xs text-emerald-600 mt-1">Not raising funds</p>
+                        <p className="text-emerald-700 font-bold">{t('project.volunteer_only_project')}</p>
+                        <p className="text-xs text-emerald-600 mt-1">{t('project.not_raising_funds')}</p>
                     </div>
                 )}
 
                 <div className="grid grid-cols-2 gap-4">
                     <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
                         <Users className="text-slate-400 mx-auto mb-1.5" size={20} />
-                        <p className="text-xs text-slate-500">Volunteers</p>
-                        <p className="font-bold text-slate-900">{totalVolunteers} Needed</p>
+                        <p className="text-xs text-slate-500">{t('project.volunteers')}</p>
+                        <p className="font-bold text-slate-900">{t('project.volunteers_needed', { count: totalVolunteers })}</p>
                     </div>
                     {formData.isFundraising && (
                         <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
                             <Flag className="text-slate-400 mx-auto mb-1.5" size={20} />
-                            <p className="text-xs text-slate-500">Milestones</p>
-                            <p className="font-bold text-slate-900">{milestonesCount} Set</p>
+                            <p className="text-xs text-slate-500">{t('project.milestones_title')}</p>
+                            <p className="font-bold text-slate-900">{t('project.milestones_set', { count: milestonesCount })}</p>
                         </div>
                     )}
                 </div>
@@ -168,7 +170,7 @@ export default function Step3Preview() {
 
         <div className="text-center mt-6">
             <button type="button" className="inline-flex items-center justify-center gap-2 text-primary hover:text-primary-hover font-bold transition-colors outline-none">
-                View full page preview
+                {t('project.view_full_preview')}
             </button>
         </div>
       </div>
@@ -181,7 +183,7 @@ export default function Step3Preview() {
             disabled={isPending}
             className="flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
           >
-            <ArrowLeft size={20} /> Back to Budget
+            <ArrowLeft size={20} /> {t('project.back_to_budget')}
           </button>
           
           <button 
@@ -198,7 +200,7 @@ export default function Step3Preview() {
             ) : (
               <Lock size={24} />
             )}
-            {isPending ? 'Submitting...' : 'Submit for Approval'}
+            {isPending ? t('project.submitting') : t('project.submit_for_approval')}
           </button>
         </div>
       </div>
