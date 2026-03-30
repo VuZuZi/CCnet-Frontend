@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const profileSchema = z.object({
     fullName: z.string().min(2, 'Full name must be at least 2 characters'),
     phone: z.string()
-        .regex(/^\+?[0-9\s\-]{7,15}$/, 'Invalid phone number format')
+        .regex(/^\+?[0-9\s-]{7,15}$/, 'Invalid phone number format')
         .or(z.literal(''))
         .optional(),
     location: z.string().max(100, 'Location must be at most 100 characters').or(z.literal('')).optional(),

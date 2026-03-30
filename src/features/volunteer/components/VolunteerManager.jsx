@@ -1,5 +1,5 @@
 // src/features/project/components/detail/VolunteerManager.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { CheckCircle, XCircle, Clock, UserCheck, UserX } from 'lucide-react';
 import { format } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -8,6 +8,14 @@ import { useVolunteerMutations } from '@/features/volunteer/hooks/useVolunteerMu
 
 export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
     const [activeSubTab, setActiveSubTab] = useState(initialSubTab);
+
+    // ✅ Update state when prop changes
+    useEffect(() => {
+        if (initialSubTab) {
+            setActiveSubTab(initialSubTab);
+        }
+    }, [initialSubTab]);
+
     const [selectedApp, setSelectedApp] = useState(null);
 
     const { useProjectApplications } = useVolunteerQueries();

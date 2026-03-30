@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
+import { useTranslation } from 'react-i18next';
 import { useExploreProjects } from '../hooks/useProjectQueries';
 import { PageLoader } from '@/shared/components/ui/PageLoader';
 import { Loader2 } from 'lucide-react';
@@ -13,14 +14,15 @@ import { ProjectFilterBar } from '../components/ProjectFilterBar';
 import { ProjectCard } from '../components/ProjectCard';
 
 export function ProjectListPage() {
+  const { t } = useTranslation();
   const [localLocation, setLocalLocation] = useState('');
   const debouncedLocation = useDebounce(localLocation, 500); 
   
-  const [filters, setFilters] = useState({ category: '', location: '' });
-
-  useEffect(() => {
-    setFilters(prev => ({ ...prev, location: debouncedLocation }));
-  }, [debouncedLocation]);
+  const [category, setCategory] = useState('');
+  const filters = useMemo(
+    () => ({ category, location: debouncedLocation }),
+    [category, debouncedLocation],
+  );
 
   const { 
     data, 
@@ -36,11 +38,11 @@ export function ProjectListPage() {
   }, [data]);
 
   const handleCategoryChange = (e) => {
-    setFilters(prev => ({ ...prev, category: e.target.value }));
+    setCategory(e.target.value);
   };
 
   if (isLoading && !projects.length) return <PageLoader />;
-  if (isError) return <div className="text-center py-20 text-red-500 font-bold">Đã có lỗi xảy ra khi tải dữ liệu!</div>;
+  if (isError) return <div className="text-center py-20 text-red-500 font-bold">{t('common.error_fetching')}</div>;
 
   return (
     <main className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 lg:px-8">
@@ -62,12 +64,12 @@ export function ProjectListPage() {
 
           {projects.length === 0 ? (
             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
-              <p className="text-slate-500 font-medium text-lg">Không tìm thấy dự án nào phù hợp với bộ lọc.</p>
+              <p className="text-slate-500 font-medium text-lg">{t('project.no_projects_found')}</p>
               <button 
-                onClick={() => { setFilters({category: '', location: ''}); setLocalLocation(''); }} 
+                onClick={() => { setCategory(''); setLocalLocation(''); }} 
                 className="mt-4 px-6 py-2 bg-slate-100 text-slate-700 rounded-full font-semibold hover:bg-slate-200 transition-colors"
               >
-                Xóa bộ lọc
+                {t('project.clear_filters')}
               </button>
             </div>
           ) : (
@@ -77,12 +79,12 @@ export function ProjectListPage() {
               hasMore={!!hasNextPage}
               loader={
                 <div className="col-span-full text-center py-8 text-slate-400 font-medium flex items-center justify-center gap-2">
-                  <Loader2 className="animate-spin" size={16} /> Đang tải thêm dự án...
+                  <Loader2 className="animate-spin" size={16} /> {t('project.loading_more')}
                 </div>
               }
               endMessage={
                 <div className="col-span-full text-center py-10">
-                  <span className="bg-slate-200 text-slate-500 px-4 py-2 rounded-full text-sm font-medium">Bạn đã xem hết danh sách dự án! 🎉</span>
+                  <span className="bg-slate-200 text-slate-500 px-4 py-2 rounded-full text-sm font-medium">{t('project.all_projects_viewed')}</span>
                 </div>
               }
               className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-20"

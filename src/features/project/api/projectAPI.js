@@ -12,7 +12,8 @@ const sanitizeMediaPayload = (mediaArray) => {
         publicId: media.publicId || undefined,
         originalName: media.originalName || undefined,
         mimetype: media.mimetype || undefined,
-        size: media.size ? Number(media.size) : undefined
+        size: media.size ? Number(media.size) : undefined,
+        mediaType: media.mediaType || (media.mimetype?.startsWith('video') ? 'video' : 'image')
       };
 
       Object.keys(cleanMedia).forEach(key => {

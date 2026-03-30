@@ -1,5 +1,5 @@
 // src/features/project/pages/ProjectDetailPage.jsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjectDetail } from '../hooks/useProjectQueries';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
@@ -19,6 +19,21 @@ export function ProjectDetailPage() {
   const currentUser = useAuthStore((state) => state.user);
 
   const [activeTab, setActiveTab] = useState('story');
+  const [activeSubTab, setActiveSubTab] = useState('pending');
+  const volunteerManagerRef = useRef(null);
+
+  const handleNavigateToVolunteerTab = (tab, subTab) => {
+    setActiveTab(tab);
+    if (subTab) {
+      setActiveSubTab(subTab);
+    }
+    // Đợi state cập nhật và render xong mới cuộn
+    setTimeout(() => {
+      if (volunteerManagerRef.current) {
+        volunteerManagerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
 
   const identity = useMemo(() => {
     if (!currentUser || !project) return 'GUEST';
@@ -37,7 +52,11 @@ export function ProjectDetailPage() {
       case 'story':
         return <TabStory project={project} />;
       case 'volunteer':  // ✅ Xử lý tab volunteer
-        return <VolunteerManager projectId={project._id} />;
+        return (
+            <div ref={volunteerManagerRef}>
+              <VolunteerManager projectId={project._id} initialSubTab={activeSubTab} />
+            </div>
+        );
       case 'financials':
         return (
             <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
@@ -79,7 +98,10 @@ export function ProjectDetailPage() {
 
           <div className="lg:w-[35%] w-full">
             {isOrganizer ? (
-                <SidebarOrganizer project={project} />
+                <SidebarOrganizer
+                    project={project}
+                    onNavigateToVolunteerTab={handleNavigateToVolunteerTab}
+                />
             ) : (
                 <SidebarPublic project={project} />
             )}

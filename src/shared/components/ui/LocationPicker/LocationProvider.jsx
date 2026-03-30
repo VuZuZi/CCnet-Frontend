@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef } from 'react';
+import { createContext, useContext, useState } from 'react';
 import { createStore, useStore } from 'zustand';
 
 const LocationContext = createContext(null);
@@ -43,9 +43,8 @@ const createLocationStore = (initialProps) => {
 };
 
 export function LocationProvider({ children, initialValue }) {
-  const storeRef = useRef(null);
-  if (!storeRef.current) storeRef.current = createLocationStore(initialValue);
-  return <LocationContext.Provider value={storeRef.current}>{children}</LocationContext.Provider>;
+  const [store] = useState(() => createLocationStore(initialValue));
+  return <LocationContext.Provider value={store}>{children}</LocationContext.Provider>;
 }
 
 export function useLocationContext(selector) {
