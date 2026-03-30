@@ -34,11 +34,8 @@ export function Navbar() {
   const { logout } = useLogout();
   const location = useLocation();
 
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+  const [mobileMenuPath, setMobileMenuPath] = useState(null);
+  const isMobileMenuOpen = mobileMenuPath === location.pathname;
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
@@ -119,7 +116,9 @@ export function Navbar() {
 
             <button
               className="ml-2 p-2 text-slate-600 hover:text-slate-900 focus:outline-none lg:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              onClick={() =>
+                setMobileMenuPath(isMobileMenuOpen ? null : location.pathname)
+              }
             >
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>

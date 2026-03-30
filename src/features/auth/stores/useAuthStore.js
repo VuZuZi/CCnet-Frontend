@@ -54,7 +54,7 @@ export const useAuthStore = create(
             false,
             "auth/sessionRestored"
           );
-        } catch (error) {
+        } catch {
           tokenManager.removeAccessToken();
           set(
             { user: null, isAuthenticated: false, isLoading: false },

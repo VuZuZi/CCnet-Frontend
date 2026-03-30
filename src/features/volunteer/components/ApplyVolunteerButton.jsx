@@ -5,7 +5,7 @@ import { VolunteerApplicationModal } from './VolunteerApplicationModal';
 import { VolunteerEditModal } from './VolunteerEditModal';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { volunteerAPI } from '../api/volunteerAPI';
 
 export const ApplyVolunteerButton = ({ projectId, projectName, className = '' }) => {
@@ -30,7 +30,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
     mutationFn: async () => {
       return await volunteerAPI.cancelApplication(application?.id);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       alert('Đã hủy đơn đăng ký thành công');
       setShowCancelConfirm(false);
       refetch();
@@ -45,7 +45,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
     mutationFn: async (updateData) => {
       return await volunteerAPI.updateApplication(application?.id, updateData);
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       alert('Cập nhật đơn đăng ký thành công');
       setShowEditModal(false);
       refetch();

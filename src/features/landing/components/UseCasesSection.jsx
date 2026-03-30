@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types'
+import { createElement } from 'react'
 
 const colorClasses = {
   purple: { border: 'border-purple', bg: 'bg-purple', iconColor: 'white' },
@@ -42,7 +43,7 @@ function UseCaseCard({ icon: Icon, title, description, color }) {
       <div 
         className={`mx-auto mb-4 flex items-center justify-center w-16 h-16 ${classes.bg} rounded-2xl`}
       >
-        <Icon size={32} color={classes.iconColor} />
+        {createElement(Icon, { size: 32, color: classes.iconColor })}
       </div>
       <h5 className="font-bold text-lg mb-2">{title}</h5>
       <p className="text-gray text-sm mb-0">{description}</p>

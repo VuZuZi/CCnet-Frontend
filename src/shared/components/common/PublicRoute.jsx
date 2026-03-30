@@ -18,20 +18,18 @@ export function PublicRoute({ children }) {
   }
 
   if (isAuthenticated) {
+    let intendedPath = null;
     try {
-      const intendedPath = sessionStorage.getItem(SESSION_STORAGE_KEYS.INTENDED_PATH);
-      const redirectPath = getRedirectPath(intendedPath, userRole);
-      
+      intendedPath = sessionStorage.getItem(SESSION_STORAGE_KEYS.INTENDED_PATH);
       if (intendedPath) {
         sessionStorage.removeItem(SESSION_STORAGE_KEYS.INTENDED_PATH);
       }
-      
-      return <Navigate to={redirectPath} replace />;
     } catch (error) {
       console.error('[PublicRoute] Lỗi đọc Session Storage:', error);
     }
 
-    return <Navigate to={getRedirectPath(null, userRole)} replace />;
+    const redirectPath = getRedirectPath(intendedPath, userRole);
+    return <Navigate to={redirectPath} replace />;
   }
 
   return children;

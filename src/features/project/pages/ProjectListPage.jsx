@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { useTranslation } from 'react-i18next';
 import { useExploreProjects } from '../hooks/useProjectQueries';
@@ -18,11 +18,11 @@ export function ProjectListPage() {
   const [localLocation, setLocalLocation] = useState('');
   const debouncedLocation = useDebounce(localLocation, 500); 
   
-  const [filters, setFilters] = useState({ category: '', location: '' });
-
-  useEffect(() => {
-    setFilters(prev => ({ ...prev, location: debouncedLocation }));
-  }, [debouncedLocation]);
+  const [category, setCategory] = useState('');
+  const filters = useMemo(
+    () => ({ category, location: debouncedLocation }),
+    [category, debouncedLocation],
+  );
 
   const { 
     data, 
@@ -38,7 +38,7 @@ export function ProjectListPage() {
   }, [data]);
 
   const handleCategoryChange = (e) => {
-    setFilters(prev => ({ ...prev, category: e.target.value }));
+    setCategory(e.target.value);
   };
 
   if (isLoading && !projects.length) return <PageLoader />;
@@ -66,7 +66,7 @@ export function ProjectListPage() {
             <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-300">
               <p className="text-slate-500 font-medium text-lg">{t('project.no_projects_found')}</p>
               <button 
-                onClick={() => { setFilters({category: '', location: ''}); setLocalLocation(''); }} 
+                onClick={() => { setCategory(''); setLocalLocation(''); }} 
                 className="mt-4 px-6 py-2 bg-slate-100 text-slate-700 rounded-full font-semibold hover:bg-slate-200 transition-colors"
               >
                 {t('project.clear_filters')}

@@ -30,7 +30,7 @@ export function TipTapEditor({ value, onChange }) {
             attributes: {
                 class: 'prose prose-sm sm:prose-base focus:outline-none min-h-[200px] max-h-[500px] overflow-y-auto p-4',
             },
-            handlePaste: (view, event, slice) => {
+            handlePaste: (_view, event, _slice) => {
                 const items = event.clipboardData?.items;
                 if (!items) return false;
                 for (const item of items) {
@@ -42,7 +42,7 @@ export function TipTapEditor({ value, onChange }) {
                 }
                 return false; 
             },
-            handleDrop: (view, event, slice, moved) => {
+            handleDrop: (_view, event, _slice, _moved) => {
                 const hasFiles = event.dataTransfer?.files?.length > 0;
                 if (hasFiles) {
                     event.preventDefault();

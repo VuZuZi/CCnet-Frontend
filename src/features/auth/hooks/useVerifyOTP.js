@@ -1,12 +1,13 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/useAuthStore';
 import { authAPI } from '../api/authAPI';
 import { getErrorMessage } from '@/shared/lib/httpClient';
-import { ROUTES } from '@/shared/constants/routes';
 import { useToast } from '@/shared/contexts/ToastContext';
 
 export function useVerifyOTP() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { setAuthSuccess } = useAuthStore();
   const toast = useToast();
@@ -17,7 +18,7 @@ export function useVerifyOTP() {
     onSuccess: (response) => {
       const { user, tokens } = response.data;
 
-      // ✅ Tự động đăng nhập sau khi xác thực thành công
+      // Tự động đăng nhập sau khi xác thực thành công
       setAuthSuccess(user, tokens.accessToken);
 
       toast.success(t('auth.verify_success'));

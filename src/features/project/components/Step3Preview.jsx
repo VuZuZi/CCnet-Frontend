@@ -15,6 +15,26 @@ import {
     Loader2
 } from 'lucide-react';
 
+function StatusPill({ isComplete, label }) {
+  return (
+    <div
+      className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
+        ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}
+    >
+      {isComplete ? (
+        <CheckCircle2 size={18} className="text-emerald-500" />
+      ) : (
+        <Circle size={18} className="text-slate-400" />
+      )}
+      <span
+        className={`text-sm font-bold ${isComplete ? 'text-emerald-800' : 'text-slate-500'}`}
+      >
+        {label}
+      </span>
+    </div>
+  );
+}
+
 export default function Step3Preview() {
   const { t } = useTranslation();
   const { formData, prevStep, projectId } = useProjectDraftStore();
@@ -49,20 +69,6 @@ export default function Step3Preview() {
 
   const totalVolunteers = formData.volunteerRoles?.reduce((sum, role) => sum + (Number(role.quantity) || 0), 0) || 0;
   const milestonesCount = formData.milestones?.length || 0;
-
-  const StatusPill = ({ isComplete, label }) => (
-      <div className={`flex items-center gap-2 px-4 py-2 rounded-full border transition-colors
-        ${isComplete ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200'}`}>
-          {isComplete ? (
-              <CheckCircle2 size={18} className="text-emerald-500" />
-          ) : (
-              <Circle size={18} className="text-slate-400" />
-          )}
-          <span className={`text-sm font-bold ${isComplete ? 'text-emerald-800' : 'text-slate-500'}`}>
-              {label}
-          </span>
-      </div>
-  );
 
   return (
     <form className="pb-32 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">

@@ -18,7 +18,7 @@ export const tokenManager = {
   decodeToken: (token) => {
     try {
       return token ? jwtDecode(token) : null;
-    } catch (error) {
+    } catch {
       return null;
     }
   },
@@ -29,7 +29,7 @@ export const tokenManager = {
       const decoded = jwtDecode(token);
       const currentTime = Date.now() / 1000;
       return decoded.exp < currentTime + 30; 
-    } catch (error) {
+    } catch {
       return true;
     }
   }

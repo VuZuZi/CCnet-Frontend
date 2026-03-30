@@ -1,8 +1,8 @@
 // src/features/volunteer/components/VolunteerApplicationForm.jsx
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useVolunteerMutations } from '../hooks/useVolunteerMutations';
 
-export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel }) => {
+export const VolunteerApplicationForm = ({ projectId, onSuccess, onCancel }) => {
   const { createApplication, isCreating } = useVolunteerMutations();
 
   const [formData, setFormData] = useState({

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, createElement } from "react";
 
 import { RootLayout } from "@/shared/components/layouts/RootLayout";
 import { AdminLayout } from "@/features/admin/components/AdminLayout";
@@ -121,7 +121,7 @@ const MockAdminPage = ({ title }) => (
 
 const withSuspense = (Component) => (
   <Suspense fallback={<PageLoader />}>
-    <Component />
+    {createElement(Component)}
   </Suspense>
 );
 

@@ -30,11 +30,10 @@ export function CreateProjectPage() {
     useEffect(() => {
         if (!isEditMode) {
             if (projectId) resetDraft();
-            setIsHydrated(true);
             return;
         }
 
-        if (isEditMode && draftData) {
+        if (draftData) {
             const parseDateLocal = (isoString) => {
                 if (!isoString) return '';
                 return format(new Date(isoString), 'yyyy-MM-dd');
@@ -61,7 +60,7 @@ export function CreateProjectPage() {
             setProjectId(id);
             setIsHydrated(true);
         }
-    }, [isEditMode, draftData]);
+    }, [draftData, id, isEditMode, projectId, resetDraft, setProjectId, updateFormData]);
 
     if (isEditMode && isLoading) {
         return <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">{t('project.syncing_draft')}</div>;

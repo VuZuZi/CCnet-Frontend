@@ -13,7 +13,7 @@ function useDebounce(value, delay) {
 }
 
 export function SearchInput({ hasError }) {
-  const [inputValue, setInputValue] = useState('');
+  const [draftValue, setDraftValue] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const wrapperRef = useRef(null);
 
@@ -22,15 +22,9 @@ export function SearchInput({ hasError }) {
   const globalAddress = useLocationContext((state) => state.address);
   const setOsmData = useLocationContext((state) => state.setOsmData);
 
-  const debouncedSearchTerm = useDebounce(inputValue, 400);
+  const debouncedSearchTerm = useDebounce(draftValue, 400);
 
   const { data: suggestions, isFetching } = useSearchAddress(debouncedSearchTerm);
-
-  useEffect(() => {
-    if (globalAddress && !showDropdown) {
-      setInputValue(globalAddress);
-    }
-  }, [globalAddress, showDropdown]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -54,15 +48,18 @@ export function SearchInput({ hasError }) {
 
     setCoordinates(coords, 'SEARCH');
     setAddress(addressName);
-    setInputValue(addressName);
+    setDraftValue(addressName);
     setOsmData(osm_type, osm_id);
     setShowDropdown(false);
   };
 
   const clearInput = () => {
-    setInputValue('');
+    setDraftValue('');
+    setAddress('');
     setShowDropdown(false);
   };
+
+  const displayedValue = showDropdown ? draftValue : (globalAddress || draftValue);
 
   return (
     <div className="relative w-full" ref={wrapperRef}>
@@ -70,18 +67,21 @@ export function SearchInput({ hasError }) {
         <Search className="absolute left-3.5 text-slate-400" size={18} />
         <input
           type="text"
-          value={inputValue}
+          value={displayedValue}
           onChange={(e) => {
-            setInputValue(e.target.value);
+            setDraftValue(e.target.value);
             setShowDropdown(true);
           }}
-          onFocus={() => setShowDropdown(true)}
+          onFocus={() => {
+            setDraftValue(globalAddress || '');
+            setShowDropdown(true);
+          }}
           placeholder="Tìm kiếm địa điểm (VD: Bitexco, Đà Nẵng)..."
           className={`w-full pl-10 pr-10 py-2.5 text-sm border rounded-xl shadow-sm focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all outline-none ${hasError ? 'border-red-500 bg-red-50' : 'border-slate-200 bg-white'
             }`}
           autoComplete="off"
         />
-        {inputValue && (
+        {displayedValue && (
           <button
             type="button"
             onClick={clearInput}
@@ -92,7 +92,7 @@ export function SearchInput({ hasError }) {
         )}
       </div>
 
-      {showDropdown && inputValue.length >= 3 && (
+      {showDropdown && draftValue.length >= 3 && (
         <div className="absolute z-[1001] w-full mt-2 bg-white border border-slate-200 rounded-xl shadow-xl max-h-64 overflow-y-auto overscroll-contain">
           {isFetching ? (
             <div className="p-2 space-y-2">
