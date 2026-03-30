@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CalendarDays,
   ExternalLink,
@@ -9,12 +9,15 @@ import {
   Share2,
   TriangleAlert,
 } from 'lucide-react';
+import { useState } from 'react';
 
 import { useToast } from '@/shared/contexts/ToastContext';
 import { formatDate } from '@/shared/lib/formatters';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 
 import { HELP_REQUEST_CATEGORIES, URGENCY_LEVELS } from '../../validations/helpRequestSchema';
 import { StatusBadge } from './StatusBadge';
+import { RoleUpgradeModal } from '../RoleUpgradeModal';
 
 const CATEGORY_LABELS = Object.fromEntries(
   HELP_REQUEST_CATEGORIES.map((item) => [item.value, item.label])
@@ -44,7 +47,11 @@ const getInitials = (name = '') =>
 
 export function HelpRequestDetailHero({ helpRequest }) {
   const toast = useToast();
+  const navigate = useNavigate();
+  const userRole = useAuthStore(authSelectors.userRole);
+  const [showRoleModal, setShowRoleModal] = useState(false);
 
+  const isOrganizer = userRole === 'Organizer' || userRole === 'organizer';
   const {
     _id,
     title,
@@ -98,19 +105,23 @@ export function HelpRequestDetailHero({ helpRequest }) {
     }
   };
 
-  const primaryAction = linkedProject
-    ? {
-        to: `/projects/${linkedProject._id || linkedProject.id}`,
-        label: 'View Linked Project',
-        icon: ExternalLink,
-      }
-    : {
-        to: `/projects/create?needHelpId=${_id}`,
-        label: 'Host the Project',
-        icon: HeartHandshake,
-      };
+  const handleHostProject = () => {
+    if (isOrganizer) {
+      navigate(`/projects/create?helpRequestId=${_id}`);
+      return;
+    }
 
-  const PrimaryIcon = primaryAction.icon;
+    setShowRoleModal(true);
+  };
+
+  const handleAssignNow = () => {
+    setShowRoleModal(false);
+    navigate('/organizer/apply');
+  };
+
+  const handleLater = () => {
+    setShowRoleModal(false);
+  };
 
   return (
     <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
@@ -238,13 +249,24 @@ export function HelpRequestDetailHero({ helpRequest }) {
         </div>
 
         <div className="flex flex-col gap-3 border-t border-slate-100 pt-5 sm:flex-row">
-          <Link
-            to={primaryAction.to}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-bold text-slate-900 shadow-sm transition-colors hover:bg-amber-500"
-          >
-            <PrimaryIcon size={18} />
-            {primaryAction.label}
-          </Link>
+          {linkedProject ? (
+            <Link
+              to={`/projects/${linkedProject._id || linkedProject.id}`}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-bold text-slate-900 shadow-sm transition-colors hover:bg-amber-500"
+            >
+              <ExternalLink size={18} />
+              View Linked Project
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={handleHostProject}
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-3.5 text-sm font-bold text-slate-900 shadow-sm transition-colors hover:bg-amber-500"
+            >
+              <HeartHandshake size={18} />
+              Host the Project
+            </button>
+          )}
 
           <button
             type="button"
@@ -255,6 +277,12 @@ export function HelpRequestDetailHero({ helpRequest }) {
             Share
           </button>
         </div>
+
+        <RoleUpgradeModal
+          isOpen={showRoleModal}
+          onAssignNow={handleAssignNow}
+          onLater={handleLater}
+        />
       </div>
     </section>
   );
