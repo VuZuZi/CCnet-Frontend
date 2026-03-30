@@ -59,7 +59,7 @@ export function HelpRequestCard({ helpRequest }) {
   return (
     <Link
       to={`/need-help/${helpRequest._id}`}
-      className={`group block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md border-l-4 ${urgencyBorder}`}
+      className={`group block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_10px_-6px_rgba(15,23,42,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_16px_32px_-20px_rgba(15,23,42,0.45),0_10px_20px_-18px_rgba(245,158,11,0.45)] border-l-4 ${urgencyBorder}`}
     >
       <div className="relative h-32 w-full overflow-hidden bg-slate-100">
         <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5">

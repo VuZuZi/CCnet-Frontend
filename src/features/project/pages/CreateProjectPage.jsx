@@ -3,6 +3,7 @@ import { useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useProjectDetail } from '../hooks/useProjectQueries';
+import { useHelpRequestAsProjectData } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import { format } from 'date-fns';
 import { CheckCircle2 } from 'lucide-react';
 import { LanguageSwitcher } from '@/i18n/components/LanguageSwitcher';
@@ -16,19 +17,16 @@ export function CreateProjectPage() {
     const location = useLocation();
     const isEditMode = !!id || location.pathname.includes('edit');
 
-    const STEPS = [
-        { id: 1, title: t('project.step_story') },
-        { id: 2, title: t('project.step_budget') },
-        { id: 3, title: t('project.step_preview') }
-    ];
-
+    const queryParams = new URLSearchParams(location.search);
+    const helpRequestId = queryParams.get('helpRequestId');
     const { currentStep, updateFormData, setProjectId, resetDraft, projectId } = useProjectDraftStore();
-    const [isHydrated, setIsHydrated] = useState(!isEditMode);
+    const [isHydrated, setIsHydrated] = useState(!isEditMode && !helpRequestId);
 
     const { data: draftData, isLoading, isError } = useProjectDetail(id);
+    const { data: helpRequestData, isLoading: isHelpRequestLoading, isError: isHelpRequestError } = useHelpRequestAsProjectData(helpRequestId);
 
     useEffect(() => {
-        if (!isEditMode) {
+        if (!isEditMode && !helpRequestId) {
             if (projectId) resetDraft();
             return;
         }
