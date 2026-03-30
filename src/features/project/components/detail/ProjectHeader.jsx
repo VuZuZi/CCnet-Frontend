@@ -1,6 +1,24 @@
 import { Plus, Edit2, BadgeCheck } from 'lucide-react';
+import { useAuthStore } from '@/features/auth/stores/useAuthStore';
+import { useFollowMutations, useFollowStatus } from '@/features/Community/hooks/useFollow';
 
 export function ProjectHeader({ project, isOrganizer }) {
+    const user = useAuthStore((s) => s.user);
+    const organizerUserId = project?.organizerId?._id;
+    const followStatus = useFollowStatus(user?.id ? organizerUserId : null);
+    const { follow, unfollow } = useFollowMutations();
+    const isFollowing = Boolean(followStatus.data?.isFollowing);
+
+    const handleToggleFollow = () => {
+        if (!organizerUserId) return;
+        if (!user?.id) return;
+        if (isFollowing) {
+            unfollow.mutate(organizerUserId);
+        } else {
+            follow.mutate(organizerUserId);
+        }
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-start gap-4">
@@ -33,11 +51,22 @@ export function ProjectHeader({ project, isOrganizer }) {
                                     <BadgeCheck className="text-blue-500 w-5 h-5" />
                                 )}
                             </div>
-                            <p className="text-sm text-gray-500">Đơn vị tổ chức</p>
+                            <p className="text-sm text-gray-500">
+                                Registered Non-Profit • {project?.organizerId?.activeProjects || 0} Active Projects
+                            </p>
                         </div>
                     </div>
-                    <button className="hidden sm:flex items-center gap-1 py-2 px-4 text-sm font-bold text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
-                        <Plus className="w-5 h-5" /> Follow
+                    <button
+                        type="button"
+                        onClick={handleToggleFollow}
+                        disabled={!user?.id || follow.isPending || unfollow.isPending || followStatus.isLoading}
+                        className={`hidden sm:flex items-center gap-1 py-2 px-4 text-sm font-bold rounded-xl transition-colors ${
+                            isFollowing
+                                ? 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                                : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                        } ${!user?.id ? 'opacity-60 cursor-not-allowed' : ''}`}
+                    >
+                        <Plus className="w-5 h-5" /> {isFollowing ? 'Following' : 'Follow'}
                     </button>
                 </div>
             )}

@@ -1,4 +1,4 @@
-import React from "react";
+import { BadgeCheck } from "lucide-react";
 import {
   useSuggestedUsers,
   useFollowStatus,
@@ -32,10 +32,15 @@ const UserItem = ({ user }) => {
             {(user.fullName || user.username || "U").charAt(0).toUpperCase()}
           </div>
         )}
-        <div className="flex flex-col">
-          <p className="text-slate-900 text-xs font-bold line-clamp-1">
-            {user.fullName || user.username}
-          </p>
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <p className="text-slate-900 text-xs font-bold line-clamp-1">
+              {user.fullName || user.username}
+            </p>
+            {user.isVerified && (
+              <BadgeCheck size={14} className="text-blue-500 flex-shrink-0" />
+            )}
+          </div>
           <p className="text-slate-400 text-[10px] line-clamp-1">
             {user.role || "Member"}
           </p>

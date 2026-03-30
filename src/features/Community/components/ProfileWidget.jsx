@@ -1,5 +1,5 @@
-import React from "react";
 import { Link } from "react-router-dom";
+import { BadgeCheck } from "lucide-react";
 import { useAuthStore } from "../../auth/stores/useAuthStore";
 
 const ProfileWidget = () => {
@@ -23,10 +23,15 @@ const ProfileWidget = () => {
           </div>
         )}
 
-        <div className="flex flex-col">
-          <h1 className="text-slate-900 text-base font-bold leading-tight">
-            {fullName}
-          </h1>
+        <div className="flex flex-col min-w-0">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <h1 className="text-slate-900 text-base font-bold leading-tight truncate">
+              {fullName}
+            </h1>
+            {user?.isVerified && (
+              <BadgeCheck size={16} className="text-blue-500 flex-shrink-0" />
+            )}
+          </div>
           <p className="text-slate-500 text-xs font-medium">
             {user?.role || "USER"}
           </p>

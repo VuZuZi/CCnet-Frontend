@@ -1,11 +1,17 @@
 import { Link } from 'react-router-dom';
-import { MapPin } from 'lucide-react';
+import { MapPin, BadgeCheck } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-export function ProjectCard({ project }) {
+export function ProjectCard({ project, viewMode = 'grid' }) {
   const { t } = useTranslation();
   const progressPercent = project.targetAmount > 0
     ? Math.min(Math.round((project.currentAmount / project.targetAmount) * 100), 100)
     : 0;
+
+  const now = new Date();
+  const endDate = project.endDate ? new Date(project.endDate) : null;
+  const daysLeft = endDate
+    ? Math.max(0, Math.ceil((endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+    : null;
 
   const getCategoryStyles = (cat) => {
     const styles = {
@@ -18,68 +24,98 @@ export function ProjectCard({ project }) {
     return styles[cat] || 'bg-slate-100 text-slate-800';
   };
 
+  const getProgressBarColor = (cat) => {
+    const styles = {
+      'Y_TE': 'bg-blue-500',
+      'GIAO_DUC': 'bg-purple-500',
+      'MOI_TRUONG': 'bg-green-500',
+      'THIEN_TAI': 'bg-red-500',
+      'XAY_DUNG': 'bg-amber-500',
+    };
+    return styles[cat] || 'bg-amber-500';
+  };
+
   const catStyle = getCategoryStyles(project.category);
+  const barStyle = getProgressBarColor(project.category);
+
+  const containerClass =
+    viewMode === 'list'
+      ? 'bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col md:flex-row hover:shadow-md transition-shadow'
+      : 'bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-shadow';
+
+  const imageClass =
+    viewMode === 'list'
+      ? 'h-44 md:h-auto md:w-64 bg-slate-200 relative group overflow-hidden flex-shrink-0'
+      : 'h-48 bg-slate-200 relative group overflow-hidden';
 
   return (
-    <div className="relative bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-shadow group h-full">
-      <div className="h-48 bg-slate-200 relative overflow-hidden flex-shrink-0">
+    <div className={containerClass}>
+      <div className={imageClass}>
         <img
-          src={project.coverMedia?.url || '/placeholder-project.jpg'}
           alt={project.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          src={project.coverMedia?.url || 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&q=80'}
           loading="lazy"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src = 'https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?auto=format&fit=crop&q=80';
-          }}
         />
-        <span className={`absolute top-3 right-3 text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm ${catStyle}`}>
-          {t(`common.category.${project.category || 'Khac'}`)}
-        </span>
-        {project.isUrgent && (
-          <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm">
-            {t('common.urgent')}
+
+        <div className="absolute top-3 left-3 flex gap-2">
+          <span className={`text-xs font-bold px-2.5 py-1 rounded-md shadow-sm ${catStyle}`}>
+            {t(`project.categories.${project.category || 'KHAC'}`)}
           </span>
-        )}
+          {project.isUrgent && (
+            <span className="bg-red-100 text-red-700 text-xs font-bold px-2.5 py-1 rounded-md shadow-sm flex items-center gap-1">
+              {t('common.urgent')}
+            </span>
+          )}
+        </div>
       </div>
 
-      <div className="p-6 flex-1 flex flex-col">
-        <h4 className="font-bold text-slate-900 mb-2 text-lg line-clamp-2 group-hover:text-amber-600 transition-colors">
-          <Link to={`/projects/${project._id}`} className="focus:outline-none before:absolute before:inset-0">
-            {project.title}
-          </Link>
-        </h4>
+      <div className="p-5 flex-1 flex flex-col">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-xs font-medium text-slate-500">
+            {t('project.by')} {project.organizerId?.fullName || t('project.anonymous_organizer')}
+          </span>
+          {project.organizerId?.isVerified && (
+            <BadgeCheck className="text-blue-500" size={16} title={t('project.verified_organizer')} />
+          )}
+        </div>
 
-        <div className="flex items-center gap-1.5 text-slate-500 text-sm mb-6">
+        <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight line-clamp-2">
+          {project.title}
+        </h3>
+
+        <div className="flex items-center gap-2 text-slate-500 text-sm mb-3">
           <MapPin size={16} />
           <span className="truncate">{project.location?.address || t('common.noLocation')}</span>
         </div>
 
-        <div className="mt-auto relative z-10">
-          <div className="flex justify-between text-sm font-bold mb-2">
+        <div className="mt-auto">
+          <div className="flex justify-between text-sm font-semibold mb-1">
             <span className="text-slate-900">
-              {project.currentAmount?.toLocaleString()} đ <span className="text-slate-500 text-xs font-normal">{t('common.donated')}</span>
+              {Number(project.currentAmount || 0).toLocaleString()}đ{' '}
+              <span className="text-xs font-normal text-slate-500">{t('project.raised')}</span>
             </span>
-            <span className="text-amber-500">{progressPercent}%</span>
+            <span className="text-slate-500 text-xs font-normal">
+              {t('project.of_target', { amount: Number(project.targetAmount || 0).toLocaleString() })}
+            </span>
           </div>
 
-          <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-6">
-            <div
-              className="h-full bg-amber-400 rounded-full transition-all duration-1000 ease-out"
-              style={{ width: `${progressPercent}%` }}
-            ></div>
+          <div className="flex justify-between text-xs font-medium text-slate-500 mb-2">
+            <span>{progressPercent}%</span>
+            {daysLeft !== null && <span>{t('project.days_left', { count: daysLeft })}</span>}
           </div>
 
-          <div className="flex gap-3">
+          <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-5">
+            <div className={`h-full ${barStyle} rounded-full`} style={{ width: `${progressPercent}%` }} />
+          </div>
+
+          <div className="flex items-center justify-between border-t border-slate-100 pt-4">
             <Link
               to={`/projects/${project._id}`}
-              className="flex-1 py-3 px-4 text-center text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+              className="py-2 px-4 text-sm font-bold text-black bg-primary rounded-xl hover:bg-primary-hover transition-colors shadow-sm w-full text-center"
             >
-              {t('common.detail')}
+              {t('project.view_details')}
             </Link>
-            <button className="flex-1 py-3 px-4 text-sm font-bold text-slate-900 bg-amber-400 rounded-xl hover:bg-amber-500 transition-colors shadow-sm shadow-amber-500/20">
-              {t('common.donate')}
-            </button>
           </div>
         </div>
       </div>

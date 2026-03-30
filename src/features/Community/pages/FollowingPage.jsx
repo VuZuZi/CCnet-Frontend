@@ -1,5 +1,5 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
+import { BadgeCheck } from "lucide-react";
 import { useMyFollowing, useFollowMutations } from "../hooks/useFollow";
 
 const FollowingPage = () => {
@@ -73,10 +73,19 @@ const FollowingPage = () => {
                           {(user.fullName || "U").charAt(0).toUpperCase()}
                         </div>
                       )}
-                      <div className="flex flex-col">
-                        <p className="text-slate-900 font-bold line-clamp-1">
-                          {user.fullName}
-                        </p>
+                      <div className="flex flex-col min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <p className="text-slate-900 font-bold line-clamp-1">
+                            {user.fullName}
+                          </p>
+                          {user.isVerified && (
+                            <BadgeCheck
+                              size={16}
+                              className="text-blue-500 flex-shrink-0"
+                              title="Verified"
+                            />
+                          )}
+                        </div>
                         <p className="text-slate-500 text-xs line-clamp-1">
                           {user.email || user.role || "Member"}
                         </p>

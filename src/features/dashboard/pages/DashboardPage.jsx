@@ -5,7 +5,8 @@ import {
   CheckCircle2, 
   Users, 
   Trophy, 
-  Sparkles 
+  Sparkles,
+  BadgeCheck 
 } from 'lucide-react';
 
 export function DashboardPage() {
@@ -18,6 +19,9 @@ export function DashboardPage() {
         <header className="mb-8">
           <h1 className="mb-2 flex items-center text-3xl font-bold tracking-tight text-gray-900">
             Welcome back, {user?.fullName || 'User'}! 
+            {user?.isVerified && (
+              <BadgeCheck className="ml-2 h-6 w-6 text-blue-500" title="Verified" />
+            )}
             <Sparkles className="ml-3 h-8 w-8 text-amber-500" aria-hidden="true" />
           </h1>
           <p className="text-gray-500">Here's what's happening with your account today.</p>

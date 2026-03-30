@@ -1,3 +1,4 @@
+// src/features/chat/components/ConversationList.jsx
 import { useMemo } from 'react';
 import { useConversations } from '../hooks/useConversations';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
@@ -13,7 +14,7 @@ function getUnreadCount(convo, userId) {
 
 function getLastPreview(convo) {
   const lastMsg = convo?.lastMessage;
-  const text = lastMsg?.text;
+  const text = lastMsg?.text || lastMsg?.content;
   if (text && String(text).trim()) return String(text).trim();
 
   const atts = lastMsg?.attachments;
@@ -23,6 +24,39 @@ function getLastPreview(convo) {
   }
 
   return '[Chưa có tin nhắn]';
+}
+
+//  Hàm lấy thông tin người gửi tin nhắn cuối
+function getLastMessageSender(convo, myId) {
+  const lastMsg = convo?.lastMessage;
+  if (!lastMsg) return null;
+
+  const sender = lastMsg?.sender || lastMsg?.senderId;
+  if (!sender) return null;
+
+  // Nếu sender là object có _id
+  if (typeof sender === 'object') {
+    return {
+      name: sender?.fullName || sender?.name || sender?.email || 'Unknown',
+      avatar: sender?.avatar || null,
+      id: sender?._id || sender?.id
+    };
+  }
+
+  // Nếu sender là string (ID)
+  // Tìm trong participants để lấy thông tin
+  const participants = convo?.participants || [];
+  const participant = participants.find(p => String(p?._id) === String(sender));
+
+  if (participant) {
+    return {
+      name: participant?.fullName || participant?.name || participant?.email || 'Unknown',
+      avatar: participant?.avatar || null,
+      id: participant?._id
+    };
+  }
+
+  return null;
 }
 
 export function ConversationList({ onConversationSelected, searchKeyword = '' }) {
@@ -47,122 +81,162 @@ export function ConversationList({ onConversationSelected, searchKeyword = '' })
     return list.filter((c) => {
       const participants = c?.participants || [];
       const other =
-        participants.find((p) => String(p?._id) !== String(myId)) ||
-        participants[0] ||
-        {};
+          participants.find((p) => String(p?._id) !== String(myId)) ||
+          participants[0] ||
+          {};
 
       const name = other?.fullName || other?.email || '';
       const lastText = getLastPreview(c);
 
       return (
-        String(name).toLowerCase().includes(normalizedKeyword) ||
-        String(lastText).toLowerCase().includes(normalizedKeyword)
+          String(name).toLowerCase().includes(normalizedKeyword) ||
+          String(lastText).toLowerCase().includes(normalizedKeyword)
       );
     });
   }, [conversations, normalizedKeyword, myId]);
 
   if (!user || isLoading) {
     return (
-      <div className="flex h-full items-center justify-center p-3">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#f6c343] border-t-transparent" />
-      </div>
+        <div className="flex h-full items-center justify-center p-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#f6c343] border-t-transparent" />
+        </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="p-3">
-        <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
-          {errorMessage || 'Lỗi tải danh sách chat'}
+        <div className="p-3">
+          <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
+            {errorMessage || 'Lỗi tải danh sách chat'}
+          </div>
         </div>
-      </div>
     );
   }
 
   if (!filteredConversations.length) {
     return (
-      <div className="p-3">
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
-          Không tìm thấy đoạn chat phù hợp.
+        <div className="p-3">
+          <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-sm text-gray-500">
+            Không tìm thấy đoạn chat phù hợp.
+          </div>
         </div>
-      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-1.5 bg-white">
-      {filteredConversations.map((c) => {
-        const id = String(c?._id || '').trim();
-        const participants = c?.participants || [];
-        const other =
-          participants.find((p) => String(p?._id) !== String(myId)) ||
-          participants[0] ||
-          {};
+      <div className="flex flex-col gap-1.5 bg-white">
+        {filteredConversations.map((c) => {
+          const id = String(c?._id || '').trim();
+          const participants = c?.participants || [];
 
-        const lastText = getLastPreview(c);
-        const unread = getUnreadCount(c, myId);
+          //  Người chat (đối tác)
+          const other =
+              participants.find((p) => String(p?._id) !== String(myId)) ||
+              participants[0] ||
+              {};
 
-        const name = other?.fullName || other?.email || 'Unknown';
-        const avatarLetter = (name || '?').trim().slice(0, 1).toUpperCase();
+          //  Lấy thông tin người gửi tin nhắn cuối
+          const lastMessageSender = getLastMessageSender(c, myId);
+          const isLastMessageFromMe = lastMessageSender?.id === myId;
 
-        const isFocused = String(focusedConversationId) === id;
-        const isOpened = (openConversationIds || []).some((x) => String(x) === id);
+          //  Hiển thị tên người gửi tin nhắn cuối
+          let displayName = other?.fullName || other?.email || 'Unknown';
+          let displayAvatar = other?.avatar || null;
+          let displayAvatarLetter = (displayName || '?').trim().slice(0, 1).toUpperCase();
 
-        const handleClick = () => {
-          if (!id || id.length !== 24) return;
-          openConversation(id);
-          markAsRead(id);
-          onConversationSelected?.(id);
-        };
+          //  Nếu tin nhắn cuối là của mình, hiển thị "Bạn"
+          if (isLastMessageFromMe && lastMessageSender) {
+            displayName = 'Bạn';
+            // Vẫn giữ avatar của người chat, không hiển thị avatar của mình
+          }
 
-        let stateClasses = 'bg-white border-gray-200';
+          const lastText = getLastPreview(c);
+          const unread = getUnreadCount(c, myId);
 
-        if (unread > 0) {
-          stateClasses =
-            'bg-amber-100 border-amber-400 shadow-[0_0_0_1px_rgba(245,158,11,0.18)]';
-        }
+          const isFocused = String(focusedConversationId) === id;
+          const isOpened = (openConversationIds || []).some((x) => String(x) === id);
 
-        if (isOpened && unread === 0) {
-          stateClasses = 'bg-amber-50 border-amber-300';
-        }
+          const handleClick = () => {
+            if (!id || id.length !== 24) return;
+            openConversation(id);
+            markAsRead(id);
+            onConversationSelected?.(id);
+          };
 
-        if (isFocused) {
-          stateClasses =
-            'bg-amber-200 border-amber-500 outline outline-1 outline-amber-500';
-        }
+          let stateClasses = 'bg-white border-gray-200';
 
-        return (
-          <button
-            key={id}
-            type="button"
-            onClick={handleClick}
-            className={`group flex w-full items-center justify-between gap-2.5 rounded-2xl border p-3 text-left transition-colors hover:border-amber-400 hover:bg-amber-50 focus:outline-none ${stateClasses}`}
-          >
-            <div className="flex min-w-0 flex-1 items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 font-extrabold text-gray-900">
-                {avatarLetter}
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-bold text-gray-900">{name}</div>
-                <div
-                  className={`mt-0.5 truncate text-xs ${
-                    unread > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'
-                  }`}
-                >
-                  {lastText}
+          if (unread > 0) {
+            stateClasses =
+                'bg-amber-100 border-amber-400 shadow-[0_0_0_1px_rgba(245,158,11,0.18)]';
+          }
+
+          if (isOpened && unread === 0) {
+            stateClasses = 'bg-amber-50 border-amber-300';
+          }
+
+          if (isFocused) {
+            stateClasses =
+                'bg-amber-200 border-amber-500 outline outline-1 outline-amber-500';
+          }
+
+          return (
+              <button
+                  key={id}
+                  type="button"
+                  onClick={handleClick}
+                  className={`group flex w-full items-center justify-between gap-2.5 rounded-2xl border p-3 text-left transition-colors hover:border-amber-400 hover:bg-amber-50 focus:outline-none ${stateClasses}`}
+              >
+                <div className="flex min-w-0 flex-1 items-center gap-3">
+                  {/* Avatar của người chat */}
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-gray-100 font-extrabold text-gray-900">
+                    {displayAvatar ? (
+                        <img
+                            src={displayAvatar}
+                            alt={displayName}
+                            className="h-full w-full rounded-full object-cover"
+                        />
+                    ) : (
+                        displayAvatarLetter
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    {/* Tên người chat */}
+                    <div className="truncate text-sm font-bold text-gray-900">
+                      {displayName}
+                    </div>
+
+                    {/* Nội dung tin nhắn cuối - hiển thị người gửi */}
+                    <div
+                        className={`mt-0.5 flex items-center gap-1 truncate text-xs ${
+                            unread > 0 ? 'font-semibold text-gray-900' : 'text-gray-500'
+                        }`}
+                    >
+                      {/*  Hiển thị ai đã gửi tin nhắn cuối */}
+                      {lastMessageSender && !isLastMessageFromMe && (
+                          <span className="font-medium text-amber-600">
+                      {lastMessageSender.name}:
+                    </span>
+                      )}
+                      {isLastMessageFromMe && (
+                          <span className="font-medium text-gray-500">
+                      Bạn:
+                    </span>
+                      )}
+                      <span className="truncate">{lastText}</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            {unread > 0 && (
-              <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-amber-400 px-1.5 text-xs font-black text-gray-900">
+                {unread > 0 && (
+                    <span className="flex h-6 min-w-[24px] items-center justify-center rounded-full bg-amber-400 px-1.5 text-xs font-black text-gray-900">
                 {unread}
               </span>
-            )}
-          </button>
-        );
-      })}
-    </div>
+                )}
+              </button>
+          );
+        })}
+      </div>
   );
 }
 

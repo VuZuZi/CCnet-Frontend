@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { BadgeCheck } from "lucide-react";
 import { followAPI } from "../api/followAPI";
 import { useMyFollowing } from "../hooks/useMyFollowing";
 import { getErrorMessage } from "@/shared/lib/httpClient";
@@ -172,8 +173,17 @@ export function FollowingPage() {
                       </div>
 
                       <div className="min-w-0">
-                        <div className="font-extrabold text-[#111827] truncate leading-tight mb-0.5">
-                          {title}
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="font-extrabold text-[#111827] truncate leading-tight mb-0.5">
+                            {title}
+                          </div>
+                          {u.isVerified && (
+                            <BadgeCheck
+                              size={16}
+                              className="text-blue-500 flex-shrink-0"
+                              title="Verified"
+                            />
+                          )}
                         </div>
                         <div className="text-[13px] text-[#6b7280] truncate">
                           {u.email || ""}

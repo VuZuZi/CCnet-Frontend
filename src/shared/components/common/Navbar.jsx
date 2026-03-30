@@ -5,6 +5,7 @@ import {
   Search,
   MessageCircle,
   Bell,
+  BadgeCheck,
   ChevronDown,
   Menu,
   X,
@@ -172,9 +173,14 @@ export function Navbar() {
               <div className="mb-4 flex items-center gap-3 px-2">
                 <Avatar user={user} size="md" />
                 <div>
-                  <p className="text-sm font-bold text-slate-900">
-                    {user?.fullName}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-bold text-slate-900">
+                      {user?.fullName}
+                    </p>
+                    {user?.isVerified && (
+                      <BadgeCheck size={16} className="text-blue-500" />
+                    )}
+                  </div>
                   <p className="text-xs capitalize text-slate-500">
                     {user?.role || 'User'}
                   </p>
@@ -280,9 +286,12 @@ function UserDropdown({ user, onLogout }) {
       >
         <Avatar user={user} size="sm" />
         <div className="hidden text-left leading-tight lg:block">
-          <span className="block text-sm font-bold text-slate-900">
-            {user?.fullName || 'Alex Doe'}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="block text-sm font-bold text-slate-900">
+              {user?.fullName || 'Alex Doe'}
+            </span>
+            {user?.isVerified && <BadgeCheck size={16} className="text-blue-500" />}
+          </div>
           <span className="block text-xs capitalize text-slate-500">
             {user?.role || 'Impact Donor'}
           </span>

@@ -1,11 +1,12 @@
 import { useAdminDashboard } from "../hooks/useAdminDashboard";
-import { ShieldBan, ShieldCheck } from "lucide-react";
+import { ShieldBan, ShieldCheck, BadgeCheck, BadgeX } from "lucide-react";
 
 const UserManagement = () => {
-  const { users, loading, toggleBanUser } = useAdminDashboard("users");
+  const { users, loading, toggleBanUser, toggleVerifiedUser } =
+    useAdminDashboard("users");
 
   const handleToggleBan = (user) => {
-    const action = user.isBanned ? "unban" : "ban";
+    const action = user.isActive ? "ban" : "unban";
 
     const confirmed = window.confirm(
       `Are you sure you want to ${action} this user?`,
@@ -14,6 +15,15 @@ const UserManagement = () => {
     if (!confirmed) return;
 
     toggleBanUser(user._id);
+  };
+
+  const handleToggleVerified = (user) => {
+    const action = user.isVerified ? "remove verified badge from" : "verify";
+    const confirmed = window.confirm(
+      `Are you sure you want to ${action} this user?`,
+    );
+    if (!confirmed) return;
+    toggleVerifiedUser(user._id, !user.isVerified);
   };
 
   return (
@@ -27,15 +37,17 @@ const UserManagement = () => {
             <tr className="text-left text-slate-600 font-semibold">
               <th className="px-6 py-4">User</th>
               <th className="px-6 py-4">Email</th>
+              <th className="px-6 py-4">Projects Completed</th>
+              <th className="px-6 py-4">Volunteers Joined</th>
               <th className="px-6 py-4">Status</th>
-              <th className="px-6 py-4 text-right">Action</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
 
           <tbody>
             {loading && (
               <tr>
-                <td colSpan="4" className="text-center py-10 text-slate-400">
+                <td colSpan="6" className="text-center py-10 text-slate-400">
                   Loading users...
                 </td>
               </tr>
@@ -61,17 +73,43 @@ const UserManagement = () => {
                       </div>
                     )}
 
-                    <span className="font-semibold text-slate-800">
-                      {user.fullName}
-                    </span>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-800 truncate">
+                          {user.fullName}
+                        </span>
+                        {user.isVerified && (
+                          <BadgeCheck
+                            size={16}
+                            className="text-blue-500 flex-shrink-0"
+                            title="Verified"
+                          />
+                        )}
+                      </div>
+                      <div className="text-xs text-slate-500 font-medium">
+                        {user.role}
+                      </div>
+                    </div>
                   </td>
 
                   {/* EMAIL */}
                   <td className="px-6 py-4 text-slate-600">{user.email}</td>
 
+                  <td className="px-6 py-4">
+                    <span className="px-3 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">
+                      {Number(user.completedProjectsCount || 0)}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <span className="px-3 py-1 text-xs font-bold rounded-full bg-slate-100 text-slate-700">
+                      {Number(user.volunteersJoinedCount || 0)}
+                    </span>
+                  </td>
+
                   {/* STATUS */}
                   <td className="px-6 py-4">
-                    {user.isBanned ? (
+                    {user.isActive === false ? (
                       <span className="px-3 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-600">
                         Banned
                       </span>
@@ -84,26 +122,49 @@ const UserManagement = () => {
 
                   {/* ACTION */}
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => handleToggleBan(user)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-semibold ml-auto ${
-                        user.isBanned
-                          ? "bg-emerald-500 hover:bg-emerald-600"
-                          : "bg-red-500 hover:bg-red-600"
-                      }`}
-                    >
-                      {user.isBanned ? (
-                        <>
-                          <ShieldCheck size={16} />
-                          Unban
-                        </>
-                      ) : (
-                        <>
-                          <ShieldBan size={16} />
-                          Ban
-                        </>
-                      )}
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleToggleVerified(user)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold ${
+                          user.isVerified
+                            ? "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                            : "bg-blue-50 hover:bg-blue-100 text-blue-700"
+                        }`}
+                      >
+                        {user.isVerified ? (
+                          <>
+                            <BadgeX size={16} />
+                            Unverify
+                          </>
+                        ) : (
+                          <>
+                            <BadgeCheck size={16} />
+                            Verify
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={() => handleToggleBan(user)}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-lg text-white text-xs font-semibold ${
+                          user.isActive === false
+                            ? "bg-emerald-500 hover:bg-emerald-600"
+                            : "bg-red-500 hover:bg-red-600"
+                        }`}
+                      >
+                        {user.isActive === false ? (
+                          <>
+                            <ShieldCheck size={16} />
+                            Unban
+                          </>
+                        ) : (
+                          <>
+                            <ShieldBan size={16} />
+                            Ban
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
