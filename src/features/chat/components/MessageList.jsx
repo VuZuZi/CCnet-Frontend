@@ -13,7 +13,7 @@ function getSenderId(sender) {
   return String(sender?._id || sender?.userId || sender?.id || '');
 }
 
-// ✅ Cải thiện hàm lấy thông tin người gửi
+//  Cải thiện hàm lấy thông tin người gửi
 function getSenderInfo(senderId, participants = []) {
   if (!senderId) return { name: 'Unknown', avatar: null };
 
@@ -102,7 +102,7 @@ export function MessageList({ conversationId, scrollSignal }) {
 
   const { messages, isLoading } = useMessages(conversationId);
 
-  // ✅ Lấy participants từ conversation
+  //  Lấy participants từ conversation
   const { conversations } = useConversations();
   const activeConversation = (conversations || []).find(c => String(c?._id) === String(conversationId));
   const participants = activeConversation?.participants || [];
@@ -189,7 +189,7 @@ export function MessageList({ conversationId, scrollSignal }) {
                 {group.messages.map((msg, msgIdx) => {
                   const senderId = getSenderId(msg?.senderId);
                   const isMine = String(senderId) === String(myId);
-                  // ✅ Lấy thông tin người gửi từ participants
+                  //  Lấy thông tin người gửi từ participants
                   const senderInfo = getSenderInfo(senderId, participants);
 
                   const reactKey = msg?._id

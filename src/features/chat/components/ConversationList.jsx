@@ -144,11 +144,6 @@ export function ConversationList({ onConversationSelected, searchKeyword = '' })
           let displayAvatar = other?.avatar || null;
           let displayAvatarLetter = (displayName || '?').trim().slice(0, 1).toUpperCase();
 
-          //  Nếu tin nhắn cuối là của mình, hiển thị "Bạn"
-          if (isLastMessageFromMe && lastMessageSender) {
-            displayName = 'Bạn';
-            // Vẫn giữ avatar của người chat, không hiển thị avatar của mình
-          }
 
           const lastText = getLastPreview(c);
           const unread = getUnreadCount(c, myId);

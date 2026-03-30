@@ -50,7 +50,7 @@ export const useAdminDashboard = (activeTab) => {
     loadData();
   }, [loadData]);
 
-  // 🔴 Ban / Unban User (Instant UI Update)
+  //  Ban / Unban User (Instant UI Update)
   const toggleBanUser = async (userId) => {
     try {
       const res = await adminAPI.toggleBan(userId);
@@ -116,7 +116,7 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
-  // 🚩 Resolve report
+  //  Resolve report
   const handleResolveReport = async (reportId, actions, note) => {
     try {
       await adminAPI.resolveReport(reportId, actions, note);

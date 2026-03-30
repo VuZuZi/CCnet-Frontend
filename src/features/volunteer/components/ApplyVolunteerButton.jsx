@@ -67,7 +67,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
           className: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100',
           disabled: false,
           showCancel: true,
-          showEdit: true  // ✅ Cho phép chỉnh sửa
+          showEdit: true  //  Cho phép chỉnh sửa
         };
       case 'APPROVED':
         return {
@@ -102,7 +102,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
     }
 
 
-    // ✅ Kiểm tra nếu đã có đơn
+    //  Kiểm tra nếu đã có đơn
     if (hasApplied && applicationStatus === 'PENDING') {
       alert('Bạn đã có đơn đăng ký đang chờ xét duyệt');
       return;
