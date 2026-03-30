@@ -3,9 +3,9 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { usePosts } from "../hooks/usePosts";
 import PostCard from "./PostCard";
 
-const PostFeed = ({ currentUserId, onReport }) => {
+const PostFeed = ({ currentUserId, onReport, feedType }) => {
   const { data, fetchNextPage, hasNextPage, isLoading, isError, error } =
-    usePosts(10);
+    usePosts(10, feedType);
 
   if (isLoading) return <PostFeedSkeleton />;
 

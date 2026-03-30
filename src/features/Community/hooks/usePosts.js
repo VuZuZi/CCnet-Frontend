@@ -1,11 +1,21 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { postAPI } from "../api/postAPI";
 
-export const usePosts = (limit = 10) => {
+export const usePosts = (limit = 10, feedType = "for-you") => {
   return useInfiniteQuery({
-    queryKey: ["posts", { limit }],
-    queryFn: ({ pageParam = null }) =>
-      postAPI.getPosts({ cursor: pageParam, limit }),
+    queryKey: ["posts", limit, feedType],
+
+    queryFn: ({ pageParam = null }) => {
+      const params = { limit };
+      if (pageParam) params.cursor = pageParam;
+      if (feedType === "following") {
+        params.type = "following";
+      }
+
+      // Gọi API
+      return postAPI.getPosts(params);
+    },
+
     initialPageParam: null,
 
     getNextPageParam: (lastPage) => {
