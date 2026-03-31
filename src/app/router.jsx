@@ -59,17 +59,17 @@ const MyOrganizerRequestPage = lazy(() =>
 );
 
 const CommunityPage = lazy(() =>
-  import("@/features/Community/pages/CommunityPage").then((m) => ({
+  import("@/features/community/pages/CommunityPage").then((m) => ({
     default: m.CommunityPage || m.default,
   })),
 );
 const CreatePostPage = lazy(() =>
-  import("@/features/Community/pages/CreatePostPage").then((m) => ({
+  import("@/features/community/pages/CreatePostPage").then((m) => ({
     default: m.CreatePostPage || m.default,
   })),
 );
 const PostDetailPage = lazy(() =>
-  import("@/features/Community/pages/PostDetailPage").then((m) => ({
+  import("@/features/community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
   })),
 );
