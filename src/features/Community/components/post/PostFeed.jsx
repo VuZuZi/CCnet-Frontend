@@ -1,7 +1,7 @@
 import React from "react";
 import InfiniteScroll from "react-infinite-scroll-component";
-import { usePosts } from "../hooks/usePosts";
-import PostCard from "./PostCard";
+import { usePosts } from "../../hooks/usePosts";
+import PostCard from "../post/PostCard";
 
 const PostFeed = ({ currentUserId, onReport, feedType }) => {
   const { data, fetchNextPage, hasNextPage, isLoading, isError, error } =

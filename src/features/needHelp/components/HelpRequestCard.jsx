@@ -8,7 +8,7 @@ import {
   UserRound,
   Share2,
 } from "lucide-react";
-import { ShareModal } from "../../Community/components/ShareModal";
+import { ShareModal } from "../../Community/components/common/ShareModal";
 
 import { formatCurrency, formatDate } from "@/shared/lib/formatters";
 

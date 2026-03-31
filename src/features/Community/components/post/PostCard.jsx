@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { usePostMutations } from "../hooks/usePostMutations";
+import { usePostMutations } from "../../hooks/usePostMutations";
 import EditPostModal from "./EditPostModal";
 
 const POST_TYPE_LABELS = {

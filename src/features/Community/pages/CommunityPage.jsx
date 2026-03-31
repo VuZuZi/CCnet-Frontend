@@ -1,15 +1,17 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../auth/stores/useAuthStore";
 
-import ProfileWidget from "../components/ProfileWidget";
-import FeedNav from "../components/FeedNav";
-import CommunityList from "../components/CommunityList";
-import PostForm from "../components/PostForm";
-import PostFeed from "../components/PostFeed";
-import SpotlightWidget from "../components/SpotlightWidget";
-import SuggestedUsers from "../components/SuggestedUsers";
-import ReportModal from "../components/ReportModal";
-import PostTheaterMode from "../components/PostTheaterMode";
+import ProfileWidget from "../components/sidebar/ProfileWidget";
+import FeedNav from "../components/sidebar/FeedNav";
+import CommunityList from "../components/sidebar/CommunityList";
+import SpotlightWidget from "../components/sidebar/SpotlightWidget";
+import SuggestedUsers from "../components/sidebar/SuggestedUsers";
+
+import PostForm from "../components/post/PostForm";
+import PostFeed from "../components/post/PostFeed";
+import PostTheaterMode from "../components/post/PostTheaterMode";
+
+import ReportModal from "../components/common/ReportModal";
 
 const CommunityPage = () => {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);

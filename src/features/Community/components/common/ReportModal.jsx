@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePostMutations } from "../hooks/usePostMutations";
+import { usePostMutations } from "../../hooks/usePostMutations";
 import { Button } from "@/shared/components/ui/Button/Button";
 
 const REPORT_REASONS = [

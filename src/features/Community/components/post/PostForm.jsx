@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { usePostMutations } from "../hooks/usePostMutations";
-import { useAuthStore } from "../../auth/stores/useAuthStore";
+import { usePostMutations } from "../../hooks/usePostMutations";
+import { useAuthStore } from "../../../auth/stores/useAuthStore";
 
 const UserAvatar = ({ user }) => {
   if (user?.avatar) {

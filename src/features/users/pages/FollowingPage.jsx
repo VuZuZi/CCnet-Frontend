@@ -6,8 +6,8 @@ import { useMyFollowers } from "../hooks/useMyFollowers";
 import { useFollowMutations } from "../../Community/hooks/useFollow";
 
 import { useToast } from "@/shared/contexts/ToastContext";
-import { UserCard } from "../../Community/components/UserCard";
-import { UnfollowModal } from "../../Community/components/UnfollowModal";
+import { UserCard } from "../../Community/components/user/UserCard";
+import { UnfollowModal } from "../../Community/components/user/UnfollowModal";
 
 export function FollowingPage() {
   const navigate = useNavigate();

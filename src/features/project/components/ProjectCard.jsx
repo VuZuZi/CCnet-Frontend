@@ -1,7 +1,7 @@
 import { useState } from "react"; // THÊM: import useState
 import { Link } from "react-router-dom";
 import { MapPin, Share2 } from "lucide-react"; // THÊM: import Share2
-import { ShareModal } from "../../Community/components/ShareModal";
+import { ShareModal } from "../../Community/components/common/ShareModal";
 
 export function ProjectCard({ project }) {
   const [isShareOpen, setIsShareOpen] = useState(false);
