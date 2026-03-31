@@ -1,5 +1,5 @@
 // src/features/chat/components/ChatPanel.jsx
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useChatSocket } from '../hooks/useChatSocket';
 import { useConversations } from '../hooks/useConversations';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
@@ -7,12 +7,15 @@ import { useChatStore } from '../stores/useChatStore';
 import { MessageList } from './MessageList';
 import { MessageComposer } from './MessageComposer';
 import { X, Circle } from 'lucide-react';
+import { showMessageToast } from './ToastMessage';
 
 export function ChatPanel({ onClose, conversationId, index = 0, className = '', ...props }) {
   useChatSocket(conversationId);
 
   const focusConversation = useChatStore((s) => s.focusConversation);
+  const openConversation = useChatStore((s) => s.openConversation);
   const [scrollSignal, setScrollSignal] = useState(0);
+  const [hasShownToast, setHasShownToast] = useState(false);
 
   const user = useAuthStore(authSelectors.user);
   const myId = user?.userId || user?._id || user?.id;
@@ -25,7 +28,7 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
   // Người chat (đối tác)
   const other = participants.find((p) => String(p?._id) !== String(myId)) || participants[0] || null;
 
-  //  Lấy thông tin người gửi tin nhắn cuối
+  // Lấy thông tin người gửi tin nhắn cuối
   const lastMessage = active?.lastMessage;
   const lastMessageSender = useMemo(() => {
     if (!lastMessage) return null;
@@ -33,7 +36,6 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
     const sender = lastMessage?.sender || lastMessage?.senderId;
     if (!sender) return null;
 
-    // Nếu sender là object
     if (typeof sender === 'object') {
       return {
         name: sender?.fullName || sender?.name || sender?.email || 'Unknown',
@@ -42,7 +44,6 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
       };
     }
 
-    // Nếu sender là string (ID), tìm trong participants
     const participant = participants.find(p => String(p?._id) === String(sender));
     if (participant) {
       return {
@@ -55,15 +56,36 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
     return null;
   }, [lastMessage, participants]);
 
-  //  Xác định tin nhắn cuối có phải của mình không
   const isLastMessageFromMe = lastMessageSender?.id === myId;
 
-  //  Hiển thị tên trong header (người chat)
+  // Hiển thị toast khi có tin nhắn mới từ người khác
+  useEffect(() => {
+    if (lastMessage && !isLastMessageFromMe && !hasShownToast) {
+      const messageText = lastMessage?.text || lastMessage?.content || 'Đã gửi một tin nhắn';
+
+      showMessageToast(
+          {
+            name: lastMessageSender?.name || 'Ai đó',
+            avatar: lastMessageSender?.avatar,
+          },
+          messageText,
+          conversationId,
+          openConversation
+      );
+
+      setHasShownToast(true);
+    }
+  }, [lastMessage, isLastMessageFromMe, hasShownToast, conversationId, openConversation, lastMessageSender]);
+
+  // Reset toast flag khi conversation thay đổi
+  useEffect(() => {
+    setHasShownToast(false);
+  }, [conversationId]);
+
+  // Hiển thị tên trong header
   const headerTitle = other?.fullName || other?.email || 'Chat';
   const headerAvatar = other?.avatar;
   const headerAvatarLetter = (headerTitle || '?').trim().slice(0, 1).toUpperCase();
-
-  //  Trạng thái online (giả sử, có thể từ WebSocket)
   const isOnline = other?.isOnline || false;
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
@@ -92,7 +114,6 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
                     {headerAvatarLetter}
                   </div>
               )}
-              {/* Online Status Dot */}
               {isOnline && (
                   <Circle className="absolute -bottom-0.5 -right-0.5 h-3 w-3 fill-green-500 text-green-500 stroke-white stroke-2" />
               )}
@@ -116,15 +137,7 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
-
         </header>
-
-        {/*  Hiển thị thông tin tin nhắn cuối (người gửi) */}
-        {lastMessage && !isLastMessageFromMe && (
-            <div className="border-b border-gray-100 bg-amber-50/50 px-3 py-1.5 text-xs text-gray-500">
-              <span className="font-medium text-amber-600">{lastMessageSender?.name}</span> đã gửi tin nhắn mới
-            </div>
-        )}
 
         <section className="flex min-h-0 flex-1 flex-col bg-gray-50">
           <MessageList conversationId={conversationId} scrollSignal={scrollSignal} />
