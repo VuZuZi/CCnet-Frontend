@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { usePostDetail } from "../hooks/usePosts";
 import { usePostMutations } from "../hooks/usePostMutations";
-import PostTheaterMode from "../components/PostTheaterMode";
+import PostTheaterMode from "../components/post/PostTheaterMode";
 import TextOnlyPostView from "../components/post/TextOnlyPostView";
 
 const formatTimeAgo = (d) => {

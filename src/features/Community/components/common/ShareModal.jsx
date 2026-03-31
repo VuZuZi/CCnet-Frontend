@@ -1,5 +1,5 @@
 import React from "react";
-import PostForm from "./PostForm"; // Import cái form anh em mình vừa độ
+import PostForm from "../post/PostForm";
 
 export const ShareModal = ({
   isOpen,
