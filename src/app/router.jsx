@@ -230,7 +230,6 @@ export const router = createBrowserRouter([
           { path: "dashboard", element: withSuspense(DashboardPage) },
           { path: "following", element: withSuspense(FollowingPage) },
           { path: "community", element: withSuspense(CommunityPage) },
-          { path: "community/create", element: withSuspense(CreatePostPage) },
           { path: "community/:id", element: withSuspense(PostDetailPage) },
           {
             path: "need-help/create",

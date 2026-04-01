@@ -39,53 +39,12 @@ export const useFollowMutations = () => {
 
   const unfollow = useMutation({
     mutationFn: (userId) => followAPI.unfollowUser(userId),
-
-    onMutate: async (userId) => {
-      await queryClient.cancelQueries({ queryKey: ["myFollowing"] });
-      const previousFollowing = queryClient.getQueryData(["myFollowing"]);
-
-      queryClient.setQueryData(["myFollowing"], (oldData) => {
-        if (!oldData) return oldData;
-        if (oldData.users) {
-          return {
-            ...oldData,
-            users: oldData.users.filter((item) => {
-              const currentId =
-                item.followingId?._id ||
-                item.followingId?.id ||
-                item._id ||
-                item.id;
-              return currentId !== userId;
-            }),
-          };
-        }
-
-        if (Array.isArray(oldData)) {
-          return oldData.filter((item) => {
-            const currentId =
-              item.followingId?._id ||
-              item.followingId?.id ||
-              item._id ||
-              item.id;
-            return currentId !== userId;
-          });
-        }
-
-        return oldData;
-      });
-
-      return { previousFollowing };
-    },
-
-    onError: (err, userId, context) => {
-      if (context?.previousFollowing) {
-        queryClient.setQueryData(["myFollowing"], context.previousFollowing);
-      }
-    },
-
-    onSettled: (_, error, userId) => {
+    onSuccess: (_, userId) => {
+      // Quét ngầm cập nhật mọi nơi
       queryClient.invalidateQueries({ queryKey: ["followStatus", userId] });
       queryClient.invalidateQueries({ queryKey: ["myFollowing"] });
+      queryClient.invalidateQueries({ queryKey: ["suggestedUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["follow"] });
     },
   });
 
