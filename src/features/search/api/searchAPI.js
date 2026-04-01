@@ -1,8 +1,13 @@
-import httpClient from '@/shared/lib/httpClient';
+import httpClient from "@/shared/lib/httpClient";
 
 export const searchAPI = {
   async globalSearch(params) {
-    const res = await httpClient.get('/search', { params });
+    const res = await httpClient.get("/search", { params });
+    return res?.data?.data ?? res?.data ?? res ?? {};
+  },
+
+  async searchPage(params) {
+    const res = await httpClient.get("/search", { params });
     return res?.data?.data ?? res?.data ?? res ?? {};
   },
 };

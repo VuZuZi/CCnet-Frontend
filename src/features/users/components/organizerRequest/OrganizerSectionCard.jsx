@@ -7,15 +7,17 @@ export function OrganizerSectionCard({
 }) {
   return (
     <section
-      className={`rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_4px_24px_rgba(15,23,42,0.04)] md:p-8 ${className}`}
+      className={`rounded-[28px] border border-slate-200 bg-white p-7 shadow-[0_4px_24px_rgba(15,23,42,0.04)] md:p-9 ${className}`}
     >
-      <div className="mb-6 flex items-center gap-3">
+      <div className="mb-7 flex items-center gap-4">
         <div
-          className={`flex h-10 w-10 items-center justify-center rounded-full ${iconClassName}`}
+          className={`flex h-12 w-12 items-center justify-center rounded-full ${iconClassName}`}
         >
           {icon}
         </div>
-        <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+        <h2 className="text-[20px] font-bold text-slate-900 md:text-[22px]">
+          {title}
+        </h2>
       </div>
 
       {children}

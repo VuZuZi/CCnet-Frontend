@@ -89,6 +89,7 @@ const CreateProjectPage = lazy(() =>
     default: m.CreateProjectPage || m.default,
   })),
 );
+
 const NeedHelpPage = lazy(() =>
   import("@/features/needHelp/pages/NeedHelpPage").then((m) => ({
     default: m.NeedHelpPage || m.default,
@@ -110,6 +111,17 @@ const EditHelpRequestPage = lazy(() =>
   })),
 );
 
+const SearchPage = lazy(() =>
+  import("@/features/search/pages/SearchPage").then((m) => ({
+    default: m.SearchPage || m.default,
+  })),
+);
+
+const ChatPage = lazy(() =>
+  import("@/features/chat/pages/ChatPage").then((m) => ({
+    default: m.ChatPage || m.default,
+  })),
+);
 
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
@@ -144,6 +156,8 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <AuthGateway /> },
 
+      { path: "search", element: withSuspense(SearchPage) },
+
       { path: "projects", element: withSuspense(ProjectListPage) },
       { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
       { path: "users/:id", element: withSuspense(UserProfilePage) },
@@ -166,6 +180,9 @@ export const router = createBrowserRouter([
             path: "organizer/request",
             element: withSuspense(MyOrganizerRequestPage),
           },
+
+          { path: "messages", element: withSuspense(ChatPage) },
+          { path: "messages/:conversationId", element: withSuspense(ChatPage) },
         ],
       },
 

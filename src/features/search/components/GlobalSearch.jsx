@@ -1,59 +1,44 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useGlobalSearch } from '../hooks/useGlobalSearch';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useGlobalSearch } from "../hooks/useGlobalSearch";
 
-function buildPersonPath(id) {
-  return `/users/${String(id)}`;
-}
-
-function buildProjectPath(id) {
-  return `/projects/${String(id)}`;
+function buildSearchPath(query) {
+  return `/search?q=${encodeURIComponent(String(query || "").trim())}`;
 }
 
 export default function GlobalSearch() {
   const navigate = useNavigate();
-  const {
-    query,
-    setQuery,
-    groups,
-    isAuthenticated,
-    isLoading,
-  } = useGlobalSearch({ debounceMs: 180, limit: 8 });
+  const { query, setQuery, groups, isAuthenticated, isLoading } =
+    useGlobalSearch({ debounceMs: 180, limit: 8 });
 
   const [open, setOpen] = useState(false);
   const boxRef = useRef(null);
 
-  const hasQuery = !!String(query || '').trim();
-
-  const visible = useMemo(() => {
-    return open && hasQuery;
-  }, [open, hasQuery]);
-
-  const firstItem = useMemo(() => {
-    const firstGroup = (groups || [])[0];
-    return firstGroup?.items?.[0] || null;
-  }, [groups]);
+  const hasQuery = !!String(query || "").trim();
+  const visible = useMemo(() => open && hasQuery, [open, hasQuery]);
 
   const onPick = (item) => {
     if (!item) return;
 
     setOpen(false);
-    setQuery('');
+    setQuery("");
 
-    if (item.kind === 'person') {
-      navigate(buildPersonPath(item.id), { state: { user: item.payload } });
+    if (item.link) {
+      navigate(item.link, { state: item.payload ? { data: item.payload } : {} });
       return;
     }
 
-    if (item.kind === 'project') {
-      navigate(buildProjectPath(item.id), { state: { project: item.payload } });
-    }
+    navigate(buildSearchPath(item.title || query));
   };
 
   const onSubmit = (e) => {
     e.preventDefault();
-    if (!firstItem) return;
-    onPick(firstItem);
+
+    const trimmed = String(query || "").trim();
+    if (!trimmed) return;
+
+    setOpen(false);
+    navigate(buildSearchPath(trimmed));
   };
 
   useEffect(() => {
@@ -64,18 +49,18 @@ export default function GlobalSearch() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   if (!isAuthenticated) return null;
 
   return (
-    <div ref={boxRef} className="relative mx-[14px] w-[360px] max-w-[46vw]">
+    <div ref={boxRef} className="relative mx-[14px] w-[420px] max-w-[50vw]">
       <form onSubmit={onSubmit} className="relative">
         <input
           type="text"
-          className="w-full rounded-full border border-light-gray bg-white py-2 pl-[14px] pr-[36px] text-black transition-colors focus:border-yellow focus:outline-none focus:ring-1 focus:ring-yellow"
+          className="w-full rounded-full border border-amber-300 bg-white/95 py-3 pl-5 pr-11 text-[17px] text-slate-900 shadow-sm transition-all duration-300 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
           placeholder="Search..."
           value={query}
           onFocus={() => setOpen(true)}
@@ -84,27 +69,31 @@ export default function GlobalSearch() {
             setOpen(true);
           }}
         />
-        <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm opacity-60">
+
+        <button
+          type="submit"
+          className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm text-slate-500 transition-all duration-200 hover:bg-amber-50 hover:text-amber-600"
+        >
           ⌕
-        </span>
+        </button>
       </form>
 
       {visible ? (
         <div
-          className="absolute left-0 right-0 top-[calc(100%+8px)] z-[1200] overflow-hidden rounded-xl border border-light-gray bg-white shadow-sm"
+          className="absolute left-0 right-0 top-[calc(100%+10px)] z-[1200] max-h-[70vh] overflow-y-auto rounded-2xl border border-slate-200 bg-white/95 shadow-[0_18px_50px_rgba(15,23,42,0.14)] backdrop-blur-md"
           role="listbox"
         >
           {isLoading ? (
-            <div className="px-3 py-3 text-sm text-black/70">Searching...</div>
+            <div className="px-4 py-4 text-sm text-slate-600">Searching...</div>
           ) : groups.length > 0 ? (
             groups.map((group) => (
-              <div key={group.key}>
-                <div className="bg-light-gray px-3 py-2 text-xs font-bold opacity-75">
+              <div key={group.key} className="border-b border-slate-100 last:border-b-0">
+                <div className="sticky top-0 z-10 bg-slate-50/90 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-slate-500 backdrop-blur">
                   {group.label}
                 </div>
 
                 {(group.items || []).map((item) => {
-                  const letter = String(item.title || '?')
+                  const letter = String(item.title || "?")
                     .trim()
                     .slice(0, 1)
                     .toUpperCase();
@@ -113,15 +102,15 @@ export default function GlobalSearch() {
                     <button
                       key={`${group.key}:${item.kind}:${item.id}`}
                       type="button"
-                      className="flex w-full cursor-pointer items-center gap-2.5 border-none bg-transparent px-3 py-2.5 text-left transition-colors hover:bg-light-gray"
+                      className="flex w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left transition-all duration-200 hover:bg-amber-50/70 hover:shadow-[inset_0_0_0_1px_rgba(251,191,36,0.14)]"
                       onClick={() => onPick(item)}
                     >
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-yellow font-bold text-black">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-200 font-bold text-slate-900 shadow-sm">
                         {item.avatar ? (
                           <img
                             src={item.avatar}
                             alt={item.title}
-                            className="h-full w-full object-cover"
+                            className="h-full w-full object-cover transition-transform duration-300 hover:scale-105"
                           />
                         ) : (
                           letter
@@ -129,10 +118,10 @@ export default function GlobalSearch() {
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-semibold leading-tight text-black">
+                        <div className="truncate text-[17px] font-semibold leading-tight text-slate-900">
                           {item.title}
                         </div>
-                        <div className="truncate text-xs text-black opacity-70">
+                        <div className="mt-0.5 truncate text-sm text-slate-500">
                           {item.subtitle}
                         </div>
                       </div>
@@ -142,7 +131,7 @@ export default function GlobalSearch() {
               </div>
             ))
           ) : (
-            <div className="px-3 py-3 text-sm text-black/70">No results found</div>
+            <div className="px-4 py-4 text-sm text-slate-600">No results found</div>
           )}
         </div>
       ) : null}
