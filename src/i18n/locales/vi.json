@@ -27,7 +27,8 @@
     "donated": "Đã góp",
     "detail": "Chi tiết",
     "donate": "Đóng góp",
-    "urgent": "KhẨN CẤP"
+    "urgent": "KhẨN CẤP",
+    "noLocation": "Chưa có địa điểm"
   },
   "navigation": {
     "home": "Trang chủ",
@@ -167,6 +168,8 @@
     "organized_by": "Tổ chức bởi",
     "your_organization": "Tổ chức của bạn",
     "verified_organizer": "Nhà tổ chức đã xác thực",
+    "by": "Bởi",
+    "anonymous_organizer": "Tổ chức ẩn danh",
     "raised_of": "đã quyên góp trên mục tiêu {{amount}}",
     "volunteer_only_project": "Dự án chỉ tuyển tình nguyện viên",
     "not_raising_funds": "Không gây quỹ tài chính",
@@ -183,13 +186,22 @@
     "submit_project": "Gửi dự án xét duyệt",
     "error_project_id_missing": "Lỗi nghiêm trọng: Thiếu ID dự án! Vui lòng lưu lại Bước 1.",
     "back_step": "Quay lại",
+    "discovery_title": "Khám phá dự án & tạo tác động",
+    "discovery_subtitle": "Tìm các chiến dịch minh bạch phù hợp với đam mê của bạn.",
+    "active_projects": "Dự án đang hoạt động",
+    "need_help_requests": "Yêu cầu cần giúp đỡ",
     "explore_all": "Khám phá tất cả dự án",
+    "view_grid": "Xem dạng lưới",
+    "view_list": "Xem dạng danh sách",
     "search_location": "Tìm theo địa điểm...",
     "all_categories": "Tất cả danh mục",
     "no_projects_found": "Không tìm thấy dự án nào phù hợp với bộ lọc.",
     "clear_filters": "Xóa bộ lọc",
     "loading_more": "Đang tải thêm dự án...",
-    "all_projects_viewed": "Bạn đã xem hết danh sách dự án! 🎉"
+    "all_projects_viewed": "Bạn đã xem hết danh sách dự án! 🎉",
+    "of_target": "trên mục tiêu {{amount}}",
+    "days_left": "còn {{count}} ngày",
+    "view_details": "Xem chi tiết"
   },
   "workspace": {
     "bar_title": "Không gian làm việc của bạn",

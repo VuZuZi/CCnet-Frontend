@@ -25,7 +25,6 @@ export function OrganizerWorkspaceBar() {
 
       <div className="flex items-center gap-3 w-full sm:w-auto">
         <div className="mr-2">
-          <LanguageSwitcher />
         </div>
         <Link
           to="/projects/create"

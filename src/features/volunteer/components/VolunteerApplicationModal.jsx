@@ -1,6 +1,6 @@
 // src/features/volunteer/components/VolunteerApplicationModal.jsx
 import React, { useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, BadgeCheck } from 'lucide-react';
 import { VolunteerApplicationForm } from './VolunteerApplicationForm';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 
@@ -88,9 +88,14 @@ export const VolunteerApplicationModal = ({
                 )}
               </div>
               <div className="flex flex-col">
-                <span className="text-slate-900 font-bold">
-                  {user?.fullName || user?.name || 'Guest User'}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-slate-900 font-bold">
+                    {user?.fullName || user?.name || 'Guest User'}
+                  </span>
+                  {user?.isVerified && (
+                    <BadgeCheck size={16} className="text-blue-500" title="Verified" />
+                  )}
+                </div>
                 <span className="text-slate-500 text-sm">
                   {user?.email || 'user@example.com'}
                 </span>

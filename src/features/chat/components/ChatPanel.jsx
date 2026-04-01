@@ -1,3 +1,7 @@
+// src/features/chat/components/ChatPanel.jsx
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { useChatSocket } from '../hooks/useChatSocket';
+import { useConversations } from '../hooks/useConversations';
 import { Expand, X } from 'lucide-react';
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';

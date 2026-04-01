@@ -47,6 +47,7 @@ export function SidebarPublic({ project }) {
                     projectId={project?._id || project?.id}
                     projectName={project?.name}
                 />
+
             </div>
 
             <hr className="border-gray-100" />

@@ -9,7 +9,7 @@ import { useVolunteerMutations } from '@/features/volunteer/hooks/useVolunteerMu
 export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
     const [activeSubTab, setActiveSubTab] = useState(initialSubTab);
 
-    // ✅ Update state when prop changes
+    //  Update state when prop changes
     useEffect(() => {
         if (initialSubTab) {
             setActiveSubTab(initialSubTab);
@@ -20,7 +20,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
 
     const { useProjectApplications } = useVolunteerQueries();
 
-    // ✅ Lấy dữ liệu cho 3 status
+    //  Lấy dữ liệu cho 3 status
     const { data: pendingResult, isLoading: pendingLoading, refetch: refetchPending } =
         useProjectApplications(projectId, 'PENDING');
     const { data: approvedResult, isLoading: approvedLoading, refetch: refetchApproved } =
@@ -40,7 +40,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
     const approvedApps = getApplicationsArray(approvedResult);
     const rejectedApps = getApplicationsArray(rejectedResult);
 
-    // ✅ Chọn dữ liệu theo tab
+    //  Chọn dữ liệu theo tab
     const getApplicationsByTab = () => {
         switch (activeSubTab) {
             case 'pending': return pendingApps;
@@ -68,7 +68,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
         restoreApplication
     } = useVolunteerMutations();
 
-    // ✅ Approve: PENDING -> APPROVED
+    //  Approve: PENDING -> APPROVED
     const handleApprove = (applicationId) => {
         console.log('🔍 ===== HANDLE APPROVE =====');
         console.log('📥 Received applicationId:', applicationId);
@@ -85,7 +85,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
             console.log('📤 Calling approveApplication with:', applicationId);
             approveApplication({ id: applicationId}, {
                 onSuccess: () => {
-                    console.log('✅ Approve success');
+                    console.log(' Approve success');
                     refetchPending();
                     refetchApproved();
                     alert('Duyệt đơn thành công');
@@ -97,7 +97,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
             });
         }
     };
-    // ✅ Reject: PENDING -> REJECTED
+    //  Reject: PENDING -> REJECTED
     const handleReject = (applicationId) => {
         const reason = prompt('Nhập lý do từ chối:');
         if (reason && reason.trim()) {
@@ -121,7 +121,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
     //  Restore: REJECTED -> PENDING
     const handleRestore = (applicationId) => {
         if (confirm('Xác nhận khôi phục đơn đăng ký này?')) {
-            // ✅ Đúng format: { id, data: { status: 'PENDING' } }
+            //  Đúng format: { id, data: { status: 'PENDING' } }
             restoreApplication(
                 { id: applicationId },  // ← data là object
                 {
@@ -149,7 +149,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
         );
     }
 
-    // ✅ Tabs - chỉ 3 tab
+    //  Tabs - chỉ 3 tab
     const tabs = [
         { id: 'pending', label: 'Pending Applications', count: pendingApps.length, icon: Clock, color: 'yellow' },
         { id: 'approved', label: 'Approved', count: approvedApps.length, icon: UserCheck, color: 'green' },

@@ -50,7 +50,7 @@ export const useAdminDashboard = (activeTab) => {
     loadData();
   }, [loadData]);
 
-  // 🔴 Ban / Unban User (Instant UI Update)
+  //  Ban / Unban User (Instant UI Update)
   const toggleBanUser = async (userId) => {
     try {
       const res = await adminAPI.toggleBan(userId);
@@ -60,7 +60,7 @@ export const useAdminDashboard = (activeTab) => {
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
           user._id === userId
-            ? { ...user, ...updatedUser, isBanned: !user.isBanned }
+            ? { ...user, ...updatedUser }
             : user,
         ),
       );
@@ -69,7 +69,23 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
-  // 🗑 Delete project
+  const toggleVerifiedUser = async (userId, isVerified) => {
+    try {
+      const res = await adminAPI.toggleVerified(userId, isVerified);
+      const updatedUser = res?.data?.data;
+      if (!updatedUser) return;
+
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user._id === userId ? { ...user, ...updatedUser } : user,
+        ),
+      );
+    } catch (err) {
+      console.error("User verified toggle failed:", err);
+    }
+  };
+
+  // Delete project
   const deleteProject = async (projectId) => {
     try {
       await adminAPI.deleteProject(projectId);
@@ -100,7 +116,7 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
-  // 🚩 Resolve report
+  //  Resolve report
   const handleResolveReport = async (reportId, actions, note) => {
     try {
       await adminAPI.resolveReport(reportId, actions, note);
@@ -120,6 +136,7 @@ export const useAdminDashboard = (activeTab) => {
     loading,
 
     toggleBanUser,
+    toggleVerifiedUser,
     updateProjectStatus,
     deleteProject,
     handleResolveReport,

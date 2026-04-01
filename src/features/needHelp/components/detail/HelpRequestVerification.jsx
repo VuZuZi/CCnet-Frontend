@@ -72,7 +72,12 @@ export function HelpRequestVerification({ helpRequest }) {
         <DetailInfoCard icon={UserRound} label="Assigned Organizer">
           {organizer ? (
             <>
-              <p className="font-semibold text-slate-900">{organizer.fullName}</p>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-slate-900">{organizer.fullName}</p>
+                {organizer.isVerified && (
+                  <BadgeCheck size={16} className="text-blue-500" title="Verified" />
+                )}
+              </div>
               <p className="text-slate-500">{organizer.email || 'Organizer contact available on profile.'}</p>
             </>
           ) : (

@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { BadgeCheck } from "lucide-react";
+import { followAPI } from "../api/followAPI";
 import { useMyFollowing } from "../hooks/useMyFollowing";
 import { useMyFollowers } from "../hooks/useMyFollowers";
 import { useFollowMutations } from "../../Community/hooks/useFollow";
@@ -153,15 +155,66 @@ export function FollowingPage() {
                 </div>
               </div>
             ) : (
-              filtered.map((u) => (
-                <UserCard
-                  key={u.id}
-                  user={u}
-                  isFollowingTab={isFollowingTab}
-                  onGoUser={goUser}
-                  onRequestUnfollow={requestUnfollow}
-                />
-              ))
+              filtered.map((u) => {
+                const title = u.fullName || u.email || "Unknown";
+                const letter = String(title).trim().slice(0, 1).toUpperCase();
+
+                return (
+                  <div
+                    key={u.id}
+                    className="bg-white rounded-[14px] shadow-sm border border-light-gray p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all duration-150 hover:-translate-y-[1px] hover:shadow-[0_10px_18px_rgba(17,24,39,0.08)] cursor-pointer"
+                    onClick={() => goUser(u)}
+                    role="button"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 bg-[#f3f4f6] flex items-center justify-center font-black text-[#111827]">
+                        {u.avatar ? (
+                          <img
+                            className="w-full h-full object-cover"
+                            src={u.avatar}
+                            alt={title}
+                          />
+                        ) : (
+                          letter
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <div className="font-extrabold text-[#111827] truncate leading-tight mb-0.5">
+                            {title}
+                          </div>
+                          {u.isVerified && (
+                            <BadgeCheck
+                              size={16}
+                              className="text-blue-500 flex-shrink-0"
+                              title="Verified"
+                            />
+                          )}
+                        </div>
+                        <div className="text-[13px] text-[#6b7280] truncate">
+                          {u.email || ""}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
+                      <Button
+                        variant="danger"
+                        className="!py-1.5 !px-4 !text-sm"
+                        disabled={unfollowMutation.isPending}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          requestUnfollow(u);
+                        }}
+                      >
+                        Unfollow
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
             )}
           </div>
         )}

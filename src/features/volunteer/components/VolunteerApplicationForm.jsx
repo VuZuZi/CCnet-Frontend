@@ -88,7 +88,7 @@ export const VolunteerApplicationForm = ({ projectId, onSuccess, onCancel }) => 
     } catch (error) {
       console.error('Submit failed:', error);
 
-      // ✅ Xử lý lỗi duplicate
+      //  Xử lý lỗi duplicate
       if (error?.response?.status === 400 && error?.response?.data?.message?.includes('Already applied')) {
         alert('Bạn đã đăng ký dự án này rồi!');
       } else if (error?.message?.includes('E11000') || error?.response?.data?.message?.includes('duplicate')) {

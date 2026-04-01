@@ -9,9 +9,10 @@ import { ProjectCover } from '../components/detail/ProjectCover';
 import { ProjectHeader } from '../components/detail/ProjectHeader';
 import { ProjectTabs } from '../components/detail/ProjectTabs';
 import { TabStory } from '../components/detail/TabStory';
-import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';  // ✅ Import VolunteerManager
+import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';
 import { SidebarPublic } from '../components/detail/SidebarPublic';
 import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
+import { ProjectCommunityFeed } from '@/features/project/components/detail/ProjectCommunityFeed';
 
 export function ProjectDetailPage() {
   const { id } = useParams();
@@ -22,6 +23,7 @@ export function ProjectDetailPage() {
   const [activeSubTab, setActiveSubTab] = useState('pending');
   const volunteerManagerRef = useRef(null);
 
+  //  Định nghĩa hàm điều hướng đến tab volunteer
   const handleNavigateToVolunteerTab = (tab, subTab) => {
     setActiveTab(tab);
     if (subTab) {
@@ -35,6 +37,11 @@ export function ProjectDetailPage() {
     }, 100);
   };
 
+  //  Định nghĩa hàm onVolunteerClick (để dùng trong các component con)
+  const onVolunteerClick = () => {
+    handleNavigateToVolunteerTab('volunteer', 'pending');
+  };
+
   const identity = useMemo(() => {
     if (!currentUser || !project) return 'GUEST';
     if (project.organizerId?._id === currentUser.id) return 'ORGANIZER';
@@ -46,15 +53,24 @@ export function ProjectDetailPage() {
 
   const isOrganizer = identity === 'ORGANIZER';
 
-  // ✅ Hàm render nội dung theo tab
+  // Hàm render nội dung theo tab
   const renderTabContent = () => {
     switch (activeTab) {
       case 'story':
-        return <TabStory project={project} />;
-      case 'volunteer':  // ✅ Xử lý tab volunteer
+        return (
+            <TabStory
+                project={project}
+                isOrganizer={isOrganizer}
+                onVolunteerClick={onVolunteerClick}
+            />
+        );
+      case 'volunteer':
         return (
             <div ref={volunteerManagerRef}>
-              <VolunteerManager projectId={project._id} initialSubTab={activeSubTab} />
+              <VolunteerManager
+                  projectId={project._id}
+                  initialSubTab={activeSubTab}
+              />
             </div>
         );
       case 'financials':
@@ -65,9 +81,11 @@ export function ProjectDetailPage() {
         );
       case 'community':
         return (
-            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
-              Nội dung Community Feed đang được xây dựng...
-            </div>
+            <ProjectCommunityFeed
+                project={project}
+                isOrganizer={isOrganizer}
+                onVolunteerClick={onVolunteerClick}  //  Sửa: dùng onVolunteerClick đã định nghĩa
+            />
         );
       default:
         return (
@@ -79,8 +97,8 @@ export function ProjectDetailPage() {
   };
 
   return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <main className="pt-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+      <div className="min-h-screen bg-[#f3f4f6]">
+        <main className="pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
           <div className="lg:w-[65%] w-full space-y-8">
             <ProjectCover project={project} isOrganizer={isOrganizer} />
@@ -91,7 +109,7 @@ export function ProjectDetailPage() {
                 isOrganizer={isOrganizer}
             />
 
-            {/* ✅ Render nội dung theo tab */}
+            {/* Render nội dung theo tab */}
             {renderTabContent()}
 
           </div>

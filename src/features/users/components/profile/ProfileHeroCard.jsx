@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Button } from "@/shared/components/ui/Button/Button";
 import { Link } from "react-router-dom";
-import { MapPin, Camera, Loader2, MessageSquare } from "lucide-react";
+import { MapPin, Camera, Loader2, MessageSquare, BadgeCheck } from "lucide-react";
 import { useUploadMedia } from "../../hooks/useUploadMedia";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { EditProfileModal } from "./EditProfileModal";
@@ -191,9 +191,14 @@ export function ProfileHeroCard({
           </div>
 
           <div className="mb-3">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-              {user?.fullName || "Unknown User"}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+                {user?.fullName || "Unknown User"}
+              </h1>
+              {user?.isVerified && (
+                <BadgeCheck size={20} className="text-blue-500" title="Verified" />
+              )}
+            </div>
             <p className="text-gray-500 flex items-center gap-1.5 mt-1 text-sm font-medium">
               <MapPin className="w-4 h-4 text-gray-400" />
               {user?.location || "Location not set"}
