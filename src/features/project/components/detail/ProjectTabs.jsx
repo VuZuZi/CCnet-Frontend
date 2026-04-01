@@ -7,7 +7,7 @@ export function ProjectTabs({ activeTab, setActiveTab, isOrganizer }) {
         { id: 'financials', label: isOrganizer ? 'Financial Management' : 'Transparency & Financials' },
     ];
 
-    // ✅ Thêm tab Volunteer Manager chỉ khi là organizer
+    //  Thêm tab Volunteer Manager chỉ khi là organizer
     if (isOrganizer) {
         tabs.push({ id: 'volunteer', label: 'Volunteer Manager' });
     }

@@ -33,7 +33,7 @@ export const TabPending = ({ projectId }) => {
         }
     }, [data, error]);
 
-    // ✅ Lấy applications từ nhiều cấu trúc khác nhau
+    // CreatePostPage Lấy applications từ nhiều cấu trúc khác nhau
     const getApplications = () => {
         if (!data) return [];
 
@@ -119,7 +119,7 @@ export const TabPending = ({ projectId }) => {
         );
     }
 
-    // ✅ Kiểm tra applications là mảng trước khi dùng slice
+    // CreatePostPage Kiểm tra applications là mảng trước khi dùng slice
     if (!applications || !Array.isArray(applications) || applications.length === 0) {
         return (
             <div className="bg-white p-6 rounded-3xl border border-gray-100">

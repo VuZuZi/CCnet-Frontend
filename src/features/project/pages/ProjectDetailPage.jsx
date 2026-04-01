@@ -9,7 +9,7 @@ import { ProjectCover } from '../components/detail/ProjectCover';
 import { ProjectHeader } from '../components/detail/ProjectHeader';
 import { ProjectTabs } from '../components/detail/ProjectTabs';
 import { TabStory } from '../components/detail/TabStory';
-import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';  // ✅ Import VolunteerManager
+import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';  //  Import VolunteerManager
 import { SidebarPublic } from '../components/detail/SidebarPublic';
 import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
 
@@ -46,12 +46,12 @@ export function ProjectDetailPage() {
 
   const isOrganizer = identity === 'ORGANIZER';
 
-  // ✅ Hàm render nội dung theo tab
+  //  Hàm render nội dung theo tab
   const renderTabContent = () => {
     switch (activeTab) {
       case 'story':
         return <TabStory project={project} />;
-      case 'volunteer':  // ✅ Xử lý tab volunteer
+      case 'volunteer':  //  Xử lý tab volunteer
         return (
             <div ref={volunteerManagerRef}>
               <VolunteerManager projectId={project._id} initialSubTab={activeSubTab} />
@@ -91,7 +91,7 @@ export function ProjectDetailPage() {
                 isOrganizer={isOrganizer}
             />
 
-            {/* ✅ Render nội dung theo tab */}
+            {/*  Render nội dung theo tab */}
             {renderTabContent()}
 
           </div>
