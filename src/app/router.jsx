@@ -63,11 +63,6 @@ const CommunityPage = lazy(() =>
     default: m.CommunityPage || m.default,
   })),
 );
-const CreatePostPage = lazy(() =>
-  import("@/features/Community/pages/CreatePostPage").then((m) => ({
-    default: m.CreatePostPage || m.default,
-  })),
-);
 const PostDetailPage = lazy(() =>
   import("@/features/Community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
@@ -110,7 +105,6 @@ const EditHelpRequestPage = lazy(() =>
   })),
 );
 
-
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
     <h2 className="text-2xl font-bold text-slate-400">
@@ -120,9 +114,7 @@ const MockAdminPage = ({ title }) => (
 );
 
 const withSuspense = (Component) => (
-  <Suspense fallback={<PageLoader />}>
-    {createElement(Component)}
-  </Suspense>
+  <Suspense fallback={<PageLoader />}>{createElement(Component)}</Suspense>
 );
 
 export const router = createBrowserRouter([
