@@ -469,12 +469,7 @@ export function OrganizerRequestForm({
         1–3 business days.
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-3 px-1 text-xs text-slate-400 sm:flex-row sm:items-center">
-        <span className="cursor-default underline underline-offset-2">
-          View Terms of Service History
-        </span>
-        <span className="cursor-default text-rose-500">Log Out</span>
-      </div>
+      
     </form>
   );
 }

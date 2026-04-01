@@ -1,16 +1,11 @@
 import { io } from 'socket.io-client';
 import { env } from '@/config/env';
 import { tokenManager } from '@/shared/lib/tokenManager';
+import { CHAT_EVENTS } from '../constants/chat.constants';
 
 let socket = null;
 
-export const CHAT_EVENTS = {
-  MESSAGE_NEW: 'chat:message:new',
-  NOTIFY: 'chat:notify',
-  USER_JOIN: 'user:join',
-  JOIN: 'join',
-  LEAVE: 'leave',
-};
+export { CHAT_EVENTS };
 
 export function getChatSocket() {
   if (socket) return socket;
@@ -42,6 +37,7 @@ export function getChatSocket() {
 
   socket.io.on('reconnect_attempt', () => {
     if (!socket) return;
+
     socket.auth = {
       token: tokenManager.getAccessToken(),
     };
@@ -51,22 +47,21 @@ export function getChatSocket() {
 }
 
 export function connectChatSocket() {
-  const s = getChatSocket();
+  const instance = getChatSocket();
 
-  s.auth = {
+  instance.auth = {
     token: tokenManager.getAccessToken(),
   };
 
-  if (!s.connected) {
-    s.connect();
+  if (!instance.connected) {
+    instance.connect();
   }
 
-  return s;
+  return instance;
 }
 
 export function disconnectChatSocket() {
   if (!socket) return;
-
   socket.disconnect();
   socket = null;
 }

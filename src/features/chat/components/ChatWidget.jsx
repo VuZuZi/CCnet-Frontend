@@ -1,162 +1,83 @@
 import { useEffect, useRef } from 'react';
-import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { ContactsSidebar } from './ContactsSidebar';
-import { ChatPanel } from './ChatPanel';
-import { useChatStore, chatSelectors } from '../stores/useChatStore';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { connectChatSocket, disconnectChatSocket, CHAT_EVENTS } from '../lib/socketClient';
 
-function getSenderId(sender) {
-  if (!sender) return '';
-  if (typeof sender === 'string') return String(sender);
-  return String(sender?._id || sender?.id || sender?.userId || '');
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
+import ContactsSidebar from '@/features/chat/components/conversation/ContactsSidebar';
+import { chatKeys } from '@/features/chat/constants/chat.queryKeys';
+import { disconnectChatSocket } from '@/features/chat/lib/socketClient';
+import { useChatStore, chatSelectors } from '@/features/chat/stores/useChatStore';
+
+function getWidgetStyle(mode, anchorRect) {
+  if (mode === 'mobile') {
+    return {
+      className:
+        'fixed inset-0 z-[1200] h-screen w-screen overflow-hidden rounded-none bg-white shadow-none',
+      style: undefined,
+    };
+  }
+
+  if (mode === 'tablet') {
+    return {
+      className:
+        'fixed bottom-4 right-4 z-[1200] h-[min(760px,calc(100vh-32px))] w-[min(430px,calc(100vw-32px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]',
+      style: undefined,
+    };
+  }
+
+  const top = anchorRect?.bottom ? anchorRect.bottom + 12 : 78;
+  const right = 24;
+
+  return {
+    className:
+      'fixed z-[1200] h-[min(620px,calc(100vh-96px))] w-[min(430px,calc(100vw-24px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]',
+    style: { top, right },
+  };
 }
 
-export default function ChatWidget({ isOpen, onClose }) {
+export default function ChatWidget({
+  isOpen,
+  onClose,
+  anchorRect,
+  onConversationSelected,
+  mode = 'desktop',
+}) {
   const queryClient = useQueryClient();
+  const widgetRef = useRef(null);
 
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const isAuthLoading = useAuthStore(authSelectors.isLoading);
-  const user = useAuthStore(authSelectors.user);
-
-  const myId = user?._id || user?.id || user?.userId;
 
   const openConversationIds = useChatStore(chatSelectors.openConversationIds) || [];
-  const focusedConversationId = useChatStore(chatSelectors.focusedConversationId);
-
-  const openConversation = useChatStore((s) => s.openConversation);
-  const closeConversation = useChatStore((s) => s.closeConversation);
-  const clearChat = useChatStore((s) => s.clearChat);
-
-  const openIdsRef = useRef(openConversationIds);
-  const focusedIdRef = useRef(focusedConversationId || null);
-  const myIdRef = useRef(myId || null);
-
-  useEffect(() => {
-    openIdsRef.current = openConversationIds;
-  }, [openConversationIds]);
-
-  useEffect(() => {
-    focusedIdRef.current = focusedConversationId || null;
-  }, [focusedConversationId]);
-
-  useEffect(() => {
-    myIdRef.current = myId || null;
-  }, [myId]);
+  const clearChat = useChatStore((state) => state.clearChat);
 
   useEffect(() => {
     if (isAuthenticated && !isAuthLoading) {
-      queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
+      queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
     }
 
     if (!isAuthLoading && !isAuthenticated) {
       clearChat();
-      queryClient.removeQueries({ queryKey: ['chat'] });
+      queryClient.removeQueries({ queryKey: chatKeys.all });
       disconnectChatSocket();
     }
   }, [isAuthenticated, isAuthLoading, clearChat, queryClient]);
 
-  useEffect(() => {
-    if (!isAuthenticated || isAuthLoading) return undefined;
+  if (!isOpen) return null;
 
-    const socket = connectChatSocket();
-
-    const joinUserRoom = () => {
-      const uid = myIdRef.current;
-      if (!uid) return;
-
-      socket.emit(CHAT_EVENTS.USER_JOIN, String(uid), (ack) => {
-        console.log('[chat socket] user join ack:', ack);
-      });
-    };
-
-    const onConnect = () => {
-      joinUserRoom();
-    };
-
-    const onNotify = (payload) => {
-      const conversationId = String(payload?.conversationId || '');
-      const message = payload?.message;
-      if (!conversationId || !message) return;
-
-      const me = myIdRef.current ? String(myIdRef.current) : '';
-      const senderId = getSenderId(message?.senderId);
-      const isMyMessage = me && senderId === me;
-
-      queryClient.setQueryData(['chat', 'conversations'], (oldData) => {
-        const arr = Array.isArray(oldData) ? oldData : [];
-        const idx = arr.findIndex((c) => String(c?._id) === conversationId);
-        if (idx === -1) return arr;
-
-        const current = arr[idx];
-        const prevUnreadCounts = current?.unreadCounts || {};
-        const nextUnreadCounts = { ...prevUnreadCounts };
-
-        if (me) {
-          if (isMyMessage) {
-            nextUnreadCounts[me] = 0;
-          } else {
-            const isOpened = openIdsRef.current.some((id) => String(id) === conversationId);
-            const isFocused = String(focusedIdRef.current || '') === conversationId;
-            const shouldIncrease = !(isOpened || isFocused);
-
-            nextUnreadCounts[me] = shouldIncrease
-              ? Number(prevUnreadCounts?.[me] || 0) + 1
-              : 0;
-          }
-        }
-
-        const updated = {
-          ...current,
-          lastMessage: message,
-          updatedAt: message?.createdAt || current?.updatedAt,
-          unreadCounts: nextUnreadCounts,
-        };
-
-        return [updated, ...arr.filter((_, i) => i !== idx)];
-      });
-    };
-
-    socket.on('connect', onConnect);
-    socket.on(CHAT_EVENTS.NOTIFY, onNotify);
-
-    if (socket.connected) {
-      joinUserRoom();
-    }
-
-    return () => {
-      socket.off('connect', onConnect);
-      socket.off(CHAT_EVENTS.NOTIFY, onNotify);
-    };
-  }, [isAuthenticated, isAuthLoading, queryClient]);
-
-  if (isAuthLoading || !isAuthenticated) return null;
+  const { className, style } = getWidgetStyle(mode, anchorRect);
 
   return (
-    <>
-      {isOpen && (
-        <div className="absolute right-0 top-[calc(100%+12px)] z-[1100] w-[360px] max-w-[calc(100vw-24px)] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.18)]">
-          <ContactsSidebar
-            onOpenConversation={openConversation}
-            onConversationSelected={onClose}
-          />
-        </div>
-      )}
-
-      {createPortal(
-        <>
-          {openConversationIds.map((id, index) => (
-            <ChatPanel
-              key={id}
-              index={index}
-              conversationId={id}
-              onClose={() => closeConversation(id)}
-            />
-          ))}
-        </>,
-        document.body
-      )}
-    </>
+    <div
+      ref={widgetRef}
+      className={className}
+      style={style}
+      data-open-conversations={openConversationIds.length}
+      data-chat-widget-root="true"
+    >
+      <ContactsSidebar
+        onConversationSelected={onConversationSelected}
+        onOpenFullPage={onClose}
+      />
+    </div>
   );
 }
