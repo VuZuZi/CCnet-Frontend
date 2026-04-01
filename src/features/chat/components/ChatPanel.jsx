@@ -11,6 +11,8 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
   useChatSocket(conversationId);
 
   const focusConversation = useChatStore((s) => s.focusConversation);
+  const titleOverrides = useChatStore((s) => s.conversationTitleOverrides);
+  const titleOverride = titleOverrides?.[String(conversationId)] || null;
   const [scrollSignal, setScrollSignal] = useState(0);
 
   const user = useAuthStore(authSelectors.user);
@@ -22,7 +24,7 @@ export function ChatPanel({ onClose, conversationId, index = 0, className = '', 
   const participants = active?.participants || [];
   const other = participants.find((p) => String(p?._id) !== String(myId)) || participants[0] || null;
 
-  const headerTitle = other?.fullName || other?.email || 'Chat';
+  const headerTitle = titleOverride || other?.fullName || other?.email || 'Chat';
 
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
   const rightPosition = isMobile ? 10 : 120 + index * 350;

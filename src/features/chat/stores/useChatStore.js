@@ -4,6 +4,7 @@ import { devtools } from 'zustand/middleware';
 const initialState = {
   openConversationIds: [],
   focusedConversationId: null,
+  conversationTitleOverrides: {},
 };
 
 export const useChatStore = create(
@@ -51,6 +52,20 @@ export const useChatStore = create(
         set({ focusedConversationId: id }, false, 'chat/focusConversation');
       },
 
+      setConversationTitleOverride: (conversationId, title) => {
+        const id = String(conversationId);
+        set(
+          (prev) => ({
+            conversationTitleOverrides: {
+              ...(prev.conversationTitleOverrides || {}),
+              [id]: title || null,
+            },
+          }),
+          false,
+          'chat/setConversationTitleOverride'
+        );
+      },
+
       clearChat: () => {
         set({ ...initialState }, false, 'chat/clearChat');
       },
@@ -62,4 +77,5 @@ export const useChatStore = create(
 export const chatSelectors = {
   openConversationIds: (s) => s.openConversationIds,
   focusedConversationId: (s) => s.focusedConversationId,
+  conversationTitleOverrides: (s) => s.conversationTitleOverrides,
 };

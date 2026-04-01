@@ -1,19 +1,24 @@
 // src/features/volunteer/components/ApplyVolunteerButton.jsx
 import { useState } from 'react';
-import { Users, CheckCircle, Clock, XCircle, Trash2, X, Edit2 } from 'lucide-react';
+import { Users, CheckCircle, Clock, XCircle, Trash2, X, Edit2, MessageCircle } from 'lucide-react';
 import { VolunteerApplicationModal } from './VolunteerApplicationModal';
 import { VolunteerEditModal } from './VolunteerEditModal';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { volunteerAPI } from '../api/volunteerAPI';
+import { useCreateConversation } from '@/features/chat/hooks/useCreateConversation';
+import { useChatStore } from '@/features/chat/stores/useChatStore';
 
-export const ApplyVolunteerButton = ({ projectId, projectName, className = '' }) => {
+export const ApplyVolunteerButton = ({ projectId, projectName, organizerId, className = '' }) => {
   const [showModal, setShowModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
+  const { createConversationAsync, isLoading: isCreatingConversation } = useCreateConversation();
+  const openConversation = useChatStore((s) => s.openConversation);
+  const setConversationTitleOverride = useChatStore((s) => s.setConversationTitleOverride);
 
   // Fetch application status
   const { data: application, isLoading, refetch } = useQuery({
@@ -76,7 +81,8 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
           className: 'bg-green-100 text-green-700 hover:bg-green-100 cursor-default',
           disabled: true,
           showCancel: false,
-          showEdit: false
+          showEdit: false,
+          showChat: true
         };
       case 'REJECTED':
         return {
@@ -201,6 +207,25 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
 
           {/* Action Buttons Row */}
           <div className="flex gap-2">
+            {/* Nút chat */}
+            {statusConfig.showChat && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!organizerId) return;
+                  const convo = await createConversationAsync({ participantId: organizerId });
+                  if (convo?._id) {
+                    setConversationTitleOverride(convo._id, projectName || '');
+                    openConversation(convo._id);
+                  }
+                }}
+                disabled={!organizerId || isCreatingConversation}
+                className="flex-1 py-2 text-sm font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors flex justify-center items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                <MessageCircle className="w-4 h-4" />
+                Chat
+              </button>
+            )}
             {/* Nút chỉnh sửa */}
             {statusConfig.showEdit && (
               <button

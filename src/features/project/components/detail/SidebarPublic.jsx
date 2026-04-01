@@ -45,7 +45,8 @@ export function SidebarPublic({ project }) {
                 <ApplyVolunteerButton
                     user={user}
                     projectId={project?._id || project?.id}
-                    projectName={project?.name}
+                    projectName={project?.title}
+                    organizerId={project?.organizerId?._id || project?.organizerId}
                 />
             </div>
 

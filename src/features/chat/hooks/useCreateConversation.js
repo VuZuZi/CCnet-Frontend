@@ -14,7 +14,6 @@ export function useCreateConversation() {
     onSuccess: (convo) => {
       if (convo?._id) openConversation(convo._id);
       queryClient.invalidateQueries({ queryKey: ['chat', 'conversations'] });
-      toast.success('Conversation ready');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

@@ -12,6 +12,7 @@ import { TabStory } from '../components/detail/TabStory';
 import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';  //  Import VolunteerManager
 import { SidebarPublic } from '../components/detail/SidebarPublic';
 import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
+import { ProjectCommunityFeed } from '../components/detail/ProjectCommunityFeed';
 
 export function ProjectDetailPage() {
   const { id } = useParams();
@@ -53,61 +54,63 @@ export function ProjectDetailPage() {
         return <TabStory project={project} />;
       case 'volunteer':  //  Xử lý tab volunteer
         return (
-            <div ref={volunteerManagerRef}>
-              <VolunteerManager projectId={project._id} initialSubTab={activeSubTab} />
-            </div>
+          <div ref={volunteerManagerRef}>
+            <VolunteerManager projectId={project._id} initialSubTab={activeSubTab} />
+          </div>
         );
       case 'financials':
         return (
-            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
-              Nội dung Financials đang được xây dựng...
-            </div>
+          <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
+            Nội dung Financials đang được xây dựng...
+          </div>
         );
       case 'community':
         return (
-            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
-              Nội dung Community Feed đang được xây dựng...
-            </div>
+          <ProjectCommunityFeed
+            project={project}
+            isOrganizer={isOrganizer}
+            onVolunteerClick={() => handleNavigateToVolunteerTab('volunteer', 'pending')}
+          />
         );
       default:
         return (
-            <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
-              Nội dung đang được xây dựng...
-            </div>
+          <div className="bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm flex items-center justify-center h-64 text-gray-400 font-medium">
+            Nội dung đang được xây dựng...
+          </div>
         );
     }
   };
 
   return (
-      <div className="min-h-screen bg-gray-50 pb-20">
-        <main className="pt-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
+    <div className="min-h-screen bg-[#f3f4f6]">
+      <main className="pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row gap-8">
 
-          <div className="lg:w-[65%] w-full space-y-8">
-            <ProjectCover project={project} isOrganizer={isOrganizer} />
-            <ProjectHeader project={project} isOrganizer={isOrganizer} />
-            <ProjectTabs
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                isOrganizer={isOrganizer}
+        <div className="lg:w-[65%] w-full space-y-8">
+          <ProjectCover project={project} isOrganizer={isOrganizer} />
+          <ProjectHeader project={project} isOrganizer={isOrganizer} />
+          <ProjectTabs
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            isOrganizer={isOrganizer}
+          />
+
+          {/*  Render nội dung theo tab */}
+          {renderTabContent()}
+
+        </div>
+
+        <div className="lg:w-[35%] w-full">
+          {isOrganizer ? (
+            <SidebarOrganizer
+              project={project}
+              onNavigateToVolunteerTab={handleNavigateToVolunteerTab}
             />
+          ) : (
+            <SidebarPublic project={project} />
+          )}
+        </div>
 
-            {/*  Render nội dung theo tab */}
-            {renderTabContent()}
-
-          </div>
-
-          <div className="lg:w-[35%] w-full">
-            {isOrganizer ? (
-                <SidebarOrganizer
-                    project={project}
-                    onNavigateToVolunteerTab={handleNavigateToVolunteerTab}
-                />
-            ) : (
-                <SidebarPublic project={project} />
-            )}
-          </div>
-
-        </main>
-      </div>
+      </main>
+    </div>
   );
 }
