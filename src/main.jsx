@@ -2,8 +2,8 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { GoogleOAuthProvider } from '@react-oauth/google'; 
 import App from './app/App';
-import { env } from './config/env'; 
-
+import { env } from './config/env';
+import './i18n';
 import './styles/main.css';
 import 'leaflet/dist/leaflet.css';
 

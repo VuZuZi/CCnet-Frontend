@@ -47,21 +47,18 @@ function BankAutocomplete({
   const [inputValue, setInputValue] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
 
-  useEffect(() => {
+  const selectedLabel = useMemo(() => {
     const matchedBank = banks.find(
       (bank) =>
         bank.name === value ||
         bank.displayLabel === value ||
         bank.shortName === value ||
-        bank.code === value
+        bank.code === value,
     );
 
-    if (matchedBank) {
-      setInputValue(matchedBank.displayLabel);
-    } else {
-      setInputValue(value || "");
-    }
-  }, [value, banks]);
+    if (matchedBank) return matchedBank.displayLabel;
+    return value || "";
+  }, [banks, value]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -99,29 +96,32 @@ function BankAutocomplete({
       .slice(0, 12);
   }, [banks, inputValue]);
 
-  useEffect(() => {
-    setActiveIndex(0);
-  }, [inputValue]);
-
   const handleSelectBank = (bank) => {
     onChange(bank.name);
     setInputValue(bank.displayLabel);
+    setActiveIndex(0);
     setIsOpen(false);
   };
 
   const handleInputChange = (event) => {
     const nextValue = event.target.value;
     setInputValue(nextValue);
+    setActiveIndex(0);
     onChange(nextValue);
     setIsOpen(true);
   };
 
   const handleInputFocus = () => {
+    setInputValue(selectedLabel);
     setIsOpen(true);
   };
 
   const handleToggleDropdown = () => {
-    setIsOpen((prev) => !prev);
+    setIsOpen((prev) => {
+      const next = !prev;
+      if (next) setInputValue(selectedLabel);
+      return next;
+    });
     inputRef.current?.focus();
   };
 
@@ -169,7 +169,7 @@ function BankAutocomplete({
         <input
           ref={inputRef}
           type="text"
-          value={inputValue}
+          value={isOpen ? inputValue : selectedLabel}
           onChange={handleInputChange}
           onFocus={handleInputFocus}
           onKeyDown={handleKeyDown}

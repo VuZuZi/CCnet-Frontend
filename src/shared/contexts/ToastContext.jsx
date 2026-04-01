@@ -9,6 +9,12 @@ const ToastItem = ({ id, message, variant, duration, onRemove }) => {
   const [isShowing, setIsShowing] = useState(false);
   const [isLeaving, setIsLeaving] = useState(false);
 
+  const handleRemove = useCallback(() => {
+    setIsShowing(false);
+    setIsLeaving(true);
+    setTimeout(() => onRemove(id), 300);
+  }, [id, onRemove]);
+
   useEffect(() => {
     const enterTimer = setTimeout(() => setIsShowing(true), 10);
     return () => clearTimeout(enterTimer);
@@ -19,13 +25,7 @@ const ToastItem = ({ id, message, variant, duration, onRemove }) => {
       const timer = setTimeout(() => handleRemove(), duration);
       return () => clearTimeout(timer);
     }
-  }, [duration]);
-
-  const handleRemove = () => {
-    setIsShowing(false);
-    setIsLeaving(true);
-    setTimeout(() => onRemove(id), 300); 
-  };
+  }, [duration, handleRemove]);
 
   const variantStyles = {
     success: {

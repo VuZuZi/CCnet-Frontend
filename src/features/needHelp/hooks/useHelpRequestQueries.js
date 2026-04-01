@@ -11,6 +11,7 @@ export const HELP_REQUEST_KEYS = {
   nearby: (params) => [...HELP_REQUEST_KEYS.all, 'nearby', params],
   details: () => [...HELP_REQUEST_KEYS.all, 'detail'],
   detail: (id) => [...HELP_REQUEST_KEYS.details(), id],
+  asProject: (id) => [...HELP_REQUEST_KEYS.all, 'as-project', id],
 };
 
 export const useHelpRequests = (filters = {}, page = 1, limit = 12) => {
@@ -63,5 +64,14 @@ export const useHelpRequestDetail = (id) => {
     queryFn: () => helpRequestAPI.getById(id),
     enabled: !!id,
     staleTime: 2 * 60 * 1000,
+  });
+};
+
+export const useHelpRequestAsProjectData = (id) => {
+  return useQuery({
+    queryKey: HELP_REQUEST_KEYS.asProject(id),
+    queryFn: () => helpRequestAPI.getAsProjectData(id),
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000,
   });
 };

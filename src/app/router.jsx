@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, createElement } from "react";
 
 import { RootLayout } from "@/shared/components/layouts/RootLayout";
 import { AdminLayout } from "@/features/admin/components/AdminLayout";
@@ -59,12 +59,17 @@ const MyOrganizerRequestPage = lazy(() =>
 );
 
 const CommunityPage = lazy(() =>
-  import("@/features/community/pages/CommunityPage").then((m) => ({
+  import("@/features/Community/pages/CommunityPage").then((m) => ({
     default: m.CommunityPage || m.default,
   })),
 );
+const CreatePostPage = lazy(() =>
+  import("@/features/Community/pages/CreatePostPage").then((m) => ({
+    default: m.CreatePostPage || m.default,
+  })),
+);
 const PostDetailPage = lazy(() =>
-  import("@/features/community/pages/PostDetailPage").then((m) => ({
+  import("@/features/Community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
   })),
 );
@@ -105,6 +110,7 @@ const EditHelpRequestPage = lazy(() =>
   })),
 );
 
+
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
     <h2 className="text-2xl font-bold text-slate-400">
@@ -115,7 +121,7 @@ const MockAdminPage = ({ title }) => (
 
 const withSuspense = (Component) => (
   <Suspense fallback={<PageLoader />}>
-    <Component />
+    {createElement(Component)}
   </Suspense>
 );
 
@@ -138,8 +144,40 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <AuthGateway /> },
 
-      { path: "projects", element: withSuspense(ProjectListPage) },
-      { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
+      {
+        path: "projects",
+        children: [
+          { index: true, element: withSuspense(ProjectListPage) },
+          {
+            path: "create",
+            element: (
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER]}>
+                {withSuspense(CreateProjectPage)}
+              </ProtectedRoute>
+            ),
+          },
+          { path: ":id", element: withSuspense(ProjectDetailPage) },
+        ],
+      },
+
+      {
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER]}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "workspace/projects",
+            element: <MockAdminPage title="Dự Án Của Tôi" />,
+          },
+          {
+            path: "workspace/stats",
+            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
+          },
+        ],
+      },
+
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
@@ -181,25 +219,6 @@ export const router = createBrowserRouter([
           {
             path: "need-help/:id/edit",
             element: withSuspense(EditHelpRequestPage),
-          },
-        ],
-      },
-
-      {
-        element: (
-          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER]}>
-            <Outlet />
-          </ProtectedRoute>
-        ),
-        children: [
-          { path: "projects/create", element: withSuspense(CreateProjectPage) },
-          {
-            path: "workspace/projects",
-            element: <MockAdminPage title="Dự Án Của Tôi" />,
-          },
-          {
-            path: "workspace/stats",
-            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
           },
         ],
       },

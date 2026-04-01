@@ -4,47 +4,47 @@ export const PROJECT_CATEGORY = [
   'Y_TE', 'GIAO_DUC', 'THIEN_TAI', 'XAY_DUNG', 'MOI_TRUONG', 'KHAC'
 ];
 
-const locationSchema = z.object({
+const getLocationSchema = (t) => z.object({
   type: z.literal('Point').default('Point'),
   coordinates: z.tuple([
     z.number()
-      .min(-180, 'Kinh độ (Lng) phải từ -180 đến 180')
-      .max(180, 'Kinh độ (Lng) phải từ -180 đến 180'),
+      .min(-180, t('validation.location.longitude_min'))
+      .max(180, t('validation.location.longitude_max')),
     z.number()
-      .min(-90, 'Vĩ độ (Lat) phải từ -90 đến 90')
-      .max(90, 'Vĩ độ (Lat) phải từ -90 đến 90')
+      .min(-90, t('validation.location.latitude_min'))
+      .max(90, t('validation.location.latitude_max'))
   ], {
-    invalid_type_error: "Tọa độ bản đồ không hợp lệ",
+    invalid_type_error: t('validation.location.invalid_coordinates'),
   }),
-  address: z.string({ required_error: 'Vui lòng chọn địa điểm trên bản đồ' })
-    .min(5, 'Địa chỉ quá ngắn, vui lòng chọn vị trí cụ thể hơn')
-    .max(255, 'Địa chỉ quá dài'),
+  address: z.string({ required_error: t('validation.location.address_required') })
+    .min(5, t('validation.location.address_min'))
+    .max(255, t('validation.location.address_max')),
 });
 
-const milestoneSchema = z.object({
-  title: z.string().min(5, 'Tên mốc tối thiểu 5 ký tự').max(100, 'Tối đa 100 ký tự'),
-  description: z.string().min(10, 'Mô tả mốc tối thiểu 10 ký tự').max(500, 'Tối đa 500 ký tự'),
-  targetAmount: z.coerce.number({ invalid_type_error: 'Vui lòng nhập số' }).min(1000, 'Tối thiểu 1.000 VNĐ'),
+const getMilestoneSchema = (t) => z.object({
+  title: z.string().min(5, t('validation.project.milestone_title_min')).max(100, t('validation.project.milestone_title_max')),
+  description: z.string().min(10, t('validation.project.milestone_desc_min')).max(500, t('validation.project.milestone_desc_max')),
+  targetAmount: z.coerce.number({ invalid_type_error: t('validation.number_required') }).min(1000, t('validation.project.milestone_amount_min')),
 });
 
-const volunteerRoleSchema = z.object({
-  title: z.string().min(3, 'Tên vai trò tối thiểu 3 ký tự').max(100, 'Tối đa 100 ký tự'),
-  quantity: z.coerce.number({ invalid_type_error: 'Vui lòng nhập số lượng' }).min(1, 'Cần ít nhất 1 TNV'),
+const getVolunteerRoleSchema = (t) => z.object({
+  title: z.string().min(3, t('validation.project.role_title_min')).max(100, t('validation.project.role_title_max')),
+  quantity: z.coerce.number({ invalid_type_error: t('validation.number_required') }).min(1, t('validation.project.role_quantity_min')),
   skillsRequired: z.array(z.string()).optional(),
 });
 
-export const step1Schema = z.object({
-  title: z.string().min(10, 'Tên dự án tối thiểu 10 ký tự').max(200, 'Tối đa 200 ký tự'),
+export const getStep1Schema = (t) => z.object({
+  title: z.string().min(10, t('validation.project.title_min')).max(200, t('validation.project.title_max')),
   category: z.enum(PROJECT_CATEGORY, {
-    errorMap: () => ({ message: 'Vui lòng chọn một danh mục hợp lệ' })
+    errorMap: () => ({ message: t('validation.project.category_required') })
   }),
-  location: locationSchema,
-  description: z.string().min(20, 'Vui lòng nhập mô tả chi tiết cho dự án'),
-  startDate: z.coerce.date({ invalid_type_error: "Vui lòng chọn ngày bắt đầu" }),
-  endDate: z.coerce.date({ invalid_type_error: "Vui lòng chọn ngày kết thúc" }),
+  location: getLocationSchema(t),
+  description: z.string().min(20, t('validation.project.description_min')),
+  startDate: z.coerce.date({ invalid_type_error: t('validation.project.start_date_required') }),
+  endDate: z.coerce.date({ invalid_type_error: t('validation.project.end_date_required') }),
   
   coverMedia: z.any().optional(),
-  documents: z.array(z.any()).min(1, 'Bắt buộc phải tải lên ít nhất 1 tài liệu chứng minh'),
+  documents: z.array(z.any()).min(1, t('validation.project.documents_required')),
 }).superRefine((data, ctx) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -52,43 +52,43 @@ export const step1Schema = z.object({
   start.setHours(0, 0, 0, 0);
 
   if (start < today) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Ngày bắt đầu không được trong quá khứ', path: ['startDate'] });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('validation.project.start_date_past'), path: ['startDate'] });
   }
   if (data.endDate <= data.startDate) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Ngày kết thúc phải sau ngày bắt đầu', path: ['endDate'] });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('validation.project.end_date_before_start'), path: ['endDate'] });
   }
 });
 
-export const step2Schema = z.object({
+export const getStep2Schema = (t) => z.object({
   isFundraising: z.boolean().default(true),
-  targetAmount: z.coerce.number({ invalid_type_error: 'Vui lòng nhập số tiền' }).min(0, 'Số tiền không được âm'),
-  milestones: z.array(milestoneSchema).optional().default([]),
+  targetAmount: z.coerce.number({ invalid_type_error: t('validation.number_required') }).min(0, t('validation.project.amount_negative')),
+  milestones: z.array(getMilestoneSchema(t)).optional().default([]),
   needsVolunteers: z.boolean().default(false),
-  volunteerRoles: z.array(volunteerRoleSchema).max(20, 'Tối đa 20 vai trò').optional().default([]),
+  volunteerRoles: z.array(getVolunteerRoleSchema(t)).max(20, t('validation.project.roles_max')).optional().default([]),
 }).superRefine((data, ctx) => {
   if (data.isFundraising) {
     if (data.targetAmount < 100000) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Ngân sách mục tiêu tối thiểu là 100.000 VNĐ', path: ['targetAmount'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('validation.project.target_amount_min'), path: ['targetAmount'] });
     }
     if (data.milestones.length === 0) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Bắt buộc phải có ít nhất 1 mốc giải ngân', path: ['milestones_sum'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('validation.project.milestones_required'), path: ['milestones_sum'] });
     } else {
       const sumMilestones = data.milestones.reduce((acc, curr) => acc + (Number(curr.targetAmount) || 0), 0);
       if (sumMilestones !== data.targetAmount) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: `Tổng tiền các mốc hiện tại (${sumMilestones.toLocaleString()}đ) không khớp với Ngân sách (${data.targetAmount.toLocaleString()}đ)`,
+          message: t('validation.project.milestones_mismatch', { sum: sumMilestones.toLocaleString(), target: data.targetAmount.toLocaleString() }),
           path: ['milestones_sum'],
         });
       }
     }
   } else {
     if (!data.needsVolunteers) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Nếu không kêu gọi quỹ, bạn BẮT BUỘC phải bật tính năng Tuyển Tình nguyện viên', path: ['needsVolunteers'] });
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('validation.project.volunteer_required_if_no_fund'), path: ['needsVolunteers'] });
     }
   }
 
   if (data.needsVolunteers && data.volunteerRoles.length === 0) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Vui lòng thêm ít nhất 1 vai trò tình nguyện viên', path: ['volunteerRoles_sum'] });
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('validation.project.roles_required'), path: ['volunteerRoles_sum'] });
   }
 });

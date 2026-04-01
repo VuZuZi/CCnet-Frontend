@@ -1,13 +1,15 @@
 import { useEffect } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { step2Schema } from '../validations/projectSchema';
+import { useTranslation } from 'react-i18next';
+import { getStep2Schema } from '../validations/projectSchema';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useUpdateDraftProject } from '../hooks/useProjectMutations';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { ArrowLeft, ArrowRight, Plus, Minus, Trash2 } from 'lucide-react';
 
 const BudgetTracker = ({ control }) => {
+  const { t } = useTranslation();
   const milestones = useWatch({ control, name: "milestones" }) || [];
   const targetAmount = useWatch({ control, name: "targetAmount" }) || 0;
 
@@ -19,9 +21,9 @@ const BudgetTracker = ({ control }) => {
   return (
     <div className="bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-sm mt-6 transition-all duration-300">
       <div className="flex justify-between text-sm font-bold mb-3">
-        <span className="text-slate-700">Allocation Tracker</span>
+        <span className="text-slate-700">{t('project.allocation_tracker')}</span>
         <span className={`transition-colors duration-300 ${isBudgetMatch ? 'text-emerald-500' : 'text-primary'}`}>
-          Allocated: {sumMilestones.toLocaleString()} / {Number(targetAmount || 0).toLocaleString()} VND
+          {t('project.allocated')}: {sumMilestones.toLocaleString()} / {Number(targetAmount || 0).toLocaleString()} VND
         </span>
       </div>
       <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
@@ -35,12 +37,13 @@ const BudgetTracker = ({ control }) => {
 };
 
 export default function Step2Budget() {
+  const { t } = useTranslation();
   const { formData, updateFormData, nextStep, prevStep, projectId } = useProjectDraftStore();
   const { mutateAsync: updateDraft, isPending } = useUpdateDraftProject();
   const toast = useToast();
 
   const { register, control, handleSubmit, getValues, setValue, formState: { errors } } = useForm({
-    resolver: zodResolver(step2Schema),
+    resolver: zodResolver(getStep2Schema(t)),
     defaultValues: {
       isFundraising: formData.isFundraising ?? true,
       targetAmount: formData.targetAmount || 0,
@@ -113,8 +116,8 @@ export default function Step2Budget() {
 
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm flex items-center justify-between transition-colors">
           <div>
-            <h2 className="text-xl font-bold text-slate-900">Are you raising funds for this project?</h2>
-            <p className="text-sm text-slate-500 mt-1">Turn this off if you only want to look for volunteers.</p>
+            <h2 className="text-xl font-bold text-slate-900">{t('project.is_raising_funds_title')}</h2>
+            <p className="text-sm text-slate-500 mt-1">{t('project.is_raising_funds_desc')}</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
             <input type="checkbox" className="sr-only peer" {...register('isFundraising')} />
@@ -125,10 +128,10 @@ export default function Step2Budget() {
         {isFundraising && (
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-8 animate-in fade-in slide-in-from-top-4 duration-300">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 mb-6">Budget & Milestones</h2>
+              <h2 className="text-xl font-bold text-slate-900 mb-6">{t('project.budget_milestones_title')}</h2>
 
               <div className="space-y-2">
-                <label className="block text-sm font-bold text-slate-700">Total Target Amount (VND)</label>
+                <label className="block text-sm font-bold text-slate-700">{t('project.total_target_amount')}</label>
                 <div className="relative">
                   <input
                     type="number"
@@ -149,16 +152,16 @@ export default function Step2Budget() {
             </div>
 
             <div className="space-y-4 pt-4 border-t border-slate-100">
-              <h3 className="font-bold text-slate-900 text-lg">Milestone Builder</h3>
+              <h3 className="font-bold text-slate-900 text-lg">{t('project.milestone_builder_title')}</h3>
 
               <div className="space-y-4">
                 {msFields.map((field, index) => (
                   <div key={field.id} className="border border-slate-200 rounded-2xl bg-white p-6 space-y-4 shadow-sm relative transition-all hover:border-slate-300">
 
                     <div className="flex justify-between items-center">
-                      <h4 className="font-bold text-lg text-slate-900">Milestone {index + 1}</h4>
+                      <h4 className="font-bold text-lg text-slate-900">{t('project.milestone_number', { index: index + 1 })}</h4>
                       {msFields.length > 1 && (
-                        <button type="button" onClick={() => msRemove(index)} className="text-slate-400 hover:text-red-500 transition-colors bg-white rounded-full p-1" title="Remove Milestone">
+                        <button type="button" onClick={() => msRemove(index)} className="text-slate-400 hover:text-red-500 transition-colors bg-white rounded-full p-1" title={t('common.delete')}>
                           <Trash2 size={20} />
                         </button>
                       )}
@@ -166,17 +169,17 @@ export default function Step2Budget() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Title</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">{t('project.milestone_title_label')}</label>
                         <input
                           {...register(`milestones.${index}.title`)}
-                          placeholder="e.g. Purchase Materials"
+                          placeholder={t('project.milestone_title')}
                           className={`w-full rounded-xl p-3 border bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm ${errors.milestones?.[index]?.title ? 'border-red-500' : 'border-slate-200'}`}
                         />
                         {errors.milestones?.[index]?.title && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.milestones[index].title.message}</p>}
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-slate-700 mb-2">Amount (VND)</label>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">{t('project.milestone_amount_label')}</label>
                         <input
                           type="number"
                           {...register(`milestones.${index}.targetAmount`, { valueAsNumber: true })}
@@ -188,10 +191,10 @@ export default function Step2Budget() {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Purpose</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">{t('project.milestone_purpose_label')}</label>
                       <textarea
                         {...register(`milestones.${index}.description`)}
-                        placeholder="Describe what this milestone will achieve..."
+                        placeholder={t('project.milestone_desc')}
                         className={`w-full rounded-xl p-3 border bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm resize-none h-24 ${errors.milestones?.[index]?.description ? 'border-red-500' : 'border-slate-200'}`}
                       />
                       {errors.milestones?.[index]?.description && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.milestones[index].description.message}</p>}
@@ -205,7 +208,7 @@ export default function Step2Budget() {
                 onClick={() => msAppend({ title: '', targetAmount: 0, description: '' })}
                 className="w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl font-bold text-slate-500 hover:text-primary hover:border-primary hover:bg-amber-50 transition-colors flex items-center justify-center gap-2 mt-4"
               >
-                <Plus size={20} /> Add Another Milestone
+                <Plus size={20} /> {t('project.add_another_milestone')}
               </button>
             </div>
           </div>
@@ -213,7 +216,7 @@ export default function Step2Budget() {
 
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm transition-all duration-300">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900">Do you need volunteers for this project?</h2>
+            <h2 className="text-xl font-bold text-slate-900">{t('project.needs_volunteers_title')}</h2>
             <label className={`relative inline-flex items-center flex-shrink-0 ${!isFundraising ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}>
               <input
                 type="checkbox"
@@ -234,25 +237,25 @@ export default function Step2Budget() {
                 <div key={field.id} className="border border-slate-200 rounded-2xl bg-white p-6 shadow-sm relative transition-all hover:border-slate-300">
 
                   {volFields.length > 1 && (
-                    <button type="button" onClick={() => volRemove(index)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-white rounded-full p-1 transition-colors" title="Remove Role">
+                    <button type="button" onClick={() => volRemove(index)} className="absolute top-4 right-4 text-slate-400 hover:text-red-500 bg-white rounded-full p-1 transition-colors" title={t('common.delete')}>
                       <Trash2 size={20} />
                     </button>
                   )}
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Role Title</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">{t('project.role_title_label')}</label>
                       <input
                         {...register(`volunteerRoles.${index}.title`)}
                         className={`w-full rounded-xl p-3 border bg-slate-50 text-slate-900 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all shadow-sm 
                             ${errors.volunteerRoles?.[index]?.title ? 'border-red-500' : 'border-slate-200'}`}
-                        placeholder="e.g. Tree Planter"
+                        placeholder={t('project.role_title')}
                       />
                       {errors.volunteerRoles?.[index]?.title && <p className="text-red-500 text-xs mt-1.5 font-medium">{errors.volunteerRoles[index].title.message}</p>}
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold text-slate-700 mb-2">Number of Volunteers Needed</label>
+                      <label className="block text-sm font-bold text-slate-700 mb-2">{t('project.volunteers_needed_label')}</label>
                       <div className={`flex items-center border rounded-xl bg-slate-50 overflow-hidden shadow-sm h-[48px] transition-all
                           ${errors.volunteerRoles?.[index]?.quantity ? 'border-red-500 ring-2 ring-red-200' : 'border-slate-200 focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary'}`}>
 
@@ -293,7 +296,7 @@ export default function Step2Budget() {
                 onClick={() => volAppend({ title: '', quantity: 1 })}
                 className="w-full py-4 border-2 border-dashed border-slate-300 rounded-2xl font-bold text-slate-500 hover:text-primary hover:border-primary hover:bg-amber-50 transition-colors flex items-center justify-center gap-2 mt-4"
               >
-                <Plus size={20} /> Add Another Volunteer Role
+                <Plus size={20} /> {t('project.add_another_role')}
               </button>
             </div>
           )}
@@ -309,7 +312,7 @@ export default function Step2Budget() {
             disabled={isPending}
             className="flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
           >
-            <ArrowLeft size={20} /> Back to Story
+            <ArrowLeft size={20} /> {t('project.back_step')}
           </button>
 
           <button
@@ -318,7 +321,7 @@ export default function Step2Budget() {
             className={`flex items-center justify-center gap-2 px-6 py-3 font-bold rounded-xl transition-all shadow-sm
               ${isPending ? 'bg-slate-400 text-white cursor-not-allowed' : 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-yellow-500/20'}`}
           >
-            {isPending ? 'Saving...' : 'Next: Preview & Submit'}
+            {isPending ? t('project.processing') : t('project.next_step')}
             {!isPending && <ArrowRight size={20} />}
           </button>
         </div>

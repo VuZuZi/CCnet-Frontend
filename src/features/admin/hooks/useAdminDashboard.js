@@ -83,6 +83,23 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
+  const updateProjectStatus = async (projectId, status) => {
+    try {
+      const res = await adminAPI.updateProjectStatus(projectId, status);
+      const updated = res?.data?.data;
+
+      if (!updated) return;
+
+      setProjects((prev) =>
+        prev.map((project) =>
+          project._id === projectId ? { ...project, status: updated.status } : project,
+        ),
+      );
+    } catch (err) {
+      console.error("Project status update failed:", err);
+    }
+  };
+
   // 🚩 Resolve report
   const handleResolveReport = async (reportId, actions, note) => {
     try {
@@ -103,6 +120,7 @@ export const useAdminDashboard = (activeTab) => {
     loading,
 
     toggleBanUser,
+    updateProjectStatus,
     deleteProject,
     handleResolveReport,
 
