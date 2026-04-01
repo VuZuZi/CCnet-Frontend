@@ -120,7 +120,7 @@ export function ProjectCard({ project }) {
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         sharedData={shareData}
-        initialText={`Dự án tuyệt vời: "${project.title}". Mọi người cùng chung tay nhé! 🚀`}
+        initialText={`Dự án tuyệt vời: "${project.title}". Mọi người cùng chung tay nhé! `}
       />
     </>
   );

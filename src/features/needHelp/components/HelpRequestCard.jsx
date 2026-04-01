@@ -195,7 +195,7 @@ export function HelpRequestCard({ helpRequest }) {
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         sharedData={shareData}
-        initialText={`Trường hợp khẩn cấp: "${helpRequest.title}". Mong mọi người lan toả thông điệp này! 🙏`}
+        initialText={`Trường hợp khẩn cấp: "${helpRequest.title}". Mong mọi người lan toả thông điệp này! `}
       />
     </>
   );

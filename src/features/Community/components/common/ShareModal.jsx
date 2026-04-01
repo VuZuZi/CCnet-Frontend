@@ -5,7 +5,7 @@ export const ShareModal = ({
   isOpen,
   onClose,
   sharedData,
-  initialText = "Mọi người xem dự án mới của mình nhé! 🚀",
+  initialText = "Mọi người xem dự án mới của mình nhé! ",
 }) => {
   if (!isOpen) return null;
 
