@@ -6,6 +6,8 @@ const multipartConfig = {
 
 export const postAPI = {
   getPosts: async (params = { limit: 10 }) => {
+    console.log("🚀 Params gửi xuống Backend:", params);
+
     const { data } = await httpClient.get("/posts", { params });
     return data;
   },
@@ -49,7 +51,6 @@ export const postAPI = {
   },
 
   reportPost: async ({ postId, payload }) => {
-    // Đổi tên biến thành payload cho chuẩn
     const response = await httpClient.post(`/posts/${postId}/report`, payload);
     return response.data;
   },
