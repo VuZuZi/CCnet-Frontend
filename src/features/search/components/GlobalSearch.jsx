@@ -17,22 +17,19 @@ export default function GlobalSearch() {
   const hasQuery = !!String(query || "").trim();
   const visible = useMemo(() => open && hasQuery, [open, hasQuery]);
 
-  const onPick = (item) => {
-    if (!item) return;
+  const handlePick = (item) => {
+    if (!item?.link) return;
 
     setOpen(false);
     setQuery("");
 
-    if (item.link) {
-      navigate(item.link, { state: item.payload ? { data: item.payload } : {} });
-      return;
-    }
-
-    navigate(buildSearchPath(item.title || query));
+    navigate(item.link, {
+      state: item.payload ? { data: item.payload } : {},
+    });
   };
 
-  const onSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = (event) => {
+    event.preventDefault();
 
     const trimmed = String(query || "").trim();
     if (!trimmed) return;
@@ -57,15 +54,15 @@ export default function GlobalSearch() {
 
   return (
     <div ref={boxRef} className="relative mx-[14px] w-[420px] max-w-[50vw]">
-      <form onSubmit={onSubmit} className="relative">
+      <form onSubmit={handleSubmit} className="relative">
         <input
           type="text"
           className="w-full rounded-full border border-amber-300 bg-white/95 py-3 pl-5 pr-11 text-[17px] text-slate-900 shadow-sm transition-all duration-300 placeholder:text-slate-400 focus:border-amber-400 focus:outline-none focus:ring-4 focus:ring-amber-100"
           placeholder="Search..."
           value={query}
           onFocus={() => setOpen(true)}
-          onChange={(e) => {
-            setQuery(e.target.value);
+          onChange={(event) => {
+            setQuery(event.target.value);
             setOpen(true);
           }}
         />
@@ -84,10 +81,15 @@ export default function GlobalSearch() {
           role="listbox"
         >
           {isLoading ? (
-            <div className="px-4 py-4 text-sm text-slate-600">Searching...</div>
+            <div className="px-4 py-4 text-sm text-slate-600">
+              Searching...
+            </div>
           ) : groups.length > 0 ? (
             groups.map((group) => (
-              <div key={group.key} className="border-b border-slate-100 last:border-b-0">
+              <div
+                key={group.key}
+                className="border-b border-slate-100 last:border-b-0"
+              >
                 <div className="sticky top-0 z-10 bg-slate-50/90 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.14em] text-slate-500 backdrop-blur">
                   {group.label}
                 </div>
@@ -103,7 +105,7 @@ export default function GlobalSearch() {
                       key={`${group.key}:${item.kind}:${item.id}`}
                       type="button"
                       className="flex w-full items-center gap-3 border-none bg-transparent px-4 py-3 text-left transition-all duration-200 hover:bg-amber-50/70 hover:shadow-[inset_0_0_0_1px_rgba(251,191,36,0.14)]"
-                      onClick={() => onPick(item)}
+                      onClick={() => handlePick(item)}
                     >
                       <div className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-200 font-bold text-slate-900 shadow-sm">
                         {item.avatar ? (
@@ -131,7 +133,9 @@ export default function GlobalSearch() {
               </div>
             ))
           ) : (
-            <div className="px-4 py-4 text-sm text-slate-600">No results found</div>
+            <div className="px-4 py-4 text-sm text-slate-600">
+              No results found
+            </div>
           )}
         </div>
       ) : null}

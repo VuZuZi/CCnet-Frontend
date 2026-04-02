@@ -1,11 +1,22 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import SearchSidebar from "../components/SearchSidebar";
 import SearchResults from "../components/SearchResults";
 import { searchAPI } from "../api/searchAPI";
+import { normalizeSearchItem } from "../utils/search.normalize";
+import { searchKeys } from "../utils/search.queryKeys";
+import {
+  buildLocationOptions,
+  buildSearchParams,
+  parseBooleanParam,
+} from "../utils/search.utils";
 
-const VIEWED_POSTS_STORAGE_KEY = "ccnet.search.viewedCommunityPosts";
+const PAGE_BATCH_SIZE = 8;
 
 const DEFAULT_POST_FILTERS = {
   recentOnly: false,
@@ -14,255 +25,184 @@ const DEFAULT_POST_FILTERS = {
   location: "",
 };
 
-function buildSearchParams(searchParams, nextValues = {}) {
-  const params = new URLSearchParams(searchParams);
+const EMPTY_COUNTS = {
+  all: 0,
+  organizer: 0,
+  project: 0,
+  needhelp: 0,
+  communitypost: 0,
+  user: 0,
+};
 
-  Object.entries(nextValues).forEach(([key, value]) => {
-    if (value === undefined || value === null || value === "") {
-      params.delete(key);
-      return;
-    }
-
-    params.set(key, String(value));
-  });
-
-  return params;
+function shouldEnablePostFilters(type) {
+  return type === "all" || type === "communitypost";
 }
 
-function normalizeText(value) {
-  return String(value || "").trim().toLowerCase();
+function buildNextParams(searchParams, nextValues = {}) {
+  return buildSearchParams(searchParams, nextValues);
 }
 
-function readViewedPostIds() {
-  if (typeof window === "undefined") return [];
-
-  try {
-    const raw = window.localStorage.getItem(VIEWED_POSTS_STORAGE_KEY);
-    const parsed = JSON.parse(raw || "[]");
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
+function getErrorMessage(error) {
+  if (typeof error?.message === "string" && error.message.trim()) {
+    return error.message;
   }
-}
 
-function writeViewedPostIds(ids = []) {
-  if (typeof window === "undefined") return;
-
-  try {
-    window.localStorage.setItem(
-      VIEWED_POSTS_STORAGE_KEY,
-      JSON.stringify(Array.from(new Set(ids)))
-    );
-  } catch {
-    // ignore
+  const apiMessage = error?.response?.data?.message;
+  if (typeof apiMessage === "string" && apiMessage.trim()) {
+    return apiMessage;
   }
-}
 
-function markPostAsViewed(postId) {
-  const current = readViewedPostIds();
-  const next = Array.from(new Set([...current, String(postId)]));
-  writeViewedPostIds(next);
-  return next;
-}
-
-function getPostLocation(item) {
-  return String(
-    item?.payload?.taggedLocation ||
-      item?.payload?.location?.address ||
-      item?.payload?.address ||
-      ""
-  ).trim();
-}
-
-function getPostCreatedAt(item) {
-  return item?.payload?.createdAt || null;
-}
-
-function isRecentPost(item, days = 7) {
-  const createdAt = getPostCreatedAt(item);
-  if (!createdAt) return false;
-
-  const time = new Date(createdAt).getTime();
-  if (Number.isNaN(time)) return false;
-
-  const now = Date.now();
-  const diff = now - time;
-  const max = days * 24 * 60 * 60 * 1000;
-
-  return diff >= 0 && diff <= max;
-}
-
-function sortPostsByDate(items = [], order = "newest") {
-  const cloned = [...items];
-
-  cloned.sort((a, b) => {
-    const aTime = new Date(getPostCreatedAt(a) || 0).getTime();
-    const bTime = new Date(getPostCreatedAt(b) || 0).getTime();
-
-    if (order === "oldest") return aTime - bTime;
-    return bTime - aTime;
-  });
-
-  return cloned;
-}
-
-function orderByPriority(items = []) {
-  const priority = ["organizer", "project", "needhelp", "communitypost"];
-
-  return priority.flatMap((kind) =>
-    items.filter((item) => String(item?.kind || "") === kind)
-  );
+  return "Đã có lỗi xảy ra khi tải kết quả tìm kiếm.";
 }
 
 export default function SearchPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [postFilters, setPostFilters] = useState(DEFAULT_POST_FILTERS);
-  const [viewedPostIds, setViewedPostIds] = useState(() => readViewedPostIds());
+  const loadMoreRef = useRef(null);
 
   const query = String(searchParams.get("q") || "").trim();
   const type = String(searchParams.get("type") || "all").trim().toLowerCase();
-  const page = Number(searchParams.get("page") || 1);
-  const limit = Number(searchParams.get("limit") || 12);
 
-  const searchQuery = useQuery({
-    queryKey: ["search", "page", query, type, page, limit],
-    queryFn: () =>
+  const filters = useMemo(
+    () => ({
+      recentOnly: parseBooleanParam(
+        searchParams.get("recentOnly"),
+        DEFAULT_POST_FILTERS.recentOnly
+      ),
+      viewedOnly: parseBooleanParam(
+        searchParams.get("viewedOnly"),
+        DEFAULT_POST_FILTERS.viewedOnly
+      ),
+      dateOrder:
+        String(searchParams.get("dateOrder") || DEFAULT_POST_FILTERS.dateOrder)
+          .trim()
+          .toLowerCase() || "newest",
+      location: String(searchParams.get("location") || "").trim(),
+    }),
+    [searchParams]
+  );
+
+  const postFiltersEnabled = shouldEnablePostFilters(type);
+
+  const queryKey = useMemo(
+    () =>
+      searchKeys.page({
+        query,
+        type,
+        limit: PAGE_BATCH_SIZE,
+        filters,
+      }),
+    [query, type, filters]
+  );
+
+  const searchQuery = useInfiniteQuery({
+    queryKey,
+    queryFn: ({ pageParam = 0 }) =>
       searchAPI.searchPage({
         q: query,
         type,
-        page,
-        limit,
+        limit: PAGE_BATCH_SIZE,
+        offset: pageParam,
+        recentOnly: filters.recentOnly,
+        viewedOnly: filters.viewedOnly,
+        dateOrder: filters.dateOrder,
+        location: filters.location,
+        includeCounts: pageParam === 0,
       }),
-    enabled: !!query,
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) =>
+      lastPage?.batch?.hasMore ? lastPage.batch.nextOffset : undefined,
+    enabled: Boolean(query),
     staleTime: 0,
     gcTime: 5 * 60 * 1000,
   });
 
-  const data = searchQuery.data || {};
-  const counts = data.counts || {};
+  const {
+    data,
+    isLoading,
+    isError,
+    error,
+    isFetchingNextPage,
+    fetchNextPage,
+    hasNextPage,
+  } = searchQuery;
 
-  const rawResults = useMemo(() => {
-    if (Array.isArray(data.results)) return data.results;
+  const markViewedMutation = useMutation({
+    mutationFn: (postId) => searchAPI.markCommunityPostViewed(postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey,
+        exact: true,
+      });
+    },
+  });
 
-    if (type !== "all" && Array.isArray(data?.groups?.[type])) {
-      return data.groups[type];
-    }
-
-    if (type === "all" && data.groups) {
-      return [
-        ...(Array.isArray(data.groups.organizer) ? data.groups.organizer : []),
-        ...(Array.isArray(data.groups.project) ? data.groups.project : []),
-        ...(Array.isArray(data.groups.needhelp) ? data.groups.needhelp : []),
-        ...(Array.isArray(data.groups.communitypost)
-          ? data.groups.communitypost
-          : []),
-      ];
-    }
-
-    return [];
-  }, [data, type]);
-
-  const locationOptions = useMemo(() => {
-    const locations = Array.from(
-      new Set(
-        rawResults
-          .filter((item) => item.kind === "communitypost")
-          .map((item) => getPostLocation(item))
-          .filter(Boolean)
-      )
-    );
-
-    return locations.map((location) => ({
-      value: location,
-      label: location,
-    }));
-  }, [rawResults]);
+  const pages = Array.isArray(data?.pages) ? data.pages : [];
+  const firstPage = pages[0] || null;
+  const counts = firstPage?.counts ?? EMPTY_COUNTS;
 
   const results = useMemo(() => {
-    if (!["all", "communitypost"].includes(type)) {
-      return rawResults;
-    }
+    return pages
+      .flatMap((page) => (Array.isArray(page?.results) ? page.results : []))
+      .map(normalizeSearchItem)
+      .filter(Boolean);
+  }, [pages]);
 
-    const viewedSet = new Set(viewedPostIds.map((id) => String(id)));
-    const posts = rawResults.filter((item) => item.kind === "communitypost");
-    const nonPosts = rawResults.filter((item) => item.kind !== "communitypost");
+  const locationOptions = useMemo(() => buildLocationOptions(results), [results]);
 
-    let filteredPosts = [...posts];
+  useEffect(() => {
+    const node = loadMoreRef.current;
+    if (!node || !hasNextPage) return;
 
-    if (postFilters.recentOnly) {
-      filteredPosts = filteredPosts.filter((item) => isRecentPost(item, 7));
-    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry?.isIntersecting) return;
+        if (isFetchingNextPage) return;
 
-    if (postFilters.viewedOnly) {
-      filteredPosts = filteredPosts.filter((item) =>
-        viewedSet.has(String(item.id))
-      );
-    }
-
-    if (postFilters.location) {
-      const locationNeedle = normalizeText(postFilters.location);
-      filteredPosts = filteredPosts.filter(
-        (item) => normalizeText(getPostLocation(item)) === locationNeedle
-      );
-    }
-
-    filteredPosts = sortPostsByDate(
-      filteredPosts,
-      postFilters.dateOrder || "newest"
+        fetchNextPage();
+      },
+      {
+        root: null,
+        rootMargin: "300px 0px",
+        threshold: 0,
+      }
     );
 
-    if (type === "communitypost") {
-      return filteredPosts;
-    }
+    observer.observe(node);
 
-    return orderByPriority([...nonPosts, ...filteredPosts]);
-  }, [rawResults, type, postFilters, viewedPostIds]);
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   const handleTypeChange = (nextType) => {
-    setSearchParams(
-      buildSearchParams(searchParams, {
-        type: nextType,
-        page: 1,
-      })
-    );
+    const nextParams = { type: nextType };
+
+    if (!shouldEnablePostFilters(nextType)) {
+      nextParams.recentOnly = false;
+      nextParams.viewedOnly = false;
+      nextParams.dateOrder = undefined;
+      nextParams.location = "";
+    }
+
+    setSearchParams(buildNextParams(searchParams, nextParams));
   };
 
   const handleFilterChange = (patch = {}) => {
-    setPostFilters((prev) => ({
-      ...prev,
-      ...patch,
-    }));
+    if (!postFiltersEnabled) return;
+    setSearchParams(buildNextParams(searchParams, patch));
   };
 
   const handleOpenItem = (item) => {
-    if (!item) return;
+    if (!item?.link) return;
 
     if (item.kind === "communitypost" && item.id) {
-      const nextViewedIds = markPostAsViewed(item.id);
-      setViewedPostIds(nextViewedIds);
+      markViewedMutation.mutate(item.id);
     }
 
-    if (item.link) {
-      navigate(item.link, {
-        state: item.payload ? { data: item.payload } : {},
-      });
-      return;
-    }
-
-    if (item.kind === "user" || item.kind === "organizer") {
-      navigate(`/users/${String(item.id)}`);
-      return;
-    }
-
-    if (item.kind === "project") {
-      navigate(`/projects/${String(item.id)}`);
-      return;
-    }
-
-    if (item.kind === "needhelp") {
-      navigate(`/need-help/${String(item.id)}`);
-    }
+    navigate(item.link, {
+      state: item.payload ? { data: item.payload } : {},
+    });
   };
 
   return (
@@ -272,10 +212,10 @@ export default function SearchPage() {
           activeType={type}
           counts={counts}
           onChange={handleTypeChange}
-          filters={postFilters}
+          filters={filters}
           onFilterChange={handleFilterChange}
           locationOptions={locationOptions}
-          postFiltersEnabled={type === "all" || type === "communitypost"}
+          postFiltersEnabled={postFiltersEnabled}
         />
 
         <div className="min-w-0">
@@ -290,12 +230,35 @@ export default function SearchPage() {
             </p>
           </div>
 
-          <SearchResults
-            results={results}
-            loading={searchQuery.isLoading || searchQuery.isFetching}
-            query={query}
-            onOpen={handleOpenItem}
-          />
+          {isError ? (
+            <div className="rounded-[26px] border border-rose-200 bg-white p-6 text-sm text-rose-600 shadow-sm">
+              {getErrorMessage(error)}
+            </div>
+          ) : (
+            <>
+              <SearchResults
+                results={results}
+                loading={isLoading}
+                query={query}
+                onOpen={handleOpenItem}
+              />
+
+              {hasNextPage ? (
+                <div
+                  ref={loadMoreRef}
+                  className="py-6 text-center text-sm text-slate-500"
+                >
+                  {isFetchingNextPage
+                    ? "Đang tải thêm..."
+                    : "Kéo xuống để tải thêm"}
+                </div>
+              ) : results.length > 0 ? (
+                <div className="py-6 text-center text-sm text-slate-400">
+                  Đã hiển thị hết kết quả hiện có.
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
       </div>
     </section>

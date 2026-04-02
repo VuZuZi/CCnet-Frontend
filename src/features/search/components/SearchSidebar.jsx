@@ -1,4 +1,3 @@
-import { useMemo } from "react";
 import clsx from "clsx";
 import {
   ChevronDown,
@@ -68,7 +67,7 @@ function SelectRow({
         <select
           disabled={disabled}
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(event) => onChange?.(event.target.value)}
           className={clsx(
             "w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-[15px] text-slate-700 outline-none transition-all",
             disabled
@@ -110,22 +109,8 @@ export default function SearchSidebar({
   locationOptions = [],
   postFiltersEnabled = false,
 }) {
-  const allCount = useMemo(() => {
-    if (Number.isFinite(Number(counts?.all))) {
-      return Number(counts.all || 0);
-    }
-
-    return (
-      Number(counts?.organizer || 0) +
-      Number(counts?.project || 0) +
-      Number(counts?.needhelp || 0) +
-      Number(counts?.communitypost || 0) +
-      Number(counts?.user || 0)
-    );
-  }, [counts]);
-
   const safeCounts = {
-    all: allCount,
+    all: Number(counts?.all || 0),
     organizer: Number(counts?.organizer || 0),
     project: Number(counts?.project || 0),
     needhelp: Number(counts?.needhelp || 0),
@@ -141,7 +126,7 @@ export default function SearchSidebar({
 
       <div className="space-y-2">
         {FILTERS.map((item) => {
-          const count = safeCounts?.[item.key] ?? 0;
+          const count = safeCounts[item.key] ?? 0;
           const active = activeType === item.key;
           const Icon = item.icon;
 
@@ -228,16 +213,16 @@ export default function SearchSidebar({
               { value: "newest", label: "Mới nhất" },
               { value: "oldest", label: "Cũ nhất" },
             ]}
-            placeholder="Chọn ngày đăng"
+            placeholder="Tất cả"
           />
 
           <SelectRow
-            label="Vị trí được gắn thẻ"
+            label="Địa điểm"
             value={filters?.location || ""}
             disabled={!postFiltersEnabled}
             onChange={(value) => onFilterChange?.({ location: value })}
             options={locationOptions}
-            placeholder="Tất cả vị trí"
+            placeholder="Tất cả địa điểm"
           />
         </div>
       </div>
