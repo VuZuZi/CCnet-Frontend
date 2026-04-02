@@ -3,8 +3,8 @@ import {
   useSuggestedUsers,
   useFollowStatus,
   useFollowMutations,
-} from "../hooks/useFollow";
-import { useAuthStore } from "../../auth/stores/useAuthStore";
+} from "../../hooks/useFollow";
+import { useAuthStore } from "../../../auth/stores/useAuthStore";
 
 const UserItem = ({ user }) => {
   const { data: statusRes, isLoading } = useFollowStatus(user._id);

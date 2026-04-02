@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { useAuthStore } from "../../auth/stores/useAuthStore";
+import { useAuthStore } from "../../../auth/stores/useAuthStore";
 
 const ProfileWidget = () => {
   const { user } = useAuthStore();

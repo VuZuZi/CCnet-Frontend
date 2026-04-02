@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { usePostMutations } from "../hooks/usePostMutations";
+import { usePostMutations } from "../../hooks/usePostMutations";
 
 const EditPostModal = ({ isOpen, onClose, post }) => {
   const [content, setContent] = useState("");

@@ -1,4 +1,4 @@
-import httpClient from '@/shared/lib/httpClient';
+import httpClient from "@/shared/lib/httpClient";
 
 const unwrap = (payload) => payload?.data ?? payload;
 
@@ -24,7 +24,15 @@ export const followAPI = {
   },
 
   async getMyFollowing(limit = 50) {
-    const res = await httpClient.get('/follow/following', { params: { limit } });
+    const res = await httpClient.get("/follow/following", {
+      params: { limit },
+    });
+    return unwrap(res.data);
+  },
+  async getMyFollowers(limit = 50) {
+    const res = await httpClient.get("/follow/followers", {
+      params: { limit },
+    });
     return unwrap(res.data);
   },
 };

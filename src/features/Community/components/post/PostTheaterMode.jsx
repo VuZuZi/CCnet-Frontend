@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import MediaViewer from "./MediaViewer";
-import CommentItem from "./CommentItem";
-import { usePostMutations } from "../hooks/usePostMutations";
+import MediaViewer from "../common/MediaViewer";
+import CommentItem from "../comment/CommentItem";
+import { usePostMutations } from "../../hooks/usePostMutations";
 
 const PostTheaterMode = ({ post, onClose }) => {
   const [commentContent, setCommentContent] = useState("");

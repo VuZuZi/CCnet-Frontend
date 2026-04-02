@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useProjectDetail } from '../hooks/useProjectQueries';
+import { useHelpRequestAsProjectData } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import { format } from 'date-fns';
 import { CheckCircle2 } from 'lucide-react';
 import Step1Story from '../components/Step1Story';
@@ -19,13 +20,16 @@ export function CreateProjectPage() {
     const location = useLocation();
     const isEditMode = !!id || location.pathname.includes('edit');
 
+    const queryParams = new URLSearchParams(location.search);
+    const helpRequestId = queryParams.get('helpRequestId');
     const { currentStep, updateFormData, setProjectId, resetDraft, projectId } = useProjectDraftStore();
-    const [isHydrated, setIsHydrated] = useState(!isEditMode);
+    const [isHydrated, setIsHydrated] = useState(!isEditMode && !helpRequestId);
 
     const { data: draftData, isLoading, isError } = useProjectDetail(id);
+    const { data: helpRequestData, isLoading: isHelpRequestLoading, isError: isHelpRequestError } = useHelpRequestAsProjectData(helpRequestId);
 
     useEffect(() => {
-        if (!isEditMode) {
+        if (!isEditMode && !helpRequestId) {
             if (projectId) resetDraft();
             setIsHydrated(true);
             return;
@@ -58,14 +62,38 @@ export function CreateProjectPage() {
             setProjectId(id);
             setIsHydrated(true);
         }
-    }, [isEditMode, draftData]);
+        if (helpRequestId && helpRequestData) {
+            if (projectId) resetDraft();
 
-    if (isEditMode && isLoading) {
-        return <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">Đang đồng bộ dữ liệu bản nháp từ máy chủ...</div>;
+            const normalizedData = {
+                title: helpRequestData.title || '',
+                category: helpRequestData.category || '',
+                location: helpRequestData.location || null,
+                description: helpRequestData.description || '',
+                isFundraising: helpRequestData.isFundraising,
+                targetAmount: helpRequestData.targetAmount || 0,
+                startDate: '',
+                endDate: '',
+                needsVolunteers: false,
+                milestones: [],
+                volunteerRoles: [],
+                coverMedia: helpRequestData.coverMedia || [],
+                documents: helpRequestData.documents || [],
+                deletedDocumentIds: [],
+                fromHelpRequestId: helpRequestId // Store the help request ID
+            };
+
+            updateFormData(normalizedData);
+            setIsHydrated(true);
+        }
+    }, [isEditMode, draftData, helpRequestId, helpRequestData]);
+
+    if ((isEditMode && isLoading) || (helpRequestId && isHelpRequestLoading)) {
+        return <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">Đang đồng bộ dữ liệu từ máy chủ...</div>;
     }
 
-    if (isEditMode && isError) {
-        return <div className="min-h-screen flex items-center justify-center font-bold text-red-500">Lỗi: Không tìm thấy bản nháp hoặc bạn không có quyền truy cập.</div>;
+    if ((isEditMode && isError) || (helpRequestId && isHelpRequestError)) {
+        return <div className="min-h-screen flex items-center justify-center font-bold text-red-500">Lỗi: Không tìm thấy dữ liệu hoặc bạn không có quyền truy cập.</div>;
     }
 
     if (!isHydrated) return null;
