@@ -16,6 +16,7 @@ const initialFormData = {
   deletedDocumentIds: [], 
   coverMedia: [],
   documents: [],
+  fromHelpRequestId: null,
 };
 
 export const useProjectDraftStore = create(

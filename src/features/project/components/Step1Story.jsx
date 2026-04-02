@@ -42,6 +42,7 @@ export default function Step1Story() {
         description: safeDescription,
         startDate: new Date(data.startDate).toISOString(),
         endDate: new Date(data.endDate).toISOString(),
+        ...(formData.fromHelpRequestId ? { fromHelpRequestId: formData.fromHelpRequestId } : {}),
       };
 
       updateFormData(payload);

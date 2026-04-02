@@ -63,4 +63,9 @@ export const helpRequestAPI = {
     const response = await httpClient.patch(`/help-requests/${id}/complete`);
     return response.data?.data;
   },
+
+  getAsProjectData: async (id) => {
+    const response = await httpClient.get(`/help-requests/${id}/as-project`);
+    return response.data?.data;
+  },
 };
