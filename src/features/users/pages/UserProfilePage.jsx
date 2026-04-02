@@ -1,6 +1,6 @@
-import { useParams } from "react-router-dom";
-import { useChatStore } from "@/features/chat/stores/useChatStore";
-import { useCreateConversation } from "@/features/chat/hooks/useCreateConversation";
+import { useParams } from 'react-router-dom';
+import { useChatStore } from '@/features/chat/stores/useChatStore';
+import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
 
 import { useProfileIdentity } from "../hooks/useProfileIdentity";
 import { useProfile } from "../hooks/useProfile";

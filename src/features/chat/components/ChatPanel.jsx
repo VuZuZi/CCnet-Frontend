@@ -1,71 +1,139 @@
-import { useState } from 'react';
-import { useChatSocket } from '../hooks/useChatSocket';
-import { useConversations } from '../hooks/useConversations';
+import { Expand, X } from 'lucide-react';
+import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
+
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { useChatStore } from '../stores/useChatStore';
-import { MessageList } from './MessageList';
-import { MessageComposer } from './MessageComposer';
-import { X } from 'lucide-react';
+import ConversationView from '@/features/chat/components/conversation/ConversationView';
+import { useConversations } from '@/features/chat/hooks/conversations/useConversations';
+import {
+  getConversationAvatarData,
+  getConversationTitle,
+  getConversationSubtitle,
+} from '@/features/chat/utils/conversation';
 
-export function ChatPanel({ onClose, conversationId, index = 0, className = '', ...props }) {
-  useChatSocket(conversationId);
+function getDesktopPanelRightOffset(index = 0) {
+  return 24 + index * 376;
+}
 
-  const focusConversation = useChatStore((s) => s.focusConversation);
-  const [scrollSignal, setScrollSignal] = useState(0);
+function getPanelLayout(mode, index = 0) {
+  if (mode === 'mobile') {
+    return {
+      className: 'fixed inset-0 z-[1300] h-screen w-screen rounded-none border-0 bg-white shadow-none',
+      style: undefined,
+      wrapperClassName: 'rounded-none',
+    };
+  }
 
+  if (mode === 'tablet') {
+    return {
+      className:
+        'fixed bottom-4 right-4 z-[1100] h-[min(760px,calc(100vh-32px))] w-[min(460px,calc(100vw-32px))] rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]',
+      style: undefined,
+      wrapperClassName: 'rounded-[24px]',
+    };
+  }
+
+  return {
+    className:
+      'fixed bottom-6 z-[1001] h-[540px] w-[360px] rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]',
+    style: { right: getDesktopPanelRightOffset(index) },
+    wrapperClassName: 'rounded-[24px]',
+  };
+}
+
+function AvatarFallback({ title = '' }) {
+  return (
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-700 ring-1 ring-slate-200">
+      {String(title || '?').slice(0, 1).toUpperCase()}
+    </div>
+  );
+}
+
+export function ChatPanel({
+  conversationId,
+  index = 0,
+  mode = 'desktop',
+  onClose,
+}) {
+  const navigate = useNavigate();
+  const { conversations } = useConversations();
   const user = useAuthStore(authSelectors.user);
   const myId = user?.userId || user?._id || user?.id;
 
-  const { conversations } = useConversations();
+  const conversation = useMemo(() => {
+    const list = Array.isArray(conversations) ? conversations : [];
+    return list.find((item) => String(item?._id || '') === String(conversationId || '')) || null;
+  }, [conversations, conversationId]);
 
-  const active = (conversations || []).find((c) => String(c?._id) === String(conversationId));
-  const participants = active?.participants || [];
-  const other = participants.find((p) => String(p?._id) !== String(myId)) || participants[0] || null;
+  const title = getConversationTitle(conversation, myId);
+  const subtitle = getConversationSubtitle(conversation);
+  const avatarData = getConversationAvatarData(conversation, myId);
+  const avatar = avatarData?.src || '';
 
-  const headerTitle = other?.fullName || other?.email || 'Chat';
-
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-  const rightPosition = isMobile ? 10 : 120 + index * 350;
-  
-  const zIndex = 1000 + index;
+  const { className, style, wrapperClassName } = getPanelLayout(mode, index);
 
   return (
-    <article
-      {...props}
-      style={{ right: `${rightPosition}px`, zIndex }}
-      className={`fixed bottom-[18px] flex h-[460px] max-h-[calc(100vh-110px)] w-[330px] max-lg:w-[calc(100vw-20px)] max-lg:max-h-none max-lg:h-[70vh] max-lg:bottom-2.5 flex-col overflow-hidden rounded-xl bg-white shadow-[0_12px_30px_rgba(0,0,0,0.16)] transition-transform duration-200 ease-out animate-in slide-in-from-bottom-4 ${className}`}
-      onMouseDown={() => focusConversation(conversationId)}
-    >
-      <header className="flex h-[54px] shrink-0 items-center justify-between border-b border-gray-200 bg-gradient-to-t from-amber-200 to-amber-400 px-3 shadow-[0_2px_0_rgba(17,24,39,0.06)]">
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-[34px] w-[34px] items-center justify-center rounded-full border border-gray-900/15 bg-white font-black text-gray-900">
-            {(headerTitle || '?').trim().slice(0, 1).toUpperCase()}
+    <div className={className} style={style}>
+      <div className={`flex h-full min-h-0 flex-col overflow-hidden bg-white ${wrapperClassName}`}>
+        <div className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 py-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {avatar ? (
+              <img
+                src={avatar}
+                alt={title || 'conversation avatar'}
+                className="h-10 w-10 rounded-full object-cover ring-1 ring-slate-200"
+              />
+            ) : (
+              <AvatarFallback title={title} />
+            )}
+
+            <div className="min-w-0">
+              <div className="truncate text-sm font-black text-slate-900">
+                {title || 'Cuộc trò chuyện'}
+              </div>
+              <div className="truncate text-xs text-slate-500">
+                {subtitle || 'Đang hoạt động'}
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="max-w-[180px] truncate text-sm font-black text-gray-900">
-              {headerTitle}
-            </h3>
-            <p className="text-xs text-gray-700">Đang hoạt động</p>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => navigate(`/messages/${conversationId}`)}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+              aria-label="Mở trang tin nhắn lớn"
+              title="Mở trang tin nhắn lớn"
+            >
+              <Expand className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+              aria-label="Đóng khung chat"
+            >
+              <X className="h-4 w-4" />
+            </button>
           </div>
         </div>
 
-        <button 
-          type="button" 
-          onClick={onClose} 
-          aria-label="Close Chat"
-          className="flex h-[34px] w-[34px] items-center justify-center rounded-full text-gray-900 transition-colors hover:bg-white/65 focus:outline-none focus:ring-2 focus:ring-amber-500"
-        >
-          <X className="h-5 w-5" aria-hidden="true" />
-        </button>
-      </header>
-
-      <section className="flex min-h-0 flex-1 flex-col bg-gray-50">
-        <MessageList conversationId={conversationId} scrollSignal={scrollSignal} />
-        <MessageComposer
-          conversationId={conversationId}
-          onSent={() => setScrollSignal((x) => x + 1)}
-        />
-      </section>
-    </article>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+          <ConversationView
+            key={String(conversationId || '')}
+            conversationId={conversationId}
+            compact={mode !== 'mobile'}
+            emptyState={
+              <div className="flex h-full items-center justify-center text-sm text-slate-500">
+                Chọn một cuộc trò chuyện
+              </div>
+            }
+          />
+        </div>
+      </div>
+    </div>
   );
 }
+
+export default ChatPanel;
