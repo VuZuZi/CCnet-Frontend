@@ -1,67 +1,71 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { followAPI } from "../api/followAPI";
+
 import { useMyFollowing } from "../hooks/useMyFollowing";
-import { getErrorMessage } from "@/shared/lib/httpClient";
+import { useMyFollowers } from "../hooks/useMyFollowers";
+import { useFollowMutations } from "../../Community/hooks/useFollow";
+
 import { useToast } from "@/shared/contexts/ToastContext";
-import { Button } from "@/shared/components/ui/Button/Button";
+import { UserCard } from "../../Community/components/user/UserCard";
+import { UnfollowModal } from "../../Community/components/user/UnfollowModal";
 
 export function FollowingPage() {
   const navigate = useNavigate();
   const toast = useToast();
-  const queryClient = useQueryClient();
-
   const limit = 50;
-  const { items, isLoading, isError, errorMessage } = useMyFollowing(limit);
 
+  const [activeTab, setActiveTab] = useState("following");
   const [keyword, setKeyword] = useState("");
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingUser, setPendingUser] = useState(null);
 
-  const filtered = useMemo(() => {
-    const k = String(keyword || "")
-      .trim()
-      .toLowerCase();
-    if (!k) return items;
+  // 1. GỌI DATA
+  const {
+    items: followingItems,
+    isLoading: isLoadingFollowing,
+    isError: isErrFollow,
+    errorMessage: msgFollow,
+  } = useMyFollowing(limit);
+  const {
+    items: followersItems,
+    isLoading: isLoadingFollowers,
+    isError: isErrFollower,
+    errorMessage: msgFollower,
+  } = useMyFollowers(limit);
 
-    return (items || []).filter((u) => {
-      const name = String(u.fullName || "").toLowerCase();
-      const email = String(u.email || "").toLowerCase();
-      return name.includes(k) || email.includes(k);
+  // 2. LẤY HÀM UNFOLLOW TỪ HOOK CHUẨN
+  const { unfollow } = useFollowMutations();
+
+  // 3. XỬ LÝ LOGIC TAB
+  const isFollowingTab = activeTab === "following";
+  const rawItems = isFollowingTab ? followingItems : followersItems;
+  const isLoading = isFollowingTab ? isLoadingFollowing : isLoadingFollowers;
+  const isError = isFollowingTab ? isErrFollow : isErrFollower;
+  const errorMessage = isFollowingTab ? msgFollow : msgFollower;
+
+  const items = (rawItems || []).map((item) => {
+    const user = item.followingId || item.followerId || item;
+    return { ...user, id: user._id || user.id || item._id };
+  });
+
+  const filtered = useMemo(() => {
+    const k = keyword.trim().toLowerCase();
+    if (!k) return items;
+    return items.filter((u) => {
+      return (
+        String(u.fullName || "")
+          .toLowerCase()
+          .includes(k) ||
+        String(u.email || "")
+          .toLowerCase()
+          .includes(k)
+      );
     });
   }, [items, keyword]);
 
-  const unfollowMutation = useMutation({
-    mutationFn: (userId) => followAPI.unfollowUser(userId),
-    onSuccess: (_data, userId) => {
-      queryClient.setQueryData(["follow", "me", "following", limit], (old) => {
-        const arr = Array.isArray(old) ? old : [];
-        return arr.filter((u) => String(u?.id) !== String(userId));
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ["follow", "user", "status", userId],
-      });
-      queryClient.invalidateQueries({
-        queryKey: ["follow", "user", "stats", userId],
-      });
-
-      toast.success("Unfollowed");
-    },
-    onError: (err) => {
-      toast.error(getErrorMessage(err));
-    },
-    onSettled: () => {
-      setConfirmOpen(false);
-      setPendingUser(null);
-    },
-  });
-
-  const goUser = (u) => {
-    if (!u?.id) return;
-    navigate(`/users/${u.id}`, { state: { user: u } });
-  };
+  // 4. CÁC HÀM XỬ LÝ SỰ KIỆN
+  const goUser = (u) =>
+    u?.id && navigate(`/users/${u.id}`, { state: { user: u } });
 
   const requestUnfollow = (u) => {
     setPendingUser(u);
@@ -70,69 +74,69 @@ export function FollowingPage() {
 
   const confirmUnfollow = () => {
     if (!pendingUser?.id) return;
-    unfollowMutation.mutate(pendingUser.id);
+    unfollow.mutate(pendingUser.id, {
+      onSuccess: () => {
+        toast.success("Unfollowed successfully");
+        setConfirmOpen(false);
+        setPendingUser(null);
+      },
+      onError: () => toast.error("Failed to unfollow"),
+    });
   };
-
-  const titleOf = (u) => u?.fullName || u?.email || "this user";
 
   return (
     <div className="min-h-screen bg-[#f6f7fb] py-10 px-4">
       <div className="w-full max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-[28px] font-extrabold tracking-tight text-[#111827] mb-1">
-              Following
-            </h1>
-            <p className="text-sm text-[#6b7280] m-0">
-              {items?.length || 0} accounts
-            </p>
-          </div>
-
+        {/* Header & Search */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-2">
+          <h1 className="text-[28px] font-extrabold tracking-tight text-[#111827] mb-1">
+            Connections
+          </h1>
           <div className="relative w-full md:w-[360px]">
             <input
               type="text"
-              className="w-full rounded-full py-2.5 pl-4 pr-10 border border-[#e5e7eb] bg-white focus:outline-none focus:ring-1 focus:border-yellow focus:ring-yellow transition-colors text-black"
+              className="w-full rounded-full py-2.5 pl-4 pr-10 border border-[#e5e7eb] focus:ring-1 focus:border-yellow-400 focus:ring-yellow-400"
               placeholder="Search name or email..."
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
             />
-            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9ca3af] pointer-events-none">
+            <span className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#9ca3af]">
               ⌕
             </span>
           </div>
         </div>
 
-        {/* Loading State */}
+        {/* Tabs */}
+        <div className="flex items-center gap-6 border-b border-[#e5e7eb] mb-6 px-1">
+          <button
+            onClick={() => setActiveTab("following")}
+            className={`pb-3 font-bold text-[15px] border-b-2 transition-all ${isFollowingTab ? "border-yellow-400 text-[#111827]" : "border-transparent text-[#6b7280]"}`}
+          >
+            Following{" "}
+            <span className="ml-1.5 text-xs bg-slate-100 px-2 py-0.5 rounded-full">
+              {followingItems?.length || 0}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab("followers")}
+            className={`pb-3 font-bold text-[15px] border-b-2 transition-all ${!isFollowingTab ? "border-yellow-400 text-[#111827]" : "border-transparent text-[#6b7280]"}`}
+          >
+            Followers{" "}
+            <span className="ml-1.5 text-xs bg-slate-100 px-2 py-0.5 rounded-full">
+              {followersItems?.length || 0}
+            </span>
+          </button>
+        </div>
+
+        {/* Trạng thái Loading / Error */}
         {isLoading && (
-          <div className="bg-white rounded-[14px] shadow-sm flex justify-center p-7 border border-light-gray">
-            <svg
-              className="animate-spin h-6 w-6 text-yellow"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              ></path>
-            </svg>
+          <div className="text-center py-10 font-bold text-yellow-500">
+            Loading...
           </div>
         )}
-
-        {/* Error State */}
         {isError && (
-          <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg mb-0 border border-[#f5c2c7]">
-            {errorMessage || "Failed to load following list"}
+          <div className="bg-[#f8d7da] text-[#842029] p-4 rounded-lg">
+            {errorMessage}
           </div>
         )}
 
@@ -140,116 +144,37 @@ export function FollowingPage() {
         {!isLoading && !isError && (
           <div className="grid grid-cols-1 gap-3">
             {filtered.length === 0 ? (
-              <div className="bg-white rounded-[14px] shadow-sm p-7 text-center border border-light-gray">
-                <div className="font-extrabold text-[#111827]">No results</div>
-                <div className="text-[#6b7280] mt-1.5 text-sm">
-                  Try another keyword or follow someone first.
+              <div className="bg-white rounded-[14px] p-7 text-center border">
+                <div className="font-extrabold">No results</div>
+                <div className="text-[#6b7280] text-sm mt-1">
+                  {isFollowingTab
+                    ? "You are not following anyone yet."
+                    : "You don't have any followers yet."}
                 </div>
               </div>
             ) : (
-              filtered.map((u) => {
-                const title = u.fullName || u.email || "Unknown";
-                const letter = String(title).trim().slice(0, 1).toUpperCase();
-
-                return (
-                  <div
-                    key={u.id}
-                    className="bg-white rounded-[14px] shadow-sm border border-light-gray p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition-all duration-150 hover:-translate-y-[1px] hover:shadow-[0_10px_18px_rgba(17,24,39,0.08)] cursor-pointer"
-                    onClick={() => goUser(u)}
-                    role="button"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-11 h-11 rounded-full overflow-hidden shrink-0 bg-[#f3f4f6] flex items-center justify-center font-black text-[#111827]">
-                        {u.avatar ? (
-                          <img
-                            className="w-full h-full object-cover"
-                            src={u.avatar}
-                            alt={title}
-                          />
-                        ) : (
-                          letter
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="font-extrabold text-[#111827] truncate leading-tight mb-0.5">
-                          {title}
-                        </div>
-                        <div className="text-[13px] text-[#6b7280] truncate">
-                          {u.email || ""}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2.5 shrink-0 self-end sm:self-auto">
-                      <Button
-                        variant="danger"
-                        className="!py-1.5 !px-4 !text-sm"
-                        disabled={unfollowMutation.isPending}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          requestUnfollow(u);
-                        }}
-                      >
-                        Unfollow
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })
+              filtered.map((u) => (
+                <UserCard
+                  key={u.id}
+                  user={u}
+                  isFollowingTab={isFollowingTab}
+                  onGoUser={goUser}
+                  onRequestUnfollow={requestUnfollow}
+                />
+              ))
             )}
           </div>
         )}
       </div>
 
-      {/* Custom Modal for Unfollow Confirmation */}
-      {confirmOpen && (
-        <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
-          <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-light-gray flex justify-between items-center bg-white">
-              <h3 className="font-bold text-lg text-black m-0">Unfollow</h3>
-              {!unfollowMutation.isPending && (
-                <button
-                  onClick={() => {
-                    setConfirmOpen(false);
-                    setPendingUser(null);
-                  }}
-                  className="text-gray hover:text-black bg-transparent border-none text-2xl leading-none cursor-pointer focus:outline-none"
-                >
-                  &times;
-                </button>
-              )}
-            </div>
-
-            <div className="p-6 text-black bg-white">
-              Are you sure you want to unfollow{" "}
-              <strong>{titleOf(pendingUser)}</strong>?
-            </div>
-
-            <div className="px-6 py-4 border-t border-light-gray bg-off-white flex justify-end gap-3 rounded-b-xl">
-              <Button
-                variant="secondary"
-                disabled={unfollowMutation.isPending}
-                onClick={() => {
-                  setConfirmOpen(false);
-                  setPendingUser(null);
-                }}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="danger"
-                isLoading={unfollowMutation.isPending}
-                onClick={confirmUnfollow}
-              >
-                Unfollow
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal tách rời */}
+      <UnfollowModal
+        isOpen={confirmOpen}
+        user={pendingUser}
+        isPending={unfollow.isPending}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={confirmUnfollow}
+      />
     </div>
   );
 }

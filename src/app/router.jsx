@@ -65,11 +65,6 @@ const CommunityPage = lazy(() =>
     default: m.CommunityPage || m.default,
   })),
 );
-const CreatePostPage = lazy(() =>
-  import("@/features/community/pages/CreatePostPage").then((m) => ({
-    default: m.CreatePostPage || m.default,
-  })),
-);
 const PostDetailPage = lazy(() =>
   import("@/features/community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
@@ -91,6 +86,7 @@ const CreateProjectPage = lazy(() =>
     default: m.CreateProjectPage || m.default,
   })),
 );
+
 const NeedHelpPage = lazy(() =>
   import("@/features/needHelp/pages/NeedHelpPage").then((m) => ({
     default: m.NeedHelpPage || m.default,
@@ -114,6 +110,18 @@ const EditHelpRequestPage = lazy(() =>
 const OrganizerAssignedRequestsPage = lazy(() =>
   import("@/features/needHelp/pages/OrganizerAssignedRequestsPage").then((m) => ({
     default: m.OrganizerAssignedRequestsPage || m.default,
+  })),
+);
+
+const SearchPage = lazy(() =>
+  import("@/features/search/pages/SearchPage").then((m) => ({
+    default: m.SearchPage || m.default,
+  })),
+);
+
+const ChatPage = lazy(() =>
+  import("@/features/chat/pages/ChatPage").then((m) => ({
+    default: m.ChatPage || m.default,
   })),
 );
 
@@ -188,6 +196,10 @@ export const router = createBrowserRouter([
         ],
       },
 
+      { path: "search", element: withSuspense(SearchPage) },
+
+      { path: "projects", element: withSuspense(ProjectListPage) },
+      { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
@@ -208,6 +220,9 @@ export const router = createBrowserRouter([
             path: "organizer/request",
             element: withSuspense(MyOrganizerRequestPage),
           },
+
+          { path: "messages", element: withSuspense(ChatPage) },
+          { path: "messages/:conversationId", element: withSuspense(ChatPage) },
         ],
       },
 
@@ -221,7 +236,6 @@ export const router = createBrowserRouter([
           { path: "dashboard", element: withSuspense(DashboardPage) },
           { path: "following", element: withSuspense(FollowingPage) },
           { path: "community", element: withSuspense(CommunityPage) },
-          { path: "community/create", element: withSuspense(CreatePostPage) },
           { path: "community/:id", element: withSuspense(PostDetailPage) },
           {
             path: "need-help/create",

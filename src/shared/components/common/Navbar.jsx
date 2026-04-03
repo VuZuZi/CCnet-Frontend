@@ -1,10 +1,8 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Search,
-  MessageCircle,
   Bell,
-  ChevronDown,
   Menu,
   X,
   User as UserIcon,
@@ -16,16 +14,58 @@ import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore
 import { useLogout } from '@/features/auth/hooks/useLogout';
 import { ROUTES } from '@/shared/constants/routes';
 import { Button, cn } from '@/shared/components/ui/Button/Button';
-import ChatWidget from '@/features/chat/components/ChatWidget';
 import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
 import GlobalSearch from '@/features/search/components/GlobalSearch';
 import { useOrganizerAssignedRequests } from '@/features/needHelp/hooks/useHelpRequestQueries';
+import NavbarChatAction from './navbar/NavbarChatAction';
+import NavbarUserDropdown from './navbar/NavbarUserDropdown';
 
 const NAV_LINKS = [
   { label: 'Project', to: ROUTES.PROJECTS },
   { label: 'Community', to: ROUTES.COMMUNITY || '/community' },
   { label: 'NeedHelp', to: '/need-help' },
 ];
+
+function Avatar({ user, size = 'sm' }) {
+  const sizeClass = size === 'sm' ? 'h-10 w-10' : 'h-12 w-12';
+  const initials = user?.fullName?.substring(0, 2).toUpperCase() || 'U';
+
+  if (user?.avatar) {
+    return (
+      <img
+        src={user.avatar}
+        alt="Avatar"
+        className={cn(
+          sizeClass,
+          'rounded-full border-2 border-white bg-slate-100 object-cover shadow-sm'
+        )}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        sizeClass,
+        'flex items-center justify-center rounded-full border-2 border-white bg-amber-100 text-sm font-bold text-amber-700 shadow-sm'
+      )}
+    >
+      {initials}
+    </div>
+  );
+}
+
+function NotificationAction() {
+  return (
+    <button
+      className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
+      type="button"
+    >
+      <Bell size={24} />
+      <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
+    </button>
+  );
+}
 
 export function Navbar() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
@@ -34,6 +74,8 @@ export function Navbar() {
   const location = useLocation();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const isMessagesPage = location.pathname.startsWith('/messages');
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -86,7 +128,7 @@ export function Navbar() {
             {isAuthenticated ? (
               <>
                 <OrganizerNeedHelpAction user={user} />
-                <ChatAction />
+                <NavbarChatAction hideWidget={isMessagesPage} />
                 <NotificationAction />
 
                 <button className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 md:hidden">
@@ -94,7 +136,7 @@ export function Navbar() {
                 </button>
 
                 <div className="hidden border-l border-slate-200 pl-2 sm:block">
-                  <UserDropdown user={user} onLogout={logout} />
+                  <NavbarUserDropdown user={user} onLogout={logout} />
                 </div>
               </>
             ) : (
@@ -116,6 +158,7 @@ export function Navbar() {
             <button
               className="ml-2 p-2 text-slate-600 hover:text-slate-900 focus:outline-none lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              type="button"
             >
               {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
             </button>
@@ -165,12 +208,8 @@ export function Navbar() {
               <div className="mb-4 flex items-center gap-3 px-2">
                 <Avatar user={user} size="md" />
                 <div>
-                  <p className="text-sm font-bold text-slate-900">
-                    {user?.fullName}
-                  </p>
-                  <p className="text-xs capitalize text-slate-500">
-                    {user?.role || 'User'}
-                  </p>
+                  <p className="text-sm font-bold text-slate-900">{user?.fullName}</p>
+                  <p className="text-xs capitalize text-slate-500">{user?.role || 'User'}</p>
                 </div>
               </div>
 
@@ -191,6 +230,7 @@ export function Navbar() {
               <button
                 onClick={logout}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-left text-red-600 hover:bg-red-50"
+                type="button"
               >
                 <LogOut size={18} /> Log out
               </button>
@@ -208,44 +248,6 @@ export function Navbar() {
         </div>
       )}
     </nav>
-  );
-}
-
-function ChatAction() {
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-      >
-        <MessageCircle size={24} />
-        <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
-      </button>
-      <ChatWidget isOpen={isOpen} onClose={() => setIsOpen(false)} />
-    </div>
-  );
-}
-
-function NotificationAction() {
-  return (
-    <button className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100">
-      <Bell size={24} />
-      <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
-    </button>
   );
 }
 
@@ -415,32 +417,4 @@ function UserDropdown({ user, onLogout }) {
     </div>
   );
 }
-
-function Avatar({ user, size = 'sm' }) {
-  const sizeClass = size === 'sm' ? 'h-10 w-10' : 'h-12 w-12';
-  const initials = user?.fullName?.substring(0, 2).toUpperCase() || 'U';
-
-  if (user?.avatar) {
-    return (
-      <img
-        src={user.avatar}
-        alt="Avatar"
-        className={cn(
-          sizeClass,
-          'rounded-full border-2 border-white bg-slate-100 object-cover shadow-sm'
-        )}
-      />
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        sizeClass,
-        'flex items-center justify-center rounded-full border-2 border-white bg-amber-100 text-sm font-bold text-amber-700 shadow-sm'
-      )}
-    >
-      {initials}
-    </div>
-  );
-}
+export default Navbar;
