@@ -31,6 +31,7 @@ export const PROJECT_ROUTES = {
 export const ADMIN_ROUTES = {
   ADMIN_DASHBOARD: '/admin',
   ADMIN_USERS: '/admin/users',
+  ADMIN_NEED_HELP: '/admin/need-help',
   ADMIN_PROJECTS: '/admin/projects',
   ADMIN_REPORTS: '/admin/reports',
 };

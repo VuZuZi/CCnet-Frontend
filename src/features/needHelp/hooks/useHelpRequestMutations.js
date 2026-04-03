@@ -81,3 +81,66 @@ export const useCompleteHelpRequest = () => {
     onError: (error) => toast.error(getErrorMessage(error)),
   });
 };
+
+export const useAssignOrganizer = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: helpRequestAPI.assignOrganizer,
+    onSuccess: (data, variables) => {
+      toast.success('Organizer assigned. Notification sent with request link.');
+      
+      // Clear all related caches
+      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      
+      // Specifically invalidate all organizer assigned queries regardless of filters
+      // This ensures organizer sees the new assignment immediately
+      queryClient.removeQueries({ 
+        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
+        exact: false, // Match organizer-assigned queries with any filter combination
+      });
+      
+      // Set the updated help request in cache
+      queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
+      
+      // Refetch all active organizer assigned queries to ensure fresh data
+      queryClient.refetchQueries({
+        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
+        exact: false,
+        type: 'active', // Only refetch queries that are currently in use
+      });
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+};
+
+export const useRespondHelpRequestAssignment = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: helpRequestAPI.respondAssignment,
+    onSuccess: (data, variables) => {
+      const verb = variables?.action === 'accept' ? 'accepted' : 'rejected';
+      toast.success(`Assignment ${verb}. Notification sent with request link.`);
+      
+      // Invalidate all lists
+      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      
+      // Clear and refetch organizer assigned queries
+      queryClient.removeQueries({ 
+        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
+        exact: false,
+      });
+      queryClient.refetchQueries({
+        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
+        exact: false,
+        type: 'active',
+      });
+      
+      queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+};

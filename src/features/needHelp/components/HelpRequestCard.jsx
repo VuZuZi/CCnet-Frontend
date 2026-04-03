@@ -3,30 +3,7 @@ import { CalendarDays, ChevronRight, CircleDollarSign, MapPin, UserRound } from 
 
 import { formatCurrency, formatDate } from '@/shared/lib/formatters';
 
-const STATUS_STYLES = {
-  PENDING: 'bg-amber-100 text-amber-800',
-  VERIFIED: 'bg-green-100 text-green-800',
-  IN_PROGRESS: 'bg-blue-100 text-blue-800',
-  COMPLETED: 'bg-slate-100 text-slate-800',
-  REJECTED: 'bg-red-100 text-red-800',
-  CANCELLED: 'bg-slate-100 text-slate-500',
-};
 
-const STATUS_LABELS = {
-  PENDING: 'Submitted',
-  VERIFIED: 'Published',
-  IN_PROGRESS: 'In Progress',
-  COMPLETED: 'Completed',
-  REJECTED: 'Rejected',
-  CANCELLED: 'Cancelled',
-};
-
-const URGENCY_BORDER = {
-  CRITICAL: 'border-l-rose-500',
-  HIGH: 'border-l-orange-500',
-  MEDIUM: 'border-l-amber-400',
-  LOW: 'border-l-emerald-500',
-};
 
 const CATEGORY_LABELS = {
   Y_TE: 'Medical Aid',
@@ -39,9 +16,6 @@ const CATEGORY_LABELS = {
 
 export function HelpRequestCard({ helpRequest }) {
   const coverImage = helpRequest.evidences?.[0]?.url;
-  const statusStyle = STATUS_STYLES[helpRequest.status] || STATUS_STYLES.PENDING;
-  const statusLabel = STATUS_LABELS[helpRequest.status] || 'Unknown';
-  const urgencyBorder = URGENCY_BORDER[helpRequest.urgencyLevel] || '';
   const categoryLabel = CATEGORY_LABELS[helpRequest.category] || 'Other';
 
   const requesterName = helpRequest.requesterId?.fullName || 'Anonymous';
@@ -59,14 +33,9 @@ export function HelpRequestCard({ helpRequest }) {
   return (
     <Link
       to={`/need-help/${helpRequest._id}`}
-      className={`group block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_10px_-6px_rgba(15,23,42,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_16px_32px_-20px_rgba(15,23,42,0.45),0_10px_20px_-18px_rgba(245,158,11,0.45)] border-l-4 ${urgencyBorder}`}
+      className="group block overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_10px_-6px_rgba(15,23,42,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_16px_32px_-20px_rgba(15,23,42,0.45),0_10px_20px_-18px_rgba(245,158,11,0.45)]"
     >
       <div className="relative h-32 w-full overflow-hidden bg-slate-100">
-        <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5">
-          <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyle}`}>
-            {statusLabel}
-          </span>
-        </div>
 
         <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5">
           <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm">

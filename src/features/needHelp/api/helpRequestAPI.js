@@ -64,6 +64,34 @@ export const helpRequestAPI = {
     return response.data?.data;
   },
 
+  getOrganizerSuggestions: async (id, params = {}) => {
+    const response = await httpClient.get(`/help-requests/${id}/organizer-suggestions`, {
+      params: sanitizeQueryParams(params),
+    });
+    return response.data?.data;
+  },
+
+  assignOrganizer: async ({ id, organizerId }) => {
+    const response = await httpClient.patch(`/help-requests/${id}/assign`, {
+      organizerId,
+    });
+    return response.data?.data;
+  },
+
+  getOrganizerAssigned: async (params = {}) => {
+    const response = await httpClient.get('/help-requests/organizer/assigned', {
+      params: sanitizeQueryParams(params),
+    });
+    return response.data?.data;
+  },
+
+  respondAssignment: async ({ id, action }) => {
+    const response = await httpClient.patch(`/help-requests/${id}/assignment-response`, {
+      action,
+    });
+    return response.data?.data;
+  },
+
   getAsProjectData: async (id) => {
     const response = await httpClient.get(`/help-requests/${id}/as-project`);
     return response.data?.data;

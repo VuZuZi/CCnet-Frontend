@@ -15,6 +15,8 @@ import ProjectManagement from "@/features/admin/pages/ProjectManagement";
 import ReportManagement from "@/features/admin/pages/ReportManagement";
 import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
+import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
+import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
@@ -109,6 +111,11 @@ const EditHelpRequestPage = lazy(() =>
     default: m.EditHelpRequestPage || m.default,
   })),
 );
+const OrganizerAssignedRequestsPage = lazy(() =>
+  import("@/features/needHelp/pages/OrganizerAssignedRequestsPage").then((m) => ({
+    default: m.OrganizerAssignedRequestsPage || m.default,
+  })),
+);
 
 const MockAdminPage = ({ title }) => (
   <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
@@ -143,8 +150,44 @@ export const router = createBrowserRouter([
     children: [
       { path: "/", element: <AuthGateway /> },
 
-      { path: "projects", element: withSuspense(ProjectListPage) },
-      { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
+      {
+        path: "projects",
+        children: [
+          { index: true, element: withSuspense(ProjectListPage) },
+          {
+            path: "create",
+            element: (
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, 'organizer']}>
+                {withSuspense(CreateProjectPage)}
+              </ProtectedRoute>
+            ),
+          },
+          { path: ":id", element: withSuspense(ProjectDetailPage) },
+        ],
+      },
+
+      {
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, 'organizer']}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "workspace/projects",
+            element: <MockAdminPage title="Dự Án Của Tôi" />,
+          },
+          {
+            path: "workspace/stats",
+            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
+          },
+          {
+            path: "organizer/need-help",
+            element: withSuspense(OrganizerAssignedRequestsPage),
+          },
+        ],
+      },
+
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
@@ -224,6 +267,8 @@ export const router = createBrowserRouter([
       { path: "users", element: <UserManagement /> },
       { path: "organizers", element: <OrganizerRequestsPage /> },
       { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },
+      { path: "need-help", element: <AdminNeedHelpRequestsPage /> },
+      { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
       { path: "reports", element: <ReportManagement /> },
     ],

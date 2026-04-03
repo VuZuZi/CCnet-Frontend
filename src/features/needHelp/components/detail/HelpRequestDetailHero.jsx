@@ -16,7 +16,7 @@ import { formatDate } from '@/shared/lib/formatters';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 
 import { HELP_REQUEST_CATEGORIES, URGENCY_LEVELS } from '../../validations/helpRequestSchema';
-import { StatusBadge } from './StatusBadge';
+
 import { RoleUpgradeModal } from '../RoleUpgradeModal';
 
 const CATEGORY_LABELS = Object.fromEntries(
@@ -147,9 +147,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
           </span>
         </div>
 
-        <div className="absolute right-5 top-5 sm:right-6 sm:top-6">
-          <StatusBadge status={status} size="sm" className="bg-white/95 backdrop-blur" />
-        </div>
+
       </div>
 
       <div className="space-y-6 p-6 sm:p-8">
