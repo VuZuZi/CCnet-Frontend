@@ -12,31 +12,6 @@ import { ShareModal } from "../../Community/components/common/ShareModal";
 
 import { formatCurrency, formatDate } from "@/shared/lib/formatters";
 
-const STATUS_STYLES = {
-  PENDING: "bg-amber-100 text-amber-800",
-  VERIFIED: "bg-green-100 text-green-800",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  COMPLETED: "bg-slate-100 text-slate-800",
-  REJECTED: "bg-red-100 text-red-800",
-  CANCELLED: "bg-slate-100 text-slate-500",
-};
-
-const STATUS_LABELS = {
-  PENDING: "Submitted",
-  VERIFIED: "Published",
-  IN_PROGRESS: "In Progress",
-  COMPLETED: "Completed",
-  REJECTED: "Rejected",
-  CANCELLED: "Cancelled",
-};
-
-const URGENCY_BORDER = {
-  CRITICAL: "border-l-rose-500",
-  HIGH: "border-l-orange-500",
-  MEDIUM: "border-l-amber-400",
-  LOW: "border-l-emerald-500",
-};
-
 const CATEGORY_LABELS = {
   Y_TE: "Medical Aid",
   GIAO_DUC: "Education",
@@ -46,19 +21,22 @@ const CATEGORY_LABELS = {
   KHAC: "Other",
 };
 
+const URGENCY_STYLES = {
+  CRITICAL: "bg-rose-50 text-rose-700",
+  HIGH: "bg-orange-50 text-orange-700",
+  MEDIUM: "bg-amber-50 text-amber-700",
+  LOW: "bg-emerald-50 text-emerald-700",
+};
+
 export function HelpRequestCard({ helpRequest }) {
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   const coverImage = helpRequest.evidences?.[0]?.url;
-  const statusStyle =
-    STATUS_STYLES[helpRequest.status] || STATUS_STYLES.PENDING;
-  const statusLabel = STATUS_LABELS[helpRequest.status] || "Unknown";
-  const urgencyBorder = URGENCY_BORDER[helpRequest.urgencyLevel] || "";
   const categoryLabel = CATEGORY_LABELS[helpRequest.category] || "Other";
+  const urgencyStyle = URGENCY_STYLES[helpRequest.urgencyLevel] || URGENCY_STYLES.MEDIUM;
 
   const requesterName = helpRequest.requesterId?.fullName || "Anonymous";
-  const locationAddress =
-    helpRequest.location?.address || "Location not specified";
+  const locationAddress = helpRequest.location?.address || "Location not specified";
 
   const getInitials = (name) => {
     return (
@@ -76,32 +54,19 @@ export function HelpRequestCard({ helpRequest }) {
     entityModel: "NeedHelp",
     title: helpRequest.title,
     thumbnail: coverImage || "",
-    description:
-      helpRequest.story || "Xin hãy chung tay giúp đỡ hoàn cảnh này.",
+    description: helpRequest.story || "Xin hãy chung tay giúp đỡ hoàn cảnh này.",
   };
 
   return (
     <>
-      <div
-        className={`group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-md border-l-4 ${urgencyBorder}`}
-      >
-        <Link
-          to={`/need-help/${helpRequest._id}`}
-          className="relative h-32 w-full overflow-hidden bg-slate-100 block shrink-0"
-        >
-          <div className="absolute right-3 top-3 z-10 flex items-center gap-1.5">
-            <span
-              className={`rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide ${statusStyle}`}
-            >
-              {statusLabel}
-            </span>
-          </div>
-
+      <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_10px_-6px_rgba(15,23,42,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_16px_32px_-20px_rgba(15,23,42,0.45),0_10px_20px_-18px_rgba(245,158,11,0.45)]">
+        {/* Banner Image */}
+        <div className="relative h-36 w-full overflow-hidden bg-slate-100">
           <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5">
-            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-semibold text-slate-700 shadow-sm">
+            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 shadow-sm backdrop-blur-sm">
               {categoryLabel}
             </span>
-            <span className="rounded-full bg-amber-50/95 px-2.5 py-1 text-[11px] font-semibold text-amber-700 shadow-sm">
+            <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm ${urgencyStyle}`}>
               {helpRequest.urgencyLevel}
             </span>
           </div>
@@ -111,78 +76,77 @@ export function HelpRequestCard({ helpRequest }) {
               <img
                 src={coverImage}
                 alt={helpRequest.title}
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 loading="lazy"
               />
             ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-100 via-orange-50 to-sky-100 text-sm font-bold text-slate-600">
+              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-lg font-bold text-slate-400">
                 {getInitials(requesterName)}
               </div>
             )}
           </div>
-        </Link>
+        </div>
 
-        <div className="p-3.5 flex flex-col flex-1">
+        {/* Content Area */}
+        <div className="flex flex-1 flex-col p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-2 text-base font-bold leading-snug text-slate-900 transition-colors group-hover:text-amber-600">
+              <h3 className="line-clamp-2 text-base font-extrabold leading-tight text-slate-900 transition-colors group-hover:text-amber-600">
                 <Link
                   to={`/need-help/${helpRequest._id}`}
-                  className="focus:outline-none before:absolute before:inset-0"
+                  className="focus:outline-none before:absolute before:inset-0 before:z-0"
                 >
                   {helpRequest.title}
                 </Link>
               </h3>
-              <p className="mt-1.5 line-clamp-2 text-sm leading-5 text-slate-600">
+              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500">
                 {helpRequest.story}
               </p>
             </div>
 
-            <Link
-              to={`/need-help/${helpRequest._id}`}
-              className="hidden flex-shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-400 transition-colors group-hover:text-amber-600 2xl:flex z-10 relative"
-            >
-              View
-              <ChevronRight size={16} />
-            </Link>
+            <div className="hidden flex-shrink-0 items-center text-slate-300 transition-colors group-hover:text-amber-500 2xl:flex">
+              <ChevronRight size={20} />
+            </div>
           </div>
 
-          <div className="mt-auto pt-3 border-t border-slate-100">
-            <div className="grid grid-cols-1 gap-1.5 text-xs text-slate-500 sm:text-sm">
-              <span className="inline-flex items-center gap-2 truncate relative z-10">
-                <UserRound size={14} className="text-slate-400" />
+          {/* Bottom Info */}
+          <div className="mt-auto pt-4">
+            <div className="space-y-2 border-t border-slate-50 pt-3">
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <UserRound size={13} className="text-slate-400" />
                 <span className="truncate">{requesterName}</span>
-              </span>
-              <span className="inline-flex items-center gap-2 truncate relative z-10">
-                <MapPin size={14} className="text-slate-400" />
+              </div>
+              <div className="flex items-center gap-2 text-xs text-slate-500">
+                <MapPin size={13} className="text-slate-400" />
                 <span className="truncate">{locationAddress}</span>
-              </span>
+              </div>
 
-              <div className="mt-0.5 flex items-center justify-between gap-2 relative z-10">
-                <span className="inline-flex items-center gap-2 truncate font-semibold text-slate-700">
+              <div className="mt-1 flex items-center justify-between gap-2 pt-1">
+                <div className="inline-flex items-center gap-1.5 font-bold text-slate-900">
                   <CircleDollarSign size={14} className="text-amber-500" />
-                  <span className="truncate">
+                  <span className="text-sm">
                     {helpRequest.amountNeeded
                       ? formatCurrency(helpRequest.amountNeeded)
-                      : "Flexible support"}
+                      : "Flexible"}
                   </span>
-                </span>
+                </div>
 
-                <div className="flex items-center gap-3">
-                  <span className="inline-flex flex-shrink-0 items-center gap-1.5 text-xs">
-                    <CalendarDays size={13} className="text-slate-400" />
+                <div className="relative z-10 flex items-center gap-3">
+                  <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
+                    <CalendarDays size={12} />
                     {formatDate(helpRequest.createdAt) || "Recently"}
                   </span>
 
                   <button
                     onClick={(e) => {
                       e.preventDefault();
+                      e.stopPropagation();
                       setIsShareOpen(true);
                     }}
-                    className="flex items-center justify-center p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-all hover:bg-amber-50 hover:text-amber-600"
                     title="Share this request"
                   >
-                    <Share2 size={16} />
+                    <Share2 size={14} />
                   </button>
                 </div>
               </div>
@@ -200,3 +164,5 @@ export function HelpRequestCard({ helpRequest }) {
     </>
   );
 }
+
+export default HelpRequestCard;

@@ -8,7 +8,7 @@ export function TabStory({ project }) {
         <div className={`relative bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm transition-all duration-300 ${!isExpanded ? 'overflow-hidden h-[600px]' : ''}`}>
 
             <div
-                className="prose prose-lg max-w-none text-gray-600 space-y-6"
+                className="prose prose-lg max-w-none text-gray-600 space-y-6 break-words whitespace-pre-wrap"
                 dangerouslySetInnerHTML={{ __html: project?.description || '<p>Chưa có thông tin chi tiết.</p>' }}
             />
 

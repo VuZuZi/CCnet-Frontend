@@ -8,6 +8,7 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  HeartHandshake,
 } from "lucide-react";
 import {
   useAuthStore,
@@ -19,6 +20,7 @@ const MENU_ITEMS = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { path: "/admin/users", label: "User Management", icon: Users, end: false },
   { path: "/admin/organizers", label: "Organizer Requests", icon: ShieldCheck, end: false },
+  { path: "/admin/need-help", label: "NeedHelp Requests", icon: HeartHandshake, end: false },
   { path: "/admin/projects", label: "Projects", icon: Rocket, end: false },
   { path: "/admin/reports", label: "Reports & Logs", icon: Flag, end: false },
 ];

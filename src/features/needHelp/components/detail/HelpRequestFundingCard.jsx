@@ -1,4 +1,4 @@
-import { Coins, HandHeart } from 'lucide-react';
+import { HandHeart } from 'lucide-react';
 import { formatCurrency } from '@/shared/lib/formatters';
 
 export function HelpRequestFundingCard({ amountNeeded = 0 }) {
@@ -9,16 +9,11 @@ export function HelpRequestFundingCard({ amountNeeded = 0 }) {
       id="funding-need"
       className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
     >
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
-          <Coins size={22} />
-        </div>
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Funding Need</h2>
-          <p className="text-sm text-slate-500">
-            A clear target helps organizers and donors coordinate faster.
-          </p>
-        </div>
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-slate-900">Funding Need</h2>
+        <p className="text-sm text-slate-500">
+          A clear target helps organizers and donors coordinate faster.
+        </p>
       </div>
 
       <div className="rounded-[24px] border border-sky-100 bg-gradient-to-br from-sky-50 via-white to-amber-50 p-8 text-center">
