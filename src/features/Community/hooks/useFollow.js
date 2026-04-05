@@ -40,7 +40,6 @@ export const useFollowMutations = () => {
   const unfollow = useMutation({
     mutationFn: (userId) => followAPI.unfollowUser(userId),
     onSuccess: (_, userId) => {
-      // Quét ngầm cập nhật mọi nơi
       queryClient.invalidateQueries({ queryKey: ["followStatus", userId] });
       queryClient.invalidateQueries({ queryKey: ["myFollowing"] });
       queryClient.invalidateQueries({ queryKey: ["suggestedUsers"] });
@@ -48,5 +47,48 @@ export const useFollowMutations = () => {
     },
   });
 
-  return { follow, unfollow };
+  const toggleProjectFollow = useMutation({
+    mutationFn: (projectId) => followAPI.toggleProjectFollow(projectId),
+    onMutate: async (projectId) => {
+      await queryClient.cancelQueries({ queryKey: ["project", projectId] });
+      const previousProject = queryClient.getQueryData(["project", projectId]);
+
+      if (previousProject) {
+        queryClient.setQueryData(["project", projectId], (old) => {
+          if (!old) return old;
+
+          const isCurrentlyFollowing = old.isFollowing;
+          const currentFollowerCount = old.stats?.followerCount || 0;
+
+          return {
+            ...old,
+            isFollowing: !isCurrentlyFollowing,
+            stats: {
+              ...old.stats,
+              followerCount: isCurrentlyFollowing
+                ? Math.max(0, currentFollowerCount - 1)
+                : currentFollowerCount + 1,
+            },
+          };
+        });
+      }
+      return { previousProject };
+    },
+    onError: (err, projectId, context) => {
+      if (context?.previousProject) {
+        queryClient.setQueryData(
+          ["project", projectId],
+          context.previousProject,
+        );
+      }
+    },
+    onSettled: (_, __, projectId) => {
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["project", projectId] });
+        queryClient.invalidateQueries({ queryKey: ["projects"] });
+      }, 1500);
+    },
+  });
+
+  return { follow, unfollow, toggleProjectFollow };
 };
