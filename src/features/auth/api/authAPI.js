@@ -1,5 +1,7 @@
 import httpClient from '@/shared/lib/httpClient';
 
+let refreshTokenPromise = null;
+
 export const authAPI = {
   async register(data) {
     const response = await httpClient.post('/auth/register', data);
@@ -21,7 +23,7 @@ export const authAPI = {
     return response.data;
   },
 
- async loginWithGoogle(payload) {
+  async loginWithGoogle(payload) {
     const response = await httpClient.post('/auth/google', payload);
     return response.data;
   },
@@ -37,12 +39,21 @@ export const authAPI = {
   },
 
   async refreshToken() {
-    const response = await httpClient.post('/auth/refresh-token');
-    return response.data;
+    if (refreshTokenPromise) {
+      return refreshTokenPromise;
+    }
+
+    refreshTokenPromise = httpClient.post('/auth/refresh-token')
+      .then((response) => response.data)
+      .finally(() => {
+        refreshTokenPromise = null;
+      });
+
+    return refreshTokenPromise;
   },
 
   async getMe() {
-  const response = await httpClient.get('/auth/me');
-  return response.data.data.user; 
-},
+    const response = await httpClient.get('/auth/me');
+    return response.data.data.user;
+  },
 };
