@@ -15,6 +15,8 @@ import {
   authSelectors,
 } from "@/features/auth/stores/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useLogout";
+import NavbarNotificationAction from "@/features/notification/components/NavbarNotificationAction";
+import NotificationStreamBootstrap from "@/features/notification/components/NotificationStreamBootstrap";
 
 const MENU_ITEMS = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -32,6 +34,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
+      <NotificationStreamBootstrap />
       <aside
         className={`bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 ${
           isSidebarOpen ? "w-64" : "w-20"
@@ -94,6 +97,7 @@ export function AdminLayout() {
           </button>
 
           <div className="flex items-center gap-4">
+            <NavbarNotificationAction />
             <div className="text-right hidden sm:block">
               <p className="text-sm font-bold text-slate-800">
                 {user?.fullName || "System Admin"}

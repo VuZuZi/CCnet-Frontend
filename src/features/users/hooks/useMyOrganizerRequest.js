@@ -15,8 +15,8 @@ export function useMyOrganizerRequest(enabled = true) {
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
-    refetchInterval: (q) => {
-      const status = q.state.data?.status;
+    refetchInterval: (context) => {
+      const status = context.state.data?.status;
       return status === "PENDING" ? 5000 : false;
     },
   });

@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Search,
-  Bell,
   Menu,
   X,
   User as UserIcon,
@@ -19,6 +18,7 @@ import GlobalSearch from '@/features/search/components/GlobalSearch';
 import { useOrganizerAssignedRequests } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import NavbarChatAction from './navbar/NavbarChatAction';
 import NavbarUserDropdown from './navbar/NavbarUserDropdown';
+import NavbarNotificationAction from '@/features/notification/components/NavbarNotificationAction';
 
 const NAV_LINKS = [
   { label: 'Project', to: ROUTES.PROJECTS },
@@ -52,18 +52,6 @@ function Avatar({ user, size = 'sm' }) {
     >
       {initials}
     </div>
-  );
-}
-
-function NotificationAction() {
-  return (
-    <button
-      className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-      type="button"
-    >
-      <Bell size={24} />
-      <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
-    </button>
   );
 }
 
@@ -129,7 +117,7 @@ export function Navbar() {
               <>
                 <OrganizerNeedHelpAction user={user} />
                 <NavbarChatAction hideWidget={isMessagesPage} />
-                <NotificationAction />
+                <NavbarNotificationAction isAuthenticated={isAuthenticated} />
 
                 <button className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 md:hidden">
                   <Search size={24} />

@@ -1,22 +1,22 @@
-import { useEffect, useLayoutEffect, useMemo, useRef } from 'react';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { useMessages } from '../../hooks/messages/useMessages';
-import { useConversations } from '../../hooks/conversations/useConversations';
-import MessageBubble from '../message/MessageBubble';
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import { useMessages } from "../../hooks/messages/useMessages";
+import { useConversations } from "../../hooks/conversations/useConversations";
+import MessageBubble from "../message/MessageBubble";
 import {
   dedupeMessages,
   enrichMessageGroups,
   getSenderId,
   getUserId,
   sortMessagesByCreatedAt,
-} from '../../utils/messageList';
-import { shouldShowDeliveryStatus } from '../../utils/messageList.delivery';
+} from "../../utils/messageList";
+import { shouldShowDeliveryStatus } from "../../utils/messageList.delivery";
 
 function TimeSeparator({ label, compact = false }) {
   if (!label) return null;
 
   return (
-    <div className={compact ? 'flex justify-center py-2' : 'flex justify-center py-3'}>
+    <div className={compact ? "flex justify-center py-2" : "flex justify-center py-3"}>
       <div className="rounded-full bg-white/90 px-3 py-1 text-[11px] font-medium text-slate-500 shadow-sm ring-1 ring-slate-200">
         {label}
       </div>
@@ -34,8 +34,8 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
   const listRef = useRef(null);
   const endRef = useRef(null);
   const firstRenderRef = useRef(true);
-  const lastConversationRef = useRef('');
-  const lastMessageIdRef = useRef('');
+  const lastConversationRef = useRef("");
+  const lastMessageIdRef = useRef("");
 
   const activeConversation = useMemo(() => {
     const list = Array.isArray(conversations) ? conversations : [];
@@ -73,8 +73,8 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
     }));
   }, [groupedMessages, myId]);
 
-  const scrollToBottom = (behavior = 'smooth') => {
-    endRef.current?.scrollIntoView({ behavior, block: 'end' });
+  const scrollToBottom = (behavior = "smooth") => {
+    endRef.current?.scrollIntoView({ behavior, block: "end" });
   };
 
   const jumpToMessage = (messageId) => {
@@ -85,29 +85,29 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
     if (!target) return;
 
     target.scrollIntoView({
-      behavior: 'smooth',
-      block: 'center',
+      behavior: "smooth",
+      block: "center",
     });
 
-    target.classList.remove('reply-jump-highlight');
+    target.classList.remove("reply-jump-highlight");
     void target.offsetWidth;
-    target.classList.add('reply-jump-highlight');
+    target.classList.add("reply-jump-highlight");
 
     window.clearTimeout(target.__replyJumpTimer);
     target.__replyJumpTimer = window.setTimeout(() => {
-      target.classList.remove('reply-jump-highlight');
+      target.classList.remove("reply-jump-highlight");
     }, 900);
   };
 
   useLayoutEffect(() => {
     const changedConversation =
-      String(lastConversationRef.current) !== String(conversationId || '');
+      String(lastConversationRef.current) !== String(conversationId || "");
 
     if (changedConversation) {
-      lastConversationRef.current = String(conversationId || '');
+      lastConversationRef.current = String(conversationId || "");
       firstRenderRef.current = true;
-      lastMessageIdRef.current = '';
-      scrollToBottom('auto');
+      lastMessageIdRef.current = "";
+      scrollToBottom("auto");
     }
   }, [conversationId]);
 
@@ -115,25 +115,25 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
     if (!groupedMessages.length) return;
 
     const latestMessageId = String(
-      groupedMessages[groupedMessages.length - 1]?._id || ''
+      groupedMessages[groupedMessages.length - 1]?._id || ""
     );
 
     if (firstRenderRef.current) {
       firstRenderRef.current = false;
       lastMessageIdRef.current = latestMessageId;
-      scrollToBottom('auto');
+      scrollToBottom("auto");
       return;
     }
 
     if (latestMessageId && latestMessageId !== lastMessageIdRef.current) {
       lastMessageIdRef.current = latestMessageId;
-      scrollToBottom('smooth');
+      scrollToBottom("smooth");
     }
   }, [groupedMessages]);
 
   useEffect(() => {
     if (!scrollSignal) return;
-    scrollToBottom('smooth');
+    scrollToBottom("smooth");
   }, [scrollSignal]);
 
   if (!conversationId) {
@@ -181,15 +181,15 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
           event.stopPropagation();
         }}
         className={`min-h-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain bg-[#f6f7fb] [scrollbar-color:rgba(17,24,39,0.2)_transparent] [scrollbar-width:thin] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-900/20 [&::-webkit-scrollbar]:w-1.5 ${
-          compact ? 'p-2.5 pb-4' : 'p-3 pb-5'
+          compact ? "px-3 py-3 pb-4" : "px-5 py-4 pb-6"
         }`}
       >
-        <div className={compact ? 'space-y-0' : 'space-y-0.5'}>
+        <div className={compact ? "space-y-0.5" : "space-y-1"}>
           {renderedMessages.map(({ message, showDeliveryStatus }, index) => {
             const senderId = getSenderId(message?.senderId);
             const reactKey = message?._id
               ? String(message._id)
-              : `fallback_${senderId}_${String(message?.createdAt || '')}_${index}`;
+              : `fallback_${senderId}_${String(message?.createdAt || "")}_${index}`;
 
             return (
               <div key={reactKey} className="overflow-visible">

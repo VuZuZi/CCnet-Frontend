@@ -1,21 +1,20 @@
 import httpClient from '@/shared/lib/httpClient';
 
-
 const sanitizeMediaPayload = (mediaArray) => {
   if (!Array.isArray(mediaArray)) return [];
 
   return mediaArray
-    .map(media => {
+    .map((media) => {
       const cleanMedia = {
         _id: media._id || undefined,
         url: media.url || undefined,
         publicId: media.publicId || undefined,
         originalName: media.originalName || undefined,
         mimetype: media.mimetype || undefined,
-        size: media.size ? Number(media.size) : undefined
+        size: media.size ? Number(media.size) : undefined,
       };
 
-      Object.keys(cleanMedia).forEach(key => {
+      Object.keys(cleanMedia).forEach((key) => {
         if (cleanMedia[key] === undefined) {
           delete cleanMedia[key];
         }
@@ -23,7 +22,7 @@ const sanitizeMediaPayload = (mediaArray) => {
 
       return cleanMedia;
     })
-    .filter(media => media._id || (media.url && media.publicId));
+    .filter((media) => media._id || (media.url && media.publicId));
 };
 
 const prepareProjectPayload = (data) => {
@@ -73,5 +72,16 @@ export const projectAPI = {
   getDetail: async (id) => {
     const response = await httpClient.get(`/project/${id}`);
     return response.data?.data;
-  }
+  },
+
+  getWorkspaceProjects: async (params = {}) => {
+    const response = await httpClient.get('/project/organizer/my-projects', {
+      params: {
+        page: params.page ?? 1,
+        limit: params.limit ?? 10,
+        status: params.status ?? 'ALL',
+      },
+    });
+    return response.data?.data;
+  },
 };

@@ -1,10 +1,10 @@
-import { Users, Settings } from 'lucide-react';
-import { getConversationAvatarData } from '../../utils/conversation';
+import { Users, Settings } from "lucide-react";
+import { getConversationAvatarData } from "../../utils/conversation";
 
-function AvatarFallback({ title = '' }) {
+function AvatarFallback({ title = "" }) {
   return (
     <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-base font-bold text-slate-700 ring-1 ring-slate-200">
-      {String(title || '?').slice(0, 1).toUpperCase()}
+      {String(title || "?").slice(0, 1).toUpperCase()}
     </div>
   );
 }
@@ -18,7 +18,7 @@ export default function ChatHeader({
   onOpenManageGroup,
 }) {
   const avatarData = getConversationAvatarData(conversation, myId);
-  const avatar = avatarData?.src || '';
+  const avatar = avatarData?.src || "";
 
   return (
     <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
@@ -26,7 +26,7 @@ export default function ChatHeader({
         {avatar ? (
           <img
             src={avatar}
-            alt={title || 'conversation avatar'}
+            alt={title || "conversation avatar"}
             className="h-12 w-12 rounded-full object-cover ring-1 ring-slate-200"
           />
         ) : (
@@ -35,12 +35,12 @@ export default function ChatHeader({
 
         <div className="min-w-0">
           <div className="truncate text-xl font-black text-slate-900">
-            {title || 'Cuộc trò chuyện'}
+            {title || "Cuộc trò chuyện"}
           </div>
 
           <div className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
             <Users className="h-4 w-4" />
-            {isGroup ? `${participantCount} thành viên` : 'Đang hoạt động'}
+            {isGroup ? `${participantCount} thành viên` : "Đang hoạt động"}
           </div>
         </div>
       </div>

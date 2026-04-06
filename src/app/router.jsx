@@ -15,6 +15,7 @@ import ProjectManagement from "@/features/admin/pages/ProjectManagement";
 import ReportManagement from "@/features/admin/pages/ReportManagement";
 import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
+import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
 import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
 import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
 
@@ -23,11 +24,13 @@ const LoginPage = lazy(() =>
     default: m.LoginPage || m.default,
   })),
 );
+
 const RegisterPage = lazy(() =>
   import("@/features/auth/pages/RegisterPage").then((m) => ({
     default: m.RegisterPage || m.default,
   })),
 );
+
 const VerifyOTPPage = lazy(() =>
   import("@/features/auth/pages/VerifyOTPPage").then((m) => ({
     default: m.VerifyOTPPage || m.default,
@@ -39,21 +42,25 @@ const DashboardPage = lazy(() =>
     default: m.DashboardPage || m.default,
   })),
 );
+
 const UserProfilePage = lazy(() =>
   import("@/features/users/pages/UserProfilePage").then((m) => ({
     default: m.UserProfilePage || m.default,
   })),
 );
+
 const FollowingPage = lazy(() =>
   import("@/features/users/pages/FollowingPage").then((m) => ({
     default: m.FollowingPage || m.default,
   })),
 );
+
 const BecomeOrganizerPage = lazy(() =>
   import("@/features/users/pages/BecomeOrganizerPage").then((m) => ({
     default: m.BecomeOrganizerPage || m.default,
   })),
 );
+
 const MyOrganizerRequestPage = lazy(() =>
   import("@/features/users/pages/MyOrganizerRequestPage").then((m) => ({
     default: m.MyOrganizerRequestPage || m.default,
@@ -65,6 +72,7 @@ const CommunityPage = lazy(() =>
     default: m.CommunityPage || m.default,
   })),
 );
+
 const PostDetailPage = lazy(() =>
   import("@/features/community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
@@ -76,14 +84,22 @@ const ProjectListPage = lazy(() =>
     default: m.ProjectListPage || m.default,
   })),
 );
+
 const ProjectDetailPage = lazy(() =>
   import("@/features/project/pages/ProjectDetailPage").then((m) => ({
     default: m.ProjectDetailPage || m.default,
   })),
 );
+
 const CreateProjectPage = lazy(() =>
   import("@/features/project/pages/CreateProjectPage").then((m) => ({
     default: m.CreateProjectPage || m.default,
+  })),
+);
+
+const WorkspaceProjectsPage = lazy(() =>
+  import("@/features/project/pages/WorkspaceProjectsPage").then((m) => ({
+    default: m.WorkspaceProjectsPage || m.default,
   })),
 );
 
@@ -92,21 +108,25 @@ const NeedHelpPage = lazy(() =>
     default: m.NeedHelpPage || m.default,
   })),
 );
+
 const HelpRequestDetailPage = lazy(() =>
   import("@/features/needHelp/pages/HelpRequestDetailPage").then((m) => ({
     default: m.HelpRequestDetailPage || m.default,
   })),
 );
+
 const CreateHelpRequestPage = lazy(() =>
   import("@/features/needHelp/pages/CreateHelpRequestPage").then((m) => ({
     default: m.CreateHelpRequestPage || m.default,
   })),
 );
+
 const EditHelpRequestPage = lazy(() =>
   import("@/features/needHelp/pages/EditHelpRequestPage").then((m) => ({
     default: m.EditHelpRequestPage || m.default,
   })),
 );
+
 const OrganizerAssignedRequestsPage = lazy(() =>
   import("@/features/needHelp/pages/OrganizerAssignedRequestsPage").then((m) => ({
     default: m.OrganizerAssignedRequestsPage || m.default,
@@ -126,7 +146,7 @@ const ChatPage = lazy(() =>
 );
 
 const MockAdminPage = ({ title }) => (
-  <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
+  <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
     <h2 className="text-2xl font-bold text-slate-400">
       Trang {title} (Đang xây dựng)
     </h2>
@@ -165,7 +185,7 @@ export const router = createBrowserRouter([
           {
             path: "create",
             element: (
-              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, 'organizer']}>
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
                 {withSuspense(CreateProjectPage)}
               </ProtectedRoute>
             ),
@@ -176,7 +196,7 @@ export const router = createBrowserRouter([
 
       {
         element: (
-          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, 'organizer']}>
+          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
             <Outlet />
           </ProtectedRoute>
         ),
@@ -220,7 +240,6 @@ export const router = createBrowserRouter([
             path: "organizer/request",
             element: withSuspense(MyOrganizerRequestPage),
           },
-
           { path: "messages", element: withSuspense(ChatPage) },
           { path: "messages/:conversationId", element: withSuspense(ChatPage) },
         ],
@@ -258,7 +277,7 @@ export const router = createBrowserRouter([
           { path: "projects/create", element: withSuspense(CreateProjectPage) },
           {
             path: "workspace/projects",
-            element: <MockAdminPage title="Dự Án Của Tôi" />,
+            element: withSuspense(WorkspaceProjectsPage),
           },
           {
             path: "workspace/stats",
@@ -284,6 +303,7 @@ export const router = createBrowserRouter([
       { path: "need-help", element: <AdminNeedHelpRequestsPage /> },
       { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
+      { path: "projects/:id", element: <AdminProjectPreviewPage /> },
       { path: "reports", element: <ReportManagement /> },
     ],
   },
@@ -291,8 +311,8 @@ export const router = createBrowserRouter([
   {
     path: "*",
     element: (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-400">
-        <h1 className="text-6xl font-black mb-4">404</h1>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 text-slate-400">
+        <h1 className="mb-4 text-6xl font-black">404</h1>
         <p className="text-xl font-medium">Trang không tồn tại</p>
       </div>
     ),

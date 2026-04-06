@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
-import { Expand, MoreHorizontal } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { ConversationList } from './ConversationList';
+import { useEffect, useRef, useState } from "react";
+import { Expand, MoreHorizontal, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ConversationList } from "./ConversationList";
 
 export function ContactsSidebar({
   onConversationSelected,
@@ -9,7 +9,7 @@ export function ContactsSidebar({
 }) {
   const navigate = useNavigate();
 
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [showMenu, setShowMenu] = useState(false);
 
   const menuRef = useRef(null);
@@ -21,27 +21,27 @@ export function ContactsSidebar({
       }
     };
 
-    document.addEventListener('mousedown', onDocClick);
-    return () => document.removeEventListener('mousedown', onDocClick);
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
   const handleOpenMessagesPage = () => {
     setShowMenu(false);
     onOpenFullPage?.();
-    navigate('/messages');
+    navigate("/messages");
   };
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-white">
-      <header className="border-b border-slate-200 bg-white px-5 py-4">
-        <div className="mb-4 flex items-center justify-between">
+      <header className="border-b border-slate-200 bg-white px-4 py-4">
+        <div className="mb-3 flex items-center justify-between">
           <h2 className="text-[18px] font-black text-slate-900">Đoạn chat</h2>
 
           <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setShowMenu((prev) => !prev)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 hover:bg-slate-100"
+              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
               aria-label="More chat options"
             >
               <MoreHorizontal className="h-5 w-5" />
@@ -52,7 +52,7 @@ export function ContactsSidebar({
                 <button
                   type="button"
                   onClick={handleOpenMessagesPage}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-800 hover:bg-slate-50"
+                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-800 transition-colors hover:bg-slate-50"
                 >
                   <Expand className="h-4 w-4" />
                   Mở trang tin nhắn
@@ -62,17 +62,20 @@ export function ContactsSidebar({
           </div>
         </div>
 
-        <input
-          type="text"
-          placeholder="Tìm đoạn chat theo tên..."
-          value={searchKeyword}
-          onChange={(e) => setSearchKeyword(e.target.value)}
-          className="w-full rounded-full border border-amber-400 px-4 py-3 text-sm text-slate-900 outline-none transition-colors focus:border-amber-500 focus:ring-2 focus:ring-amber-200"
-          aria-label="Tìm đoạn chat theo tên"
-        />
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Tìm đoạn chat theo tên..."
+            value={searchKeyword}
+            onChange={(e) => setSearchKeyword(e.target.value)}
+            className="h-11 w-full rounded-full border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
+            aria-label="Tìm đoạn chat theo tên"
+          />
+        </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-white p-2">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-white px-2 py-2">
         <ConversationList
           onConversationSelected={onConversationSelected}
           searchKeyword={searchKeyword}

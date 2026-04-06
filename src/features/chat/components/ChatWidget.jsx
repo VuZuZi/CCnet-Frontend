@@ -1,25 +1,25 @@
-import { useEffect, useRef } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import ContactsSidebar from '@/features/chat/components/conversation/ContactsSidebar';
-import { chatKeys } from '@/features/chat/constants/chat.queryKeys';
-import { disconnectChatSocket } from '@/features/chat/lib/socketClient';
-import { useChatStore, chatSelectors } from '@/features/chat/stores/useChatStore';
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import ContactsSidebar from "@/features/chat/components/conversation/ContactsSidebar";
+import { chatKeys } from "@/features/chat/constants/chat.queryKeys";
+import { disconnectChatSocket } from "@/features/chat/lib/socketClient";
+import { useChatStore, chatSelectors } from "@/features/chat/stores/useChatStore";
 
 function getWidgetStyle(mode, anchorRect) {
-  if (mode === 'mobile') {
+  if (mode === "mobile") {
     return {
       className:
-        'fixed inset-0 z-[1200] h-screen w-screen overflow-hidden rounded-none bg-white shadow-none',
+        "fixed inset-0 z-[1200] h-screen w-screen overflow-hidden rounded-none bg-white shadow-none",
       style: undefined,
     };
   }
 
-  if (mode === 'tablet') {
+  if (mode === "tablet") {
     return {
       className:
-        'fixed bottom-4 right-4 z-[1200] h-[min(760px,calc(100vh-32px))] w-[min(430px,calc(100vw-32px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]',
+        "fixed bottom-4 right-4 z-[1200] h-[min(760px,calc(100vh-32px))] w-[min(460px,calc(100vw-32px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
       style: undefined,
     };
   }
@@ -29,7 +29,7 @@ function getWidgetStyle(mode, anchorRect) {
 
   return {
     className:
-      'fixed z-[1200] h-[min(620px,calc(100vh-96px))] w-[min(430px,calc(100vw-24px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]',
+      "fixed z-[1200] h-[min(640px,calc(100vh-96px))] w-[min(460px,calc(100vw-24px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
     style: { top, right },
   };
 }
@@ -39,7 +39,7 @@ export default function ChatWidget({
   onClose,
   anchorRect,
   onConversationSelected,
-  mode = 'desktop',
+  mode = "desktop",
 }) {
   const queryClient = useQueryClient();
   const widgetRef = useRef(null);

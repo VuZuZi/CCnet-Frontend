@@ -1,9 +1,7 @@
-import { Paperclip, X } from 'lucide-react';
+import { Paperclip, X } from "lucide-react";
+import { formatChatFileSize } from "@/features/chat/utils/chatUpload.validate";
 
-export function ComposerFilePreviewList({
-  previewItems = [],
-  onRemove,
-}) {
+export function ComposerFilePreviewList({ previewItems = [], onRemove }) {
   if (!Array.isArray(previewItems) || !previewItems.length) {
     return null;
   }
@@ -33,10 +31,16 @@ export function ComposerFilePreviewList({
         ) : (
           <div
             key={`${item.file.name}-${idx}`}
-            className="inline-flex items-center gap-2 rounded-full border border-[#ffe08a] bg-[#fff6d6] px-2.5 py-1.5 text-xs text-gray-900"
+            className="inline-flex items-center gap-2 rounded-2xl border border-[#ffe08a] bg-[#fff6d6] px-2.5 py-2 text-xs text-gray-900"
           >
-            <Paperclip className="h-4 w-4" />
-            <span className="max-w-[180px] truncate">{item.file.name}</span>
+            <Paperclip className="h-4 w-4 shrink-0" />
+
+            <div className="min-w-0">
+              <div className="max-w-[180px] truncate font-medium">{item.file.name}</div>
+              <div className="text-[11px] text-slate-500">
+                {formatChatFileSize(item.file.size)}
+              </div>
+            </div>
 
             <button
               type="button"
