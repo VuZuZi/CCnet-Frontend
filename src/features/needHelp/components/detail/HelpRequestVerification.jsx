@@ -1,7 +1,5 @@
 import { Link } from 'react-router-dom';
 import {
-  BadgeCheck,
-  CalendarDays,
   ClipboardList,
   FolderKanban,
   Mail,
@@ -9,10 +7,7 @@ import {
   UserRound,
 } from 'lucide-react';
 
-import { formatDate } from '@/shared/lib/formatters';
-
 import { EvidenceGallery } from './EvidenceGallery';
-import { StatusBadge } from './StatusBadge';
 
 const getPopulatedEntity = (value) =>
   value && typeof value === 'object' && !Array.isArray(value) ? value : null;
@@ -48,26 +43,14 @@ export function HelpRequestVerification({ helpRequest }) {
 
   return (
     <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-slate-900">Request Lifecycle</h2>
-          <p className="text-sm text-slate-500">
-            Status, assignment details, and attached documents.
-          </p>
-        </div>
-        <StatusBadge status={status} />
+      <div className="mb-6">
+        <h2 className="text-xl font-bold text-slate-900">Request Lifecycle</h2>
+        <p className="text-sm text-slate-500">
+          Assignment details, contact info, and attached documents.
+        </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <DetailInfoCard icon={CalendarDays} label="Submitted Date">
-          <p className="font-semibold text-slate-900">{formatDate(createdAt) || 'Not available'}</p>
-          <p className="text-slate-500">This request entered the CCNet review flow on this date.</p>
-        </DetailInfoCard>
-
-        <DetailInfoCard icon={BadgeCheck} label="Current Status">
-          <p className="font-semibold text-slate-900">{status || 'PUBLISHED'}</p>
-          <p className="text-slate-500">Displayed publicly in NeedHelp feed.</p>
-        </DetailInfoCard>
 
         <DetailInfoCard icon={UserRound} label="Assigned Organizer">
           {organizer ? (

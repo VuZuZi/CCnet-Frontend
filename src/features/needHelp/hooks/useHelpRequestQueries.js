@@ -9,6 +9,13 @@ export const HELP_REQUEST_KEYS = {
   myList: (filters) => [...HELP_REQUEST_KEYS.myLists(), { filters }],
   urgent: () => [...HELP_REQUEST_KEYS.all, 'urgent'],
   nearby: (params) => [...HELP_REQUEST_KEYS.all, 'nearby', params],
+  organizerAssigned: (filters) => [...HELP_REQUEST_KEYS.all, 'organizer-assigned', filters],
+  organizerSuggestions: (id, filters) => [
+    ...HELP_REQUEST_KEYS.all,
+    'organizer-suggestions',
+    id,
+    filters,
+  ],
   details: () => [...HELP_REQUEST_KEYS.all, 'detail'],
   detail: (id) => [...HELP_REQUEST_KEYS.details(), id],
   asProject: (id) => [...HELP_REQUEST_KEYS.all, 'as-project', id],
@@ -73,5 +80,23 @@ export const useHelpRequestAsProjectData = (id) => {
     queryFn: () => helpRequestAPI.getAsProjectData(id),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useOrganizerAssignedRequests = (filters = {}, enabled = true) => {
+  return useQuery({
+    queryKey: HELP_REQUEST_KEYS.organizerAssigned(filters),
+    queryFn: () => helpRequestAPI.getOrganizerAssigned(filters),
+    enabled,
+    staleTime: 60 * 1000,
+  });
+};
+
+export const useOrganizerSuggestions = (id, filters = {}, enabled = true) => {
+  return useQuery({
+    queryKey: HELP_REQUEST_KEYS.organizerSuggestions(id, filters),
+    queryFn: () => helpRequestAPI.getOrganizerSuggestions(id, filters),
+    enabled: Boolean(id && enabled),
+    staleTime: 60 * 1000,
   });
 };

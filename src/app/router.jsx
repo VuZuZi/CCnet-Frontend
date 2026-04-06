@@ -16,6 +16,8 @@ import ReportManagement from "@/features/admin/pages/ReportManagement";
 import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
 import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
+import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
+import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
@@ -125,6 +127,12 @@ const EditHelpRequestPage = lazy(() =>
   })),
 );
 
+const OrganizerAssignedRequestsPage = lazy(() =>
+  import("@/features/needHelp/pages/OrganizerAssignedRequestsPage").then((m) => ({
+    default: m.OrganizerAssignedRequestsPage || m.default,
+  })),
+);
+
 const SearchPage = lazy(() =>
   import("@/features/search/pages/SearchPage").then((m) => ({
     default: m.SearchPage || m.default,
@@ -138,7 +146,7 @@ const ChatPage = lazy(() =>
 );
 
 const MockAdminPage = ({ title }) => (
-  <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 h-[60vh] flex items-center justify-center">
+  <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
     <h2 className="text-2xl font-bold text-slate-400">
       Trang {title} (Đang xây dựng)
     </h2>
@@ -169,6 +177,44 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { path: "/", element: <AuthGateway /> },
+
+      {
+        path: "projects",
+        children: [
+          { index: true, element: withSuspense(ProjectListPage) },
+          {
+            path: "create",
+            element: (
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
+                {withSuspense(CreateProjectPage)}
+              </ProtectedRoute>
+            ),
+          },
+          { path: ":id", element: withSuspense(ProjectDetailPage) },
+        ],
+      },
+
+      {
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "workspace/projects",
+            element: <MockAdminPage title="Dự Án Của Tôi" />,
+          },
+          {
+            path: "workspace/stats",
+            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
+          },
+          {
+            path: "organizer/need-help",
+            element: withSuspense(OrganizerAssignedRequestsPage),
+          },
+        ],
+      },
 
       { path: "search", element: withSuspense(SearchPage) },
 
@@ -254,6 +300,8 @@ export const router = createBrowserRouter([
       { path: "users", element: <UserManagement /> },
       { path: "organizers", element: <OrganizerRequestsPage /> },
       { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },
+      { path: "need-help", element: <AdminNeedHelpRequestsPage /> },
+      { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
       { path: "projects/:id", element: <AdminProjectPreviewPage /> },
       { path: "reports", element: <ReportManagement /> },
@@ -263,8 +311,8 @@ export const router = createBrowserRouter([
   {
     path: "*",
     element: (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 text-slate-400">
-        <h1 className="text-6xl font-black mb-4">404</h1>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-slate-50 text-slate-400">
+        <h1 className="mb-4 text-6xl font-black">404</h1>
         <p className="text-xl font-medium">Trang không tồn tại</p>
       </div>
     ),

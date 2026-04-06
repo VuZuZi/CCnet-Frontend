@@ -29,10 +29,16 @@ export const followAPI = {
     });
     return unwrap(res.data);
   },
+
   async getMyFollowers(limit = 50) {
     const res = await httpClient.get("/follow/followers", {
       params: { limit },
     });
+    return unwrap(res.data);
+  },
+
+  async toggleProjectFollow(projectId) {
+    const res = await httpClient.post(`/follow/project/${projectId}`);
     return unwrap(res.data);
   },
 };

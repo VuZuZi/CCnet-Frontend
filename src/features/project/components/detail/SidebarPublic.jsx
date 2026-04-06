@@ -1,16 +1,61 @@
-import { Heart, Share2, Flag, Sparkles, Users, Wallet } from 'lucide-react';
-import { ApplyVolunteerButton } from '@/features/volunteer/components/ApplyVolunteerButton';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
+import {
+  Heart,
+  Share2,
+  Flag,
+  Sparkles,
+  Users,
+  Wallet,
+  UserPlus,
+  UserCheck,
+} from "lucide-react";
+import { ApplyVolunteerButton } from "@/features/volunteer/components/ApplyVolunteerButton";
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import { useFollowMutations } from "@/features/Community/hooks/useFollow";
+import { useQueryClient } from "@tanstack/react-query";
 
 function formatCurrency(value) {
-  return Number(value || 0).toLocaleString('vi-VN');
+  return Number(value || 0).toLocaleString("vi-VN");
 }
 
 export function SidebarPublic({ project }) {
   const currentAmount = project?.currentAmount || 0;
   const targetAmount = project?.targetAmount || 1;
-  const progressPercent = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+  const progressPercent = Math.min(
+    Math.round((currentAmount / targetAmount) * 100),
+    100,
+  );
+
   const user = useAuthStore(authSelectors.user);
+  const { follow, unfollow } = useFollowMutations();
+  const queryClient = useQueryClient();
+
+  const organizer = project?.organizerId;
+  const organizerId = organizer?._id || organizer;
+  const currentUserId = user?.id || user?.userId;
+  const isFollowingOrg = Boolean(project?.isFollowingOrganizer);
+
+  const handleToggleFollowOrg = () => {
+    if (!organizerId) return;
+
+    if (isFollowingOrg) {
+      unfollow.mutate(organizerId, {
+        onSuccess: () => {
+          queryClient.invalidateQueries({
+            queryKey: ["project", project?._id || project?.id],
+          });
+        },
+      });
+      return;
+    }
+
+    follow.mutate(organizerId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({
+          queryKey: ["project", project?._id || project?.id],
+        });
+      },
+    });
+  };
 
   return (
     <div className="sticky top-28 flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
@@ -67,8 +112,55 @@ export function SidebarPublic({ project }) {
         </div>
       </div>
 
+      {organizer && (
+        <div className="flex items-center justify-between rounded-2xl border border-slate-100 bg-slate-50 p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <img
+              src={organizer?.avatar || "https://ui-avatars.com/api/?name=Org"}
+              alt="Organizer"
+              className="h-10 w-10 rounded-full border border-gray-200 object-cover"
+            />
+
+            <div className="min-w-0">
+              <span className="block truncate text-sm font-bold text-slate-900">
+                {organizer?.fullName || "Tổ chức / Cá nhân"}
+              </span>
+              <span className="text-xs font-medium text-slate-500">Chủ dự án</span>
+            </div>
+          </div>
+
+          {currentUserId !== organizerId && (
+            <button
+              type="button"
+              onClick={handleToggleFollowOrg}
+              disabled={follow.isPending || unfollow.isPending}
+              className={`ml-3 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
+                isFollowingOrg
+                  ? "border-slate-200 bg-slate-200 text-slate-700 hover:bg-slate-300"
+                  : "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
+              } ${(follow.isPending || unfollow.isPending) ? "cursor-not-allowed opacity-70" : ""}`}
+            >
+              {isFollowingOrg ? (
+                <>
+                  <UserCheck className="h-3.5 w-3.5" />
+                  Đã theo dõi
+                </>
+              ) : (
+                <>
+                  <UserPlus className="h-3.5 w-3.5" />
+                  Theo dõi
+                </>
+              )}
+            </button>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col gap-4">
-        <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] px-5 py-4 text-base font-bold text-white shadow-[0_14px_30px_rgba(251,191,36,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,158,11,0.32)]">
+        <button
+          type="button"
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] px-5 py-4 text-base font-bold text-white shadow-[0_14px_30px_rgba(251,191,36,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,158,11,0.32)]"
+        >
           <Heart className="h-5 w-5 fill-current" />
           Donate Now
         </button>
@@ -76,7 +168,7 @@ export function SidebarPublic({ project }) {
         <ApplyVolunteerButton
           user={user}
           projectId={project?._id || project?.id}
-          projectName={project?.name}
+          projectName={project?.name || project?.title}
         />
       </div>
 

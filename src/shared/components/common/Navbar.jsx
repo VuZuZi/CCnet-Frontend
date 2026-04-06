@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   Search,
@@ -7,6 +7,7 @@ import {
   User as UserIcon,
   LayoutDashboard,
   LogOut,
+  HeartHandshake,
 } from 'lucide-react';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useLogout } from '@/features/auth/hooks/useLogout';
@@ -14,6 +15,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { Button, cn } from '@/shared/components/ui/Button/Button';
 import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
 import GlobalSearch from '@/features/search/components/GlobalSearch';
+import { useOrganizerAssignedRequests } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import NavbarChatAction from './navbar/NavbarChatAction';
 import NavbarUserDropdown from './navbar/NavbarUserDropdown';
 import NavbarNotificationAction from '@/features/notification/components/NavbarNotificationAction';
@@ -113,6 +115,7 @@ export function Navbar() {
           <div className="flex flex-shrink-0 items-center space-x-2 sm:space-x-4">
             {isAuthenticated ? (
               <>
+                <OrganizerNeedHelpAction user={user} />
                 <NavbarChatAction hideWidget={isMessagesPage} />
                 <NavbarNotificationAction isAuthenticated={isAuthenticated} />
 
@@ -236,4 +239,170 @@ export function Navbar() {
   );
 }
 
+function OrganizerNeedHelpAction({ user }) {
+  const role = user?.role?.toString().toLowerCase();
+  const isOrganizer = role === 'organizer';
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  const { data, refetch } = useOrganizerAssignedRequests(
+    { status: 'VERIFIED', limit: 6, sortBy: 'assignedAt' },
+    isOrganizer,
+  );
+
+  // Refetch when dropdown opens
+  useEffect(() => {
+    if (isOpen && isOrganizer) {
+      refetch();
+    }
+  }, [isOpen, isOrganizer, refetch]);
+
+  // Poll for new assignments every 30 seconds
+  useEffect(() => {
+    if (!isOrganizer) return;
+
+    const interval = setInterval(() => {
+      refetch();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [isOrganizer, refetch]);
+
+  useEffect(() => {
+    const handleClick = (event) => {
+      if (ref.current && !ref.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  if (!isOrganizer) return null;
+
+  const suggestedItems = data?.data || [];
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
+        title="Suggested NeedHelp requests"
+      >
+        <HeartHandshake size={24} />
+        {suggestedItems.length > 0 ? (
+          <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
+        ) : null}
+      </button>
+
+      {isOpen ? (
+        <div className="absolute right-0 z-50 mt-3 w-80 rounded-xl border border-slate-100 bg-white p-3 shadow-lg">
+          <div className="mb-2 px-1">
+            <p className="text-sm font-semibold text-slate-900">Admin Suggestions</p>
+            <p className="text-xs text-slate-500">Open and respond to assigned NeedHelp requests.</p>
+          </div>
+
+          <div className="max-h-72 space-y-2 overflow-y-auto">
+            {suggestedItems.length ? (
+              suggestedItems.map((item) => (
+                <Link
+                  key={item._id}
+                  to={`/need-help/${item._id}`}
+                  onClick={() => setIsOpen(false)}
+                  className="block rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-50"
+                >
+                  <p className="line-clamp-1 text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+                    {item.location?.address || 'No location'}
+                  </p>
+                </Link>
+              ))
+            ) : (
+              <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
+                No suggested request right now.
+              </div>
+            )}
+          </div>
+
+          <Link
+            to="/organizer/need-help"
+            onClick={() => setIsOpen(false)}
+            className="mt-3 block rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
+          >
+            View all assignments
+          </Link>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function UserDropdown({ user, onLogout }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  return (
+    <div className="relative ml-2" ref={ref}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-80"
+      >
+        <Avatar user={user} size="sm" />
+        <div className="hidden text-left leading-tight lg:block">
+          <span className="block text-sm font-bold text-slate-900">
+            {user?.fullName || 'Alex Doe'}
+          </span>
+          <span className="block text-xs capitalize text-slate-500">
+            {user?.role || 'Impact Donor'}
+          </span>
+        </div>
+        <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
+      </div>
+
+      {isOpen && (
+        <div className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-4 w-56 rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
+          <Link
+            to={ROUTES.PROFILE}
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+          >
+            <UserIcon size={16} /> Profile
+          </Link>
+
+          <Link
+            to={ROUTES.DASHBOARD}
+            onClick={() => setIsOpen(false)}
+            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+          >
+            <LayoutDashboard size={16} /> Dashboard
+          </Link>
+
+          <div className="mx-4 my-1 h-px bg-slate-100" />
+
+          <button
+            onClick={() => {
+              setIsOpen(false);
+              onLogout();
+            }}
+            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+          >
+            <LogOut size={16} /> Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 export default Navbar;

@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft, CircleAlert, Loader2, Pencil, Trash2 } from 'lucide-react';
 
 import { ROUTES } from '@/shared/constants/routes';
@@ -10,12 +10,17 @@ import { HelpRequestStory } from '../components/detail/HelpRequestStory';
 import { HelpRequestVerification } from '../components/detail/HelpRequestVerification';
 import { useHelpRequestDetail } from '../hooks/useHelpRequestQueries';
 import { useDeleteHelpRequest } from '../hooks/useHelpRequestMutations';
+import { AdminAssignmentPanel } from '../components/admin/AdminAssignmentPanel';
 
 export function HelpRequestDetailPage() {
   const { id } = useParams();
+  const location = useLocation();
+  const currentUserRole = useAuthStore(authSelectors.userRole);
   const currentUserId = useAuthStore(authSelectors.userId);
   const deleteMutation = useDeleteHelpRequest();
   const { data: helpRequest, isLoading, isError, error } = useHelpRequestDetail(id);
+  const backTo = location.state?.backTo || ROUTES.NEED_HELP;
+  const isAdmin = currentUserRole === 'admin';
 
   const requesterId =
     typeof helpRequest?.requesterId === 'object'
@@ -62,7 +67,7 @@ export function HelpRequestDetailPage() {
             {error?.message || 'The request you are looking for does not exist or is no longer available.'}
           </p>
           <Link
-            to={ROUTES.NEED_HELP}
+            to={backTo}
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 font-bold text-slate-900 transition-colors hover:bg-amber-500"
           >
             <ArrowLeft size={18} />
@@ -75,13 +80,6 @@ export function HelpRequestDetailPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-      <Link
-        to={ROUTES.NEED_HELP}
-        className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
-      >
-        <ArrowLeft size={18} />
-        Back to Help Requests
-      </Link>
 
       {isOwner && (
         <div className="mb-6 flex flex-wrap gap-3">
@@ -106,6 +104,7 @@ export function HelpRequestDetailPage() {
       )}
 
       <div className="space-y-6">
+        {isAdmin ? <AdminAssignmentPanel helpRequest={helpRequest} /> : null}
         <HelpRequestDetailHero helpRequest={helpRequest} />
         <HelpRequestFundingCard amountNeeded={helpRequest.amountNeeded} />
         <HelpRequestStory story={helpRequest.story} evidences={helpRequest.evidences} />
