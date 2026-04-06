@@ -48,7 +48,9 @@ export function OrganizerRequestTable({ items = [], isLoading = false }) {
                   <td className="px-6 py-4">
                     <OrganizerRequestStatusBadge status={item.status} />
                   </td>
-                  <td className="px-6 py-4 text-slate-600">{formatDate(item.submittedAt || item.createdAt)}</td>
+                  <td className="px-6 py-4 text-slate-600">
+                    {formatDate(item.submittedAt || item.createdAt)}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <Link
                       to={`/admin/organizers/${item._id}`}

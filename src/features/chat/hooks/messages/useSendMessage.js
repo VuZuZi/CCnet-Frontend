@@ -1,24 +1,25 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { chatAPI } from '@/features/chat/api/chat.api';
-import { chatKeys } from '@/features/chat/constants/chat.queryKeys';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import { chatAPI } from "@/features/chat/api/chat.api";
+import { chatKeys } from "@/features/chat/constants/chat.queryKeys";
 import {
   appendMessage,
   removeMessageById,
   replaceOptimisticMessage,
-} from '@/features/chat/utils/cache.messages';
-import { upsertConversationWithLastMessage } from '@/features/chat/utils/cache.conversations';
-import { useToast } from '@/shared/contexts/ToastContext';
-import { getErrorMessage } from '@/shared/lib/httpClient';
+} from "@/features/chat/utils/cache.messages";
+import { upsertConversationWithLastMessage } from "@/features/chat/utils/cache.conversations";
+import { useToast } from "@/shared/contexts/ToastContext";
+import { getErrorMessage } from "@/shared/lib/httpClient";
 
 function buildOptimisticAttachments(files = []) {
   return (Array.isArray(files) ? files : []).map((file) => ({
-    filename: file?.name || '',
-    originalName: file?.name || '',
-    mimetype: file?.type || '',
+    filename: file?.name || "",
+    originalName: file?.name || "",
+    mimetype: file?.type || "",
     size: file?.size || 0,
-    previewUrl: file?.type?.startsWith('image/') ? URL.createObjectURL(file) : '',
-    url: '',
+    previewUrl: file?.type?.startsWith("image/") ? URL.createObjectURL(file) : "",
+    url: "",
+    uploadState: "uploading",
     __localFile: true,
   }));
 }
@@ -32,7 +33,7 @@ function revokeOptimisticAttachmentPreviews(message) {
     try {
       URL.revokeObjectURL(item.previewUrl);
     } catch {
-      // ignore revoke failure
+      return;
     }
   });
 }
@@ -42,9 +43,9 @@ function buildOptimisticSender(user, myId) {
     _id: myId,
     id: myId,
     userId: myId,
-    fullName: user?.fullName || user?.username || user?.email || 'Bạn',
-    email: user?.email || '',
-    avatar: user?.avatar || '',
+    fullName: user?.fullName || user?.username || user?.email || "Bạn",
+    email: user?.email || "",
+    avatar: user?.avatar || "",
   };
 }
 
@@ -58,22 +59,25 @@ function buildOptimisticMessage({
   files,
   replyToMessage,
 }) {
+  const optimisticAttachments = buildOptimisticAttachments(files || []);
+
   return {
     _id: tempId,
     conversationId: cid,
     senderId: buildOptimisticSender(user, myId),
-    text: String(text || '').trim(),
-    attachments: buildOptimisticAttachments(files || []),
+    text: String(text || "").trim(),
+    attachments: optimisticAttachments,
     links: [],
     replyTo: replyToMessage || null,
     reactions: [],
     seenBy: [],
-    status: 'sending',
-    messageType: 'user',
+    status: "sending",
+    messageType: "user",
     isUnsent: false,
     createdAt: now,
     updatedAt: now,
     __optimistic: true,
+    __uploadingAttachments: optimisticAttachments.length > 0,
   };
 }
 
@@ -91,13 +95,13 @@ export function useSendMessage(conversationId) {
   const toast = useToast();
 
   const user = useAuthStore(authSelectors.user);
-  const myId = user?.userId || user?._id || user?.id || 'me';
+  const myId = user?.userId || user?._id || user?.id || "me";
 
   const mutation = useMutation({
     mutationFn: async (payload) => chatAPI.sendMessage(payload),
 
     onMutate: async (payload) => {
-      const cid = String(payload?.conversationId || conversationId || '');
+      const cid = String(payload?.conversationId || conversationId || "");
       const tempId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
       const now = new Date().toISOString();
 
@@ -129,7 +133,7 @@ export function useSendMessage(conversationId) {
 
     onSuccess: (message, _payload, context) => {
       const cid = String(
-        context?.cid || conversationId || message?.conversationId || ''
+        context?.cid || conversationId || message?.conversationId || ""
       );
 
       queryClient.setQueryData(chatKeys.messages(cid), (oldData) =>
@@ -144,7 +148,7 @@ export function useSendMessage(conversationId) {
     },
 
     onError: (error, _payload, context) => {
-      const cid = String(context?.cid || conversationId || '');
+      const cid = String(context?.cid || conversationId || "");
 
       queryClient.setQueryData(chatKeys.messages(cid), (oldData) =>
         removeMessageById(oldData, context?.tempId)

@@ -32,3 +32,11 @@ export const useProjectDetail = (id) => {
     staleTime: 2 * 60 * 1000,
   });
 };
+
+export const useWorkspaceProjects = (params = {}) => {
+  return useQuery({
+    queryKey: ['projects', 'workspace', params],
+    queryFn: () => projectAPI.getWorkspaceProjects(params),
+    staleTime: 60 * 1000,
+  });
+};

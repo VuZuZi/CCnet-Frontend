@@ -15,18 +15,24 @@ export function useOrganizerRequestDetail(id) {
     enabled: !!id,
   });
 
+  const invalidateRelatedQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "organizer-requests"],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["admin", "organizer-request", id],
+      }),
+      queryClient.invalidateQueries({
+        queryKey: ["organizer-request", "me"],
+      }),
+    ]);
+  };
+
   const approveMutation = useMutation({
     mutationFn: () => organizerRequestAdminAPI.approveRequest(id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["admin", "organizer-requests"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["admin", "organizer-request", id],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["organizer-request", "me"],
-      });
+      await invalidateRelatedQueries();
       toast.success("Đã duyệt hồ sơ Organizer");
     },
     onError: (error) => {
@@ -37,15 +43,7 @@ export function useOrganizerRequestDetail(id) {
   const declineMutation = useMutation({
     mutationFn: (payload) => organizerRequestAdminAPI.declineRequest(id, payload),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ["admin", "organizer-requests"],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["admin", "organizer-request", id],
-      });
-      await queryClient.invalidateQueries({
-        queryKey: ["organizer-request", "me"],
-      });
+      await invalidateRelatedQueries();
       toast.success("Đã từ chối hồ sơ Organizer");
     },
     onError: (error) => {

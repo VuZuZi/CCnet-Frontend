@@ -15,17 +15,20 @@ import ProjectManagement from "@/features/admin/pages/ProjectManagement";
 import ReportManagement from "@/features/admin/pages/ReportManagement";
 import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
+import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
     default: m.LoginPage || m.default,
   })),
 );
+
 const RegisterPage = lazy(() =>
   import("@/features/auth/pages/RegisterPage").then((m) => ({
     default: m.RegisterPage || m.default,
   })),
 );
+
 const VerifyOTPPage = lazy(() =>
   import("@/features/auth/pages/VerifyOTPPage").then((m) => ({
     default: m.VerifyOTPPage || m.default,
@@ -37,21 +40,25 @@ const DashboardPage = lazy(() =>
     default: m.DashboardPage || m.default,
   })),
 );
+
 const UserProfilePage = lazy(() =>
   import("@/features/users/pages/UserProfilePage").then((m) => ({
     default: m.UserProfilePage || m.default,
   })),
 );
+
 const FollowingPage = lazy(() =>
   import("@/features/users/pages/FollowingPage").then((m) => ({
     default: m.FollowingPage || m.default,
   })),
 );
+
 const BecomeOrganizerPage = lazy(() =>
   import("@/features/users/pages/BecomeOrganizerPage").then((m) => ({
     default: m.BecomeOrganizerPage || m.default,
   })),
 );
+
 const MyOrganizerRequestPage = lazy(() =>
   import("@/features/users/pages/MyOrganizerRequestPage").then((m) => ({
     default: m.MyOrganizerRequestPage || m.default,
@@ -63,6 +70,7 @@ const CommunityPage = lazy(() =>
     default: m.CommunityPage || m.default,
   })),
 );
+
 const PostDetailPage = lazy(() =>
   import("@/features/community/pages/PostDetailPage").then((m) => ({
     default: m.PostDetailPage || m.default,
@@ -74,14 +82,22 @@ const ProjectListPage = lazy(() =>
     default: m.ProjectListPage || m.default,
   })),
 );
+
 const ProjectDetailPage = lazy(() =>
   import("@/features/project/pages/ProjectDetailPage").then((m) => ({
     default: m.ProjectDetailPage || m.default,
   })),
 );
+
 const CreateProjectPage = lazy(() =>
   import("@/features/project/pages/CreateProjectPage").then((m) => ({
     default: m.CreateProjectPage || m.default,
+  })),
+);
+
+const WorkspaceProjectsPage = lazy(() =>
+  import("@/features/project/pages/WorkspaceProjectsPage").then((m) => ({
+    default: m.WorkspaceProjectsPage || m.default,
   })),
 );
 
@@ -90,16 +106,19 @@ const NeedHelpPage = lazy(() =>
     default: m.NeedHelpPage || m.default,
   })),
 );
+
 const HelpRequestDetailPage = lazy(() =>
   import("@/features/needHelp/pages/HelpRequestDetailPage").then((m) => ({
     default: m.HelpRequestDetailPage || m.default,
   })),
 );
+
 const CreateHelpRequestPage = lazy(() =>
   import("@/features/needHelp/pages/CreateHelpRequestPage").then((m) => ({
     default: m.CreateHelpRequestPage || m.default,
   })),
 );
+
 const EditHelpRequestPage = lazy(() =>
   import("@/features/needHelp/pages/EditHelpRequestPage").then((m) => ({
     default: m.EditHelpRequestPage || m.default,
@@ -175,7 +194,6 @@ export const router = createBrowserRouter([
             path: "organizer/request",
             element: withSuspense(MyOrganizerRequestPage),
           },
-
           { path: "messages", element: withSuspense(ChatPage) },
           { path: "messages/:conversationId", element: withSuspense(ChatPage) },
         ],
@@ -213,7 +231,7 @@ export const router = createBrowserRouter([
           { path: "projects/create", element: withSuspense(CreateProjectPage) },
           {
             path: "workspace/projects",
-            element: <MockAdminPage title="Dự Án Của Tôi" />,
+            element: withSuspense(WorkspaceProjectsPage),
           },
           {
             path: "workspace/stats",
@@ -237,6 +255,7 @@ export const router = createBrowserRouter([
       { path: "organizers", element: <OrganizerRequestsPage /> },
       { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
+      { path: "projects/:id", element: <AdminProjectPreviewPage /> },
       { path: "reports", element: <ReportManagement /> },
     ],
   },
