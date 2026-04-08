@@ -30,11 +30,10 @@ const Sidebar = () => {
             <a
               key={item.name}
               href="#"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                item.active
+              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${item.active
                   ? "bg-primary/10 text-primary font-semibold"
                   : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-              }`}
+                }`}
             >
               <span className="material-symbols-outlined">{item.icon}</span>
               <span>{item.name}</span>

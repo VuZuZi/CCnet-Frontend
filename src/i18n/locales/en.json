@@ -1,0 +1,11 @@
+{
+    "sidebar": {
+        "dashboard": "Dashboard",
+        "users": "Users",
+        "notifications": "Notifications",
+        "reports": "Reports",
+        "settings": "Settings",
+        "title": "CCNet",
+        "subtitle": "Admin Oversight"
+    }
+}

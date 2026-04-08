@@ -1,0 +1,11 @@
+{
+    "sidebar": {
+        "dashboard": "Bảng điều khiển",
+        "users": "Người dùng",
+        "notifications": "Thông báo",
+        "reports": "Báo cáo",
+        "settings": "Cài đặt",
+        "title": "CCNet",
+        "subtitle": "Giám sát quản trị"
+    }
+}

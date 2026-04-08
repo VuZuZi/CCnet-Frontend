@@ -57,11 +57,10 @@ const ActivityTable = ({ activities = [], onAction, loading }) => {
                   <td className="px-6 py-4 text-right">
                     <button
                       onClick={() => onAction(report._id)}
-                      className={`px-3 py-1 text-[10px] font-bold rounded-md uppercase transition-all ${
-                        report.status === "pending"
+                      className={`px-3 py-1 text-[10px] font-bold rounded-md uppercase transition-all ${report.status === "pending"
                           ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
                           : "bg-emerald-100 text-emerald-700"
-                      }`}
+                        }`}
                     >
                       {report.status === "pending" ? "Action" : "Resolved"}
                     </button>

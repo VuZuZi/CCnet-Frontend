@@ -43,8 +43,9 @@ export function ProjectDetailPage() {
   };
 
   const identity = useMemo(() => {
+    console.log('[identity] currentUser.id:', currentUser?.id, 'project.organizerId._id:', project?.organizerId?._id);
     if (!currentUser || !project) return 'GUEST';
-    if (project.organizerId?._id === currentUser.id) return 'ORGANIZER';
+    if (String(project.organizerId?._id) === String(currentUser.id)) return 'ORGANIZER';
     return 'USER';
   }, [currentUser, project]);
 
@@ -68,7 +69,7 @@ export function ProjectDetailPage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'story':
-        return <TabStory project={project} />;
+        return <TabStory project={project} isOrganizer={isOrganizer} onVolunteerClick={onVolunteerClick} />;
       case 'volunteer':
         return (
           <div ref={volunteerManagerRef}>

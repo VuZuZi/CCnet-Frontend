@@ -57,8 +57,36 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
     const {
         approveApplication,
         rejectApplication,
-        restoreApplication
+        restoreApplication,
+        updateApplication,
+        isUpdating
     } = useVolunteerMutations();
+
+    const statusOptions = [
+        { value: 'PENDING', label: 'Pending' },
+        { value: 'APPROVED', label: 'Approved' },
+        { value: 'REJECTED', label: 'Rejected' },
+    ];
+
+    const handleChangeStatus = async (applicationId, newStatus) => {
+        if (!applicationId) {
+            alert('Không tìm thấy ID đơn đăng ký');
+            return;
+        }
+        if (!newStatus) {
+            return;
+        }
+        try {
+            await updateApplication({ id: applicationId, data: { status: newStatus } });
+            refetchPending();
+            refetchApproved();
+            refetchRejected();
+            alert('Cập nhật trạng thái thành công');
+        } catch (error) {
+            console.error('❌ Status change error:', error);
+            alert(error.response?.data?.message || 'Cập nhật trạng thái thất bại');
+        }
+    };
 
     // ✅ Approve: PENDING -> APPROVED
     const handleApprove = (applicationId) => {
@@ -75,7 +103,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
 
         if (confirm('Xác nhận duyệt đơn đăng ký này?')) {
             console.log('📤 Calling approveApplication with:', applicationId);
-            approveApplication({ id: applicationId}, {
+            approveApplication({ id: applicationId }, {
                 onSuccess: () => {
                     console.log('✅ Approve success');
                     refetchPending();
@@ -168,17 +196,15 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
                         <button
                             key={tab.id}
                             onClick={() => setActiveSubTab(tab.id)}
-                            className={`px-5 py-2 text-sm font-bold rounded-full shadow-sm transition-all flex items-center gap-2 ${
-                                isActive
+                            className={`px-5 py-2 text-sm font-bold rounded-full shadow-sm transition-all flex items-center gap-2 ${isActive
                                     ? `bg-white text-gray-900`
                                     : `text-gray-500 hover:text-gray-900`
-                            }`}
+                                }`}
                         >
                             <Icon className={`w-4 h-4 ${isActive ? `text-${tab.color}-500` : ''}`} />
                             {tab.label}
-                            <span className={`px-2 py-0.5 rounded-full text-xs ${
-                                isActive ? `bg-${tab.color}-100 text-${tab.color}-700` : 'bg-gray-200 text-gray-600'
-                            }`}>
+                            <span className={`px-2 py-0.5 rounded-full text-xs ${isActive ? `bg-${tab.color}-100 text-${tab.color}-700` : 'bg-gray-200 text-gray-600'
+                                }`}>
                                 {tab.count}
                             </span>
                         </button>
@@ -231,6 +257,22 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
                                             <div className={`px-2 py-1 rounded-full text-xs font-medium ${statusConfig.bg} ${statusConfig.text}`}>
                                                 {statusConfig.label}
                                             </div>
+                                        </div>
+
+                                        <div className="flex flex-wrap items-center gap-3 mt-2">
+                                            <label className="text-xs font-semibold text-slate-500">Status</label>
+                                            <select
+                                                value={app.status}
+                                                disabled={isUpdating}
+                                                onChange={(e) => handleChangeStatus(app._id, e.target.value)}
+                                                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                                            >
+                                                {statusOptions.map((option) => (
+                                                    <option key={option.value} value={option.value}>
+                                                        {option.label}
+                                                    </option>
+                                                ))}
+                                            </select>
                                         </div>
 
                                         <div className="flex flex-wrap gap-2">

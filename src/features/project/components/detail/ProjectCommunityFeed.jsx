@@ -24,6 +24,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
     });
 
     const canInteract = useMemo(() => {
+        console.log('[canInteract] user.id:', user?.id, 'isOrganizer:', isOrganizer, 'application.status:', application?.status);
         if (!user?.id) return false;
         if (isOrganizer) return true;
         return application?.status === 'APPROVED';
