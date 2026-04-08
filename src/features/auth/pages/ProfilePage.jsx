@@ -1,10 +1,12 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { validators } from '@/shared/constants/validation';
-import { Button } from '@/shared/components/ui/Button/Button'; // Import Shared Button
+import { ROUTES } from '@/shared/constants/routes';
+import { Button } from '@/shared/components/ui/Button/Button';
 
 export function ProfilePage() {
   const user = useAuthStore(authSelectors.user);
@@ -140,9 +142,12 @@ export function ProfilePage() {
                 <strong className="block text-black mb-1">Password</strong>
                 <p className="text-gray text-sm mb-0">Last changed 30 days ago</p>
               </div>
-              <Button variant="outlineDark" className="!py-1.5 !px-4 !text-sm whitespace-nowrap">
+              <Link
+                to={ROUTES.CHANGE_PASSWORD}
+                className="inline-flex items-center justify-center whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              >
                 Change Password
-              </Button>
+              </Link>
             </div>
           </div>
 

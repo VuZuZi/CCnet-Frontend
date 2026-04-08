@@ -4,6 +4,7 @@ import {
   FolderKanban,
   ShieldCheck,
   Megaphone,
+  HeartHandshake,
   UserPlus,
   CheckCheck,
   Trash2,
@@ -17,6 +18,11 @@ function getTypeIcon(type) {
       return UserPlus;
     case 'project_updated':
       return FolderKanban;
+    case 'help_request_assigned':
+    case 'help_request_verified':
+    case 'help_request_completed':
+    case 'help_request_assignment_responded':
+      return HeartHandshake;
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
       return ShieldCheck;

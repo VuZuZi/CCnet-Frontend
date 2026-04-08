@@ -19,6 +19,14 @@ export function getNotificationLabel(type) {
       return 'Follow';
     case 'project_updated':
       return 'Project';
+    case 'help_request_assigned':
+      return 'NeedHelp';
+    case 'help_request_verified':
+      return 'NeedHelp';
+    case 'help_request_completed':
+      return 'NeedHelp';
+    case 'help_request_assignment_responded':
+      return 'NeedHelp';
     case 'organizer_request_submitted':
       return 'Organizer request';
     case 'organizer_request_updated':

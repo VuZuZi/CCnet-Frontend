@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { ShareModal } from "../../Community/components/common/ShareModal";
 
-import { formatCurrency, formatDate } from "@/shared/lib/formatters";
+import { formatVND, formatDate } from "@/shared/lib/formatters";
 
 const CATEGORY_LABELS = {
   Y_TE: "Medical Aid",
@@ -91,7 +91,7 @@ export function HelpRequestCard({ helpRequest }) {
         <div className="flex flex-1 flex-col p-4">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-2 text-base font-extrabold leading-tight text-slate-900 transition-colors group-hover:text-amber-600">
+              <h3 className="line-clamp-2 break-words text-base font-extrabold leading-tight text-slate-900 transition-colors group-hover:text-amber-600">
                 <Link
                   to={`/need-help/${helpRequest._id}`}
                   className="focus:outline-none before:absolute before:inset-0 before:z-0"
@@ -99,7 +99,7 @@ export function HelpRequestCard({ helpRequest }) {
                   {helpRequest.title}
                 </Link>
               </h3>
-              <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500">
+              <p className="mt-2 line-clamp-2 break-words text-sm leading-relaxed text-slate-500">
                 {helpRequest.story}
               </p>
             </div>
@@ -126,7 +126,7 @@ export function HelpRequestCard({ helpRequest }) {
                   <CircleDollarSign size={14} className="text-amber-500" />
                   <span className="text-sm">
                     {helpRequest.amountNeeded
-                      ? formatCurrency(helpRequest.amountNeeded)
+                      ? formatVND(helpRequest.amountNeeded)
                       : "Flexible"}
                   </span>
                 </div>

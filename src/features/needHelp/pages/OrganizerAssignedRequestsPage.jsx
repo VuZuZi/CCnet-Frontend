@@ -11,7 +11,7 @@ import {
   X as XIcon,
 } from 'lucide-react';
 
-import { formatCurrency, formatDate } from '@/shared/lib/formatters';
+import { formatVND, formatDate } from '@/shared/lib/formatters';
 import { useOrganizerAssignedRequests } from '../hooks/useHelpRequestQueries';
 import { useRespondHelpRequestAssignment } from '../hooks/useHelpRequestMutations';
 
@@ -135,7 +135,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
             </span>
             <span className="inline-flex items-center gap-1.5 flex-shrink-0">
               <CircleDollarSign size={14} className="text-slate-400" />
-              <span className="font-semibold text-slate-700">{request.amountNeeded ? formatCurrency(request.amountNeeded) : 'Flexible'}</span>
+              <span className="font-semibold text-slate-700">{request.amountNeeded ? formatVND(request.amountNeeded) : 'Flexible'}</span>
             </span>
             <span className="inline-flex items-center gap-1.5 flex-shrink-0">
               <CalendarDays size={14} className="text-slate-400" />
