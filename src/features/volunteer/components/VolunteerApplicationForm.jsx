@@ -152,10 +152,10 @@ export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel 
                   }`}
               >
                 {isSelected && (
-                  <span className="material-symbols-outlined text-sm">Làm</span>
+                  <span className="text-sm">Làm</span>
                 )}
 
-                <span className="material-symbols-outlined text-sm">{option.icon}</span>
+                <span className="text-sm">{option.icon}</span>
                 {option.label}
               </button>
             );

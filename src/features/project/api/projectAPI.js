@@ -84,4 +84,36 @@ export const projectAPI = {
     });
     return response.data?.data;
   },
+
+  getFeedPosts: async (projectId, { limit = 10, cursor = null } = {}) => {
+    const params = { limit };
+    if (cursor) params.cursor = cursor;
+    const response = await httpClient.get(`/project/${projectId}/feed/posts`, { params });
+    return response.data?.data;
+  },
+
+  createFeedPost: async (projectId, data) => {
+    const response = await httpClient.post(`/project/${projectId}/feed/posts`, data);
+    return response.data?.data;
+  },
+
+  createFeedComment: async (projectId, postId, data) => {
+    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/comments`, data);
+    return response.data?.data;
+  },
+
+  reportProject: async (projectId, payload) => {
+    const response = await httpClient.post(`/project/${projectId}/report`, payload);
+    return response.data?.data;
+  },
+
+  toggleFeedPostLike: async (projectId, postId) => {
+    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/like`);
+    return response.data?.data;
+  },
+
+  toggleFeedCommentLike: async (projectId, postId, commentId) => {
+    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/comments/${commentId}/like`);
+    return response.data?.data;
+  },
 };

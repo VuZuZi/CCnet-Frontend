@@ -14,6 +14,11 @@ httpClient.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`;
     }
 
+    // Don't set Content-Type for FormData - let browser handle it
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
+
     if (env.ENABLE_LOGGING) {
       console.log(`[${config.method?.toUpperCase()}] ${config.url}`);
     }

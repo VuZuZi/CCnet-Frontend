@@ -52,20 +52,62 @@ export const useAdminDashboard = (activeTab) => {
 
     queryClient.setQueryData(["admin", "users"], (prev = []) =>
       prev.map((user) =>
-        user._id === userId ? { ...user, ...updatedUser, isBanned: !user.isBanned } : user
+        user._id === userId ? { ...user, ...updatedUser } : user
       )
     );
   };
 
+  const toggleVerifyUser = async (userId, isVerified) => {
+    const res = await adminAPI.toggleVerified(userId, isVerified);
+    const updatedUser = res?.data?.data;
+
+    queryClient.setQueryData(["admin", "users"], (prev = []) =>
+      prev.map((user) =>
+        user._id === userId ? { ...user, ...updatedUser } : user
+      )
+    );
+  };
+
+  const updateUserStatus = async (userId, status) => {
+    const res = await adminAPI.updateUserStatus(userId, status);
+    const updatedUser = res?.data?.data;
+
+    queryClient.setQueryData(["admin", "users"], (prev = []) =>
+      prev.map((user) =>
+        user._id === userId ? { ...user, ...updatedUser } : user
+      )
+    );
+
+    return updatedUser;
+  };
+
   const updateProjectStatus = async (projectId, status) => {
-    const res = await adminAPI.updateProjectStatus(projectId, status);
-    const updatedProject = res?.data?.data;
+    const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
 
     queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev = []) =>
       prev.map((project) =>
-        project._id === projectId ? { ...project, ...updatedProject } : project
+        project._id === projectId ? { ...project, status } : project
       )
     );
+
+    let updatedProject;
+    try {
+      const res = await adminAPI.updateProjectStatus(projectId, status);
+      updatedProject = res?.data?.data;
+
+      queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev = []) =>
+        prev.map((project) =>
+          project._id === projectId ? { ...project, ...updatedProject } : project
+        )
+      );
+
+      queryClient.invalidateQueries({ queryKey: ADMIN_PROJECTS_QUERY_KEY });
+    } catch (error) {
+      if (previousProjects !== undefined) {
+        queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, previousProjects);
+      }
+      throw error;
+    }
 
     return updatedProject;
   };
@@ -122,6 +164,8 @@ export const useAdminDashboard = (activeTab) => {
       reportsQuery.isLoading,
 
     toggleBanUser,
+    toggleVerifyUser,
+    updateUserStatus,
     updateProjectStatus,
     deleteProject,
     handleResolveReport,

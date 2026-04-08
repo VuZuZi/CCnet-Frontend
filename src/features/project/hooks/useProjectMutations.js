@@ -21,7 +21,7 @@ export const useCreateDraftProject = () => {
 
 export const useUpdateDraftProject = () => {
   const toast = useToast();
-  
+
   return useMutation({
     mutationFn: projectAPI.updateDraft,
     onSuccess: () => {
@@ -46,5 +46,22 @@ export const useSubmitProject = () => {
       navigate('/dashboard');
     },
     onError: (error) => toast.error(getErrorMessage(error))
+  });
+};
+
+export const useReportProject = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ projectId, payload }) => projectAPI.reportProject(projectId, payload),
+    onSuccess: () => {
+      toast.success('Báo cáo dự án đã được gửi. Cảm ơn bạn đã thông báo.');
+      queryClient.invalidateQueries({ queryKey: ['project', 'detail'] });
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error) || 'Báo cáo dự án thất bại');
+      throw error;
+    }
   });
 };

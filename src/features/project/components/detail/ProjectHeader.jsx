@@ -1,6 +1,6 @@
 import React from "react";
 import { BadgeCheck, BellRing, Edit2, Plus } from "lucide-react";
-import { useFollowMutations } from "@/features/Community/hooks/useFollow";
+import { useFollowMutations } from "@/features/community/hooks/useFollow";
 
 export function ProjectHeader({ project, isOrganizer }) {
   const { toggleProjectFollow } = useFollowMutations();
@@ -51,11 +51,10 @@ export function ProjectHeader({ project, isOrganizer }) {
             type="button"
             onClick={() => toggleProjectFollow.mutate(project?._id)}
             disabled={toggleProjectFollow.isPending || !project?._id}
-            className={`hidden items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-colors sm:flex ${
-              project?.isFollowing
+            className={`hidden items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-colors sm:flex ${project?.isFollowing
                 ? "border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
                 : "border-slate-200 bg-white text-gray-700 hover:bg-slate-50"
-            } ${toggleProjectFollow.isPending ? "cursor-not-allowed opacity-70" : ""}`}
+              } ${toggleProjectFollow.isPending ? "cursor-not-allowed opacity-70" : ""}`}
           >
             {project?.isFollowing ? (
               <BellRing className="h-4 w-4" />

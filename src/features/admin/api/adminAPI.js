@@ -4,9 +4,13 @@ export const adminAPI = {
   getStats: () => httpClient.get("/admin/stats"),
   getUsers: () => httpClient.get("/admin/users"),
   toggleBan: (userId) => httpClient.patch(`/admin/users/${userId}/ban`),
+  toggleVerified: (userId, isVerified) =>
+    httpClient.patch(`/admin/users/${userId}/verify`, { isVerified }),
+  updateUserStatus: (userId, status) =>
+    httpClient.patch(`/admin/users/${userId}/status`, { status }),
   getProjects: () => httpClient.get("/admin/projects"),
   updateProjectStatus: (id, status) =>
-  httpClient.patch(`/admin/projects/${id}/status`, { status }),
+    httpClient.patch(`/admin/projects/${id}/status`, { status }),
   deleteProject: (id) => httpClient.delete(`/admin/projects/${id}`),
   getReports: () => httpClient.get("/admin/reports"),
   resolveReport: (reportId, actions, note) =>

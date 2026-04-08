@@ -75,7 +75,7 @@ export const volunteerAPI = {
             throw new Error('Application ID is required');
         }
         try {
-            const response = await httpClient.patch(`/volunteer/${applicationId.id}/approve`);
+            const response = await httpClient.patch(`/volunteer/${applicationId}/approve`);
             return response.data?.data;
         } catch (error) {
             console.error(' [API] Approve error:', error);
@@ -92,8 +92,8 @@ export const volunteerAPI = {
         try {
             const response =
                 await httpClient.patch(`/volunteer/applications/${applicationId}/reject`, {
-                rejectReason: reason
-            });
+                    rejectReason: reason
+                });
             return response.data?.data;
         } catch (error) {
             console.error(' [API] Reject error:', error);
@@ -102,6 +102,20 @@ export const volunteerAPI = {
     },
 
     // Cập nhật application
+    updateApplication: async (applicationId, data) => {
+        if (!applicationId) {
+            console.error(' [API] applicationId is required');
+            throw new Error('Application ID is required');
+        }
+        try {
+            const response = await httpClient.patch(`/volunteer/applications/${applicationId}`, data);
+            return response.data?.data;
+        } catch (error) {
+            console.error(' [API] Update error:', error);
+            throw error;
+        }
+    },
+
     restoreApplication: async (applicationId) => {
         try {
             const response = await httpClient.patch(`/volunteer/applications/${applicationId}/restore`);

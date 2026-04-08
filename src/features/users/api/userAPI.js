@@ -33,6 +33,12 @@ export const userAPI = {
     });
     return response.data?.data?.user;
   },
+
+  async reportUser(userId, payload) {
+    const response = await httpClient.post(`/user/${userId}/report`, payload);
+    return response.data?.data;
+  },
+
   async getSuggestedUsers(limit = 5) {
     const response = await httpClient.get("/user/suggested", {
       params: { limit },
