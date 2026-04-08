@@ -1,6 +1,6 @@
 // src/features/admin/components/ProjectManagement.jsx
 import { useAdminDashboard } from "../hooks/useAdminDashboard";
-// import { useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { BadgeCheck, Calendar, Users, Wallet, Eye, Clock, Trash2, RefreshCw } from "lucide-react";
 import { useState, useMemo } from "react";
 

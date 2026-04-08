@@ -56,7 +56,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   });
 
   const hasApplied = !!application;
-  const applicationStatus = application?.status;
+  const applicationStatus = application?.status?.toUpperCase() || 'UNKNOWN';
 
   const getStatusConfig = () => {
     switch (applicationStatus) {
@@ -87,8 +87,24 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
           showCancel: false,
           showEdit: false
         };
+      case 'CANCELLED':
+        return {
+          text: 'Đơn đã hủy',
+          icon: XCircle,
+          className: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
+          disabled: false,
+          showCancel: false,
+          showEdit: false
+        };
       default:
-        return null;
+        return {
+          text: 'Đơn đăng ký đang xử lý',
+          icon: Clock,
+          className: 'bg-slate-100 text-slate-700 cursor-default',
+          disabled: true,
+          showCancel: false,
+          showEdit: false
+        };
     }
   };
 

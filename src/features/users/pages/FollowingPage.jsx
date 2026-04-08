@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useMyFollowing } from "../hooks/useMyFollowing";
 import { useMyFollowers } from "../hooks/useMyFollowers";
-import { useFollowMutations } from "../../Community/hooks/useFollow";
+import { useFollowMutations } from "../../community/hooks/useFollow";
 
 import { useToast } from "@/shared/contexts/ToastContext";
 import { UserCard } from "../../Community/components/user/UserCard";
@@ -197,11 +197,10 @@ export function FollowingPage() {
         <div className="mb-6 flex items-center gap-6 border-b border-[#e5e7eb] px-1">
           <button
             onClick={() => handleTabChange("following")}
-            className={`pb-3 text-[15px] font-bold transition-all ${
-              isFollowingTab
+            className={`pb-3 text-[15px] font-bold transition-all ${isFollowingTab
                 ? "border-b-2 border-yellow-400 text-[#111827]"
                 : "border-b-2 border-transparent text-[#6b7280]"
-            }`}
+              }`}
           >
             Following{" "}
             <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs">
@@ -211,11 +210,10 @@ export function FollowingPage() {
 
           <button
             onClick={() => handleTabChange("followers")}
-            className={`pb-3 text-[15px] font-bold transition-all ${
-              !isFollowingTab
+            className={`pb-3 text-[15px] font-bold transition-all ${!isFollowingTab
                 ? "border-b-2 border-yellow-400 text-[#111827]"
                 : "border-b-2 border-transparent text-[#6b7280]"
-            }`}
+              }`}
           >
             Followers{" "}
             <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs">
@@ -258,21 +256,19 @@ export function FollowingPage() {
                   <div
                     key={u.id}
                     id={`connection-user-${u.id}`}
-                    className={`relative rounded-[18px] transition-all duration-700 ${
-                      isHighlightedTarget
+                    className={`relative rounded-[18px] transition-all duration-700 ${isHighlightedTarget
                         ? isHighlightVisible
                           ? "ring-2 ring-[#FBBF24] shadow-[0_12px_34px_rgba(251,191,36,0.24)]"
                           : "ring-0 shadow-none"
                         : ""
-                    }`}
+                      }`}
                   >
                     {isHighlightedTarget && (
                       <div
-                        className={`pointer-events-none absolute inset-0 rounded-[18px] transition-all duration-1000 ${
-                          isHighlightVisible
+                        className={`pointer-events-none absolute inset-0 rounded-[18px] transition-all duration-1000 ${isHighlightVisible
                             ? "bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.20)_0%,rgba(255,251,235,0.55)_38%,rgba(255,255,255,0.92)_100%)] opacity-100"
                             : "bg-[radial-gradient(circle_at_center,rgba(251,191,36,0.00)_0%,rgba(255,255,255,0.00)_100%)] opacity-0"
-                        }`}
+                          }`}
                       />
                     )}
 

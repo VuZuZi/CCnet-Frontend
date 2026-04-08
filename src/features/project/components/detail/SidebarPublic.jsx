@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Heart,
   Share2,
@@ -10,7 +11,9 @@ import {
 } from "lucide-react";
 import { ApplyVolunteerButton } from "@/features/volunteer/components/ApplyVolunteerButton";
 import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
-import { useFollowMutations } from "@/features/Community/hooks/useFollow";
+import { useFollowMutations } from "@/features/community/hooks/useFollow";
+import { useReportProject } from "@/features/project/hooks/useProjectMutations.js";
+import { useToast } from "@/shared/contexts/ToastContext";
 import { useQueryClient } from "@tanstack/react-query";
 
 function formatCurrency(value) {
@@ -29,10 +32,27 @@ export function SidebarPublic({ project }) {
   const { follow, unfollow } = useFollowMutations();
   const queryClient = useQueryClient();
 
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportError, setReportError] = useState(null);
+
+  const reportReasons = [
+    { value: "spam", label: "Spam" },
+    { value: "harassment", label: "Harassment" },
+    { value: "inappropriate", label: "Inappropriate" },
+    { value: "violence", label: "Violence" },
+    { value: "hate_speech", label: "Hate speech" },
+    { value: "other", label: "Other" },
+  ];
+
   const organizer = project?.organizerId;
   const organizerId = organizer?._id || organizer;
   const currentUserId = user?.id || user?.userId;
   const isFollowingOrg = Boolean(project?.isFollowingOrganizer);
+
+  const { mutateAsync: reportProject, isPending: isReporting } = useReportProject();
+  const toast = useToast();
 
   const handleToggleFollowOrg = () => {
     if (!organizerId) return;
@@ -134,11 +154,10 @@ export function SidebarPublic({ project }) {
               type="button"
               onClick={handleToggleFollowOrg}
               disabled={follow.isPending || unfollow.isPending}
-              className={`ml-3 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${
-                isFollowingOrg
-                  ? "border-slate-200 bg-slate-200 text-slate-700 hover:bg-slate-300"
-                  : "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
-              } ${(follow.isPending || unfollow.isPending) ? "cursor-not-allowed opacity-70" : ""}`}
+              className={`ml-3 inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold transition-all ${isFollowingOrg
+                ? "border-slate-200 bg-slate-200 text-slate-700 hover:bg-slate-300"
+                : "border-blue-200 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                } ${(follow.isPending || unfollow.isPending) ? "cursor-not-allowed opacity-70" : ""}`}
             >
               {isFollowingOrg ? (
                 <>
@@ -184,12 +203,126 @@ export function SidebarPublic({ project }) {
             <span className="text-[11px] font-bold">Share</span>
           </button>
 
-          <button className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-slate-500 transition hover:border-amber-200 hover:bg-amber-50 hover:text-amber-600">
+          <button
+            type="button"
+            onClick={() => {
+              if (!user?.id) {
+                toast.error('Vui lòng đăng nhập để báo cáo dự án');
+                return;
+              }
+              setReportError(null);
+              setReportModalOpen(true);
+            }}
+            disabled={isReporting}
+            className={`group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-slate-500 transition ${isReporting ? 'opacity-60 cursor-not-allowed' : 'hover:border-amber-200 hover:bg-amber-50 hover:text-amber-600'
+              }`}
+          >
             <Flag className="h-5 w-5" />
             <span className="text-[11px] font-bold">Report</span>
           </button>
         </div>
       </div>
+
+      {reportModalOpen && (
+        <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-xl rounded-3xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Báo cáo dự án</h3>
+                <p className="text-sm text-slate-500">Gửi báo cáo đến quản trị viên để kiểm duyệt.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportModalOpen(false)}
+                className="text-2xl font-bold text-slate-400 hover:text-slate-700"
+              >
+                ×
+              </button>
+            </div>
+
+            <form
+              className="space-y-4 px-6 py-5"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                if (!reportReason) {
+                  setReportError('Vui lòng chọn lý do báo cáo');
+                  return;
+                }
+
+                try {
+                  await reportProject({
+                    projectId: project?._id || project?.id,
+                    payload: {
+                      reason_code: reportReason,
+                      description: reportDescription.trim(),
+                    },
+                  });
+                  setReportModalOpen(false);
+                  setReportReason("");
+                  setReportDescription("");
+                  setReportError(null);
+                } catch (error) {
+                  setReportError(error.response?.data?.message || 'Gửi báo cáo thất bại. Vui lòng thử lại.');
+                  console.error('Project report failed', error);
+                }
+              }}
+            >
+              {reportError && (
+                <div className="rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                  {reportError}
+                </div>
+              )}
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">Lý do báo cáo</label>
+                <select
+                  value={reportReason}
+                  onChange={(e) => {
+                    setReportReason(e.target.value);
+                    setReportError(null);
+                  }}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                >
+                  <option value="">Chọn lý do</option>
+                  {reportReasons.map((reason) => (
+                    <option key={reason.value} value={reason.value}>
+                      {reason.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">Mô tả thêm (tùy chọn)</label>
+                <textarea
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                  placeholder="Bạn có thể mô tả chi tiết hơn về vấn đề"
+                />
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setReportModalOpen(false)}
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isReporting}
+                  className="rounded-2xl bg-amber-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isReporting ? 'Đang gửi...' : 'Gửi báo cáo'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -24,8 +24,10 @@ export function ProfileHeroCard({
   isFollowing,
   onToggleFollow,
   onChat,
+  onReport,
   isChatLoading,
   isFollowLoading,
+  isReportLoading,
 }) {
   const toast = useToast();
 
@@ -176,6 +178,14 @@ export function ProfileHeroCard({
                     className="!rounded-full !py-1.5 sm:!py-2 !px-4 sm:!px-6 text-sm font-semibold shadow-sm"
                   >
                     {isFollowing ? "Following" : "Follow"}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    disabled={isReportLoading}
+                    onClick={onReport}
+                    className="!rounded-full !py-1.5 sm:!py-2 !px-4 sm:!px-5 text-sm font-semibold"
+                  >
+                    Report
                   </Button>
                 </>
               ) : (

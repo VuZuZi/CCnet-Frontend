@@ -1,11 +1,15 @@
-import { useParams } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useChatStore } from '@/features/chat/stores/useChatStore';
 import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
+import { useToast } from '@/shared/contexts/ToastContext';
 
 import { useProfileIdentity } from "../hooks/useProfileIdentity";
 import { useProfile } from "../hooks/useProfile";
 import { useFollowUserStatus } from "../hooks/useFollowUserStatus";
 import { useToggleFollowUser } from "../hooks/useToggleFollowUser";
+import { useReportUser } from "../hooks/useReportUser";
 
 import { ProfileHeroCard } from "../components/profile/ProfileHeroCard";
 import { ImpactMetrics } from "../components/profile/ImpactMetrics";
@@ -18,6 +22,15 @@ export function UserProfilePage() {
   const { id: urlId } = useParams();
 
   const { isOwnProfile, targetUserId, isAuthReady } = useProfileIdentity(urlId);
+  const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
+  const toast = useToast();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [reportReason, setReportReason] = useState("");
+  const [reportDescription, setReportDescription] = useState("");
+  const [reportError, setReportError] = useState(null);
 
   const {
     data: userProfile,
@@ -35,6 +48,7 @@ export function UserProfilePage() {
   const focusConversation = useChatStore((s) => s.focusConversation);
   const { createConversationAsync, isLoading: isChatLoading } =
     useCreateConversation();
+  const { mutateAsync: reportUser, isPending: isReportLoading } = useReportUser();
 
   const handleOpenChat = async () => {
     if (isOwnProfile || !targetUserId) return;
@@ -55,6 +69,46 @@ export function UserProfilePage() {
   const handleToggleFollow = () => {
     if (!isOwnProfile && targetUserId) {
       toggle(isFollowing);
+    }
+  };
+
+  const handleReportUser = () => {
+    if (!isAuthenticated) {
+      toast.error('Vui lòng đăng nhập để báo cáo người dùng');
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+
+    setReportError(null);
+    setReportReason("");
+    setReportDescription("");
+    setReportModalOpen(true);
+  };
+
+  const handleSubmitReport = async (event) => {
+    event.preventDefault();
+
+    if (!targetUserId) {
+      setReportError('Không tìm thấy người dùng để báo cáo.');
+      return;
+    }
+
+    if (!reportReason) {
+      setReportError('Vui lòng chọn lý do báo cáo.');
+      return;
+    }
+
+    try {
+      await reportUser({
+        userId: targetUserId,
+        payload: {
+          reason_code: reportReason,
+          description: reportDescription.trim(),
+        },
+      });
+      setReportModalOpen(false);
+    } catch (error) {
+      setReportError(error.response?.data?.message || 'Gửi báo cáo thất bại.');
     }
   };
 
@@ -84,8 +138,10 @@ export function UserProfilePage() {
               isFollowing={isFollowing}
               onToggleFollow={handleToggleFollow}
               onChat={handleOpenChat}
+              onReport={handleReportUser}
               isChatLoading={isChatLoading}
               isFollowLoading={isToggleLoading}
+              isReportLoading={isReportLoading}
             />
             <ImpactMetrics />
             <ImpactBadges />
@@ -103,6 +159,82 @@ export function UserProfilePage() {
           </aside>
         </div>
       </div>
+
+      {reportModalOpen && (
+        <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-3xl bg-white shadow-xl overflow-hidden">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900">Báo cáo người dùng</h3>
+                <p className="text-sm text-slate-500">Gửi báo cáo đến admin để kiểm duyệt tài khoản này.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportModalOpen(false)}
+                className="text-2xl font-bold text-slate-400 hover:text-slate-700"
+              >
+                ×
+              </button>
+            </div>
+
+            <form className="space-y-5 px-6 py-6" onSubmit={handleSubmitReport}>
+              {reportError && (
+                <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3 text-sm text-rose-700">
+                  {reportError}
+                </div>
+              )}
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">Lý do báo cáo</label>
+                <select
+                  value={reportReason}
+                  onChange={(e) => {
+                    setReportReason(e.target.value);
+                    setReportError(null);
+                  }}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                >
+                  <option value="">Chọn lý do</option>
+                  <option value="spam">Spam</option>
+                  <option value="harassment">Harassment</option>
+                  <option value="inappropriate">Inappropriate</option>
+                  <option value="violence">Violence</option>
+                  <option value="hate_speech">Hate speech</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">Mô tả thêm (tùy chọn)</label>
+                <textarea
+                  value={reportDescription}
+                  onChange={(e) => setReportDescription(e.target.value)}
+                  rows={4}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                  placeholder="Bạn có thể mô tả chi tiết hơn về lý do báo cáo"
+                />
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setReportModalOpen(false)}
+                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  disabled={isReportLoading}
+                  className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isReportLoading ? 'Đang gửi...' : 'Gửi báo cáo'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
