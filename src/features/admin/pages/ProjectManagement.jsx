@@ -1,17 +1,37 @@
 // src/features/admin/components/ProjectManagement.jsx
 import { useAdminDashboard } from "../hooks/useAdminDashboard";
 import { useTranslation } from "react-i18next";
-import { BadgeCheck, Calendar, Users, Wallet, Eye, Clock, Trash2, RefreshCw } from "lucide-react";
+import { BadgeCheck, Calendar, Users, Wallet, Eye, Clock, Trash2, RefreshCw, Search } from "lucide-react";
 import { useState, useMemo } from "react";
+import AdminProjectDetailModal from "../components/projects/AdminProjectDetailModal";
 
 const ProjectManagement = () => {
   const { t } = useTranslation();
   const { projects, deleteProject, updateProjectStatus } = useAdminDashboard("projects");
   const [filterStatus, setFilterStatus] = useState("ALL");
+  const [searchText, setSearchText] = useState("");
+  const [selectedProject, setSelectedProject] = useState(null);
 
   const stripHtml = (value) => {
     if (!value) return "";
     return String(value).replace(/<[^>]*>/g, "").trim();
+  };
+
+  const toText = (value) => {
+    if (value === null || value === undefined) return "";
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+      return String(value);
+    }
+    if (Array.isArray(value)) return value.map((v) => toText(v)).join(" ");
+    if (typeof value === "object") {
+      if (typeof value.address === "string") return value.address;
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return "";
+      }
+    }
+    return "";
   };
 
   const formatVnd = (value) => Number(value || 0).toLocaleString("vi-VN");
@@ -64,11 +84,33 @@ const ProjectManagement = () => {
     return labels[status] || status;
   };
 
-  // Lọc dự án theo status
+  const normalizedQuery = useMemo(() => String(searchText || "").trim().toLowerCase(), [searchText]);
+
+  const isMatch = (project) => {
+    if (!normalizedQuery) return true;
+    const organizer = project?.organizer || project?.organizerId || null;
+    const haystack = [
+      toText(project?._id),
+      toText(project?.title),
+      stripHtml(project?.description),
+      toText(project?.status),
+      toText(project?.location),
+      toText(organizer?._id),
+      toText(organizer?.fullName),
+      toText(organizer?.email),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return haystack.includes(normalizedQuery);
+  };
+
+  // Lọc dự án theo status + search
   const filteredProjects = useMemo(() => {
-    if (filterStatus === "ALL") return projects;
-    return projects.filter(p => p.status === filterStatus);
-  }, [projects, filterStatus]);
+    const byStatus = filterStatus === "ALL" ? projects : projects.filter((p) => p.status === filterStatus);
+    return byStatus.filter(isMatch);
+  }, [projects, filterStatus, normalizedQuery]);
 
   // Thống kê số lượng theo status
   const stats = useMemo(() => {
@@ -96,6 +138,18 @@ const ProjectManagement = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <h1 className="text-2xl font-bold text-gray-900">Quản lý dự án</h1>
+
+        <div className="w-full sm:max-w-sm">
+          <div className="relative">
+            <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Tìm theo tên dự án, organizer, email, ID..."
+              className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-amber-400"
+            />
+          </div>
+        </div>
 
         {/* Filter Tabs */}
         <div className="flex flex-wrap gap-2">
@@ -148,6 +202,12 @@ const ProjectManagement = () => {
             ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100)
             : 0;
 
+          const volunteerRoles = project?.volunteerRoles || [];
+          const rolesCount = Array.isArray(volunteerRoles) ? volunteerRoles.length : 0;
+          const totalVolunteersNeeded = Array.isArray(volunteerRoles)
+            ? volunteerRoles.reduce((sum, r) => sum + (Number(r?.quantity) || 0), 0)
+            : 0;
+
           const currentVolunteers = Number(project.stats?.currentVolunteers || 0);
           const targetVolunteers = Number(project.stats?.targetVolunteers || 0);
           const hasVolunteerTarget = targetVolunteers > 0;
@@ -159,6 +219,8 @@ const ProjectManagement = () => {
           const statusStyle = getStatusStyle(project.status);
           const daysRemaining = getDaysRemaining(project.endDate);
           const isExpired = daysRemaining !== null && daysRemaining < 0;
+          const coverUrl = project?.coverMedia?.url || null;
+          const documentsCount = Array.isArray(project?.documentsMedia) ? project.documentsMedia.length : 0;
 
           return (
             <div
@@ -170,12 +232,24 @@ const ProjectManagement = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-2">
-                      <h3 className="font-bold text-lg text-gray-900 truncate">
-                        {project.title}
-                      </h3>
-                      <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusStyle.bg} ${statusStyle.text} border ${statusStyle.border}`}>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="h-10 w-10 flex-shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                          {coverUrl ? (
+                            <img src={coverUrl} alt="cover" className="h-full w-full object-cover" />
+                          ) : null}
+                        </div>
+                        <h3 className="font-bold text-lg text-gray-900 truncate">
+                          {project.title}
+                        </h3>
+                      </div>
+                      {/* <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusStyle.bg} ${statusStyle.text} border ${statusStyle.border}`}>
                         {statusStyle.icon} {getStatusLabel(project.status)}
                       </span>
+                      {documentsCount > 0 && (
+                        <span className="text-xs px-2.5 py-1 rounded-full font-bold bg-white/80 text-slate-600 border border-slate-200">
+                          Docs: {documentsCount}
+                        </span>
+                      )} */}
                     </div>
 
                     <p className="text-sm text-gray-600 line-clamp-2">
@@ -275,6 +349,11 @@ const ProjectManagement = () => {
                     </div>
                     <div className="text-xs text-gray-600 font-medium">
                       {currentVolunteers.toLocaleString()} / {targetVolunteers.toLocaleString()} người
+                      {rolesCount > 0 && (
+                        <div className="text-[11px] text-slate-500 font-semibold">
+                          Roles: {rolesCount}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -284,11 +363,11 @@ const ProjectManagement = () => {
                   <div className="flex items-center gap-4 text-xs text-gray-500">
                     <div className="flex items-center gap-1">
                       <Calendar size={12} />
-                      <span>Bắt đầu: {formatDate(project.startDate)}</span>
+                      <span>{formatDate(project.startDate)}</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Clock size={12} />
-                      <span>Kết thúc: {formatDate(project.endDate)}</span>
+                      - <Clock size={12} />
+                      <span>{formatDate(project.endDate)}</span>
                     </div>
                   </div>
 
@@ -308,7 +387,7 @@ const ProjectManagement = () => {
 
                 {/* View Details Button */}
                 <button
-                  onClick={() => window.open(`/projects/${project._id}`, "_blank")}
+                  onClick={() => setSelectedProject(project)}
                   className="w-full mt-2 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 hover:text-gray-800 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Eye size={14} />
@@ -319,6 +398,22 @@ const ProjectManagement = () => {
           );
         })}
       </div>
+
+      <AdminProjectDetailModal
+        open={Boolean(selectedProject)}
+        project={selectedProject}
+        onActivate={async (projectToActivate) => {
+          if (!projectToActivate?._id) return;
+          const updated = await updateProjectStatus(projectToActivate._id, "ACTIVE");
+          setSelectedProject((prev) => (prev ? { ...prev, ...(updated || {}), status: "ACTIVE" } : prev));
+        }}
+        onChangeStatus={async (projectToUpdate, status) => {
+          if (!projectToUpdate?._id) return;
+          const updated = await updateProjectStatus(projectToUpdate._id, status);
+          setSelectedProject((prev) => (prev ? { ...prev, ...(updated || {}), status } : prev));
+        }}
+        onClose={() => setSelectedProject(null)}
+      />
     </div>
   );
 };

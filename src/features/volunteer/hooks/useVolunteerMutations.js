@@ -46,7 +46,11 @@ export const useVolunteerMutations = () => {
 
     //  APPROVE application (thêm mới)
     const approveApplication = useMutation({
-        mutationFn: async (id) => {
+        mutationFn: async (payload) => {
+            const id =
+                typeof payload === 'object' && payload !== null
+                    ? payload.id
+                    : payload;
             try {
                 const result = await volunteerAPI.approveApplication(id);
                 return result;

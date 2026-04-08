@@ -227,8 +227,8 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
                     key={p._id}
                     className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex flex-col gap-4"
                 >
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-3 min-w-0">
                             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200 flex-shrink-0 text-slate-700 font-bold text-lg">
                                 {p.author?.avatar ? (
                                     <img alt="avatar" className="w-full h-full object-cover" src={p.author.avatar} />
@@ -236,9 +236,11 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
                                     (p.author?.fullName || 'U').slice(0, 1).toUpperCase()
                                 )}
                             </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <h4 className="font-bold text-slate-900">{p.author?.fullName || 'User'}</h4>
+                            <div className="min-w-0">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <h4 className="font-bold text-slate-900 truncate">
+                                        {p.author?.fullName || 'User'}
+                                    </h4>
                                     {p.author?.isVerified && (
                                         <BadgeCheck size={16} className="text-blue-500" title="Verified" />
                                     )}
@@ -258,7 +260,9 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
                         </button>
                     </div>
 
-                    <p className="text-slate-700 whitespace-pre-line">{p.content}</p>
+                    <p className="text-slate-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                        {p.content}
+                    </p>
 
                     {Array.isArray(p.media) && p.media.length > 0 && (
                         <div className="rounded-2xl overflow-hidden bg-slate-100 aspect-video">
@@ -312,7 +316,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
                                         (c.author?.fullName || 'U').slice(0, 1).toUpperCase()
                                     )}
                                 </div>
-                                <div className="flex-1 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100">
+                                <div className="flex-1 bg-white p-3 rounded-2xl rounded-tl-none border border-slate-100 min-w-0">
                                     <div className="flex items-center justify-between gap-3 mb-1">
                                         <div className="flex items-center gap-2 min-w-0">
                                             <span className="font-bold text-sm text-slate-900 truncate">
@@ -336,7 +340,9 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
                                             {Number(c.likesCount || 0)}
                                         </button>
                                     </div>
-                                    <p className="text-sm text-slate-600 whitespace-pre-line">{c.content}</p>
+                                    <p className="text-sm text-slate-600 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
+                                        {c.content}
+                                    </p>
                                 </div>
                             </div>
                         ))}

@@ -44,11 +44,11 @@ export const VolunteerApplicationModal = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl w-[90%] max-w-[550px] max-h-[90vh] overflow-hidden shadow-2xl"
+        className="bg-white rounded-2xl w-[92vw] max-w-[550px] max-h-[90dvh] overflow-hidden shadow-2xl min-w-0"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 min-w-0">
           <div className="flex items-center gap-3">
             <button
               onClick={onClose}
@@ -56,8 +56,8 @@ export const VolunteerApplicationModal = ({
             >
               <ArrowLeft size={20} />
             </button>
-            <div>
-              <p className="text-sm text-gray-500">
+            <div className="min-w-0">
+              <p className="text-sm text-gray-500 break-words [overflow-wrap:anywhere]">
                 {projectName}
               </p>
               <h2 className="text-xl font-bold text-gray-900">
@@ -104,7 +104,7 @@ export const VolunteerApplicationModal = ({
         </div>
 
         {/* Content - Form */}
-        <div className="px-6 py-5 max-h-[calc(90vh-200px)] overflow-y-auto">
+        <div className="px-6 py-5 max-h-[calc(90dvh-200px)] overflow-y-auto">
           <VolunteerApplicationForm
             projectId={projectId}
             user={user}

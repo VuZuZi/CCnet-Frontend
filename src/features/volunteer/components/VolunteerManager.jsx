@@ -103,7 +103,7 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
 
         if (confirm('Xác nhận duyệt đơn đăng ký này?')) {
             console.log('📤 Calling approveApplication with:', applicationId);
-            approveApplication({ id: applicationId }, {
+            approveApplication(applicationId, {
                 onSuccess: () => {
                     console.log('✅ Approve success');
                     refetchPending();
@@ -244,10 +244,10 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 space-y-2 w-full">
-                                        <div className="flex justify-between items-start flex-wrap gap-2">
-                                            <div>
-                                                <h3 className="font-bold text-lg text-gray-900">
+                                    <div className="flex-1 space-y-2 w-full min-w-0">
+                                        <div className="flex justify-between items-start flex-wrap gap-2 min-w-0">
+                                            <div className="min-w-0">
+                                                <h3 className="font-bold text-lg text-gray-900 truncate">
                                                     {app.volunteerId?.fullName || 'Unknown'}
                                                 </h3>
                                                 <p className="text-xs text-gray-500">
@@ -286,12 +286,12 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
                                             </span>
                                         </div>
 
-                                        <p className="text-sm text-gray-600 italic line-clamp-2">
+                                        <p className="text-sm text-gray-600 italic line-clamp-2 break-words [overflow-wrap:anywhere]">
                                             "{app.motivation}"
                                         </p>
 
                                         {app.rejectReason && (
-                                            <p className="text-xs text-red-500">
+                                            <p className="text-xs text-red-500 break-words [overflow-wrap:anywhere]">
                                                 Reason: {app.rejectReason}
                                             </p>
                                         )}
@@ -308,10 +308,10 @@ export const VolunteerManager = ({ projectId, initialSubTab = 'pending' }) => {
 
                                         {selectedApp === app._id && (
                                             <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                                                <p className="text-sm text-gray-700 whitespace-pre-wrap">
+                                                <p className="text-sm text-gray-700 whitespace-pre-wrap break-words [overflow-wrap:anywhere]">
                                                     {app.motivation}
                                                 </p>
-                                                <p className="text-xs text-gray-500 mt-2">
+                                                <p className="text-xs text-gray-500 mt-2 break-words [overflow-wrap:anywhere]">
                                                     Availability: {app.availability}
                                                 </p>
                                             </div>
