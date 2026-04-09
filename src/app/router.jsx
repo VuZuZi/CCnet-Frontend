@@ -61,6 +61,12 @@ const UserProfilePage = lazy(() =>
   })),
 );
 
+const SupportedProjectsPage = lazy(() =>
+  import("@/features/users/pages/SupportedProjectsPage").then((m) => ({
+    default: m.SupportedProjectsPage || m.default,
+  })),
+);
+
 const FollowingPage = lazy(() =>
   import("@/features/users/pages/FollowingPage").then((m) => ({
     default: m.FollowingPage || m.default,
@@ -244,6 +250,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { path: "profile/supported-projects", element: withSuspense(SupportedProjectsPage) },
           { path: "profile", element: withSuspense(UserProfilePage) },
           {
             path: "organizer/apply",

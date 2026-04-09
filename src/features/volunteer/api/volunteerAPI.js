@@ -32,6 +32,13 @@ export const volunteerAPI = {
         return volunteerAPI.getProjectApplications(projectId, 'PENDING');
     },
 
+    getMySupportedProjects: async (params = {}) => {
+        const response = await httpClient.get('/volunteer/me/projects', {
+            params,
+        });
+        return response.data?.data;
+    },
+
     // API để lấy application của user cho project
     getApplicationByProject: async (projectId) => {
         if (!projectId) {
