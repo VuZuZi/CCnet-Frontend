@@ -1,6 +1,6 @@
-import { useState } from "react"; // THÊM: import useState
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Share2 } from "lucide-react"; // THÊM: import Share2
+import { MapPin, Share2 } from "lucide-react";
 import { ShareModal } from "../../Community/components/common/ShareModal";
 
 export function ProjectCard({ project }) {
