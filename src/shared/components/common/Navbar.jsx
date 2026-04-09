@@ -71,22 +71,22 @@ export function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between gap-4 lg:gap-8">
-          <div className="flex items-center gap-8">
+      <div className="w-full px-6 sm:px-8 lg:px-10 xl:px-12">
+        <div className="grid h-20 grid-cols-[auto_minmax(320px,1fr)_auto] items-center gap-8 lg:gap-10">
+          <div className="flex min-w-0 items-center gap-10">
             <Link
               to={ROUTES.HOME}
-              className="group flex flex-shrink-0 items-center gap-2 outline-none"
+              className="group flex flex-shrink-0 items-center gap-3 outline-none"
             >
               <div className="transition-transform group-hover:scale-105">
                 <CCNetLogo className="h-10 w-10" />
               </div>
-              <span className="hidden text-xl font-bold tracking-tight text-slate-900 sm:block">
+              <span className="hidden text-[20px] font-bold tracking-tight text-slate-900 sm:block">
                 CCNet
               </span>
             </Link>
 
-            <div className="hidden items-center gap-6 text-sm font-medium lg:flex">
+            <div className="hidden items-center gap-10 text-[15px] font-medium lg:flex">
               {NAV_LINKS.map((link) => {
                 const isActive = location.pathname.startsWith(link.to);
 
@@ -108,22 +108,28 @@ export function Navbar() {
             </div>
           </div>
 
-          <div className="mx-auto hidden flex-1 justify-center md:flex">
-            <GlobalSearch />
+          <div className="hidden w-full justify-center md:flex">
+            <div className="w-full max-w-[420px] lg:max-w-[520px]">
+              <GlobalSearch />
+            </div>
           </div>
 
-          <div className="flex flex-shrink-0 items-center space-x-2 sm:space-x-4">
+          <div className="flex items-center justify-end gap-3 sm:gap-4 lg:gap-5">
             {isAuthenticated ? (
               <>
                 <OrganizerNeedHelpAction user={user} />
-                <NavbarChatAction hideWidget={isMessagesPage} />
+
+                {!isMessagesPage ? (
+                  <NavbarChatAction hideWidget={false} />
+                ) : null}
+
                 <NavbarNotificationAction isAuthenticated={isAuthenticated} />
 
                 <button className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 md:hidden">
                   <Search size={24} />
                 </button>
 
-                <div className="hidden border-l border-slate-200 pl-2 sm:block">
+                <div className="hidden border-l border-slate-200 pl-4 sm:block">
                   <NavbarUserDropdown user={user} onLogout={logout} />
                 </div>
               </>
@@ -144,7 +150,7 @@ export function Navbar() {
             )}
 
             <button
-              className="ml-2 p-2 text-slate-600 hover:text-slate-900 focus:outline-none lg:hidden"
+              className="ml-1 p-2 text-slate-600 hover:text-slate-900 focus:outline-none lg:hidden"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               type="button"
             >
@@ -247,17 +253,15 @@ function OrganizerNeedHelpAction({ user }) {
 
   const { data, refetch } = useOrganizerAssignedRequests(
     { status: 'VERIFIED', limit: 6, sortBy: 'assignedAt' },
-    isOrganizer,
+    isOrganizer
   );
 
-  // Refetch when dropdown opens
   useEffect(() => {
     if (isOpen && isOrganizer) {
       refetch();
     }
   }, [isOpen, isOrganizer, refetch]);
 
-  // Poll for new assignments every 30 seconds
   useEffect(() => {
     if (!isOrganizer) return;
 
@@ -300,7 +304,9 @@ function OrganizerNeedHelpAction({ user }) {
         <div className="absolute right-0 z-50 mt-3 w-80 rounded-xl border border-slate-100 bg-white p-3 shadow-lg">
           <div className="mb-2 px-1">
             <p className="text-sm font-semibold text-slate-900">Admin Suggestions</p>
-            <p className="text-xs text-slate-500">Open and respond to assigned NeedHelp requests.</p>
+            <p className="text-xs text-slate-500">
+              Open and respond to assigned NeedHelp requests.
+            </p>
           </div>
 
           <div className="max-h-72 space-y-2 overflow-y-auto">
@@ -312,7 +318,9 @@ function OrganizerNeedHelpAction({ user }) {
                   onClick={() => setIsOpen(false)}
                   className="block rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-50"
                 >
-                  <p className="line-clamp-1 text-sm font-semibold text-slate-900">{item.title}</p>
+                  <p className="line-clamp-1 text-sm font-semibold text-slate-900">
+                    {item.title}
+                  </p>
                   <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
                     {item.location?.address || 'No location'}
                   </p>
@@ -338,71 +346,4 @@ function OrganizerNeedHelpAction({ user }) {
   );
 }
 
-function UserDropdown({ user, onLogout }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
-
-  useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
-
-  return (
-    <div className="relative ml-2" ref={ref}>
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-80"
-      >
-        <Avatar user={user} size="sm" />
-        <div className="hidden text-left leading-tight lg:block">
-          <span className="block text-sm font-bold text-slate-900">
-            {user?.fullName || 'Alex Doe'}
-          </span>
-          <span className="block text-xs capitalize text-slate-500">
-            {user?.role || 'Impact Donor'}
-          </span>
-        </div>
-        <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
-      </div>
-
-      {isOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-4 w-56 rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
-          <Link
-            to={ROUTES.PROFILE}
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
-          >
-            <UserIcon size={16} /> Profile
-          </Link>
-
-          <Link
-            to={ROUTES.DASHBOARD}
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
-          >
-            <LayoutDashboard size={16} /> Dashboard
-          </Link>
-
-          <div className="mx-4 my-1 h-px bg-slate-100" />
-
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              onLogout();
-            }}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-          >
-            <LogOut size={16} /> Sign out
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 export default Navbar;

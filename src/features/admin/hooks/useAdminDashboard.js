@@ -178,3 +178,5 @@ const updateProjectStatus = async (projectId, payloadOrStatus) => {
     refresh,
   };
 };
+
+export default useAdminDashboard;

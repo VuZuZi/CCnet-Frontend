@@ -259,6 +259,7 @@ export function OrganizerRequestForm({
   const idCardBack = watch("idCardBack");
   const selfie = watch("selfie");
   const businessLicense = watch("businessLicense");
+  const bankProof = watch("bankProof");
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -448,6 +449,17 @@ export function OrganizerRequestForm({
             />
             <ErrorText>{errors.bankAccountName?.message}</ErrorText>
           </div>
+
+          <div className="md:col-span-2">
+            <OrganizerDocumentField
+              label="Bank Proof"
+              description="Ảnh hoặc PDF sao kê / xác nhận tài khoản"
+              accept="image/*,.pdf"
+              value={bankProof}
+              onSelect={(file) => onDocumentChange("bankProof", file)}
+              error={errors.bankProof?.message}
+            />
+          </div>
         </div>
       </OrganizerSectionCard>
 
@@ -469,8 +481,8 @@ export function OrganizerRequestForm({
           {isSubmitting
             ? "Submitting..."
             : isResubmitting
-              ? "Resubmit Application"
-              : "Submit Application"}
+            ? "Resubmit Application"
+            : "Submit Application"}
         </button>
       </div>
 

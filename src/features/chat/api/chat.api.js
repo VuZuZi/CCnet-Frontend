@@ -162,6 +162,23 @@ export const chatAPI = {
     return get(`/chat/messages/${id}`);
   },
 
+  async getPinnedMessages(conversationId) {
+    assertRequired(conversationId, "conversation id");
+    return get(`/chat/conversations/${conversationId}/pins`);
+  },
+
+  async pinMessage(conversationId, messageId) {
+    assertRequired(conversationId, "conversation id");
+    assertRequired(messageId, "message id");
+    return post(`/chat/conversations/${conversationId}/pins`, { messageId });
+  },
+
+  async unpinMessage(conversationId, messageId) {
+    assertRequired(conversationId, "conversation id");
+    assertRequired(messageId, "message id");
+    return remove(`/chat/conversations/${conversationId}/pins/${messageId}`);
+  },
+
   async sendMessage(payload = {}) {
     const formData = buildSendMessageFormData(payload);
 

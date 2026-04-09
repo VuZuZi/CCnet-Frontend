@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useChatStore } from '../../stores/useChatStore';
 import { useReactMessage } from './useReactMessage';
 import { useUnsendMessage } from './useUnsendMessage';
+import { usePinnedMessages } from './usePinnedMessages';
+import { usePinMessage } from './usePinMessage';
+import { useUnpinMessage } from './useUnpinMessage';
 
 export function useMessageBubbleActions({
   conversationId,
@@ -14,6 +17,19 @@ export function useMessageBubbleActions({
   const { reactMessageAsync } = useReactMessage(conversationId);
   const { unsendMessageAsync, isLoading: isUnsendLoading } =
     useUnsendMessage(conversationId);
+
+  const { pinnedMessages } = usePinnedMessages(conversationId);
+  const { pinMessageAsync, isLoading: isPinLoading } = usePinMessage(conversationId);
+  const { unpinMessageAsync, isLoading: isUnpinLoading } = useUnpinMessage(conversationId);
+
+  const isPinned = useMemo(() => {
+    const messageId = String(message?._id || '');
+    if (!messageId) return false;
+
+    return (Array.isArray(pinnedMessages) ? pinnedMessages : []).some(
+      (item) => String(item?.messageId || item?.message?._id || '') === messageId
+    );
+  }, [message, pinnedMessages]);
 
   useEffect(() => {
     return () => {
@@ -56,6 +72,32 @@ export function useMessageBubbleActions({
     }
   }, [message, isUnsendLoading, unsendMessageAsync]);
 
+  const handlePin = useCallback(async () => {
+    if (!message?._id || isPinLoading || isPinned || message?.isUnsent) return;
+
+    try {
+      await pinMessageAsync({
+        messageId: message._id,
+      });
+      setShowActions(false);
+    } catch (error) {
+      console.error('[pinMessage failed]', error);
+    }
+  }, [message, isPinLoading, isPinned, pinMessageAsync]);
+
+  const handleUnpin = useCallback(async () => {
+    if (!message?._id || isUnpinLoading || !isPinned) return;
+
+    try {
+      await unpinMessageAsync({
+        messageId: message._id,
+      });
+      setShowActions(false);
+    } catch (error) {
+      console.error('[unpinMessage failed]', error);
+    }
+  }, [message, isPinned, isUnpinLoading, unpinMessageAsync]);
+
   const openActions = useCallback(() => {
     if (message?.isUnsent) return;
 
@@ -88,10 +130,14 @@ export function useMessageBubbleActions({
 
   return {
     showActions,
+    isPinned,
+    isPinLoading,
     isUnsendLoading,
     handleReply,
     handleReact,
     handleUnsend,
+    handlePin,
+    handleUnpin,
     openActions,
     scheduleCloseActions,
     handleBlurCapture,

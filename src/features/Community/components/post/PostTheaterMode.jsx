@@ -5,7 +5,12 @@ import { usePostMutations } from "../../hooks/usePostMutations";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
 
-const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
+const PostTheaterMode = ({
+  post,
+  onClose,
+  initialIndex = 0,
+  targetCommentId = "",
+}) => {
   const [commentContent, setCommentContent] = useState("");
   const [sortMode, setSortMode] = useState("relevant");
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -75,8 +80,9 @@ const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
         content: commentContent,
       });
       const newComment = result?.data || result;
-      if (newComment && newComment._id)
+      if (newComment && newComment._id) {
         setAllComments((prev) => [newComment, ...prev]);
+      }
       setCommentContent("");
     } catch (err) {
       console.error(err);
@@ -98,11 +104,11 @@ const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-stretch justify-center bg-black/95">
-      <div className="w-full max-w-7xl h-screen flex flex-col md:flex-row overflow-hidden md:rounded-2xl bg-white shadow-2xl my-auto">
-        <div className="flex-1 bg-black relative flex items-center justify-center overflow-hidden h-full">
+      <div className="my-auto flex h-screen w-full max-w-7xl flex-col overflow-hidden bg-white shadow-2xl md:flex-row md:rounded-2xl">
+        <div className="relative flex h-full flex-1 items-center justify-center overflow-hidden bg-black">
           <button
             onClick={onClose}
-            className="absolute top-4 left-4 z-[50] p-2 bg-gray-800/50 hover:bg-gray-700/50 rounded-full text-white md:hidden"
+            className="absolute left-4 top-4 z-[50] rounded-full bg-gray-800/50 p-2 text-white hover:bg-gray-700/50 md:hidden"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -113,39 +119,39 @@ const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
           />
         </div>
 
-        <section className="w-full md:w-[420px] h-full flex flex-col bg-white border-l border-gray-100 relative min-h-0">
-          <header className="p-4 border-b border-gray-100 flex items-center justify-between shrink-0">
+        <section className="relative flex h-full min-h-0 w-full flex-col border-l border-gray-100 bg-white md:w-[420px]">
+          <header className="flex shrink-0 items-center justify-between border-b border-gray-100 p-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-yellow-400 text-black flex items-center justify-center font-bold text-sm shrink-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-black">
                 {authorInitials}
               </div>
               <div className="min-w-0">
-                <h4 className="font-bold text-sm text-gray-900 leading-tight truncate">
+                <h4 className="truncate text-sm font-bold leading-tight text-gray-900">
                   {authorName}
                 </h4>
-                <p className="text-[11px] text-gray-400 uppercase tracking-tighter">
+                <p className="text-[11px] uppercase tracking-tighter text-gray-400">
                   Community Member
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="hidden md:flex text-gray-400 hover:text-gray-600 p-1"
+              className="hidden p-1 text-gray-400 hover:text-gray-600 md:flex"
             >
               <span className="material-symbols-outlined text-3xl">close</span>
             </button>
           </header>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 w-full min-h-0">
-            <div className="w-full overflow-hidden mb-6">
-              <article className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap break-words break-all">
-                <div className="overflow-x-auto custom-scrollbar">
+          <div className="custom-scrollbar flex-1 min-h-0 w-full overflow-y-auto p-4">
+            <div className="mb-6 w-full overflow-hidden">
+              <article className="break-all whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
+                <div className="custom-scrollbar overflow-x-auto">
                   {post.content}
                 </div>
               </article>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-y border-gray-50 mb-3 w-full text-xs font-bold text-gray-500">
+            <div className="mb-3 flex w-full items-center justify-between border-y border-gray-50 py-2 text-xs font-bold text-gray-500">
               <span>{totalComments} Bình luận</span>
               <span className="font-normal text-gray-400">
                 {new Date(post.createdAt).toLocaleDateString()}
@@ -155,23 +161,23 @@ const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
             <div className="relative mb-4 w-full" ref={dropdownRef}>
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 flex items-center"
+                className="flex items-center text-[14px] font-semibold text-gray-600 hover:text-gray-900"
               >
                 {getSortLabel()}
-                <span className="material-symbols-outlined text-sm ml-1">
+                <span className="material-symbols-outlined ml-1 text-sm">
                   expand_more
                 </span>
               </button>
 
               {isSortOpen && (
-                <div className="absolute top-full left-0 mt-1 w-[280px] bg-white border border-gray-100 rounded-lg shadow-xl z-50 py-1">
+                <div className="absolute left-0 top-full z-50 mt-1 w-[280px] rounded-lg border border-gray-100 bg-white py-1 shadow-xl">
                   {["relevant", "newest", "all"].map((mode) => (
                     <button
                       key={mode}
                       onClick={() => handleSortChange(mode)}
-                      className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                      className="w-full px-4 py-2.5 text-left transition-colors hover:bg-gray-50"
                     >
-                      <div className="font-semibold text-sm text-gray-900">
+                      <div className="text-sm font-semibold text-gray-900">
                         {mode === "relevant"
                           ? "Phù hợp nhất"
                           : mode === "newest"
@@ -184,21 +190,26 @@ const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
               )}
             </div>
 
-            <div className="space-y-4 w-full">
+            <div className="w-full space-y-4">
               {allComments.length === 0 ? (
-                <div className="text-center py-10 text-gray-400 text-sm w-full">
+                <div className="w-full py-10 text-center text-sm text-gray-400">
                   Chưa có bình luận nào.
                 </div>
               ) : (
                 allComments.map((comment) => (
-                  <CommentItem key={comment._id} comment={comment} />
+                  <CommentItem
+                    key={comment._id || comment.id}
+                    comment={comment}
+                    targetCommentId={targetCommentId}
+                  />
                 ))
               )}
+
               {hasMoreComments && (
                 <button
                   onClick={() => setPage((prev) => (prev === 0 ? 1 : prev + 1))}
                   disabled={isLoadingComments}
-                  className="text-[13.5px] font-semibold text-gray-500 hover:underline pt-2 block w-full text-center"
+                  className="block w-full pt-2 text-center text-[13.5px] font-semibold text-gray-500 hover:underline"
                 >
                   {isLoadingComments ? "Đang tải..." : "Xem thêm bình luận"}
                 </button>
@@ -206,25 +217,25 @@ const PostTheaterMode = ({ post, onClose, initialIndex = 0 }) => {
             </div>
           </div>
 
-          <footer className="p-4 border-t border-gray-100 bg-white shrink-0 mt-auto">
+          <footer className="mt-auto shrink-0 border-t border-gray-100 bg-white p-4">
             <form
               onSubmit={handlePostComment}
-              className="flex items-center space-x-2 w-full"
+              className="flex w-full items-center space-x-2"
             >
-              <div className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 focus-within:ring-2 focus-within:ring-yellow-400 transition-all min-w-0 border border-transparent">
+              <div className="min-w-0 flex-1 rounded-full border border-transparent bg-gray-100 px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-yellow-400">
                 <input
                   type="text"
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   placeholder="Viết bình luận..."
-                  className="w-full bg-transparent border-none focus:ring-0 text-[14px] outline-none min-w-0"
+                  className="min-w-0 w-full border-none bg-transparent text-[14px] outline-none focus:ring-0"
                   disabled={addComment.isPending}
                 />
               </div>
               <button
                 type="submit"
                 disabled={!commentContent.trim() || addComment.isPending}
-                className="text-yellow-500 font-bold disabled:opacity-40 hover:text-yellow-600 transition-colors shrink-0 flex items-center justify-center"
+                className="flex shrink-0 items-center justify-center font-bold text-yellow-500 transition-colors hover:text-yellow-600 disabled:opacity-40"
               >
                 <span className="material-symbols-outlined text-2xl">send</span>
               </button>

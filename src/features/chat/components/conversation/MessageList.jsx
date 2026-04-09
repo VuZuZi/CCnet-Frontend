@@ -24,7 +24,13 @@ function TimeSeparator({ label, compact = false }) {
   );
 }
 
-export function MessageList({ conversationId, scrollSignal, compact = false }) {
+export function MessageList({
+  conversationId,
+  scrollSignal,
+  compact = false,
+  jumpToMessageId = "",
+  onJumpHandled,
+}) {
   const user = useAuthStore(authSelectors.user);
   const myId = user?.userId || user?._id || user?.id;
 
@@ -77,17 +83,8 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
     endRef.current?.scrollIntoView({ behavior, block: "end" });
   };
 
-  const jumpToMessage = (messageId) => {
-    const container = listRef.current;
-    if (!container || !messageId) return;
-
-    const target = container.querySelector(`[data-message-id="${messageId}"]`);
+  const highlightMessageNode = (target) => {
     if (!target) return;
-
-    target.scrollIntoView({
-      behavior: "smooth",
-      block: "center",
-    });
 
     target.classList.remove("reply-jump-highlight");
     void target.offsetWidth;
@@ -96,7 +93,25 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
     window.clearTimeout(target.__replyJumpTimer);
     target.__replyJumpTimer = window.setTimeout(() => {
       target.classList.remove("reply-jump-highlight");
-    }, 900);
+    }, 1400);
+  };
+
+  const jumpToMessage = (messageId) => {
+    const container = listRef.current;
+    if (!container || !messageId) return false;
+
+    const target = container.querySelector(
+      `[data-message-id="${String(messageId)}"]`
+    );
+    if (!target) return false;
+
+    target.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    highlightMessageNode(target);
+    return true;
   };
 
   useLayoutEffect(() => {
@@ -136,6 +151,23 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
     scrollToBottom("smooth");
   }, [scrollSignal]);
 
+  useEffect(() => {
+    if (!jumpToMessageId) return;
+
+    const found = jumpToMessage(jumpToMessageId);
+    if (found) {
+      onJumpHandled?.();
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      jumpToMessage(jumpToMessageId);
+      onJumpHandled?.();
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [jumpToMessageId, onJumpHandled]);
+
   if (!conversationId) {
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center bg-[#f6f7fb]">
@@ -162,15 +194,33 @@ export function MessageList({ conversationId, scrollSignal, compact = false }) {
       <style>
         {`
           .reply-jump-highlight {
-            animation: replyJumpPulse 0.8s ease;
+            animation: replyJumpHighlight 1.15s ease;
           }
 
-          @keyframes replyJumpPulse {
-            0% { transform: translateY(0); }
-            20% { transform: translateY(-4px); }
-            40% { transform: translateY(0); }
-            60% { transform: translateY(-2px); }
-            100% { transform: translateY(0); }
+          @keyframes replyJumpHighlight {
+            0% {
+              transform: translateY(0) scale(1);
+              filter: brightness(1);
+            }
+            20% {
+              transform: translateY(-4px) scale(1.01);
+              filter: brightness(1.02);
+            }
+            35% {
+              transform: translateY(0) scale(1);
+              box-shadow: 0 0 0 3px rgba(252, 211, 77, 0.55);
+              border-radius: 26px;
+            }
+            60% {
+              box-shadow: 0 0 0 7px rgba(252, 211, 77, 0.18);
+              border-radius: 26px;
+            }
+            100% {
+              transform: translateY(0) scale(1);
+              filter: brightness(1);
+              box-shadow: 0 0 0 0 rgba(252, 211, 77, 0);
+              border-radius: 26px;
+            }
           }
         `}
       </style>

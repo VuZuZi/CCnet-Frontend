@@ -32,7 +32,7 @@ export function NavbarChatAction({ hideWidget = false }) {
   const anchorRef = useRef(null);
   const [anchorRect, setAnchorRect] = useState(null);
 
-  const { mode, isMobile, isTablet, isDesktop } = useChatViewport();
+  const { mode, isMobile, isTablet } = useChatViewport();
 
   const user = useAuthStore(authSelectors.user);
   const myId = user?.userId || user?._id || user?.id;
@@ -103,12 +103,20 @@ export function NavbarChatAction({ hideWidget = false }) {
       updateAnchorRect();
     };
 
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsOpen(false);
+      }
+    };
+
     window.addEventListener('resize', handleViewportChange);
     window.addEventListener('scroll', handleViewportChange, true);
+    window.addEventListener('keydown', handleEscape);
 
     return () => {
       window.removeEventListener('resize', handleViewportChange);
       window.removeEventListener('scroll', handleViewportChange, true);
+      window.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, hideWidget]);
 
@@ -139,6 +147,15 @@ export function NavbarChatAction({ hideWidget = false }) {
       {!hideWidget && typeof document !== 'undefined'
         ? createPortal(
             <>
+              {isOpen ? (
+                <button
+                  type="button"
+                  aria-label="Close chat widget"
+                  onClick={() => setIsOpen(false)}
+                  className="fixed inset-0 z-40 cursor-default bg-transparent"
+                />
+              ) : null}
+
               <ChatWidget
                 isOpen={isOpen}
                 onClose={() => setIsOpen(false)}

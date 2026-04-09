@@ -21,10 +21,8 @@ const AdminDashboard = () => {
 
   return (
     <div className="space-y-8">
-      {/* PAGE TITLE */}
       <h1 className="text-2xl font-bold text-slate-800">Admin Dashboard</h1>
 
-      {/* STAT CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Users"
@@ -51,7 +49,6 @@ const AdminDashboard = () => {
         />
       </div>
 
-      {/* REPORT TABLE */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h2 className="text-lg font-semibold mb-4">Recent Reports</h2>
 
@@ -62,7 +59,6 @@ const AdminDashboard = () => {
         />
       </div>
 
-      {/* REPORT RESOLVE MODAL */}
       <ReportModal
         isOpen={!!selectedReport}
         reportId={selectedReport}

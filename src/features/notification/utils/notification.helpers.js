@@ -33,6 +33,10 @@ export function getNotificationLabel(type) {
       return 'Organizer request';
     case 'system_announcement':
       return 'System';
+    case 'post_reacted':
+      return 'Post reaction';
+    case 'post_commented':
+      return 'Post comment';
     default:
       return 'Notification';
   }
