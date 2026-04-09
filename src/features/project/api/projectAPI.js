@@ -25,8 +25,20 @@ const sanitizeMediaPayload = (mediaArray) => {
     .filter((media) => media._id || (media.url && media.publicId));
 };
 
+const cleanEmptyStrings = (obj) => {
+  if (Array.isArray(obj)) return obj.map(cleanEmptyStrings);
+  if (obj !== null && typeof obj === 'object') {
+    return Object.fromEntries(
+      Object.entries(obj)
+        .map(([k, v]) => [k, cleanEmptyStrings(v)])
+        .filter(([_, v]) => v !== "")
+    );
+  }
+  return obj;
+};
+
 const prepareProjectPayload = (data) => {
-  const payload = { ...data };
+  let payload = { ...data };
 
   payload.coverMedia = sanitizeMediaPayload(data.coverMedia);
   payload.documents = sanitizeMediaPayload(data.documents);
@@ -38,6 +50,16 @@ const prepareProjectPayload = (data) => {
   if (payload.startDate) payload.startDate = new Date(payload.startDate).toISOString();
   if (payload.endDate) payload.endDate = new Date(payload.endDate).toISOString();
 
+  if (payload.milestones && Array.isArray(payload.milestones)) {
+    payload.milestones = payload.milestones.map((m) => ({
+      ...m,
+      endDate: m.endDate ? new Date(m.endDate).toISOString() : undefined,
+      targetAmount: m.targetAmount ? Number(m.targetAmount) : 0,
+    }));
+  }
+
+  payload = cleanEmptyStrings(payload);
+  
   return payload;
 };
 

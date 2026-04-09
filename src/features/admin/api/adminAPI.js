@@ -9,8 +9,10 @@ export const adminAPI = {
   updateUserStatus: (userId, status) =>
     httpClient.patch(`/admin/users/${userId}/status`, { status }),
   getProjects: () => httpClient.get("/admin/projects"),
-  updateProjectStatus: (id, status) =>
-    httpClient.patch(`/admin/projects/${id}/status`, { status }),
+
+  updateProjectStatus: (id, payload) =>
+    httpClient.patch(`/admin/projects/${id}/status`, payload),
+
   deleteProject: (id) => httpClient.delete(`/admin/projects/${id}`),
   getReports: () => httpClient.get("/admin/reports"),
   resolveReport: (reportId, actions, note) =>

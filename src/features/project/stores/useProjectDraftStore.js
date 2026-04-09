@@ -2,20 +2,30 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 
 const initialFormData = {
+  projectType: 'FUNDED',
   title: '',
   category: '',
-  location: null, 
+  location: null,
   description: '',
-  isFundraising: true,
-  targetAmount: 0,
-  startDate: '', 
+  beneficiaryInfo: { details: '' },
+
+  startDate: '',
   endDate: '',
-  needsVolunteers: false,
+
+  targetAmount: 0,
+  mvpAmount: 0,
+  budgetBreakdown: [],
+  surplusPolicy: '',
+
   milestones: [],
+
+  needsVolunteers: false,
   volunteerRoles: [],
-  deletedDocumentIds: [], 
+
   coverMedia: [],
   documents: [],
+  deletedDocumentIds: [],
+
   fromHelpRequestId: null,
 };
 
@@ -27,19 +37,29 @@ export const useProjectDraftStore = create(
       formData: initialFormData,
 
       setStep: (step) => set({ currentStep: step }),
-      
+
       nextStep: () => set((state) => ({ currentStep: Math.min(state.currentStep + 1, 4) })),
-      
+
       prevStep: () => set((state) => ({ currentStep: Math.max(state.currentStep - 1, 1) })),
 
       updateFormData: (data) => set((state) => ({
         formData: { ...state.formData, ...data }
       })),
 
-      addDeletedDocumentId: (id) => set((state) => ({
-        formData: { 
-          ...state.formData, 
-          deletedDocumentIds: [...state.formData.deletedDocumentIds, id] 
+      addDeletedDocumentId: (id) => set((state) => {
+        if (state.formData.deletedDocumentIds.includes(id)) return state;
+        return {
+          formData: {
+            ...state.formData,
+            deletedDocumentIds: [...state.formData.deletedDocumentIds, id]
+          }
+        };
+      }),
+
+      clearDeletedDocumentIds: () => set((state) => ({
+        formData: {
+          ...state.formData,
+          deletedDocumentIds: []
         }
       })),
 
@@ -57,7 +77,10 @@ export const useProjectDraftStore = create(
       partialize: (state) => ({
         currentStep: state.currentStep,
         projectId: state.projectId,
-        formData: state.formData,
+        formData: {
+          ...state.formData,
+          deletedDocumentIds: []
+        },
       }),
     }
   )

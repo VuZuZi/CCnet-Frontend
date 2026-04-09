@@ -81,18 +81,24 @@ export const useAdminDashboard = (activeTab) => {
     return updatedUser;
   };
 
-  const updateProjectStatus = async (projectId, status) => {
+const updateProjectStatus = async (projectId, payloadOrStatus) => {
     const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
+
+    const requestPayload = typeof payloadOrStatus === 'string' 
+      ? { status: payloadOrStatus } 
+      : payloadOrStatus;
+
+    const optimisticStatus = requestPayload.status;
 
     queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev = []) =>
       prev.map((project) =>
-        project._id === projectId ? { ...project, status } : project
+        project._id === projectId ? { ...project, status: optimisticStatus } : project
       )
     );
 
     let updatedProject;
     try {
-      const res = await adminAPI.updateProjectStatus(projectId, status);
+      const res = await adminAPI.updateProjectStatus(projectId, requestPayload);
       updatedProject = res?.data?.data;
 
       queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev = []) =>
@@ -101,7 +107,7 @@ export const useAdminDashboard = (activeTab) => {
         )
       );
 
-      queryClient.invalidateQueries({ queryKey: ADMIN_PROJECTS_QUERY_KEY });
+      // queryClient.invalidateQueries({ queryKey: ADMIN_PROJECTS_QUERY_KEY });
     } catch (error) {
       if (previousProjects !== undefined) {
         queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, previousProjects);
