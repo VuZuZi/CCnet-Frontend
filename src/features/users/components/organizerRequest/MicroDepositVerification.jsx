@@ -1,0 +1,73 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Building, ArrowRight } from "lucide-react";
+import { useToast } from "@/shared/contexts/ToastContext";
+import { organizerRequestAPI, getErrorMessage } from "../../api/organizerRequestAPI";
+import { queryKeys } from "@/shared/constants/queryKeys";
+
+export function MicroDepositVerification({ request }) {
+    const [amount, setAmount] = useState("");
+    const toast = useToast();
+    const queryClient = useQueryClient();
+
+    const verifyMutation = useMutation({
+        mutationFn: (amountNum) => organizerRequestAPI.verifyDeposit(request._id, { amount: amountNum }),
+        onSuccess: async () => {
+            await queryClient.invalidateQueries({ queryKey: queryKeys.organizerRequests.me() });
+            toast.success("Bank verification successful!");
+        },
+        onError: (error) => toast.error(getErrorMessage(error)),
+    });
+
+    const handleSubmit = (e) => {
+        e.preventDefault();
+        const num = Number(amount);
+        if (!num || num < 1000 || num > 5000) {
+            toast.error("Please enter an amount between 1,000 VND and 5,000 VND");
+            return;
+        }
+        verifyMutation.mutate(num);
+    };
+
+    const maskedAccount = request?.bankAccountNumber?.replace(/.(?=.{4})/g, '*') || '****';
+
+    return (
+        <div className="mx-auto max-w-lg mt-10">
+            <div className="rounded-[24px] border border-amber-200 bg-amber-50 p-8 shadow-sm">
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-amber-600">
+                    <Building size={28} />
+                </div>
+
+                <h2 className="text-center text-2xl font-bold text-slate-900">Bank Verification</h2>
+                <p className="mt-3 text-center text-sm leading-relaxed text-slate-600">
+                    We have transferred a small amount (from 1,000 VND - 5,000 VND) to your <strong className="text-slate-800">{request?.bankName}</strong> account <strong className="text-slate-800">{maskedAccount}</strong>.
+                </p>
+
+                <form onSubmit={handleSubmit} className="mt-8">
+                    <label className="block text-center text-sm font-medium text-slate-700 mb-2">
+                        Enter the amount you received (VND)
+                    </label>
+                    <input
+                        type="number"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        placeholder="Example: 1250"
+                        className="w-full text-center text-2xl tracking-wider rounded-2xl border-2 border-amber-200 bg-white px-4 py-4 font-bold text-slate-900 outline-none transition focus:border-amber-400"
+                        disabled={verifyMutation.isPending}
+                        autoFocus
+                    />
+                    <button
+                        type="submit"
+                        disabled={verifyMutation.isPending || !amount}
+                        className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-4 text-sm font-bold text-slate-900 transition hover:bg-amber-300 disabled:opacity-50"
+                    >
+                        {verifyMutation.isPending ? "Verifying..." : "Confirm Amount"}
+                        <ArrowRight size={18} />
+                    </button>
+                </form>
+            </div>
+        </div>
+    );
+}
+
+export default MicroDepositVerification;

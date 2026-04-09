@@ -40,6 +40,19 @@ export const queryKeys = {
     stats: () => [...queryKeys.dashboard.all, 'stats'],
     activities: () => [...queryKeys.dashboard.all, 'activities'],
   },
+
+  organizerRequests: {
+    all: ['organizerRequests'],
+    me: () => [...queryKeys.organizerRequests.all, 'me'],
+  },
+
+  adminOrganizerRequests: {
+    all: ['admin', 'organizerRequests'],
+    lists: () => [...queryKeys.adminOrganizerRequests.all, 'list'],
+    list: (filters) => [...queryKeys.adminOrganizerRequests.lists(), { filters }],
+    details: () => [...queryKeys.adminOrganizerRequests.all, 'detail'],
+    detail: (id) => [...queryKeys.adminOrganizerRequests.details(), id],
+  },
 };
 
 export const invalidateQueries = {

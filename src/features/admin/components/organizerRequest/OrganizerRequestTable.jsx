@@ -3,7 +3,7 @@ import OrganizerRequestStatusBadge from './OrganizerRequestStatusBadge';
 
 const formatDate = (value) => {
   if (!value) return '--';
-  return new Intl.DateTimeFormat('vi-VN', { dateStyle: 'medium' }).format(new Date(value));
+  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' }).format(new Date(value));
 };
 
 export function OrganizerRequestTable({ items = [], isLoading = false }) {
@@ -11,7 +11,7 @@ export function OrganizerRequestTable({ items = [], isLoading = false }) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
         <div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-amber-500 border-r-transparent" />
-        <p className="mt-4 text-sm text-slate-500">Đang tải danh sách hồ sơ...</p>
+        <p className="mt-4 text-sm text-slate-500">Loading organizer requests...</p>
       </div>
     );
   }
@@ -34,7 +34,7 @@ export function OrganizerRequestTable({ items = [], isLoading = false }) {
             {items.length === 0 ? (
               <tr>
                 <td colSpan="5" className="px-6 py-12 text-center text-slate-400">
-                  Chưa có hồ sơ Organizer nào.
+                  No Organizer requests found.
                 </td>
               </tr>
             ) : (
