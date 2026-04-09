@@ -10,6 +10,7 @@ import {
   LogOut,
   Menu,
   ShieldCheck,
+  HeartHandshake,
 } from "lucide-react";
 import {
   useAuthStore,
@@ -17,11 +18,14 @@ import {
 } from "@/features/auth/stores/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useLogout";
 import { LanguageSwitcher } from "@/i18n/components/LanguageSwitcher";
+import NavbarNotificationAction from "@/features/notification/components/NavbarNotificationAction";
+import NotificationStreamBootstrap from "@/features/notification/components/NotificationStreamBootstrap";
 
 const MENU_ITEMS = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
   { path: "/admin/users", label: "User Management", icon: Users, end: false },
   { path: "/admin/organizers", label: "Organizer Requests", icon: ShieldCheck, end: false },
+  { path: "/admin/need-help", label: "NeedHelp Requests", icon: HeartHandshake, end: false },
   { path: "/admin/projects", label: "Projects", icon: Rocket, end: false },
   { path: "/admin/reports", label: "Reports & Logs", icon: Flag, end: false },
 ];
@@ -40,6 +44,7 @@ export function AdminLayout() {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans text-slate-900">
+      <NotificationStreamBootstrap />
       <aside
         className={`bg-white border-r border-slate-200 transition-all duration-300 flex flex-col z-20 ${isSidebarOpen ? "w-64" : "w-20"
           }`}
@@ -100,6 +105,8 @@ export function AdminLayout() {
           </button>
 
           <div className="flex items-center gap-6">
+            <NavbarNotificationAction />
+
             <LanguageSwitcher />
 
             <button

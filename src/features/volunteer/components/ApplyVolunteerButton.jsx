@@ -5,8 +5,9 @@ import { VolunteerApplicationModal } from './VolunteerApplicationModal';
 import { VolunteerEditModal } from './VolunteerEditModal';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { volunteerAPI } from '../api/volunteerAPI';
+import { useToast } from '@/shared/contexts/ToastContext';
 
 export const ApplyVolunteerButton = ({ projectId, projectName, className = '' }) => {
   const [showModal, setShowModal] = useState(false);
@@ -14,6 +15,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
+  const toast = useToast();
 
   // Fetch application status
   const { data: application, isLoading, refetch } = useQuery({
@@ -30,13 +32,17 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
     mutationFn: async () => {
       return await volunteerAPI.cancelApplication(application?.id);
     },
-    onSuccess: (data) => {
-      alert('Đã hủy đơn đăng ký thành công');
+    onSuccess: () => {
+      toast.success('Đã hủy đơn đăng ký thành công');
       setShowCancelConfirm(false);
       refetch();
     },
     onError: (error) => {
-      alert('Hủy đơn thất bại: ' + (error.response?.data?.message || error.message || 'Vui lòng thử lại'));
+      toast.error(
+        error.response?.data?.message ||
+        error.message ||
+        'Hủy đơn thất bại. Vui lòng thử lại.',
+      );
     }
   });
 
@@ -45,18 +51,24 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
     mutationFn: async (updateData) => {
       return await volunteerAPI.updateApplication(application?.id, updateData);
     },
-    onSuccess: (data) => {
-      alert('Cập nhật đơn đăng ký thành công');
+    onSuccess: () => {
+      toast.success('Cập nhật đơn đăng ký thành công');
       setShowEditModal(false);
       refetch();
     },
     onError: (error) => {
-      alert('Cập nhật thất bại: ' + (error.response?.data?.message || error.message || 'Vui lòng thử lại'));
+      toast.error(
+        error.response?.data?.message ||
+        error.message ||
+        'Cập nhật thất bại. Vui lòng thử lại.',
+      );
     }
   });
 
-  const hasApplied = !!application;
-  const applicationStatus = application?.status?.toUpperCase() || 'UNKNOWN';
+  const hasApplied = Boolean(application?.id || application?._id);
+  const applicationStatus = hasApplied
+    ? String(application?.status || '').toUpperCase()
+    : 'NONE';
 
   const getStatusConfig = () => {
     switch (applicationStatus) {
@@ -85,7 +97,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
           className: 'bg-red-100 text-red-700 hover:bg-red-100',
           disabled: false,
           showCancel: false,
-          showEdit: false
+          showEdit: true
         };
       case 'CANCELLED':
         return {
@@ -112,7 +124,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
 
   const handleClick = () => {
     if (!isAuthenticated) {
-      alert('Vui lòng đăng nhập để đăng ký tình nguyện');
+      toast.info('Vui lòng đăng nhập để đăng ký tình nguyện');
       navigate('/login', { state: { from: `/projects/${projectId}` } });
       return;
     }
@@ -120,12 +132,12 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
 
     // ✅ Kiểm tra nếu đã có đơn
     if (hasApplied && applicationStatus === 'PENDING') {
-      alert('Bạn đã có đơn đăng ký đang chờ xét duyệt');
+      toast.info('Bạn đã có đơn đăng ký đang chờ xét duyệt');
       return;
     }
 
     if (hasApplied && applicationStatus === 'APPROVED') {
-      alert('Bạn đã được chấp nhận tham gia dự án này');
+      toast.success('Bạn đã được chấp nhận tham gia dự án này');
       return;
     }
 
@@ -148,7 +160,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   const handleCancelClick = (e) => {
     e.stopPropagation();
     if (!application?.id) {
-      alert('Không tìm thấy đơn đăng ký');
+      toast.error('Không tìm thấy đơn đăng ký');
       return;
     }
     setShowCancelConfirm(true);
@@ -157,7 +169,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
   const handleEditClick = (e) => {
     e.stopPropagation();
     if (!application?.id) {
-      alert('Không tìm thấy đơn đăng ký');
+      toast.error('Không tìm thấy đơn đăng ký');
       return;
     }
     setShowEditModal(true);
@@ -297,7 +309,7 @@ export const ApplyVolunteerButton = ({ projectId, projectName, className = '' })
         user={user}
         onSuccess={() => {
           setShowModal(false);
-          alert('Đăng ký thành công!');
+          toast.success('Đăng ký thành công!');
           refetch();
         }}
       />

@@ -12,6 +12,11 @@ export const organizerRequestAPI = {
     const res = await httpClient.post("/organizer-requests", payload);
     return unwrap(res)?.request ?? null;
   },
+
+  async verifyDeposit(requestId, payload) {
+    const res = await httpClient.post(`/organizer-requests/${requestId}/verify-deposit`, payload);
+    return unwrap(res)?.request ?? null;
+  }
 };
 
 export { getErrorMessage };

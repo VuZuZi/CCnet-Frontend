@@ -197,7 +197,7 @@ function BankAutocomplete({
           <div className="max-h-72 overflow-y-auto py-2">
             {isLoading ? (
               <div className="px-4 py-3 text-sm text-slate-500">
-                Đang tải danh sách ngân hàng...
+                Loading bank list...
               </div>
             ) : filteredBanks.length > 0 ? (
               filteredBanks.map((bank, index) => {
@@ -227,7 +227,7 @@ function BankAutocomplete({
               })
             ) : (
               <div className="px-4 py-3 text-sm text-slate-500">
-                Không tìm thấy ngân hàng phù hợp.
+                No matching banks found.
               </div>
             )}
           </div>
@@ -257,6 +257,7 @@ export function OrganizerRequestForm({
 
   const idCardFront = watch("idCardFront");
   const idCardBack = watch("idCardBack");
+  const selfie = watch("selfie");
   const businessLicense = watch("businessLicense");
 
   return (
@@ -367,9 +368,9 @@ export function OrganizerRequestForm({
         title="Identity Verification"
         iconClassName="bg-emerald-100 text-emerald-600"
       >
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
           <OrganizerDocumentField
-            label="ID Card / Passport"
+            label="Front of ID Card"
             description="JPG, PNG or PDF"
             accept="image/*,.pdf"
             value={idCardFront}
@@ -378,17 +379,26 @@ export function OrganizerRequestForm({
           />
 
           <OrganizerDocumentField
-            label="Selfie with ID"
-            description="JPG or PNG"
-            accept="image/*"
+            label="Back of ID Card"
+            description="JPG, PNG or PDF"
+            accept="image/*,.pdf"
             value={idCardBack}
             onSelect={(file) => onDocumentChange("idCardBack", file)}
             error={errors.idCardBack?.message}
           />
 
           <OrganizerDocumentField
+            label="Portrait Selfie"
+            description="JPG or PNG"
+            accept="image/*"
+            value={selfie}
+            onSelect={(file) => onDocumentChange("selfie", file)}
+            error={errors.selfie?.message}
+          />
+
+          <OrganizerDocumentField
             label="Organization License"
-            description="PDF Document"
+            description="PDF Document (Optional)"
             accept=".pdf"
             value={businessLicense}
             onSelect={(file) => onDocumentChange("businessLicense", file)}
@@ -468,8 +478,6 @@ export function OrganizerRequestForm({
         Your application will be reviewed by CCNet managers. Approval may take
         1–3 business days.
       </div>
-
-      
     </form>
   );
 }

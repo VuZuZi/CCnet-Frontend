@@ -13,11 +13,23 @@ export function useMyOrganizerRequest(enabled = true) {
     queryFn: organizerRequestAPI.getMyLatestRequest,
     enabled,
     staleTime: 0,
-    refetchOnWindowFocus: true,
-    refetchOnReconnect: true,
-    refetchInterval: (context) => {
-      const status = context.state.data?.status;
-      return status === "PENDING" ? 5000 : false;
+    
+    refetchOnWindowFocus: "always", 
+    refetchOnReconnect: "always",
+    
+    refetchIntervalInBackground: true, 
+    
+    refetchInterval: (queryInstance) => {
+      const status = queryInstance.state?.data?.status;
+      
+      if (!status) return 5000; 
+
+      const transitionalStates = [
+        "SYSTEM_CHECKING", 
+        "AWAITING_MICRO_DEPOSIT", 
+        "PENDING"
+      ];
+      return transitionalStates.includes(status) ? 5000 : false;
     },
   });
 

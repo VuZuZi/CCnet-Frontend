@@ -10,7 +10,7 @@ export function OrganizerRequestFilters({ filters, setFilters }) {
             page: 1,
           }))
         }
-        placeholder="Tìm theo tên, email hoặc tổ chức..."
+        placeholder="Search by name, email, or organization..."
         className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-amber-400"
       />
 
@@ -25,7 +25,7 @@ export function OrganizerRequestFilters({ filters, setFilters }) {
         }
         className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-amber-400"
       >
-        <option value="">Tất cả trạng thái</option>
+        <option value="">All statuses</option>
         <option value="PENDING">Pending</option>
         <option value="APPROVED">Approved</option>
         <option value="DECLINED">Declined</option>

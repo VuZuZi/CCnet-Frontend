@@ -1,31 +1,35 @@
 import { Link } from "react-router-dom";
-import { CheckCircle2, Clock3, FileWarning, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Clock3, FileWarning, ShieldCheck, Info } from "lucide-react";
 
 const STATUS_STYLES = {
+  SYSTEM_CHECKING: "bg-indigo-100 text-indigo-800",
   PENDING: "bg-amber-100 text-amber-800",
   APPROVED: "bg-emerald-100 text-emerald-700",
   DECLINED: "bg-rose-100 text-rose-700",
 };
 
 const STATUS_LABELS = {
-  PENDING: "Đang chờ duyệt",
-  APPROVED: "Đã được duyệt",
-  DECLINED: "Đã bị từ chối",
+  SYSTEM_CHECKING: "System Checking",
+  PENDING: "Pending",
+  APPROVED: "Approved",
+  DECLINED: "Declined",
 };
 
 const STATUS_MESSAGE = {
+  SYSTEM_CHECKING:
+    "The system is running automated checks. This process may take a few minutes, please check back later.",
   PENDING:
-    "Hồ sơ của bạn đang được admin xem xét. Vui lòng chờ phản hồi.",
+    "Your application is being reviewed by the admin. Please wait for a response.",
   APPROVED:
-    "Hồ sơ của bạn đã được duyệt. Nếu quyền Organizer chưa cập nhật ngay trên giao diện, hãy đăng xuất và đăng nhập lại.",
+    "Your application has been approved. If the Organizer role hasn't updated on the interface, please log out and log in again.",
   DECLINED:
-    "Hồ sơ của bạn chưa được duyệt. Bạn có thể chỉnh sửa lại thông tin và gửi lại hồ sơ.",
+    "Your application was not approved. You can edit your information and resubmit the application.",
 };
 
 const formatDate = (value) => {
   if (!value) return "--";
   try {
-    return new Intl.DateTimeFormat("vi-VN", {
+    return new Intl.DateTimeFormat("en-US", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(value));
@@ -53,35 +57,9 @@ export function OrganizerRequestStatusCard({
   const status =
     request?.status || (normalizedRole === "organizer" ? "APPROVED" : "");
 
-  if (!status) {
-    return (
-      <div className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-[0_4px_24px_rgba(15,23,42,0.04)] md:p-8">
-        <div className="flex items-start gap-4">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-100 text-amber-700">
-            <ShieldCheck size={20} />
-          </div>
+  if (!status) return null;
 
-          <div className="min-w-0 flex-1">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-              Bạn chưa có hồ sơ Organizer
-            </h2>
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              Hãy gửi hồ sơ để admin xét duyệt nâng cấp tài khoản của bạn lên
-              Organizer.
-            </p>
-
-            <Link
-              to="/organizer/apply"
-              className="mt-6 inline-flex items-center justify-center rounded-2xl bg-amber-400 px-5 py-3 text-sm font-bold text-slate-900 shadow-sm transition hover:bg-amber-300"
-            >
-              Gửi hồ sơ ngay
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  const isSystemChecking = status === "SYSTEM_CHECKING";
   const isPending = status === "PENDING";
   const isApproved = status === "APPROVED";
   const isDeclined = status === "DECLINED";
@@ -96,10 +74,10 @@ export function OrganizerRequestStatusCard({
             </div>
 
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-              Trạng thái hồ sơ Organizer
+              Organizer Application Status
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Theo dõi kết quả xét duyệt hồ sơ nâng cấp tài khoản của bạn.
+              Track the review status of your account upgrade application.
             </p>
           </div>
 
@@ -112,49 +90,59 @@ export function OrganizerRequestStatusCard({
           </span>
         </div>
 
-        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
+        {/* [FIX]: Removed reviewer, kept necessary information */}
+        <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <InfoBox
-            label="Tổ chức"
+            label="Organization"
             value={request?.organizationName || "Organizer account"}
           />
           <InfoBox
-            label="Ngày nộp"
+            label="Submitted Date"
             value={formatDate(request?.submittedAt || request?.createdAt)}
           />
           <InfoBox
-            label="Ngày phản hồi"
+            label="Response Date"
             value={formatDate(request?.reviewedAt)}
-          />
-          <InfoBox
-            label="Người duyệt"
-            value={request?.reviewedBy?.fullName || "--"}
           />
         </div>
 
-        {isDeclined ? (
+        {isSystemChecking && (
+          <div className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-5">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 text-indigo-700">
+                <Info size={18} />
+              </div>
+              <p className="text-sm leading-6 text-indigo-800">
+                {STATUS_MESSAGE.SYSTEM_CHECKING}
+              </p>
+            </div>
+          </div>
+        )}
+
+        {isDeclined && (
           <div className="mt-6 rounded-2xl border border-rose-200 bg-rose-50 p-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 text-rose-600">
                 <FileWarning size={18} />
               </div>
               <div>
-                <p className="text-sm font-bold text-rose-700">Lý do từ chối</p>
+                <p className="text-sm font-bold text-rose-700">Reason for denial</p>
                 <p className="mt-2 text-sm leading-6 text-rose-600">
-                  {request?.reviewReason || "Admin chưa cung cấp lý do cụ thể."}
+                  {request?.reviewReason || "The admin has not provided a specific reason."}
                 </p>
 
                 <Link
                   to="/organizer/apply"
                   className="mt-5 inline-flex items-center justify-center rounded-2xl bg-amber-400 px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-amber-300"
                 >
-                  Gửi lại hồ sơ
+                  Resubmit Application
                 </Link>
               </div>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {isPending ? (
+        {isPending && (
           <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 text-amber-700">
@@ -165,9 +153,9 @@ export function OrganizerRequestStatusCard({
               </p>
             </div>
           </div>
-        ) : null}
+        )}
 
-        {isApproved ? (
+        {isApproved && (
           <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 text-emerald-700">
@@ -178,7 +166,7 @@ export function OrganizerRequestStatusCard({
               </p>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

@@ -7,8 +7,8 @@ export function ProjectHeader({ project, isOrganizer }) {
 
   return (
     <div className="space-y-6 rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-      <div className="flex items-start justify-between gap-4">
-        <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
+      <div className="flex items-start justify-between gap-4 min-w-0">
+        <h1 className="min-w-0 text-3xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-4xl lg:text-5xl break-words [overflow-wrap:anywhere]">
           {project?.title || "Đang cập nhật tên dự án..."}
         </h1>
 
@@ -52,8 +52,8 @@ export function ProjectHeader({ project, isOrganizer }) {
             onClick={() => toggleProjectFollow.mutate(project?._id)}
             disabled={toggleProjectFollow.isPending || !project?._id}
             className={`hidden items-center gap-2 rounded-xl border px-4 py-2 text-sm font-bold transition-colors sm:flex ${project?.isFollowing
-                ? "border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
-                : "border-slate-200 bg-white text-gray-700 hover:bg-slate-50"
+              ? "border-yellow-200 bg-yellow-50 text-yellow-700 hover:bg-yellow-100"
+              : "border-slate-200 bg-white text-gray-700 hover:bg-slate-50"
               } ${toggleProjectFollow.isPending ? "cursor-not-allowed opacity-70" : ""}`}
           >
             {project?.isFollowing ? (
