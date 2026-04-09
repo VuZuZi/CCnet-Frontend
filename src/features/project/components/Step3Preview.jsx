@@ -1,6 +1,10 @@
+import { useMemo } from 'react';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useSubmitProject } from '../hooks/useProjectMutations';
+import { createProjectSubmitSchema } from '../validations/projectSchema';
+import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useToast } from '@/shared/contexts/ToastContext';
+import { devConfig } from '@/config/app.config';
 import {
   CheckCircle2,
   Circle,
@@ -12,7 +16,9 @@ import {
   Users,
   Flag,
   BadgeCheck,
-  Loader2
+  Loader2,
+  ShieldAlert,
+  AlertOctagon
 } from 'lucide-react';
 
 const StatusPill = ({ isComplete, label }) => (
@@ -54,14 +60,46 @@ const getMediaType = (item) => {
   return media?.mimeType || media?.type || media?.mediaType || 'unknown';
 };
 
+// Hàm lấy limit KYC theo chuẩn doc
+const getTierLimits = (tier) => {
+  switch (tier) {
+    case 3: return { maxFunding: 999999999999, maxDurationDays: 90 };
+    case 2: return { maxFunding: 200000000, maxDurationDays: 60 };
+    case 1: 
+    default: return { maxFunding: 50000000, maxDurationDays: 30 };
+  }
+};
+
 export default function Step3Preview() {
   const { formData, prevStep, projectId } = useProjectDraftStore();
   const { mutate: submitProject, isPending } = useSubmitProject();
+  const user = useAuthStore((state) => state.user);
   const toast = useToast();
+
+  // 1. Tính toán KYC Limit
+  const { maxFunding, maxDurationDays } = useMemo(() => getTierLimits(user?.kycTier || 1), [user?.kycTier]);
+
+  // 2. FIREWALL: Quét toàn bộ form qua Zod Schema khắt khe
+  const validationResult = useMemo(() => {
+    try {
+      const schema = createProjectSubmitSchema(maxFunding, maxDurationDays);
+      return schema.safeParse(formData);
+    } catch (error) {
+      devConfig.error("[CTO Log] Schema Factory Error:", error);
+      return { success: false, error: { issues: [{ message: "System validation error." }] } };
+    }
+  }, [formData, maxFunding, maxDurationDays]);
+
+  const isValid = validationResult.success;
+  const errorList = isValid ? [] : validationResult.error.issues;
 
   const handleFinalSubmit = () => {
     if (!projectId) {
       toast.error('Critical Error: Project ID missing! Please save Step 1 again.');
+      return;
+    }
+    if (!isValid) {
+      toast.error('Please resolve the validation errors before submitting.');
       return;
     }
     submitProject(projectId);
@@ -80,9 +118,10 @@ export default function Step3Preview() {
 
   const coverSrc = getCoverImageSrc();
 
+  // Basic checks for UI pills (keeping your original visual logic)
   const isStoryComplete = !!formData.title && !!formData.category && !!formData.location;
   const isEvidenceUploaded = formData.documents && formData.documents.length > 0;
-  const isBudgetSet = formData.isFundraising ? (formData.targetAmount > 0 && formData.milestones?.length > 0) : true;
+  const isBudgetSet = formData.projectType === 'FUNDED' ? (formData.targetAmount > 0 && formData.milestones?.length > 0) : true;
   const isVolunteersAdded = formData.needsVolunteers ? formData.volunteerRoles?.length > 0 : true;
 
   const totalVolunteers = formData.volunteerRoles?.reduce((sum, role) => sum + (Number(role.quantity) || 0), 0) || 0;
@@ -91,7 +130,7 @@ export default function Step3Preview() {
   const documents = Array.isArray(formData.documents) ? formData.documents : [];
 
   return (
-    <form className="pb-32 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="pb-32 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
       <div className="bg-blue-50/50 border border-blue-100 rounded-3xl p-6 sm:p-8 flex items-start gap-4">
         <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
@@ -111,6 +150,27 @@ export default function Step3Preview() {
         <StatusPill isComplete={isBudgetSet} label="Budget & Milestones Set" />
         <StatusPill isComplete={isVolunteersAdded} label="Volunteer Roles Added" />
       </div>
+
+      {/* FIREWALL UI: Hiển thị danh sách lỗi Zod nếu có */}
+      {!isValid && (
+        <div className="bg-red-50 border border-red-200 rounded-3xl p-6 sm:p-8 shadow-sm mt-8 animate-in fade-in">
+          <div className="flex items-center gap-3 mb-4">
+            <ShieldAlert className="text-red-500" size={28} />
+            <h2 className="text-xl font-bold text-red-900">Validation Errors Detected</h2>
+          </div>
+          <p className="text-sm text-red-700 font-medium mb-4">
+            System has detected missing or invalid information based on your KYC Tier. Please go back and fix the following issues:
+          </p>
+          <ul className="space-y-2">
+            {errorList.map((err, idx) => (
+              <li key={idx} className="flex items-start gap-2 bg-white/60 p-3 rounded-xl border border-red-100">
+                <AlertOctagon className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
+                <span className="text-sm font-bold text-red-800">{err.message}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm mt-8">
         <h2 className="text-xl font-bold text-slate-900 mb-6 text-center sm:text-left">Live Preview</h2>
@@ -151,7 +211,7 @@ export default function Step3Preview() {
               </div>
             </div>
 
-            {formData.isFundraising ? (
+            {formData.projectType === 'FUNDED' ? (
               <div className="space-y-2">
                 <div className="flex justify-between items-end">
                   <div>
@@ -183,7 +243,7 @@ export default function Step3Preview() {
                 <p className="text-xs text-slate-500">Volunteers</p>
                 <p className="font-bold text-slate-900">{totalVolunteers} Needed</p>
               </div>
-              {formData.isFundraising && (
+              {formData.projectType === 'FUNDED' && (
                 <div className="bg-slate-50 rounded-xl p-3 text-center border border-slate-100">
                   <Flag className="text-slate-400 mx-auto mb-1.5" size={20} />
                   <p className="text-xs text-slate-500">Milestones</p>
@@ -192,12 +252,6 @@ export default function Step3Preview() {
               )}
             </div>
           </div>
-        </div>
-
-        <div className="text-center mt-6">
-          <button type="button" className="inline-flex items-center justify-center gap-2 text-primary hover:text-primary-hover font-bold transition-colors outline-none">
-            View full page preview
-          </button>
         </div>
       </div>
 
@@ -283,9 +337,9 @@ export default function Step3Preview() {
           <button
             type="button"
             onClick={handleFinalSubmit}
-            disabled={isPending || (!isStoryComplete || !isEvidenceUploaded || !isBudgetSet || !isVolunteersAdded)}
+            disabled={isPending || !isValid}
             className={`flex items-center justify-center gap-2 px-8 py-3.5 font-bold rounded-2xl transition-all shadow-sm text-lg
-              ${isPending || (!isStoryComplete || !isEvidenceUploaded || !isBudgetSet || !isVolunteersAdded)
+              ${isPending || !isValid
                 ? 'bg-slate-300 text-white cursor-not-allowed'
                 : 'bg-primary hover:bg-primary-hover text-white shadow-xl shadow-yellow-500/30 border-2 border-transparent focus:ring-4 focus:ring-primary/20'}`}
           >
@@ -298,6 +352,6 @@ export default function Step3Preview() {
           </button>
         </div>
       </div>
-    </form>
+    </div>
   );
 }
