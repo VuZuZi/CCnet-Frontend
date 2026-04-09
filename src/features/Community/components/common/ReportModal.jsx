@@ -70,8 +70,8 @@ export default function ReportModal({ isOpen, onClose, postId }) {
 
   return (
     <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
+      <div className="bg-white rounded-[24px] shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
+        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-[24px]">
           <h5 className="font-bold text-xl m-0">Report Post</h5>
           <button
             className="text-2xl cursor-pointer"
@@ -85,7 +85,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
         <div className="p-6 overflow-y-auto">
           {message && (
             <div
-              className={`p-4 rounded-lg mb-5 ${
+              className={`p-4 rounded-xl mb-5 ${
                 message.type === "success"
                   ? "bg-[#d1e7dd] text-[#0f5132]"
                   : "bg-[#f8d7da] text-[#842029]"
@@ -99,7 +99,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
             <div className="mb-5">
               <label className="block text-sm font-bold mb-2">Reason *</label>
               <select
-                className="w-full rounded-md border border-light-gray py-2.5 px-3"
+                className="w-full rounded-xl border border-slate-200 py-3 px-4 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                 value={reason}
                 onChange={(e) => {
                   setReason(e.target.value);
@@ -122,7 +122,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
                 Additional details
               </label>
               <textarea
-                className="w-full rounded-md border border-light-gray py-2.5 px-3"
+                className="w-full rounded-xl border border-slate-200 py-3 px-4 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                 rows="4"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -138,7 +138,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
                 type="file"
                 multiple
                 accept="image/*"
-                className="block w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:bg-light-gray cursor-pointer"
+                className="block w-full text-sm file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:bg-slate-100 file:font-medium hover:file:bg-slate-200 cursor-pointer"
                 onChange={handleFiles}
                 disabled={reportPost.isPending}
               />
@@ -151,8 +151,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
 
             <Button
               type="submit"
-              variant="danger"
-              className="w-full !py-3"
+              className="w-full !py-3.5 !rounded-xl !bg-[#fbbf24] hover:!bg-[#f59e0b] !text-white !font-bold !border-none"
               disabled={reportPost.isPending || !reason.trim()}
               isLoading={reportPost.isPending}
             >

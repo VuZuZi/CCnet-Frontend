@@ -2,10 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { followAPI } from "../api/followAPI";
 import { getErrorMessage } from "@/shared/lib/httpClient";
 
-export function useMyFollowing(limit = 50) {
+export function useMyFollowing(limit = 50, type = "user") {
   const q = useQuery({
-    queryKey: ["follow", "me", "following", limit],
-    queryFn: () => followAPI.getMyFollowing(limit),
+    queryKey: ["follow", "me", "following", limit, type, "v2"],
+    queryFn: () => followAPI.getMyFollowing(limit, type),
     staleTime: 0,
   });
 
