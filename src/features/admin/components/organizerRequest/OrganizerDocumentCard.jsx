@@ -8,16 +8,16 @@ import {
 export function OrganizerDocumentCard({
   title,
   file,
-  emptyText = "No document submitted",
+  emptyText = "No document",
   onView,
 }) {
   if (!file) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-slate-800">{title}</p>
-            <p className="mt-2 text-xs text-slate-400">{emptyText}</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold text-slate-800 truncate" title={title}>{title}</p>
+            <p className="mt-1 text-xs text-slate-400 truncate">{emptyText}</p>
           </div>
 
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
@@ -29,14 +29,15 @@ export function OrganizerDocumentCard({
   }
 
   const href = getDocumentHref(file);
+  const fileName = getDocumentFileName(file, title);
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm flex flex-col justify-between h-full">
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="text-sm font-semibold text-slate-900">{title}</p>
-          <p className="mt-2 break-all text-xs text-slate-500">
-            {getDocumentFileName(file, title)}
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-slate-900 truncate" title={title}>{title}</p>
+          <p className="mt-1 text-xs text-slate-500 truncate" title={fileName}>
+            {fileName}
           </p>
         </div>
 
@@ -53,7 +54,7 @@ export function OrganizerDocumentCard({
         <button
           type="button"
           onClick={() => onView?.({ title, file })}
-          className="inline-flex items-center gap-2 rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-800 transition hover:bg-amber-200"
+          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-800 transition hover:bg-amber-200"
         >
           <Eye size={14} />
           View
@@ -61,10 +62,10 @@ export function OrganizerDocumentCard({
 
         <a
           href={href}
-          download={getDocumentFileName(file, title)}
+          download={fileName}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
+          className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
         >
           <Download size={14} />
           Download

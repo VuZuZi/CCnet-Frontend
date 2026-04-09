@@ -5,23 +5,28 @@ import OrganizerDocumentPreviewModal from "./OrganizerDocumentPreviewModal";
 const DOCUMENT_ITEMS = [
   {
     key: "idCardFront",
-    title: "Government Issued ID",
-    emptyText: "No government ID submitted",
+    title: "ID/Passport Front",
+    emptyText: "Not provided",
   },
   {
     key: "idCardBack",
-    title: "Selfie with ID",
-    emptyText: "No selfie document submitted",
+    title: "ID/Passport Back",
+    emptyText: "Not provided",
+  },
+  {
+    key: "selfie",
+    title: "Portrait Photo (Selfie)",
+    emptyText: "Selfie not provided",
   },
   {
     key: "businessLicense",
-    title: "Business Registration / License",
-    emptyText: "No business license submitted",
+    title: "Business License",
+    emptyText: "Not provided",
   },
   {
     key: "bankProof",
     title: "Bank Proof",
-    emptyText: "No bank proof submitted",
+    emptyText: "Not provided",
   },
 ];
 
@@ -39,7 +44,7 @@ export function OrganizerDocumentList({ request }) {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         {items.map((item) => (
           <OrganizerDocumentCard
             key={item.key}

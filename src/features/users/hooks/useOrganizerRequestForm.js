@@ -1,34 +1,16 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
-import {
-  organizerRequestAPI,
-  getErrorMessage,
-} from "../api/organizerRequestAPI";
+import { organizerRequestAPI, getErrorMessage } from "../api/organizerRequestAPI";
 import { organizerRequestSchema } from "../validations/organizerRequestSchema";
-
-const readFileAsDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () =>
-      resolve({
-        fileName: file.name,
-        mimeType: file.type || "application/octet-stream",
-        size: file.size || 0,
-        dataUrl: reader.result,
-      });
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
+import { queryKeys } from "@/shared/constants/queryKeys";
 
 const getFirstErrorMessage = (errors) => {
   const visit = (obj) => {
     if (!obj || typeof obj !== "object") return null;
-
     for (const key of Object.keys(obj)) {
       const value = obj[key];
       if (value?.message) return value.message;
@@ -37,12 +19,10 @@ const getFirstErrorMessage = (errors) => {
     }
     return null;
   };
-
   return visit(errors);
 };
 
 export function useOrganizerRequestForm(existingRequest = null) {
-  const navigate = useNavigate();
   const toast = useToast();
   const queryClient = useQueryClient();
   const currentUser = useAuthStore(authSelectors.user);
@@ -60,6 +40,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
 
       idCardFront: existingRequest?.idCardFront ?? undefined,
       idCardBack: existingRequest?.idCardBack ?? undefined,
+      selfie: existingRequest?.selfie ?? undefined,
       businessLicense: existingRequest?.businessLicense ?? undefined,
       bankProof: existingRequest?.bankProof ?? undefined,
 
@@ -81,27 +62,24 @@ export function useOrganizerRequestForm(existingRequest = null) {
   const mutation = useMutation({
     mutationFn: organizerRequestAPI.submitRequest,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["organizer-request", "me"] });
-      toast.success("Đã gửi hồ sơ Organizer thành công");
-      navigate("/organizer/request");
+      await queryClient.invalidateQueries({ queryKey: queryKeys.organizerRequests.me() });
+      toast.success("Application submitted successfully. Moving to verification.");
     },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
+    onError: async (error) => {
+      if (error.response?.status === 409) {
+        toast.info("You already have a pending application. Updating your view...");
+        await queryClient.invalidateQueries({ queryKey: queryKeys.organizerRequests.me() });
+      } else {
+        toast.error(getErrorMessage(error));
+      }
     },
   });
 
-  const onDocumentChange = async (fieldName, file) => {
-    if (!file) return;
-
-    try {
-      const payload = await readFileAsDataUrl(file);
-      form.setValue(fieldName, payload, {
-        shouldDirty: true,
-        shouldValidate: true,
-      });
-    } catch {
-      toast.error("Không thể đọc file. Vui lòng thử lại.");
-    }
+  const onDocumentChange = (fieldName, documentObject) => {
+    form.setValue(fieldName, documentObject, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
   };
 
   const onValid = async (values) => {
@@ -115,7 +93,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
 
   const onInvalid = (errors) => {
     const firstError = getFirstErrorMessage(errors);
-    toast.error(firstError || "Vui lòng kiểm tra lại các trường bắt buộc");
+    toast.error(firstError || "Please check the highlighted required fields.");
   };
 
   return {
