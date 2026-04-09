@@ -51,17 +51,22 @@ export const helpRequestSchema = z.object({
 
   evidences: z.array(evidenceSchema).max(10, 'Maximum 10 evidence files').optional().default([]),
 
-  contactPhone: z.string()
-    .max(20, 'Phone number is too long')
-    .optional()
-    .transform(val => val === '' ? undefined : val),
+  contactPhone: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string()
+      .regex(
+        /^(?:\+84|0)(?:3|5|7|8|9)\d{8}$/,
+        'Phone number must be a valid Vietnamese number (e.g. 0912345678 or +84912345678)'
+      )
+      .optional()
+  ),
 
-  contactEmail: z.string()
-    .optional()
-    .transform(val => val === '' ? undefined : val)
-    .refine(val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val), {
-      message: 'Please enter a valid email'
-    }),
+  contactEmail: z.preprocess(
+    (val) => (val === '' ? undefined : val),
+    z.string()
+      .email('Please enter a valid email address (e.g. you@example.com)')
+      .optional()
+  ),
 });
 
 export const defaultHelpRequestValues = {

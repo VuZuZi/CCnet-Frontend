@@ -1,5 +1,5 @@
 import { HandHeart } from 'lucide-react';
-import { formatCurrency } from '@/shared/lib/formatters';
+import { formatVND } from '@/shared/lib/formatters';
 
 export function HelpRequestFundingCard({ amountNeeded = 0 }) {
   const hasFundingGoal = Number(amountNeeded) > 0;
@@ -22,7 +22,7 @@ export function HelpRequestFundingCard({ amountNeeded = 0 }) {
         </p>
 
         <div className="mt-4 text-4xl font-black text-slate-900 sm:text-5xl">
-          {hasFundingGoal ? formatCurrency(amountNeeded) : 'Flexible Support'}
+          {hasFundingGoal ? formatVND(amountNeeded) : 'Flexible Support'}
         </div>
 
         <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600">

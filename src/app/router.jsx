@@ -37,6 +37,18 @@ const VerifyOTPPage = lazy(() =>
   })),
 );
 
+const ForgotPasswordPage = lazy(() =>
+  import("@/features/auth/pages/ForgotPasswordPage").then((m) => ({
+    default: m.ForgotPasswordPage || m.default,
+  }))
+);
+
+const ChangePasswordPage = lazy(() =>
+  import("@/features/auth/pages/ChangePasswordPage").then((m) => ({
+    default: m.ChangePasswordPage || m.default,
+  }))
+);
+
 const DashboardPage = lazy(() =>
   import("@/features/dashboard/pages/DashboardPage").then((m) => ({
     default: m.DashboardPage || m.default,
@@ -46,6 +58,12 @@ const DashboardPage = lazy(() =>
 const UserProfilePage = lazy(() =>
   import("@/features/users/pages/UserProfilePage").then((m) => ({
     default: m.UserProfilePage || m.default,
+  })),
+);
+
+const SupportedProjectsPage = lazy(() =>
+  import("@/features/users/pages/SupportedProjectsPage").then((m) => ({
+    default: m.SupportedProjectsPage || m.default,
   })),
 );
 
@@ -170,6 +188,7 @@ export const router = createBrowserRouter([
       { path: "login", element: withSuspense(LoginPage) },
       { path: "register", element: withSuspense(RegisterPage) },
       { path: "verify-otp", element: withSuspense(VerifyOTPPage) },
+      { path: "forgot-password", element: withSuspense(ForgotPasswordPage) },
     ],
   },
 
@@ -231,6 +250,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { path: "profile/supported-projects", element: withSuspense(SupportedProjectsPage) },
           { path: "profile", element: withSuspense(UserProfilePage) },
           {
             path: "organizer/apply",
@@ -242,6 +262,7 @@ export const router = createBrowserRouter([
           },
           { path: "messages", element: withSuspense(ChatPage) },
           { path: "messages/:conversationId", element: withSuspense(ChatPage) },
+          { path: "change-password", element: withSuspense(ChangePasswordPage) },
         ],
       },
 

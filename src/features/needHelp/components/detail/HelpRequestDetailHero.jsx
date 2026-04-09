@@ -152,7 +152,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
 
       <div className="space-y-6 p-6 sm:p-8">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500">
-          <span className="inline-flex items-center gap-1.5">
+          <span className="inline-flex items-center gap-1.5 break-words min-w-0">
             <MapPin size={16} className="text-sky-500" />
             {location?.address || 'Location will be confirmed by CCNet'}
           </span>
@@ -164,7 +164,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
         </div>
 
         <div className="space-y-3">
-          <h1 className="max-w-4xl text-3xl font-black leading-tight text-slate-900 sm:text-4xl">
+          <h1 className="max-w-4xl break-words overflow-hidden text-3xl font-black leading-tight text-slate-900 sm:text-4xl">
             {title}
           </h1>
           <p className="max-w-3xl text-sm leading-7 text-slate-600 sm:text-base">
@@ -231,10 +231,10 @@ export function HelpRequestDetailHero({ helpRequest }) {
               {contactEmail && (
                 <a
                   href={`mailto:${contactEmail}`}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
+                  className="inline-flex items-center gap-2 rounded-2xl bg-white px-3 py-2 font-medium text-slate-700 shadow-sm transition-colors hover:bg-slate-50 max-w-full overflow-hidden"
                 >
-                  <Mail size={16} className="text-amber-500" />
-                  {contactEmail}
+                  <Mail size={16} className="text-amber-500 flex-shrink-0" />
+                  <span className="break-all truncate">{contactEmail}</span>
                 </a>
               )}
               {!contactPhone && !contactEmail && (

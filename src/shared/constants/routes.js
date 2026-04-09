@@ -13,6 +13,8 @@ export const AUTH_ROUTES = {
   REGISTER: '/register',
   VERIFY_OTP: '/verify-otp',
   FORGOT_PASSWORD: '/forgot-password',
+  RESET_PASSWORD: '/reset-password',
+  CHANGE_PASSWORD: '/change-password',
 };
 
 export const PROTECTED_ROUTES = {

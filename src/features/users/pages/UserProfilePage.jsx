@@ -10,6 +10,7 @@ import { useProfile } from "../hooks/useProfile";
 import { useFollowUserStatus } from "../hooks/useFollowUserStatus";
 import { useToggleFollowUser } from "../hooks/useToggleFollowUser";
 import { useReportUser } from "../hooks/useReportUser";
+import { useSupportedProjects } from "@/features/volunteer/hooks/useSupportedProjects";
 
 import { ProfileHeroCard } from "../components/profile/ProfileHeroCard";
 import { ImpactMetrics } from "../components/profile/ImpactMetrics";
@@ -49,6 +50,12 @@ export function UserProfilePage() {
   const { createConversationAsync, isLoading: isChatLoading } =
     useCreateConversation();
   const { mutateAsync: reportUser, isPending: isReportLoading } = useReportUser();
+  const { data: supportedProjectsData } = useSupportedProjects(
+    { page: 1, limit: 1, view: 'ALL' },
+    isOwnProfile,
+  );
+
+  const supportedCount = supportedProjectsData?.summary?.totalSupported || 0;
 
   const handleOpenChat = async () => {
     if (isOwnProfile || !targetUserId) return;
@@ -143,7 +150,11 @@ export function UserProfilePage() {
               isFollowLoading={isToggleLoading}
               isReportLoading={isReportLoading}
             />
-            <ImpactMetrics />
+            <ImpactMetrics
+              supportedCount={supportedCount}
+              isOwnProfile={isOwnProfile}
+              onOpenSupportedProjects={() => navigate('/profile/supported-projects')}
+            />
             <ImpactBadges />
           </section>
 

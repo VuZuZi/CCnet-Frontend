@@ -15,6 +15,33 @@ export function formatCurrency(amount) {
 }
 
 /**
+ * Format a number as Vietnamese currency (VND) with thousand separators
+ * e.g. 1000000 → "1.000.000 đ"
+ */
+export function formatVND(amount) {
+  if (amount === null || amount === undefined || amount === '' || amount === 0) return '0 đ';
+  
+  const num = typeof amount === 'string' ? parseFloat(amount.replace(/\./g, '').replace(',', '.')) : amount;
+  if (isNaN(num)) return '0 đ';
+
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'decimal',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(num) + ' đ';
+}
+
+/**
+ * Parse a VND-formatted string (e.g. "1.000.000") back to a number
+ */
+export function parseVNDInput(value) {
+  if (!value && value !== 0) return 0;
+  const cleaned = String(value).replace(/\./g, '').replace(/\s*đ\s*/g, '').trim();
+  const num = parseInt(cleaned, 10);
+  return isNaN(num) ? 0 : num;
+}
+
+/**
  * Format a date string to a readable format
  */
 export function formatDate(dateString) {
