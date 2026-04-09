@@ -24,23 +24,28 @@ const getAuthorName = (author) =>
 
 const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
   const name = getAuthorName(user);
+
   if (user?.avatar) {
     return (
-      <div
-        className={`bg-center bg-cover rounded-full ring-1 ring-slate-100 shrink-0 ${size}`}
+      <Link
+        to={`/users/${user?._id}`}
+        className={`bg-center bg-cover rounded-full ring-1 ring-slate-100 shrink-0 block hover:opacity-80 transition-opacity ${size}`}
         style={{ backgroundImage: `url("${user.avatar}")` }}
+        title={`Xem trang cá nhân của ${name}`}
       />
     );
   }
+
   return (
-    <div
-      className={`bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center rounded-full shrink-0 ${size} ${textSize}`}
+    <Link
+      to={`/users/${user?._id}`}
+      className={`bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center rounded-full shrink-0 hover:opacity-80 transition-opacity ${size} ${textSize}`}
+      title={`Xem trang cá nhân của ${name}`}
     >
       {name.charAt(0).toUpperCase()}
-    </div>
+    </Link>
   );
 };
-
 const SharedEntityCard = ({ entity }) => {
   const isProject = entity.entityModel === "Project";
   const linkTo = isProject

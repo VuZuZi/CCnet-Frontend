@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom"; // THÊM: Import Link để điều hướng
 import {
   useSuggestedUsers,
   useFollowStatus,
@@ -19,23 +20,38 @@ const UserItem = ({ user }) => {
     }
   };
 
+  const displayName = user.fullName || user.username || "U";
+
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-3">
+        {/* 👇 THAY DIV BẰNG LINK CHO AVATAR 👇 */}
         {user.avatar ? (
-          <div
-            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0"
+          <Link
+            to={`/users/${user._id}`}
+            className="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-8 shrink-0 block hover:opacity-80 transition-opacity"
             style={{ backgroundImage: `url("${user.avatar}")` }}
+            title={`Xem trang cá nhân của ${displayName}`}
           />
         ) : (
-          <div className="bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center rounded-full size-8 shrink-0 text-xs">
-            {(user.fullName || user.username || "U").charAt(0).toUpperCase()}
-          </div>
+          <Link
+            to={`/users/${user._id}`}
+            className="bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center rounded-full size-8 shrink-0 text-xs hover:opacity-80 transition-opacity"
+            title={`Xem trang cá nhân của ${displayName}`}
+          >
+            {displayName.charAt(0).toUpperCase()}
+          </Link>
         )}
+
+        {/* 👇 THAY P BẰNG LINK CHO TÊN NGƯỜI DÙNG 👇 */}
         <div className="flex flex-col">
-          <p className="text-slate-900 text-xs font-bold line-clamp-1">
-            {user.fullName || user.username}
-          </p>
+          <Link
+            to={`/users/${user._id}`}
+            className="text-slate-900 text-xs font-bold line-clamp-1 hover:underline"
+            title={`Xem trang cá nhân của ${displayName}`}
+          >
+            {displayName}
+          </Link>
           <p className="text-slate-400 text-[10px] line-clamp-1">
             {user.role || "Member"}
           </p>
