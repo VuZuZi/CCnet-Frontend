@@ -5,8 +5,9 @@ import { ROLES } from '@/shared/constants/roles';
 
 export function OrganizerWorkspaceBar() {
   const userRole = useAuthStore(authSelectors.userRole);
+  const normalizedRole = String(userRole || '').toLowerCase();
 
-  if (userRole !== ROLES.ORGANIZER) return null;
+  if (userRole !== ROLES.ORGANIZER && normalizedRole !== 'organizer') return null;
 
   return (
     <div className="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl mb-8 p-4 px-6 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm border border-slate-700">
@@ -28,7 +29,7 @@ export function OrganizerWorkspaceBar() {
           <PlusCircle size={16} /> Tạo dự án
         </Link>
         <Link 
-          to="/workspace/projects" 
+          to="/workspace" 
           className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 text-sm font-bold rounded-xl transition-colors shadow-sm shadow-amber-500/20"
         >
           Vào Workspace <ArrowRight size={16} />

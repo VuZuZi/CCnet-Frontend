@@ -1,5 +1,13 @@
 import { useRef } from 'react';
-import { ShieldCheck, Users, Lock, Edit, MessageSquare, Sparkles, Wallet } from 'lucide-react';
+import {
+  ShieldCheck,
+  Users,
+  Lock,
+  Edit,
+  MessageSquare,
+  Sparkles,
+  Wallet,
+} from 'lucide-react';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
 
 function formatCurrency(value) {
@@ -48,7 +56,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
   };
 
   return (
-    <div className="sticky top-28 flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+    <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-5">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/25 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">

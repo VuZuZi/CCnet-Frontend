@@ -1,38 +1,41 @@
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
-import { ProjectCommunityFeed } from './ProjectCommunityFeed';
+import { ChevronDown, ChevronUp, BookOpenText } from 'lucide-react';
 
-export function TabStory({ project, isOrganizer, onVolunteerClick }) {
+export function TabStory({ project }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="space-y-6">
-      <div className={`relative bg-white p-6 sm:p-8 lg:p-10 rounded-3xl border border-gray-100 shadow-sm transition-all duration-300 ${!isExpanded ? 'overflow-hidden h-[600px]' : ''}`}>
-
-        <div
-          className="prose prose-lg max-w-none text-gray-600 space-y-6"
-          dangerouslySetInnerHTML={{ __html: project?.description || '<p>Chưa có thông tin chi tiết.</p>' }}
-        />
-
-        {!isExpanded && (
-          <div className="absolute bottom-0 left-0 w-full h-20 bg-gradient-to-t from-white via-white/90 to-transparent flex items-end justify-center pb-1 pt-2">
-            <button
-              onClick={() => setIsExpanded(true)}
-              className="py-3 px-6 text-sm font-bold text-gray-700 bg-white border border-gray-200 rounded-full hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2 z-10"
-            >
-              Read More <ChevronDown className="w-5 h-5" />
-            </button>
+      <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+        <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-amber-700">
+            <BookOpenText size={14} />
+            Project Story
           </div>
-        )}
+        </div>
+
+        <div className={`relative rounded-2xl bg-slate-50/70 p-4 sm:p-6 transition-all duration-300 ${!isExpanded ? 'max-h-[540px] overflow-hidden' : ''}`}>
+          <div
+            className="prose prose-slate max-w-none text-[15px] leading-7 text-slate-700"
+            dangerouslySetInnerHTML={{ __html: project?.description || '<p>Chưa có thông tin chi tiết.</p>' }}
+          />
+
+          {!isExpanded && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent" />
+          )}
+        </div>
+
+        <div className="mt-5 flex justify-center">
+          <button
+            onClick={() => setIsExpanded((prev) => !prev)}
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+          >
+            {isExpanded ? 'Thu gọn nội dung' : 'Đọc thêm'}
+            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+        </div>
       </div>
-
-
-      <ProjectCommunityFeed
-        project={project}
-        isOrganizer={isOrganizer}
-        onVolunteerClick={onVolunteerClick}
-      />
     </div>
   );
 }

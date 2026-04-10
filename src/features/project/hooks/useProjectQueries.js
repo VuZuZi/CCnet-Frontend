@@ -7,10 +7,11 @@ const CATEGORY_VALUES = ["Y_TE", "GIAO_DUC", "MOI_TRUONG", "THIEN_TAI", "XAY_DUN
 export const PROJECT_QUERY_KEYS = {
   all: PROJECT_BASE_KEY,
   explore: (filters) => [...PROJECT_BASE_KEY, "explore", filters],
+  workspace: (filters) => [...PROJECT_BASE_KEY, "workspace", filters],
   detail: (id) => [...PROJECT_BASE_KEY, "detail", id],
   featured: [...PROJECT_BASE_KEY, "featured"],
   volunteerNeeded: [...PROJECT_BASE_KEY, "volunteer-needed"],
-  categoryCount: (filters, category) => [
+  categoryCount: (filters, category) => [ 
     ...PROJECT_BASE_KEY,
     "category-count",
     filters,
@@ -121,4 +122,13 @@ export const useProjectCategoryCounts = (filters = {}) => {
     isLoading: queries.some((query) => query.isLoading && !query.data),
     isFetching: queries.some((query) => query.isFetching),
   };
+};
+
+
+export const useWorkspaceProjects = (filters = {}) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.workspace(filters),
+    queryFn: () => projectAPI.getWorkspaceProjects(filters),
+    staleTime: 60 * 1000,
+  });
 };

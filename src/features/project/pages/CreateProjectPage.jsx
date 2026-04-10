@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useParams, useLocation } from 'react-router-dom';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useProjectDetail } from '../hooks/useProjectQueries';
@@ -23,7 +23,6 @@ export function CreateProjectPage() {
     const queryParams = new URLSearchParams(location.search);
     const helpRequestId = queryParams.get('helpRequestId');
     const { currentStep, updateFormData, setProjectId, resetDraft, projectId } = useProjectDraftStore();
-    const [isHydrated, setIsHydrated] = useState(!isEditMode && !helpRequestId);
 
     const { data: draftData, isLoading, isError } = useProjectDetail(id);
     const { data: helpRequestData, isLoading: isHelpRequestLoading, isError: isHelpRequestError } = useHelpRequestAsProjectData(helpRequestId);
@@ -31,7 +30,6 @@ export function CreateProjectPage() {
     useEffect(() => {
         if (!isEditMode && !helpRequestId) {
             if (projectId) resetDraft();
-            setIsHydrated(true);
             return;
         }
 
@@ -41,26 +39,38 @@ export function CreateProjectPage() {
                 return format(new Date(isoString), 'yyyy-MM-dd');
             };
 
+            const normalizeCoverMedia = () => {
+                if (!draftData.coverMedia) return [];
+                return Array.isArray(draftData.coverMedia)
+                    ? draftData.coverMedia
+                    : [draftData.coverMedia];
+            };
+
             const normalizedData = {
+                projectType: draftData.projectType || 'FUNDED',
                 title: draftData.title || '',
                 category: draftData.category || '',
                 location: draftData.location || null,
                 description: draftData.description || '',
-                isFundraising: draftData.targetAmount > 0,
+                beneficiaryInfo: draftData.beneficiaryInfo || { details: '' },
                 targetAmount: draftData.targetAmount || 0,
+                mvpAmount: draftData.mvpAmount || 0,
+                budgetBreakdown: draftData.budgetBreakdown || [],
+                surplusPolicy: draftData.surplusPolicy || '',
                 startDate: parseDateLocal(draftData.startDate),
                 endDate: parseDateLocal(draftData.endDate),
                 needsVolunteers: draftData.needsVolunteers || false,
                 milestones: draftData.milestones?.length ? draftData.milestones : [],
                 volunteerRoles: draftData.volunteerRoles || [],
-                coverMedia: draftData.coverMedia ? [draftData.coverMedia] : [],
+                coverMedia: normalizeCoverMedia(),
                 documents: draftData.documents || [],
-                deletedDocumentIds: []
+                deletedDocumentIds: [],
+                fromHelpRequestId: draftData.fromHelpRequestId || null,
             };
 
+            resetDraft();
             updateFormData(normalizedData);
             setProjectId(id);
-            setIsHydrated(true);
         }
         if (helpRequestId && helpRequestData) {
             if (projectId) resetDraft();
@@ -84,9 +94,12 @@ export function CreateProjectPage() {
             };
 
             updateFormData(normalizedData);
-            setIsHydrated(true);
         }
-    }, [isEditMode, draftData, helpRequestId, helpRequestData]);
+    }, [isEditMode, draftData, helpRequestId, helpRequestData, id, projectId, resetDraft, setProjectId, updateFormData]);
+
+    const isPageReady = !isEditMode && !helpRequestId
+        ? true
+        : Boolean((isEditMode && draftData) || (helpRequestId && helpRequestData));
 
     if ((isEditMode && isLoading) || (helpRequestId && isHelpRequestLoading)) {
         return <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">Đang đồng bộ dữ liệu từ máy chủ...</div>;
@@ -96,7 +109,7 @@ export function CreateProjectPage() {
         return <div className="min-h-screen flex items-center justify-center font-bold text-red-500">Lỗi: Không tìm thấy dữ liệu hoặc bạn không có quyền truy cập.</div>;
     }
 
-    if (!isHydrated) return null;
+    if (!isPageReady) return null;
 
     return (
         <div className="bg-[#f3f4f6] py-8 min-h-screen">

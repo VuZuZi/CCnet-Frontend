@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../stores/useAuthStore';
 import { authAPI } from '../api/authAPI';
-import { ROUTES } from '@/shared/constants/routes';
+import { getDefaultRouteByRole } from '@/shared/constants/routes';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { getErrorMessage } from '@/shared/lib/httpClient';
 import { devConfig } from '@/config/app.config'; 
@@ -22,7 +22,7 @@ export function useGoogleLogin() {
       toast.success(`Welcome via Google, ${user.fullName}!`);
       devConfig.log('Google Login successful:', user.email); 
       
-      navigate(ROUTES.DASHBOARD, { replace: true });
+      navigate(getDefaultRouteByRole(user?.role), { replace: true });
     },
     onError: (error) => {
       const msg = getErrorMessage(error);

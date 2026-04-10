@@ -72,9 +72,10 @@ const getTierLimits = (tier) => {
 
 export default function Step3Preview() {
   const { formData, prevStep, projectId } = useProjectDraftStore();
-  const { mutate: submitProject, isPending } = useSubmitProject();
+  const { mutateAsync: submitProject, isPending: isSubmitting } = useSubmitProject();
   const user = useAuthStore((state) => state.user);
   const toast = useToast();
+  const isPending = isSubmitting;
 
   // 1. Tính toán KYC Limit
   const { maxFunding, maxDurationDays } = useMemo(() => getTierLimits(user?.kycTier || 1), [user?.kycTier]);
@@ -93,16 +94,22 @@ export default function Step3Preview() {
   const isValid = validationResult.success;
   const errorList = isValid ? [] : validationResult.error.issues;
 
-  const handleFinalSubmit = () => {
+  const handleFinalSubmit = async () => {
     if (!projectId) {
-      toast.error('Critical Error: Project ID missing! Please save Step 1 again.');
+      toast.error('Thiếu ID dự án. Vui lòng quay lại bước 2 và bấm tiếp tục.');
       return;
     }
+
     if (!isValid) {
       toast.error('Please resolve the validation errors before submitting.');
       return;
     }
-    submitProject(projectId);
+
+    try {
+      await submitProject(projectId);
+    } catch (error) {
+      devConfig.error('[CTO Log] Final submit failed:', error);
+    }
   };
 
   const getCoverImageSrc = () => {
@@ -348,7 +355,7 @@ export default function Step3Preview() {
             ) : (
               <Lock size={24} />
             )}
-            {isPending ? 'Submitting...' : 'Submit for Approval'}
+            {isPending ? 'Saving & Submitting...' : 'Submit for Approval'}
           </button>
         </div>
       </div>

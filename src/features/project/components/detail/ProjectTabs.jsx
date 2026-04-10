@@ -16,19 +16,21 @@ export function ProjectTabs({ activeTab, setActiveTab, isOrganizer, projectType 
     }
 
     return (
-        <div className="flex justify-center gap-8 bg-gray-50/95 backdrop-blur-md pt-4 pb-4 border-b border-gray-200 overflow-x-auto no-scrollbar">
-            {tabs.map((tab) => (
-                <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`pb-3 text-sm whitespace-nowrap transition-colors ${activeTab === tab.id
-                        ? 'font-bold text-gray-900 border-b-2 border-amber-400'
-                        : 'font-medium text-gray-500 hover:text-gray-900'
-                        }`}
-                >
-                    {tab.label}
-                </button>
-            ))}
+        <div className="mb-2 overflow-x-auto pb-1 no-scrollbar">
+            <div className="inline-flex min-w-full items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50/80 p-2 sm:min-w-0 sm:gap-3">
+                {tabs.map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`rounded-xl px-4 py-2.5 text-sm whitespace-nowrap transition-all ${activeTab === tab.id
+                            ? 'bg-white font-bold text-slate-900 shadow-sm ring-1 ring-amber-200'
+                            : 'font-semibold text-slate-500 hover:bg-white/70 hover:text-slate-900'
+                            }`}
+                    >
+                        {tab.label}
+                    </button>
+                ))}
+            </div>
         </div>
     );
 }
