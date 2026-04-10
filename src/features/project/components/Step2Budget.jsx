@@ -128,7 +128,7 @@ export default function Step2Budget() {
     toast.error("Có lỗi ở các trường nhập liệu. Vui lòng kéo lên và kiểm tra các ô màu đỏ.");
   };
 
-  const handleNextStep = handleSubmit((data) => {
+  const handleNextStep = handleSubmit(async (data) => {
     const step2Payload = isFunded ? data : {
       ...data,
       targetAmount: 0,
@@ -151,10 +151,38 @@ export default function Step2Budget() {
       duration: role?.duration || '',
     }));
 
-    updateFormData({
+    const normalizedPayload = {
       ...step2Payload,
       volunteerRoles: step2Payload.needsVolunteers ? normalizedVolunteerRoles : [],
-    });
+    };
+
+    updateFormData(normalizedPayload);
+
+    try {
+      const fullFormData = {
+        ...useProjectDraftStore.getState().formData,
+        ...normalizedPayload,
+      };
+
+      if (!projectId) {
+        const created = await createDraft({ ...fullFormData, silent: true });
+        if (created?._id) {
+          setProjectId(created._id);
+          navigate(`/projects/create/${created._id}/edit`, { replace: true });
+        }
+      } else {
+        await updateDraft({
+          id: projectId,
+          data: fullFormData,
+          silent: true,
+        });
+      }
+    } catch (error) {
+      const apiMessage = error?.response?.data?.message || 'Không thể lưu dữ liệu bước 2 trước khi chuyển bước.';
+      toast.error(apiMessage);
+      devConfig.error('[CTO Log] Auto-save Step 2 before preview failed:', error);
+      return;
+    }
 
     nextStep();
   }, onInvalid);

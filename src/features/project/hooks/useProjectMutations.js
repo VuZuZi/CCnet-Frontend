@@ -10,10 +10,16 @@ export const useCreateDraftProject = () => {
   const setProjectId = useProjectDraftStore(state => state.setProjectId);
 
   return useMutation({
-    mutationFn: projectAPI.createDraft,
-    onSuccess: (data) => {
+    mutationFn: (variables) => {
+      const { silent, ...payload } = variables || {};
+      void silent;
+      return projectAPI.createDraft(payload);
+    },
+    onSuccess: (data, variables) => {
       setProjectId(data._id);
-      toast.success('Đã lưu bản nháp dự án (Bước 1)');
+      if (!variables?.silent) {
+        toast.success('Đã lưu bản nháp dự án (Bước 1)');
+      }
     },
     onError: (error) => toast.error(getErrorMessage(error))
   });
@@ -23,9 +29,15 @@ export const useUpdateDraftProject = () => {
   const toast = useToast();
 
   return useMutation({
-    mutationFn: projectAPI.updateDraft,
-    onSuccess: () => {
-      toast.success('Đã cập nhật bản nháp thành công');
+    mutationFn: (variables) => {
+      const { id, data, silent } = variables || {};
+      void silent;
+      return projectAPI.updateDraft({ id, data });
+    },
+    onSuccess: (_, variables) => {
+      if (!variables?.silent) {
+        toast.success('Đã cập nhật bản nháp thành công');
+      }
     },
     onError: (error) => toast.error(getErrorMessage(error))
   });

@@ -40,6 +40,7 @@ export function ProjectHeader({ project, isOrganizer }) {
             {formatDate(project?.startDate)} - {formatDate(project?.endDate)}
           </p>
         </div>
+        {/*
         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Followers</p>
           <p className="mt-1 inline-flex items-center gap-2 text-sm font-bold text-slate-800">
@@ -47,6 +48,7 @@ export function ProjectHeader({ project, isOrganizer }) {
             {followerCount.toLocaleString("vi-VN")}
           </p>
         </div>
+        */}
         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Volunteers</p>
           <p className="mt-1 inline-flex items-center gap-2 text-sm font-bold text-slate-800">
@@ -93,6 +95,7 @@ export function ProjectHeader({ project, isOrganizer }) {
             </div>
           </div>
 
+          {/*
           <button
             type="button"
             onClick={() => toggleProjectFollow.mutate(project?._id)}
@@ -114,6 +117,7 @@ export function ProjectHeader({ project, isOrganizer }) {
               {followerCount}
             </span>
           </button>
+          */}
         </div>
       )}
     </div>

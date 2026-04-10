@@ -18,15 +18,15 @@ import {
   Eye,
   FileText,
 } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useWorkspaceProjects } from '../hooks/useProjectQueries';
 import { PageLoader } from '@/shared/components/ui/PageLoader';
 
 const PAGE_SIZE = 10;
+const DRAFT_PAGE_SIZE = 6;
 
 const STATUS_OPTIONS = [
   { value: 'ALL', label: 'Tất cả trạng thái' },
-  { value: 'DRAFT', label: 'Bản nháp' },
   { value: 'PENDING_APPROVAL', label: 'Chờ duyệt' },
   { value: 'ACTIVE', label: 'Đang hoạt động' },
   { value: 'PAUSED', label: 'Tạm dừng' },
@@ -93,6 +93,9 @@ export function OrganizerWorkspacePage() {
   const [projectType, setProjectType] = useState('ALL');
   const [volunteerMode, setVolunteerMode] = useState('ALL');
   const [currentPage, setCurrentPage] = useState(1);
+  const [draftKeyword, setDraftKeyword] = useState('');
+  const [draftType, setDraftType] = useState('ALL');
+  const [draftCurrentPage, setDraftCurrentPage] = useState(1);
 
   const { data, isLoading, isError } = useWorkspaceProjects({
     page: 1,
@@ -106,7 +109,10 @@ export function OrganizerWorkspacePage() {
     status: 'DRAFT',
   });
 
-  const projects = useMemo(() => data?.projects || [], [data]);
+  const projects = useMemo(() => {
+    const allProjects = data?.projects || [];
+    return allProjects.filter((project) => String(project?.status || '') !== 'DRAFT');
+  }, [data]);
   const draftProjects = useMemo(() => draftData?.projects || [], [draftData]);
 
   const filteredProjects = useMemo(() => {
@@ -137,7 +143,7 @@ export function OrganizerWorkspacePage() {
       total: filteredProjects.length,
       active: 0,
       pending: 0,
-      draft: 0,
+      draft: draftProjects.length,
       raised: 0,
       target: 0,
       volunteerTarget: 0,
@@ -148,7 +154,6 @@ export function OrganizerWorkspacePage() {
       const status = String(project?.status || '');
       if (status === 'ACTIVE') totals.active += 1;
       if (status === 'PENDING_APPROVAL') totals.pending += 1;
-      if (status === 'DRAFT') totals.draft += 1;
       totals.raised += Number(project?.currentAmount || 0);
       totals.target += Number(project?.targetAmount || 0);
       totals.volunteerCurrent += Number(project?.stats?.currentVolunteers || 0);
@@ -156,29 +161,87 @@ export function OrganizerWorkspacePage() {
     });
 
     return totals;
-  }, [filteredProjects]);
+  }, [filteredProjects, draftProjects.length]);
 
   const totalPages = Math.max(1, Math.ceil(filteredProjects.length / PAGE_SIZE));
+  const activeCurrentPage = Math.min(currentPage, totalPages);
 
-  useEffect(() => {
+  const handleKeywordChange = (event) => {
+    setKeyword(event.target.value);
     setCurrentPage(1);
-  }, [status, keyword, projectType, volunteerMode]);
+  };
 
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+  const handleStatusChange = (event) => {
+    setStatus(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleProjectTypeChange = (event) => {
+    setProjectType(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleVolunteerModeChange = (event) => {
+    setVolunteerMode(event.target.value);
+    setCurrentPage(1);
+  };
+
+  const handleDraftKeywordChange = (event) => {
+    setDraftKeyword(event.target.value);
+    setDraftCurrentPage(1);
+  };
+
+  const handleDraftTypeChange = (event) => {
+    setDraftType(event.target.value);
+    setDraftCurrentPage(1);
+  };
+
+  const filteredDraftProjects = useMemo(() => {
+    const normalizedKeyword = draftKeyword.trim().toLowerCase();
+
+    return draftProjects.filter((draft) => {
+      const matchesKeyword =
+        !normalizedKeyword ||
+        String(draft?.title || '').toLowerCase().includes(normalizedKeyword) ||
+        String(draft?.category || '').toLowerCase().includes(normalizedKeyword) ||
+        String(draft?.location?.address || '').toLowerCase().includes(normalizedKeyword);
+
+      const matchesType = draftType === 'ALL' || String(draft?.projectType || '') === draftType;
+
+      return matchesKeyword && matchesType;
+    });
+  }, [draftProjects, draftKeyword, draftType]);
+
+  const draftTotalPages = Math.max(1, Math.ceil(filteredDraftProjects.length / DRAFT_PAGE_SIZE));
+  const activeDraftPage = Math.min(draftCurrentPage, draftTotalPages);
+
+  const paginatedDraftProjects = useMemo(() => {
+    const start = (activeDraftPage - 1) * DRAFT_PAGE_SIZE;
+    return filteredDraftProjects.slice(start, start + DRAFT_PAGE_SIZE);
+  }, [filteredDraftProjects, activeDraftPage]);
+
+  const visibleDraftPages = useMemo(() => {
+    const pages = [];
+    const windowSize = 5;
+    const start = Math.max(1, activeDraftPage - 2);
+    const end = Math.min(draftTotalPages, start + windowSize - 1);
+
+    for (let p = start; p <= end; p += 1) {
+      pages.push(p);
     }
-  }, [currentPage, totalPages]);
+
+    return pages;
+  }, [activeDraftPage, draftTotalPages]);
 
   const paginatedProjects = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
+    const start = (activeCurrentPage - 1) * PAGE_SIZE;
     return filteredProjects.slice(start, start + PAGE_SIZE);
-  }, [filteredProjects, currentPage]);
+  }, [filteredProjects, activeCurrentPage]);
 
   const visiblePages = useMemo(() => {
     const pages = [];
     const windowSize = 5;
-    const start = Math.max(1, currentPage - 2);
+    const start = Math.max(1, activeCurrentPage - 2);
     const end = Math.min(totalPages, start + windowSize - 1);
 
     for (let p = start; p <= end; p += 1) {
@@ -186,7 +249,7 @@ export function OrganizerWorkspacePage() {
     }
 
     return pages;
-  }, [currentPage, totalPages]);
+  }, [activeCurrentPage, totalPages]);
 
   if (isLoading) return <PageLoader />;
 
@@ -269,22 +332,54 @@ export function OrganizerWorkspacePage() {
           <div className="mb-4 flex items-center justify-between gap-3">
             <h2 className="text-xl font-bold text-slate-900">Danh sách bản nháp</h2>
             <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600">
-              {isDraftLoading ? 'Đang tải...' : `${draftProjects.length} draft`}
+              {isDraftLoading ? 'Đang tải...' : `${filteredDraftProjects.length} draft`}
             </span>
+          </div>
+
+          <div className="mb-5 rounded-2xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
+            <div className="mb-3 flex items-center gap-2 text-slate-900">
+              <Filter size={18} />
+              <h3 className="text-sm font-bold uppercase tracking-[0.08em]">Bộ lọc bản nháp</h3>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+              <label className="relative">
+                <Search size={16} className="pointer-events-none absolute left-3 top-3.5 text-slate-400" />
+                <input
+                  value={draftKeyword}
+                  onChange={handleDraftKeywordChange}
+                  placeholder="Tìm draft theo tên, category, địa chỉ..."
+                  className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                />
+              </label>
+
+              <select
+                value={draftType}
+                onChange={handleDraftTypeChange}
+                className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+              >
+                {TYPE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {isDraftLoading ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm font-semibold text-slate-500">
               Đang tải danh sách bản nháp...
             </div>
-          ) : draftProjects.length === 0 ? (
+          ) : filteredDraftProjects.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
               <p className="font-semibold text-slate-700">Hiện chưa có bản nháp nào.</p>
               <p className="mt-2 text-sm text-slate-500">Bạn có thể tạo dự án mới và lưu lại để tiếp tục sau.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-              {draftProjects.map((draft) => (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                {paginatedDraftProjects.map((draft) => (
                 <div key={draft._id} className="rounded-2xl border border-amber-200 bg-amber-50/60 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -314,7 +409,49 @@ export function OrganizerWorkspacePage() {
                     </Link>
                   </div>
                 </div>
-              ))}
+                ))}
+              </div>
+
+              <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs font-semibold text-slate-500">
+                  Hiển thị {(activeDraftPage - 1) * DRAFT_PAGE_SIZE + 1} - {Math.min(activeDraftPage * DRAFT_PAGE_SIZE, filteredDraftProjects.length)} trên tổng {filteredDraftProjects.length} bản nháp
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setDraftCurrentPage((prev) => Math.max(1, prev - 1))}
+                    disabled={activeDraftPage === 1}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Trước
+                  </button>
+
+                  {visibleDraftPages.map((pageNumber) => (
+                    <button
+                      key={pageNumber}
+                      type="button"
+                      onClick={() => setDraftCurrentPage(pageNumber)}
+                      className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${
+                        pageNumber === activeDraftPage
+                          ? 'border-slate-900 bg-slate-900 text-white'
+                          : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
+                  ))}
+
+                  <button
+                    type="button"
+                    onClick={() => setDraftCurrentPage((prev) => Math.min(draftTotalPages, prev + 1))}
+                    disabled={activeDraftPage === draftTotalPages}
+                    className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Sau
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </section>
@@ -327,7 +464,7 @@ export function OrganizerWorkspacePage() {
                 {filteredProjects.length} dự án
               </span>
               <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold text-amber-700">
-                Trang {currentPage}/{totalPages}
+                Trang {activeCurrentPage}/{totalPages}
               </span>
             </div>
           </div>
@@ -343,7 +480,7 @@ export function OrganizerWorkspacePage() {
                 <Search size={16} className="pointer-events-none absolute left-3 top-3.5 text-slate-400" />
                 <input
                   value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
+                  onChange={handleKeywordChange}
                   placeholder="Tìm theo tên, category, địa chỉ..."
                   className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
                 />
@@ -351,7 +488,7 @@ export function OrganizerWorkspacePage() {
 
               <select
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                onChange={handleStatusChange}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
               >
                 {STATUS_OPTIONS.map((option) => (
@@ -363,7 +500,7 @@ export function OrganizerWorkspacePage() {
 
               <select
                 value={projectType}
-                onChange={(e) => setProjectType(e.target.value)}
+                onChange={handleProjectTypeChange}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
               >
                 {TYPE_OPTIONS.map((option) => (
@@ -375,7 +512,7 @@ export function OrganizerWorkspacePage() {
 
               <select
                 value={volunteerMode}
-                onChange={(e) => setVolunteerMode(e.target.value)}
+                onChange={handleVolunteerModeChange}
                 className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
               >
                 <option value="ALL">Tất cả nhu cầu volunteer</option>
@@ -501,14 +638,14 @@ export function OrganizerWorkspacePage() {
 
               <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
                 <p className="text-xs font-semibold text-slate-500">
-                  Hiển thị {(currentPage - 1) * PAGE_SIZE + 1} - {Math.min(currentPage * PAGE_SIZE, filteredProjects.length)} trên tổng {filteredProjects.length} dự án
+                  Hiển thị {(activeCurrentPage - 1) * PAGE_SIZE + 1} - {Math.min(activeCurrentPage * PAGE_SIZE, filteredProjects.length)} trên tổng {filteredProjects.length} dự án
                 </p>
 
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
+                    disabled={activeCurrentPage === 1}
                     className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Trước
@@ -520,7 +657,7 @@ export function OrganizerWorkspacePage() {
                       type="button"
                       onClick={() => setCurrentPage(pageNumber)}
                       className={`rounded-lg border px-3 py-1.5 text-sm font-semibold transition ${
-                        pageNumber === currentPage
+                        pageNumber === activeCurrentPage
                           ? 'border-slate-900 bg-slate-900 text-white'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
@@ -532,7 +669,7 @@ export function OrganizerWorkspacePage() {
                   <button
                     type="button"
                     onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                    disabled={currentPage === totalPages}
+                    disabled={activeCurrentPage === totalPages}
                     className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     Sau

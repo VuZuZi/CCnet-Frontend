@@ -339,7 +339,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "workspace/projects",
-            element: withSuspense(WorkspaceProjectsPage),
+            element: withSuspense(OrganizerWorkspacePage),
           },
           {
             path: "workspace/stats",
