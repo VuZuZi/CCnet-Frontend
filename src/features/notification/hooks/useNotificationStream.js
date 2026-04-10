@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { notificationApi } from '../api/notification.api';
+import { useToast } from '@/shared/contexts/ToastContext';
+import { GLOBAL_QUERY_KEYS } from '@/shared/constants/queryKeys';
+import { globalEventBus, APP_EVENTS } from '@/shared/lib/eventBus';
 import {
   NOTIFICATION_QUERY_KEYS,
   NOTIFICATION_SSE_EVENTS,
@@ -48,10 +51,10 @@ function markNotificationAsRead(previous, notificationId, readAt = null) {
     items: (previous?.items || []).map((item) =>
       item.id === notificationId
         ? {
-            ...item,
-            isRead: true,
-            readAt: readAt || item.readAt || null,
-          }
+          ...item,
+          isRead: true,
+          readAt: readAt || item.readAt || null,
+        }
         : item
     ),
   };
@@ -95,46 +98,35 @@ function patchProjectInsideList(list, projectId, nextStatus) {
   );
 }
 
-function patchWorkspaceQueryData(previous, projectId, nextStatus) {
-  if (!previous || !Array.isArray(previous.projects)) return previous;
-
-  return {
-    ...previous,
-    projects: patchProjectInsideList(previous.projects, projectId, nextStatus),
-  };
-}
-
-function patchAdminProjectsQueryData(previous, projectId, nextStatus) {
-  if (!Array.isArray(previous)) return previous;
-  return patchProjectInsideList(previous, projectId, nextStatus);
-}
-
-function patchProjectDetailQueryData(previous, projectId, nextStatus) {
-  if (!previous) return previous;
-  if (String(previous._id) !== String(projectId)) return previous;
-
-  return {
-    ...previous,
-    status: nextStatus,
-  };
-}
-
 function patchProjectQueries(queryClient, projectId, nextStatus) {
   if (!projectId || !nextStatus) return;
 
   queryClient.setQueriesData(
-    { queryKey: ['projects', 'workspace'] },
-    (previous) => patchWorkspaceQueryData(previous, projectId, nextStatus)
+    { queryKey: GLOBAL_QUERY_KEYS.PROJECT_WORKSPACE },
+    (previous) => {
+      if (!previous || !Array.isArray(previous.projects)) return previous;
+      return {
+        ...previous,
+        projects: patchProjectInsideList(previous.projects, projectId, nextStatus),
+      };
+    }
   );
 
   queryClient.setQueryData(
-    ['project-management', 'projects'],
-    (previous) => patchAdminProjectsQueryData(previous, projectId, nextStatus)
+    GLOBAL_QUERY_KEYS.PROJECT_ADMIN_LIST,
+    (previous) => {
+      if (!Array.isArray(previous)) return previous;
+      return patchProjectInsideList(previous, projectId, nextStatus);
+    }
   );
 
   queryClient.setQueriesData(
-    { queryKey: ['project'] },
-    (previous) => patchProjectDetailQueryData(previous, projectId, nextStatus)
+    { queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) },
+    (previous) => {
+      if (!previous) return previous;
+      if (String(previous._id) !== String(projectId)) return previous;
+      return { ...previous, status: nextStatus };
+    }
   );
 }
 
@@ -164,7 +156,6 @@ function clearPendingCleanupTimer() {
 
 function detachEventSourceListeners(source, handlers) {
   if (!source || !handlers) return;
-
   source.removeEventListener(NOTIFICATION_SSE_EVENTS.CONNECTED, handlers.connected);
   source.removeEventListener(NOTIFICATION_SSE_EVENTS.CREATED, handlers.created);
   source.removeEventListener(NOTIFICATION_SSE_EVENTS.UNREAD_COUNT, handlers.unreadCount);
@@ -192,10 +183,8 @@ function resetRuntime() {
 
 function scheduleResetRuntime() {
   clearPendingCleanupTimer();
-
   runtime.pendingCleanupTimer = window.setTimeout(() => {
     runtime.pendingCleanupTimer = null;
-
     if (runtime.subscriberCount === 0) {
       resetRuntime();
     }
@@ -203,12 +192,12 @@ function scheduleResetRuntime() {
 }
 
 function shouldThrottleSessionRequest() {
-  const now = Date.now();
-  return now - runtime.sessionRequestedAt < SESSION_REQUEST_COOLDOWN_MS;
+  return Date.now() - runtime.sessionRequestedAt < SESSION_REQUEST_COOLDOWN_MS;
 }
 
 export function useNotificationStream({ enabled = true, userId = null } = {}) {
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   useEffect(() => {
     const normalizedUserId = userId ? String(userId) : null;
@@ -223,7 +212,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
     if (runtime.currentUserId && runtime.currentUserId !== normalizedUserId) {
       resetRuntime();
     }
-
     runtime.currentUserId = normalizedUserId;
 
     const setUnreadCount = (unreadCount) => {
@@ -271,7 +259,9 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       try {
         const payload = JSON.parse(event.data);
         const item = transformNotification(payload.notification);
+        if (!item?.id && !item?.type) return;
 
+        // Logic cập nhật List từ nhánh dev2
         if (!item?.id) {
           refreshAllNotificationQueries();
           return;
@@ -288,7 +278,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           }
         );
 
-        // nếu chưa có cache list nào thì cứ invalidate để fetch lại khi cần
         if (!didPatchAtLeastOneList) {
           invalidateNotificationList();
         }
@@ -297,21 +286,58 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           bumpUnreadCount();
         }
 
+        // Khai báo projectId từ nhánh feature/Hieu_Donate để dùng cho bên dưới
+        const projectId =
+          item.entityId ||
+          item.metadata?.projectId ||
+          payload.notification?.metadata?.projectId;
+
         if (item.type === 'organizer_request_updated') {
-          queryClient.invalidateQueries({ queryKey: ['organizer-request', 'me'] });
-          queryClient.invalidateQueries({ queryKey: ['profile', 'me'] });
+          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.ORGANIZER_REQUEST_ME });
+          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROFILE_ME });
         }
 
         if (item.type === 'project_updated') {
-          const projectId =
-            item.entityId || item.metadata?.projectId || payload.notification?.entityId;
-
           const nextStatus =
             item.metadata?.status || payload.notification?.metadata?.status || null;
-
           patchProjectQueries(queryClient, projectId, nextStatus);
         }
-      } catch {
+
+        // Logic xử lý Donate từ nhánh feature/Hieu_Donate
+        if (item.type === 'donation_successful') {
+          toast.success(`🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.`);
+
+          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
+          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY });
+
+          if (projectId) {
+            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
+
+            globalEventBus.dispatchEvent(
+              new CustomEvent(APP_EVENTS.DONATION_SUCCESS, {
+                detail: { projectId: String(projectId) }
+              })
+            );
+          }
+        }
+
+        if (item.type === 'transaction_failed') {
+          toast.error(`❌ Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.`);
+        }
+
+        if (item.type === 'transaction_refunded') {
+          toast.success(`Hoàn tiền dự án thành công. Số dư đã được cộng lại vào ví cá nhân của bạn.`);
+
+          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
+          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY });
+
+          if (projectId) {
+            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
+          }
+        }
+      } catch (err) {
+        // Kết hợp log lỗi của nhánh feature và fallback của nhánh dev2
+        console.error('SSE Created Handler Error:', err);
         refreshAllNotificationQueries();
       }
     };
@@ -330,6 +356,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         const payload = JSON.parse(event.data);
         const notificationId = payload.notificationId;
 
+        // Logic an toàn từ nhánh dev2
         if (!notificationId) {
           refreshAllNotificationQueries();
           return;
@@ -364,6 +391,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       try {
         const payload = JSON.parse(event.data);
 
+        // Logic an toàn từ nhánh dev2
         let didPatch = false;
 
         queryClient.setQueriesData(
@@ -390,6 +418,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         const payload = JSON.parse(event.data);
         const notificationId = payload.notificationId;
 
+        // Logic an toàn từ nhánh dev2
         if (!notificationId) {
           refreshAllNotificationQueries();
           return;
@@ -422,18 +451,9 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
     const scheduleReconnect = () => {
       const now = Date.now();
-
-      if (runtime.reconnectTimer || !runtime.currentUserId || runtime.subscriberCount === 0) {
-        return;
-      }
-
-      if (!notificationApi.hasAccessToken()) {
-        return;
-      }
-
-      if (runtime.suppressReconnectUntil > now) {
-        return;
-      }
+      if (runtime.reconnectTimer || !runtime.currentUserId || runtime.subscriberCount === 0) return;
+      if (!notificationApi.hasAccessToken()) return;
+      if (runtime.suppressReconnectUntil > now) return;
 
       const delay = Math.min(3000 * 2 ** runtime.retryAttempt, MAX_RECONNECT_DELAY_MS);
       runtime.retryAttempt += 1;
@@ -445,9 +465,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
     };
 
     const connect = async () => {
-      if (!runtime.currentUserId) return;
-      if (!notificationApi.hasAccessToken()) return;
-      if (runtime.eventSource) return;
+      if (!runtime.currentUserId || !notificationApi.hasAccessToken() || runtime.eventSource) return;
       if (runtime.connectPromise) return runtime.connectPromise;
 
       runtime.connectPromise = (async () => {
@@ -476,21 +494,14 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
           source.addEventListener(NOTIFICATION_SSE_EVENTS.CONNECTED, handlers.connected);
           source.addEventListener(NOTIFICATION_SSE_EVENTS.CREATED, handlers.created);
-          source.addEventListener(
-            NOTIFICATION_SSE_EVENTS.UNREAD_COUNT,
-            handlers.unreadCount
-          );
+          source.addEventListener(NOTIFICATION_SSE_EVENTS.UNREAD_COUNT, handlers.unreadCount);
           source.addEventListener(NOTIFICATION_SSE_EVENTS.READ, handlers.read);
           source.addEventListener(NOTIFICATION_SSE_EVENTS.READ_ALL, handlers.readAll);
           source.addEventListener(NOTIFICATION_SSE_EVENTS.DELETED, handlers.deleted);
 
           source.onerror = () => {
             detachEventSourceListeners(source, handlers);
-
-            if (runtime.eventSource === source) {
-              closeEventSource();
-            }
-
+            if (runtime.eventSource === source) closeEventSource();
             runtime.suppressReconnectUntil = Date.now() + 1500;
             scheduleReconnect();
           };
@@ -498,12 +509,10 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           runtime.eventSource = source;
         } catch {
           runtime.suppressReconnectUntil = Date.now() + 1500;
-
           if (source) {
             detachEventSourceListeners(source, handlers);
             source.close();
           }
-
           scheduleReconnect();
         } finally {
           runtime.connectPromise = null;
@@ -517,18 +526,15 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
     return () => {
       runtime.subscriberCount = Math.max(0, runtime.subscriberCount - 1);
-
       if (runtime.subscriberCount === 0) {
         scheduleResetRuntime();
       }
     };
-  }, [enabled, userId, queryClient]);
+  }, [enabled, userId, queryClient, toast]);
 
   useEffect(() => {
     if (!enabled || !userId) {
-      if (runtime.subscriberCount === 0) {
-        scheduleResetRuntime();
-      }
+      if (runtime.subscriberCount === 0) scheduleResetRuntime();
     }
   }, [enabled, userId]);
 }

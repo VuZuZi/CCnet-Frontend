@@ -13,4 +13,6 @@ export const NOTIFICATION_SSE_EVENTS = Object.freeze({
   DELETED: 'notification.deleted',
   UNREAD_COUNT: 'notification.unread_count',
   HEARTBEAT: 'notification.heartbeat',
+
+  DONATION_SUCCESSFUL: 'donation.successful',
 });

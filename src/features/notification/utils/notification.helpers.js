@@ -20,19 +20,19 @@ export function getNotificationLabel(type) {
     case 'project_updated':
       return 'Project';
     case 'help_request_assigned':
-      return 'NeedHelp';
     case 'help_request_verified':
-      return 'NeedHelp';
     case 'help_request_completed':
-      return 'NeedHelp';
     case 'help_request_assignment_responded':
       return 'NeedHelp';
     case 'organizer_request_submitted':
-      return 'Organizer request';
     case 'organizer_request_updated':
       return 'Organizer request';
     case 'system_announcement':
       return 'System';
+    case 'donation_successful':
+    case 'transaction_failed':
+    case 'transaction_refunded':
+      return 'Transaction';
     case 'post_reacted':
       return 'Post reaction';
     case 'post_commented':

@@ -1,18 +1,18 @@
-import { useState, useMemo, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
-import { useProjectDetail } from "../hooks/useProjectQueries";
-import { useAuthStore } from "@/features/auth/stores/useAuthStore";
-import { PageLoader } from "@/shared/components/ui/PageLoader";
+import { useState, useMemo, useRef } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { MessageCircle } from 'lucide-react';
+import { useProjectDetail } from '../hooks/useProjectQueries';
+import { useAuthStore } from '@/features/auth/stores/useAuthStore';
+import { PageLoader } from '@/shared/components/ui/PageLoader';
 
-import { ProjectCover } from "../components/detail/ProjectCover";
-import { ProjectHeader } from "../components/detail/ProjectHeader";
-import { ProjectTabs } from "../components/detail/ProjectTabs";
-import { TabStory } from "../components/detail/TabStory";
-import { VolunteerManager } from "@/features/volunteer/components/VolunteerManager.jsx";
-import { SidebarPublic } from "../components/detail/SidebarPublic";
-import { SidebarOrganizer } from "../components/detail/SidebarOrganizer";
-import { ProjectCommunityFeed } from "@/features/project/components/detail/ProjectCommunityFeed";
+import { ProjectCover } from '../components/detail/ProjectCover';
+import { ProjectHeader } from '../components/detail/ProjectHeader';
+import { ProjectTabs } from '../components/detail/ProjectTabs';
+import { TabStory } from '../components/detail/TabStory';
+import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';
+import { SidebarPublic } from '../components/detail/SidebarPublic';
+import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
+import { ProjectCommunityFeed } from '@/features/project/components/detail/ProjectCommunityFeed';
 import { useConversations } from "@/features/chat/hooks/conversations/useConversations";
 
 export function ProjectDetailPage() {
@@ -47,11 +47,13 @@ export function ProjectDetailPage() {
     handleNavigateToVolunteerTab("volunteer", "pending");
   };
 
+  // Logic Identity an toàn hơn từ nhánh dev2
   const identity = useMemo(() => {
     if (!currentUser || !project) return "GUEST";
 
     const currentUserId =
       currentUser?.userId || currentUser?._id || currentUser?.id || "";
+      
     const organizerId =
       project?.organizerId?._id ||
       project?.organizerId?.id ||
@@ -62,6 +64,7 @@ export function ProjectDetailPage() {
     return "USER";
   }, [currentUser, project]);
 
+  // Logic tìm kiếm cuộc hội thoại của dự án (từ dev2)
   const projectConversation = useMemo(() => {
     if (!project?._id || !Array.isArray(conversations)) return null;
 
@@ -159,6 +162,7 @@ export function ProjectDetailPage() {
               Project Detail
             </div>
 
+            {/* UI Nút mở nhóm chat (Từ dev2) */}
             {canOpenProjectGroup ? (
               <button
                 type="button"
@@ -188,6 +192,7 @@ export function ProjectDetailPage() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               isOrganizer={isOrganizer}
+              projectType={project.projectType}
             />
 
             <div className="animate-in fade-in duration-300">

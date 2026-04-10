@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Heart,
   Share2,
@@ -10,6 +11,7 @@ import {
   UserCheck,
 } from "lucide-react";
 import { ApplyVolunteerButton } from "@/features/volunteer/components/ApplyVolunteerButton";
+import { DonateModal } from '@/features/transaction/components/DonateModal';
 import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
 import { useFollowMutations } from "@/features/community/hooks/useFollow";
 import { useReportProject } from "@/features/project/hooks/useProjectMutations.js";
@@ -21,12 +23,17 @@ function formatCurrency(value) {
 }
 
 export function SidebarPublic({ project }) {
-  const currentAmount = project?.currentAmount || 0;
-  const targetAmount = project?.targetAmount || 1;
-  const progressPercent = Math.min(
-    Math.round((currentAmount / targetAmount) * 100),
-    100,
-  );
+  const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
+  const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
+
+  const availableBalance = project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
+  const targetAmount = project?.targetAmount ?? 1;
+  const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
+  const progressPercent = Math.min(Math.round((availableBalance / targetAmount) * 100), 100);
+
+  const currentVolunteers = project?.stats?.currentVolunteers || 0;
+  const targetVolunteers = project?.stats?.targetVolunteers || 0;
+  const volunteerPercent = targetVolunteers > 0 ? Math.min(Math.round((currentVolunteers / targetVolunteers) * 100), 100) : 0;
 
   const user = useAuthStore(authSelectors.user);
   const { follow, unfollow } = useFollowMutations();
@@ -36,6 +43,10 @@ export function SidebarPublic({ project }) {
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [reportError, setReportError] = useState(null);
+
+  const [isDonateOpen, setIsDonateOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const reportReasons = [
     { value: "spam", label: "Spam" },
@@ -57,24 +68,21 @@ export function SidebarPublic({ project }) {
   const handleToggleFollowOrg = () => {
     if (!organizerId) return;
 
-    if (isFollowingOrg) {
-      unfollow.mutate(organizerId, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({
-            queryKey: ["project", project?._id || project?.id],
-          });
-        },
-      });
-      return;
-    }
-
-    follow.mutate(organizerId, {
+    const action = isFollowingOrg ? unfollow : follow;
+    action.mutate(organizerId, {
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["project", project?._id || project?.id],
-        });
+        queryClient.invalidateQueries({ queryKey: ["project", project?._id || project?.id] });
       },
     });
+  };
+
+  const handleDonateClick = () => {
+    if (!user?.id) {
+      toast.error('Vui lòng đăng nhập để ủng hộ dự án');
+      navigate('/login', { state: { from: location.pathname } });
+      return;
+    }
+    setIsDonateOpen(true);
   };
 
   return (
@@ -90,42 +98,67 @@ export function SidebarPublic({ project }) {
       </div>
 
       <div className="space-y-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-            Funds raised
-          </p>
-          <div className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">
-            {formatCurrency(currentAmount)}đ
+        {isFunded ? (
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
+              Funds raised
+            </p>
+            <div className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">
+              {formatCurrency(availableBalance)}đ
+            </div>
+            {pendingRefunds > 0 && (
+              <p className="mt-1 text-xs font-medium text-amber-600">
+                ({formatCurrency(pendingRefunds)}đ đang chờ hoàn trả)
+              </p>
+            )}
+            <p className="mt-1 text-sm text-slate-500">
+              Goal: {formatCurrency(targetAmount)}đ
+            </p>
+            <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="relative h-full rounded-full bg-[linear-gradient(90deg,#FBBF24_0%,#F59E0B_100%)] transition-all duration-1000"
+                style={{ width: `${progressPercent}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20" />
+              </div>
+            </div>
           </div>
-          <p className="mt-1 text-sm text-slate-500">
-            Goal: {formatCurrency(targetAmount)}đ
-          </p>
-        </div>
-
-        <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="relative h-full rounded-full bg-[linear-gradient(90deg,#FBBF24_0%,#F59E0B_100%)] transition-all duration-1000"
-            style={{ width: `${progressPercent}%` }}
-          >
-            <div className="absolute inset-0 bg-white/20" />
+        ) : (
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
+              Volunteers Recruited
+            </p>
+            <div className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">
+              {currentVolunteers.toLocaleString()} <span className="text-lg font-medium text-slate-500">/ {targetVolunteers}</span>
+            </div>
+            <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="relative h-full rounded-full bg-[linear-gradient(90deg,#34D399_0%,#059669_100%)] transition-all duration-1000"
+                style={{ width: `${volunteerPercent}%` }}
+              >
+                <div className="absolute inset-0 bg-white/20" />
+              </div>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm">
-              <Wallet size={18} />
+          {isFunded && (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm">
+                <Wallet size={18} />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
+              <p className="mt-1 text-sm font-medium text-slate-500">Funded</p>
             </div>
-            <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
-            <p className="mt-1 text-sm font-medium text-slate-500">Funded</p>
-          </div>
+          )}
 
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4">
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-600 shadow-sm">
               <Users size={18} />
             </div>
             <p className="text-2xl font-bold text-emerald-700">
-              {project?.stats?.currentVolunteers?.toLocaleString() || 0}
+              {currentVolunteers.toLocaleString()}
             </p>
             <p className="mt-1 text-sm font-medium text-emerald-600">Volunteers</p>
           </div>
@@ -176,13 +209,16 @@ export function SidebarPublic({ project }) {
       )}
 
       <div className="flex flex-col gap-4">
-        <button
-          type="button"
-          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] px-5 py-4 text-base font-bold text-white shadow-[0_14px_30px_rgba(251,191,36,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,158,11,0.32)]"
-        >
-          <Heart className="h-5 w-5 fill-current" />
-          Donate Now
-        </button>
+        {isFunded && (
+          <button
+            type="button"
+            onClick={handleDonateClick}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] px-5 py-4 text-base font-bold text-white shadow-[0_14px_30px_rgba(251,191,36,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,158,11,0.32)]"
+          >
+            <Heart className="h-5 w-5 fill-current" />
+            Donate Now
+          </button>
+        )}
 
         <ApplyVolunteerButton
           user={user}
@@ -323,6 +359,13 @@ export function SidebarPublic({ project }) {
           </div>
         </div>
       )}
+
+      <DonateModal
+        isOpen={isDonateOpen}
+        onClose={() => setIsDonateOpen(false)}
+        projectId={project?._id || project?.id}
+        projectTitle={project?.title || project?.name}
+      />
     </div>
   );
 }
