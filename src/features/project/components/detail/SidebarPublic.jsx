@@ -65,6 +65,24 @@ export function SidebarPublic({ project }) {
   const { mutateAsync: reportProject, isPending: isReporting } = useReportProject();
   const toast = useToast();
 
+  const handleShare = async () => {
+    const shareUrl = window.location.href;
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: project?.title || 'Project',
+          text: 'Xem dự án này trên CCNet',
+          url: shareUrl,
+        });
+        return;
+      }
+      await navigator.clipboard.writeText(shareUrl);
+      toast.success('Đã sao chép link dự án.');
+    } catch {
+      toast.error('Không thể chia sẻ lúc này. Vui lòng thử lại.');
+    }
+  };
+
   const handleToggleFollowOrg = () => {
     if (!organizerId) return;
 
@@ -86,7 +104,7 @@ export function SidebarPublic({ project }) {
   };
 
   return (
-    <div className="sticky top-28 flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+    <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
       <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-5">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/25 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">
@@ -228,13 +246,12 @@ export function SidebarPublic({ project }) {
       </div>
 
       <div className="border-t border-slate-100 pt-5">
-        <div className="grid grid-cols-3 gap-3">
-          <button className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-slate-500 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-500">
-            <Heart className="h-5 w-5" />
-            <span className="text-[11px] font-bold">Follow</span>
-          </button>
-
-          <button className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-slate-500 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-500">
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            onClick={handleShare}
+            className="group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-slate-500 transition hover:border-sky-200 hover:bg-sky-50 hover:text-sky-500"
+          >
             <Share2 className="h-5 w-5" />
             <span className="text-[11px] font-bold">Share</span>
           </button>

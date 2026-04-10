@@ -41,6 +41,8 @@ function Avatar({ user, size = 'sm' }) {
 export function NavbarUserDropdown({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
+  const normalizedRole = String(user?.role || '').toLowerCase();
+  const isOrganizer = normalizedRole === 'organizer';
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -82,11 +84,11 @@ export function NavbarUserDropdown({ user, onLogout }) {
           </Link>
 
           <Link
-            to={ROUTES.DASHBOARD}
+            to={isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD}
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LayoutDashboard size={16} /> Dashboard
+            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Dashboard'}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-slate-100" />

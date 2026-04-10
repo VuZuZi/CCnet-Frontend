@@ -22,6 +22,8 @@ export const PROTECTED_ROUTES = {
   PROFILE: '/profile',
   FOLLOWING: '/following',
   COMMUNITY: '/community',
+  WORKSPACE: '/workspace',
+  WORKSPACE_PROJECTS: '/workspace',
 };
 
 export const PROJECT_ROUTES = {
@@ -69,7 +71,7 @@ export const getDefaultRouteByRole = (role) => {
       return ADMIN_ROUTES.ADMIN_DASHBOARD; 
       
     case ROLES.ORGANIZER:
-      return PROTECTED_ROUTES.DASHBOARD;
+      return PROJECT_ROUTES.PROJECTS;
       
     case ROLES.USER:
     default:

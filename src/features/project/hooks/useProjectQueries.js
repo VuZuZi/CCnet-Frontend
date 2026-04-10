@@ -4,6 +4,7 @@ import { projectAPI } from '../api/projectAPI';
 export const PROJECT_QUERY_KEYS = {
   all: ['projects'],
   explore: (filters) => [...PROJECT_QUERY_KEYS.all, 'explore', filters],
+  workspace: (filters) => [...PROJECT_QUERY_KEYS.all, 'workspace', filters],
   detail: (id) => [...PROJECT_QUERY_KEYS.all, 'detail', id],
 };
 
@@ -12,9 +13,10 @@ export const useExploreProjects = (filters) => {
     queryKey: PROJECT_QUERY_KEYS.explore(filters),
     queryFn: ({ pageParam = 1 }) => {
       const cleanedFilters = Object.fromEntries(
-        Object.entries(filters || {}).filter(
-          ([_, value]) => value !== '' && value !== null && value !== undefined
-        )
+        Object.entries(filters || {}).filter((entry) => {
+          const [, value] = entry;
+          return value !== '' && value !== null && value !== undefined;
+        })
       );
 
       return projectAPI.getExplore({
@@ -37,5 +39,13 @@ export const useProjectDetail = (id) => {
     queryFn: () => projectAPI.getDetail(id),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+  });
+};
+
+export const useWorkspaceProjects = (filters = {}) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.workspace(filters),
+    queryFn: () => projectAPI.getWorkspaceProjects(filters),
+    staleTime: 60 * 1000,
   });
 };

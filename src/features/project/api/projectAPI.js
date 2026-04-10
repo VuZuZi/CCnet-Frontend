@@ -134,8 +134,8 @@ export const projectAPI = {
     return response.data?.data;
   },
 
-  toggleFeedCommentLike: async (projectId, postId, commentId) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/comments/${commentId}/like`);
+  toggleFeedCommentLike: async (projectId, commentId) => {
+    const response = await httpClient.post(`/project/${projectId}/feed/comments/${commentId}/like`);
     return response.data?.data;
   },
 };
