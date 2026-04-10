@@ -250,8 +250,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       runtime.retryAttempt = 0;
       runtime.suppressReconnectUntil = 0;
       clearReconnectTimer();
-
-      // refresh nhẹ khi stream vừa nối lại để tránh lệch state
       refreshAllNotificationQueries();
     };
 
@@ -261,32 +259,27 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         const item = transformNotification(payload.notification);
         if (!item?.id && !item?.type) return;
 
-        // Logic cập nhật List từ nhánh dev2
-        if (!item?.id) {
-          refreshAllNotificationQueries();
-          return;
-        }
+        if (item?.id) {
+          let didPatchAtLeastOneList = false;
 
-        let didPatchAtLeastOneList = false;
+          queryClient.setQueriesData(
+            { queryKey: NOTIFICATION_QUERY_KEYS.list },
+            (previous) => {
+              if (!previous) return previous;
+              didPatchAtLeastOneList = true;
+              return prependUniqueItem(previous, item);
+            }
+          );
 
-        queryClient.setQueriesData(
-          { queryKey: NOTIFICATION_QUERY_KEYS.list },
-          (previous) => {
-            if (!previous) return previous;
-            didPatchAtLeastOneList = true;
-            return prependUniqueItem(previous, item);
+          if (!didPatchAtLeastOneList) {
+            invalidateNotificationList();
           }
-        );
 
-        if (!didPatchAtLeastOneList) {
-          invalidateNotificationList();
+          if (!item.isRead) {
+            bumpUnreadCount();
+          }
         }
 
-        if (!item.isRead) {
-          bumpUnreadCount();
-        }
-
-        // Khai báo projectId từ nhánh feature/Hieu_Donate để dùng cho bên dưới
         const projectId =
           item.entityId ||
           item.metadata?.projectId ||
@@ -298,12 +291,10 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         }
 
         if (item.type === 'project_updated') {
-          const nextStatus =
-            item.metadata?.status || payload.notification?.metadata?.status || null;
+          const nextStatus = item.metadata?.status || payload.notification?.metadata?.status || null;
           patchProjectQueries(queryClient, projectId, nextStatus);
         }
 
-        // Logic xử lý Donate từ nhánh feature/Hieu_Donate
         if (item.type === 'donation_successful') {
           toast.success(`🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.`);
 
@@ -322,7 +313,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         }
 
         if (item.type === 'transaction_failed') {
-          toast.error(`❌ Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.`);
+          toast.error(` Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.`);
         }
 
         if (item.type === 'transaction_refunded') {
@@ -336,9 +327,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           }
         }
       } catch (err) {
-        // Kết hợp log lỗi của nhánh feature và fallback của nhánh dev2
         console.error('SSE Created Handler Error:', err);
-        refreshAllNotificationQueries();
       }
     };
 
@@ -356,7 +345,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         const payload = JSON.parse(event.data);
         const notificationId = payload.notificationId;
 
-        // Logic an toàn từ nhánh dev2
         if (!notificationId) {
           refreshAllNotificationQueries();
           return;
@@ -390,8 +378,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
     const handleReadAll = (event) => {
       try {
         const payload = JSON.parse(event.data);
-
-        // Logic an toàn từ nhánh dev2
         let didPatch = false;
 
         queryClient.setQueriesData(
@@ -418,7 +404,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         const payload = JSON.parse(event.data);
         const notificationId = payload.notificationId;
 
-        // Logic an toàn từ nhánh dev2
         if (!notificationId) {
           refreshAllNotificationQueries();
           return;
