@@ -4,6 +4,7 @@ import { useChatStore } from '@/features/chat/stores/useChatStore';
 import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useToast } from '@/shared/contexts/ToastContext';
+import { Wallet, User as UserIcon } from 'lucide-react';
 
 import { useProfileIdentity } from "../hooks/useProfileIdentity";
 import { useProfile } from "../hooks/useProfile";
@@ -18,7 +19,8 @@ import { ImpactBadges } from "../components/profile/ImpactBadges";
 import { AboutMeCard } from "../components/profile/AboutMeCard";
 import { SkillsSection } from "../components/profile/SkillsSection";
 import { UpgradeBanner } from "../components/profile/UpgradeBanner";
-
+import { WalletDashboard } from '@/features/wallet/components/WalletDashboard';
+import { BankAccountManager } from '@/features/bank/components/BankAccountManager';
 export function UserProfilePage() {
   const { id: urlId } = useParams();
 
@@ -27,7 +29,7 @@ export function UserProfilePage() {
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-
+  const [activeTab, setActiveTab] = useState('profile');
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
@@ -39,44 +41,33 @@ export function UserProfilePage() {
     isError,
   } = useProfile(isOwnProfile ? null : targetUserId);
 
-  const { isFollowing } = useFollowUserStatus(
-    isOwnProfile ? null : targetUserId,
-  );
-  const { toggle, isLoading: isToggleLoading } =
-    useToggleFollowUser(targetUserId);
+  const { isFollowing } = useFollowUserStatus(isOwnProfile ? null : targetUserId);
+  const { toggle, isLoading: isToggleLoading } = useToggleFollowUser(targetUserId);
 
   const openConversation = useChatStore((s) => s.openConversation);
   const focusConversation = useChatStore((s) => s.focusConversation);
-  const { createConversationAsync, isLoading: isChatLoading } =
-    useCreateConversation();
+  const { createConversationAsync, isLoading: isChatLoading } = useCreateConversation();
   const { mutateAsync: reportUser, isPending: isReportLoading } = useReportUser();
-  const { data: supportedProjectsData } = useSupportedProjects(
-    { page: 1, limit: 1, view: 'ALL' },
-    isOwnProfile,
-  );
+  const { data: supportedProjectsData } = useSupportedProjects({ page: 1, limit: 1, view: 'ALL' }, isOwnProfile);
 
   const supportedCount = supportedProjectsData?.summary?.totalSupported || 0;
 
   const handleOpenChat = async () => {
     if (isOwnProfile || !targetUserId) return;
     try {
-      const convo = await createConversationAsync({
-        participantId: targetUserId,
-      });
+      const convo = await createConversationAsync({ participantId: targetUserId });
       const cid = String(convo?._id || "").trim();
       if (cid) {
         openConversation(cid);
         focusConversation(cid);
       }
     } catch (error) {
-      console.error("Failed to open chat", error);
+      toast.error("Không thể mở cuộc trò chuyện lúc này.");
     }
   };
 
   const handleToggleFollow = () => {
-    if (!isOwnProfile && targetUserId) {
-      toggle(isFollowing);
-    }
+    if (!isOwnProfile && targetUserId) toggle(isFollowing);
   };
 
   const handleReportUser = () => {
@@ -85,7 +76,6 @@ export function UserProfilePage() {
       navigate('/login', { state: { from: location.pathname } });
       return;
     }
-
     setReportError(null);
     setReportReason("");
     setReportDescription("");
@@ -94,24 +84,13 @@ export function UserProfilePage() {
 
   const handleSubmitReport = async (event) => {
     event.preventDefault();
-
-    if (!targetUserId) {
-      setReportError('Không tìm thấy người dùng để báo cáo.');
-      return;
-    }
-
-    if (!reportReason) {
-      setReportError('Vui lòng chọn lý do báo cáo.');
-      return;
-    }
+    if (!targetUserId) return setReportError('Không tìm thấy người dùng để báo cáo.');
+    if (!reportReason) return setReportError('Vui lòng chọn lý do báo cáo.');
 
     try {
       await reportUser({
         userId: targetUserId,
-        payload: {
-          reason_code: reportReason,
-          description: reportDescription.trim(),
-        },
+        payload: { reason_code: reportReason, description: reportDescription.trim() },
       });
       setReportModalOpen(false);
     } catch (error) {
@@ -119,17 +98,13 @@ export function UserProfilePage() {
     }
   };
 
-  if (!isAuthReady || isProfileLoading) {
-    return <ProfileSkeletonLoader />;
-  }
+  if (!isAuthReady || isProfileLoading) return <ProfileSkeletonLoader />;
 
   if (isError || !userProfile) {
     return (
       <main className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-gray-900">
         <h2 className="text-2xl font-bold text-gray-700">Profile Not Found</h2>
-        <p className="text-gray-500 mt-2">
-          The user you are looking for does not exist or an error occurred.
-        </p>
+        <p className="text-gray-500 mt-2">The user you are looking for does not exist or an error occurred.</p>
       </main>
     );
   }
@@ -137,38 +112,68 @@ export function UserProfilePage() {
   return (
     <main className="bg-gray-50 min-h-screen text-gray-900 antialiased py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <section className="lg:col-span-2 space-y-8">
-            <ProfileHeroCard
-              user={userProfile}
-              isOwnProfile={isOwnProfile}
-              isFollowing={isFollowing}
-              onToggleFollow={handleToggleFollow}
-              onChat={handleOpenChat}
-              onReport={handleReportUser}
-              isChatLoading={isChatLoading}
-              isFollowLoading={isToggleLoading}
-              isReportLoading={isReportLoading}
-            />
-            <ImpactMetrics
-              supportedCount={supportedCount}
-              isOwnProfile={isOwnProfile}
-              onOpenSupportedProjects={() => navigate('/profile/supported-projects')}
-            />
-            <ImpactBadges />
-          </section>
 
-          <aside className="space-y-8">
-            <AboutMeCard
-              about={userProfile.about}
-              level={userProfile.level}
-              title={userProfile.title}
-              createdAt={userProfile.createdAt}
-            />
-            <SkillsSection skills={userProfile.skills} />
-            <UpgradeBanner isOwnProfile={isOwnProfile} />
-          </aside>
-        </div>
+        {isOwnProfile && (
+          <div className="mb-8 flex gap-6 border-b border-slate-200">
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold transition-colors ${activeTab === 'profile'
+                  ? 'border-amber-400 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              <UserIcon size={18} /> Hồ sơ cá nhân
+            </button>
+            <button
+              onClick={() => setActiveTab('wallet')}
+              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold transition-colors ${activeTab === 'wallet'
+                  ? 'border-amber-400 text-slate-900'
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              <Wallet size={18} /> Ví & Thanh toán
+            </button>
+          </div>
+        )}
+
+        {activeTab === 'profile' ? (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
+            <section className="lg:col-span-2 space-y-8">
+              <ProfileHeroCard
+                user={userProfile}
+                isOwnProfile={isOwnProfile}
+                isFollowing={isFollowing}
+                onToggleFollow={handleToggleFollow}
+                onChat={handleOpenChat}
+                onReport={handleReportUser}
+                isChatLoading={isChatLoading}
+                isFollowLoading={isToggleLoading}
+                isReportLoading={isReportLoading}
+              />
+              <ImpactMetrics
+                supportedCount={supportedCount}
+                isOwnProfile={isOwnProfile}
+                onOpenSupportedProjects={() => navigate('/profile/supported-projects')}
+              />
+              <ImpactBadges />
+            </section>
+
+            <aside className="space-y-8">
+              <AboutMeCard about={userProfile.about} level={userProfile.level} title={userProfile.title} createdAt={userProfile.createdAt} />
+              <SkillsSection skills={userProfile.skills} />
+              <UpgradeBanner isOwnProfile={isOwnProfile} />
+            </aside>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
+            <section className="lg:col-span-2 space-y-8">
+              <WalletDashboard />
+            </section>
+            <aside className="space-y-8">
+              <BankAccountManager />
+            </aside>
+          </div>
+        )}
       </div>
 
       {reportModalOpen && (
@@ -179,32 +184,13 @@ export function UserProfilePage() {
                 <h3 className="text-xl font-semibold text-slate-900">Báo cáo người dùng</h3>
                 <p className="text-sm text-slate-500">Gửi báo cáo đến admin để kiểm duyệt tài khoản này.</p>
               </div>
-              <button
-                type="button"
-                onClick={() => setReportModalOpen(false)}
-                className="text-2xl font-bold text-slate-400 hover:text-slate-700"
-              >
-                ×
-              </button>
+              <button type="button" onClick={() => setReportModalOpen(false)} className="text-2xl font-bold text-slate-400 hover:text-slate-700">×</button>
             </div>
-
             <form className="space-y-5 px-6 py-6" onSubmit={handleSubmitReport}>
-              {reportError && (
-                <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3 text-sm text-rose-700">
-                  {reportError}
-                </div>
-              )}
-
+              {reportError && <div className="rounded-2xl bg-rose-50 border border-rose-100 px-4 py-3 text-sm text-rose-700">{reportError}</div>}
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Lý do báo cáo</label>
-                <select
-                  value={reportReason}
-                  onChange={(e) => {
-                    setReportReason(e.target.value);
-                    setReportError(null);
-                  }}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
-                >
+                <select value={reportReason} onChange={(e) => { setReportReason(e.target.value); setReportError(null); }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100">
                   <option value="">Chọn lý do</option>
                   <option value="spam">Spam</option>
                   <option value="harassment">Harassment</option>
@@ -214,33 +200,13 @@ export function UserProfilePage() {
                   <option value="other">Other</option>
                 </select>
               </div>
-
               <div>
                 <label className="mb-2 block text-sm font-semibold text-slate-700">Mô tả thêm (tùy chọn)</label>
-                <textarea
-                  value={reportDescription}
-                  onChange={(e) => setReportDescription(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
-                  placeholder="Bạn có thể mô tả chi tiết hơn về lý do báo cáo"
-                />
+                <textarea value={reportDescription} onChange={(e) => setReportDescription(e.target.value)} rows={4} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100" placeholder="Bạn có thể mô tả chi tiết hơn về lý do báo cáo" />
               </div>
-
               <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setReportModalOpen(false)}
-                  className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-                >
-                  Hủy
-                </button>
-                <button
-                  type="submit"
-                  disabled={isReportLoading}
-                  className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  {isReportLoading ? 'Đang gửi...' : 'Gửi báo cáo'}
-                </button>
+                <button type="button" onClick={() => setReportModalOpen(false)} className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Hủy</button>
+                <button type="submit" disabled={isReportLoading} className="rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 disabled:opacity-60 disabled:cursor-not-allowed">{isReportLoading ? 'Đang gửi...' : 'Gửi báo cáo'}</button>
               </div>
             </form>
           </div>

@@ -18,6 +18,7 @@ import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestD
 import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
 import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
 import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
+import { PaymentResultPage } from "@/features/transaction/pages/PaymentResultPage";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
@@ -242,6 +243,7 @@ export const router = createBrowserRouter([
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
+      { path: "payment/result", element: <PaymentResultPage /> },
 
       {
         element: (

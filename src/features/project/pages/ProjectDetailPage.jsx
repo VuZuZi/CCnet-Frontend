@@ -1,4 +1,3 @@
-// src/features/project/pages/ProjectDetailPage.jsx
 import { useState, useMemo, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { useProjectDetail } from '../hooks/useProjectQueries';
@@ -23,13 +22,11 @@ export function ProjectDetailPage() {
   const [activeSubTab, setActiveSubTab] = useState('pending');
   const volunteerManagerRef = useRef(null);
 
-  //  Định nghĩa hàm điều hướng đến tab volunteer
   const handleNavigateToVolunteerTab = (tab, subTab) => {
     setActiveTab(tab);
     if (subTab) {
       setActiveSubTab(subTab);
     }
-    // Đợi state cập nhật và render xong mới cuộn
     setTimeout(() => {
       if (volunteerManagerRef.current) {
         volunteerManagerRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -37,13 +34,11 @@ export function ProjectDetailPage() {
     }, 100);
   };
 
-  //  Định nghĩa hàm onVolunteerClick (để dùng trong các component con)
   const onVolunteerClick = () => {
     handleNavigateToVolunteerTab('volunteer', 'pending');
   };
 
   const identity = useMemo(() => {
-    console.log('[identity] currentUser.id:', currentUser?.id, 'project.organizerId._id:', project?.organizerId?._id);
     if (!currentUser || !project) return 'GUEST';
     if (String(project.organizerId?._id) === String(currentUser.id)) return 'ORGANIZER';
     return 'USER';
@@ -78,7 +73,8 @@ export function ProjectDetailPage() {
               initialSubTab={activeSubTab}
             />
           </div>
-        ); case 'financials':
+        ); 
+      case 'financials':
         return (
           <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
             <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-[#FFFBEB] text-sm font-semibold text-slate-500">
@@ -125,6 +121,7 @@ export function ProjectDetailPage() {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               isOrganizer={isOrganizer}
+              projectType={project.projectType}
             />
 
             <div className="animate-in fade-in duration-300">{renderTabContent()}</div>
