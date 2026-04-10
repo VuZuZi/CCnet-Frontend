@@ -306,15 +306,6 @@ export const router = createBrowserRouter([
       },
 
       {
-        path: "dashboard",
-        element: (
-          <ProtectedRoute allowedRoles={[ROLES.USER, "user"]}>
-            {withSuspense(DashboardPage)}
-          </ProtectedRoute>
-        ),
-      },
-
-      {
         element: (
           <ProtectedRoute allowedRoles={CONSUMER_ROLES}>
             <Outlet />
