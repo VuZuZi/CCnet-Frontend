@@ -2,9 +2,29 @@ import {
   LoaderCircle,
   FileText,
   Image as ImageIcon,
+  Play,
+  Video,
 } from "lucide-react";
 import { chatAPI } from "../../api/chat.api";
 import { isImageAttachment, pickFilename } from "../../utils/message";
+
+function isVideoAttachment(attachment) {
+  const mime = String(attachment?.mimeType || attachment?.mimetype || "").toLowerCase();
+  const url = String(attachment?.url || attachment?.secureUrl || attachment?.fileUrl || "").toLowerCase();
+  const name = String(
+    attachment?.originalName || attachment?.filename || attachment?.name || ""
+  ).toLowerCase();
+
+  return (
+    mime.startsWith("video/") ||
+    url.includes(".mp4") ||
+    url.includes(".webm") ||
+    url.includes(".mov") ||
+    name.endsWith(".mp4") ||
+    name.endsWith(".webm") ||
+    name.endsWith(".mov")
+  );
+}
 
 function formatFileSize(bytes = 0) {
   const value = Number(bytes || 0);
@@ -139,6 +159,50 @@ function LoadingImageCard({ attachment, onPreviewImage, compact = false }) {
   );
 }
 
+function LoadingVideoCard({ attachment, compact = false }) {
+  const resolvedUrl = chatAPI.getAttachmentUrl(attachment);
+
+  return (
+    <div
+      className={`overflow-hidden border border-slate-200 bg-black shadow-sm ${
+        compact ? "rounded-[20px]" : "rounded-3xl"
+      }`}
+    >
+      {resolvedUrl ? (
+        <div className="relative">
+          <video
+            src={resolvedUrl}
+            className={compact ? "max-h-[104px] w-full object-cover" : "max-h-[220px] w-full object-cover"}
+            muted
+            playsInline
+            preload="metadata"
+          />
+          <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-slate-900 shadow-sm">
+              <Play className="ml-0.5 h-5 w-5" />
+            </div>
+          </div>
+          <div className="absolute bottom-2 right-2 inline-flex items-center gap-1 rounded-full bg-white/92 px-3 py-1.5 text-xs font-medium text-slate-700 shadow-sm">
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            Tải lên
+          </div>
+        </div>
+      ) : (
+        <div
+          className={`flex items-center justify-center bg-slate-900 text-white ${
+            compact ? "h-[96px]" : "h-[180px]"
+          }`}
+        >
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-2 text-xs">
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+            Đang chuẩn bị video
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function FileCard({ attachment, compact = false }) {
   const resolvedUrl = chatAPI.getAttachmentUrl(attachment);
   const fileName = pickFilename(attachment);
@@ -184,6 +248,40 @@ function FileCard({ attachment, compact = false }) {
   );
 }
 
+function VideoCard({ attachment, compact = false }) {
+  const resolvedUrl = chatAPI.getAttachmentUrl(attachment);
+  const fileName = pickFilename(attachment);
+
+  if (!resolvedUrl) return null;
+
+  return (
+    <div
+      className={`overflow-hidden border border-slate-200 bg-black shadow-sm ${
+        compact ? "rounded-[20px]" : "rounded-3xl"
+      }`}
+    >
+      <video
+        controls
+        preload="metadata"
+        className={compact ? "max-h-[160px] w-full object-cover" : "max-h-[320px] w-full object-cover"}
+      >
+        <source src={resolvedUrl} />
+        Trình duyệt không hỗ trợ video.
+      </video>
+
+      <div className="flex items-center gap-2 bg-white px-3 py-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-700">
+          <Video className="h-4 w-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-xs font-semibold text-slate-800">{fileName}</div>
+          <div className="text-[11px] text-slate-500">{getCompactFileMeta(attachment)}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MessageAttachments({
   attachments = [],
   onPreviewImage,
@@ -201,19 +299,34 @@ export default function MessageAttachments({
         const resolvedUrl = chatAPI.getAttachmentUrl(attachment);
         const key = `${resolvedUrl || attachment?.filename || "att"}-${index}`;
         const isImage = isImageAttachment(attachment);
+        const isVideo = isVideoAttachment(attachment);
         const fileName = pickFilename(attachment);
         const isUploading =
           attachment?.uploadState === "uploading" || attachment?.__localFile;
 
         if (isUploading) {
-          return isImage ? (
-            <LoadingImageCard
-              key={key}
-              attachment={attachment}
-              onPreviewImage={onPreviewImage}
-              compact={compact}
-            />
-          ) : (
+          if (isImage) {
+            return (
+              <LoadingImageCard
+                key={key}
+                attachment={attachment}
+                onPreviewImage={onPreviewImage}
+                compact={compact}
+              />
+            );
+          }
+
+          if (isVideo) {
+            return (
+              <LoadingVideoCard
+                key={key}
+                attachment={attachment}
+                compact={compact}
+              />
+            );
+          }
+
+          return (
             <LoadingFileCard
               key={key}
               attachment={attachment}
@@ -259,6 +372,10 @@ export default function MessageAttachments({
               />
             </button>
           );
+        }
+
+        if (isVideo) {
+          return <VideoCard key={key} attachment={attachment} compact={compact} />;
         }
 
         return (

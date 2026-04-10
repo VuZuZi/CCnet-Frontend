@@ -1,48 +1,124 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
-import { organizerRequestAPI, getErrorMessage } from "../api/organizerRequestAPI";
+import {
+  organizerRequestAPI,
+  getErrorMessage,
+} from "../api/organizerRequestAPI";
 import { organizerRequestSchema } from "../validations/organizerRequestSchema";
 import { queryKeys } from "@/shared/constants/queryKeys";
+
+const normalizeDocument = (doc) => {
+  if (!doc || typeof doc !== "object") return undefined;
+
+  const normalized = {
+    fileName: typeof doc.fileName === "string" ? doc.fileName : "",
+    mimeType: typeof doc.mimeType === "string" ? doc.mimeType : "",
+    size: Number(doc.size || 0),
+    ...(doc.url ? { url: doc.url } : {}),
+    ...(doc.dataUrl ? { dataUrl: doc.dataUrl } : {}),
+  };
+
+  if (!normalized.fileName || !normalized.mimeType) return undefined;
+  if (!normalized.url && !normalized.dataUrl) return undefined;
+
+  return normalized;
+};
+
+const readFileAsDataUrl = (file) =>
+  new Promise((resolve, reject) => {
+    if (!file) {
+      resolve(undefined);
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      resolve({
+        fileName: file.name || "upload",
+        mimeType: file.type || "application/octet-stream",
+        size: Number(file.size || 0),
+        dataUrl: typeof reader.result === "string" ? reader.result : "",
+      });
+    };
+
+    reader.onerror = () => reject(reader.error || new Error("Read file failed"));
+    reader.readAsDataURL(file);
+  });
+
+const sanitizePayload = (values) => {
+  const payload = {
+    ...values,
+    fullNameSnapshot: values.fullNameSnapshot?.trim() || "",
+    emailSnapshot: values.emailSnapshot?.trim() || "",
+    phoneSnapshot: values.phoneSnapshot?.trim() || "",
+    locationSnapshot: values.locationSnapshot?.trim() || "",
+    organizationName: values.organizationName?.trim() || "",
+    organizationWebsite: values.organizationWebsite?.trim() || "",
+    bankName: values.bankName?.trim() || "",
+    bankAccountNumber: values.bankAccountNumber?.trim() || "",
+    bankAccountName: values.bankAccountName?.trim() || "",
+    notes: values.notes?.trim() || "",
+
+    idCardFront: normalizeDocument(values.idCardFront),
+    idCardBack: normalizeDocument(values.idCardBack),
+    selfie: normalizeDocument(values.selfie),
+    businessLicense: normalizeDocument(values.businessLicense),
+    bankProof: normalizeDocument(values.bankProof),
+  };
+
+  if (!payload.businessLicense) delete payload.businessLicense;
+  if (!payload.bankProof) delete payload.bankProof;
+
+  return payload;
+};
 
 const getFirstErrorMessage = (errors) => {
   const visit = (obj) => {
     if (!obj || typeof obj !== "object") return null;
+
     for (const key of Object.keys(obj)) {
       const value = obj[key];
       if (value?.message) return value.message;
       const nested = visit(value);
       if (nested) return nested;
     }
+
     return null;
   };
+
   return visit(errors);
 };
 
 export function useOrganizerRequestForm(existingRequest = null) {
   const toast = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const currentUser = useAuthStore(authSelectors.user);
 
   const defaultValues = useMemo(
     () => ({
-      fullNameSnapshot: existingRequest?.fullNameSnapshot || currentUser?.fullName || "",
+      fullNameSnapshot:
+        existingRequest?.fullNameSnapshot || currentUser?.fullName || "",
       emailSnapshot: existingRequest?.emailSnapshot || currentUser?.email || "",
       phoneSnapshot: existingRequest?.phoneSnapshot || currentUser?.phone || "",
-      locationSnapshot: existingRequest?.locationSnapshot || currentUser?.location || "",
+      locationSnapshot:
+        existingRequest?.locationSnapshot || currentUser?.location || "",
 
       organizationName: existingRequest?.organizationName || "",
       organizationType: existingRequest?.organizationType || "COMMUNITY",
       organizationWebsite: existingRequest?.organizationWebsite || "",
 
-      idCardFront: existingRequest?.idCardFront ?? undefined,
-      idCardBack: existingRequest?.idCardBack ?? undefined,
-      selfie: existingRequest?.selfie ?? undefined,
-      businessLicense: existingRequest?.businessLicense ?? undefined,
-      bankProof: existingRequest?.bankProof ?? undefined,
+      idCardFront: normalizeDocument(existingRequest?.idCardFront),
+      idCardBack: normalizeDocument(existingRequest?.idCardBack),
+      selfie: normalizeDocument(existingRequest?.selfie),
+      businessLicense: normalizeDocument(existingRequest?.businessLicense),
+      bankProof: normalizeDocument(existingRequest?.bankProof),
 
       bankName: existingRequest?.bankName || "",
       bankAccountNumber: existingRequest?.bankAccountNumber || "",
@@ -59,35 +135,65 @@ export function useOrganizerRequestForm(existingRequest = null) {
     mode: "onChange",
   });
 
+  useEffect(() => {
+    form.reset(defaultValues);
+  }, [form, defaultValues]);
+
   const mutation = useMutation({
     mutationFn: organizerRequestAPI.submitRequest,
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeys.organizerRequests.me() });
-      toast.success("Application submitted successfully. Moving to verification.");
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.organizerRequests.me(),
+      });
+      toast.success("Đã gửi hồ sơ Organizer thành công");
+      navigate("/organizer/request");
     },
     onError: async (error) => {
       if (error.response?.status === 409) {
         toast.info("You already have a pending application. Updating your view...");
-        await queryClient.invalidateQueries({ queryKey: queryKeys.organizerRequests.me() });
+        await queryClient.invalidateQueries({
+          queryKey: queryKeys.organizerRequests.me(),
+        });
+        navigate("/organizer/request");
       } else {
         toast.error(getErrorMessage(error));
       }
     },
   });
 
-  const onDocumentChange = (fieldName, documentObject) => {
-    form.setValue(fieldName, documentObject, {
+  const onDocumentChange = async (fieldName, file) => {
+    if (!file) {
+      form.setValue(fieldName, undefined, {
+        shouldDirty: true,
+        shouldValidate: true,
+      });
+      return;
+    }
+
+    if (
+      typeof File !== "undefined" &&
+      file instanceof File
+    ) {
+      try {
+        const payload = await readFileAsDataUrl(file);
+        form.setValue(fieldName, payload, {
+          shouldDirty: true,
+          shouldValidate: true,
+        });
+      } catch {
+        toast.error("Không thể đọc file. Vui lòng thử lại.");
+      }
+      return;
+    }
+
+    form.setValue(fieldName, file, {
       shouldDirty: true,
       shouldValidate: true,
     });
   };
 
   const onValid = async (values) => {
-    const payload = { ...values };
-
-    if (!payload.businessLicense) delete payload.businessLicense;
-    if (!payload.bankProof) delete payload.bankProof;
-
+    const payload = sanitizePayload(values);
     await mutation.mutateAsync(payload);
   };
 

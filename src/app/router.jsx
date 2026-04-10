@@ -16,8 +16,10 @@ import ReportManagement from "@/features/admin/pages/ReportManagement";
 import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
 import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
+import AdminNotificationsPage from "@/features/admin/pages/AdminNotificationsPage";
 import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
 import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
+import { PaymentResultPage } from "@/features/transaction/pages/PaymentResultPage";
 
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
@@ -40,13 +42,13 @@ const VerifyOTPPage = lazy(() =>
 const ForgotPasswordPage = lazy(() =>
   import("@/features/auth/pages/ForgotPasswordPage").then((m) => ({
     default: m.ForgotPasswordPage || m.default,
-  }))
+  })),
 );
 
 const ChangePasswordPage = lazy(() =>
   import("@/features/auth/pages/ChangePasswordPage").then((m) => ({
     default: m.ChangePasswordPage || m.default,
-  }))
+  })),
 );
 
 const DashboardPage = lazy(() =>
@@ -146,9 +148,11 @@ const EditHelpRequestPage = lazy(() =>
 );
 
 const OrganizerAssignedRequestsPage = lazy(() =>
-  import("@/features/needHelp/pages/OrganizerAssignedRequestsPage").then((m) => ({
-    default: m.OrganizerAssignedRequestsPage || m.default,
-  })),
+  import("@/features/needHelp/pages/OrganizerAssignedRequestsPage").then(
+    (m) => ({
+      default: m.OrganizerAssignedRequestsPage || m.default,
+    }),
+  ),
 );
 
 const SearchPage = lazy(() =>
@@ -160,6 +164,12 @@ const SearchPage = lazy(() =>
 const ChatPage = lazy(() =>
   import("@/features/chat/pages/ChatPage").then((m) => ({
     default: m.ChatPage || m.default,
+  })),
+);
+
+const NotificationDetailPage = lazy(() =>
+  import("@/features/notification/pages/NotificationDetailPage").then((m) => ({
+    default: m.NotificationDetailPage || m.default,
   })),
 );
 
@@ -254,6 +264,7 @@ export const router = createBrowserRouter([
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
+      { path: "payment/result", element: <PaymentResultPage /> },
 
       {
         element: (
@@ -262,7 +273,10 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { path: "profile/supported-projects", element: withSuspense(SupportedProjectsPage) },
+          {
+            path: "profile/supported-projects",
+            element: withSuspense(SupportedProjectsPage),
+          },
           { path: "profile", element: withSuspense(UserProfilePage) },
           {
             path: "organizer/apply",
@@ -275,7 +289,20 @@ export const router = createBrowserRouter([
           { path: "messages", element: withSuspense(ChatPage) },
           { path: "messages/:conversationId", element: withSuspense(ChatPage) },
           { path: "change-password", element: withSuspense(ChangePasswordPage) },
+          {
+            path: "notifications/:id",
+            element: withSuspense(NotificationDetailPage),
+          },
         ],
+      },
+
+      {
+        path: "dashboard",
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.USER, "user"]}>
+            {withSuspense(DashboardPage)}
+          </ProtectedRoute>
+        ),
       },
 
       {
@@ -308,6 +335,27 @@ export const router = createBrowserRouter([
         ],
       },
 
+      {
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER]}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          {
+            path: "projects/create",
+            element: withSuspense(CreateProjectPage),
+          },
+          {
+            path: "workspace/projects",
+            element: withSuspense(WorkspaceProjectsPage),
+          },
+          {
+            path: "workspace/stats",
+            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
+          },
+        ],
+      },
     ],
   },
 
@@ -320,6 +368,7 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <AdminDashboard /> },
+      { path: "notifications", element: <AdminNotificationsPage /> },
       { path: "users", element: <UserManagement /> },
       { path: "organizers", element: <OrganizerRequestsPage /> },
       { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },

@@ -2,7 +2,7 @@ import httpClient from "@/shared/lib/httpClient";
 
 export const adminAPI = {
   getStats: () => httpClient.get("/admin/stats"),
-  getUsers: () => httpClient.get("/admin/users"),
+  getUsers: (params = {}) => httpClient.get("/admin/users", { params }),
   toggleBan: (userId) => httpClient.patch(`/admin/users/${userId}/ban`),
   toggleVerified: (userId, isVerified) =>
     httpClient.patch(`/admin/users/${userId}/verify`, { isVerified }),
@@ -17,5 +17,8 @@ export const adminAPI = {
   getReports: () => httpClient.get("/admin/reports"),
   resolveReport: (reportId, actions, note) =>
     httpClient.patch(`/admin/reports/${reportId}/resolve`, { actions, note }),
-  createNotification: (data) => httpClient.post("/admin/notifications", data),
+  createNotification: (payload) =>
+    httpClient.post("/admin/notifications", payload),
 };
+
+export default adminAPI;

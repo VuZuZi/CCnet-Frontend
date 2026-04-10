@@ -1,13 +1,16 @@
-// src/features/project/components/detail/ProjectTabs.jsx
-
-export function ProjectTabs({ activeTab, setActiveTab, isOrganizer }) {
+export function ProjectTabs({ activeTab, setActiveTab, isOrganizer, projectType }) {
     const tabs = [
         { id: 'story', label: 'Story' },
         { id: 'community', label: 'Community Feed' },
-        { id: 'financials', label: isOrganizer ? 'Financial Management' : 'Transparency & Financials' },
     ];
 
-    // ✅ Thêm tab Volunteer Manager chỉ khi là organizer
+    if (projectType !== 'VOLUNTEER_ONLY') {
+        tabs.push({ 
+            id: 'financials', 
+            label: isOrganizer ? 'Financial Management' : 'Transparency & Financials' 
+        });
+    }
+
     if (isOrganizer) {
         tabs.push({ id: 'volunteer', label: 'Volunteer Manager' });
     }

@@ -22,5 +22,6 @@ export function useNotificationSettings() {
   return {
     settingsQuery,
     updateSettings,
+    resetUpdateState: updateSettings.reset,
   };
 }

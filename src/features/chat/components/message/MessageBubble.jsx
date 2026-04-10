@@ -1,4 +1,5 @@
 import { memo, useMemo, useState } from "react";
+import { Pin } from "lucide-react";
 import SystemMessage from "./SystemMessage";
 import SenderAvatar from "./SenderAvatar";
 import SeenAvatars from "./SeenAvatars";
@@ -127,9 +128,12 @@ function MessageBubbleComponent({
 
   const {
     showActions,
+    isPinned,
     handleReply,
     handleReact,
     handleUnsend,
+    handlePin,
+    handleUnpin,
     openActions,
     scheduleCloseActions,
     handleBlurCapture,
@@ -177,10 +181,23 @@ function MessageBubbleComponent({
               onFocusCapture={openActions}
               onBlurCapture={handleBlurCapture}
             >
+              {isPinned ? (
+                <div
+                  className={`absolute z-20 ${
+                    mine ? "right-2" : "left-2"
+                  } -top-2`}
+                >
+                  <div className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-white/95 px-2 py-0.5 text-[10px] font-semibold text-amber-700 shadow-sm backdrop-blur-sm">
+                    <Pin className="h-3 w-3" />
+                    Ghim
+                  </div>
+                </div>
+              ) : null}
+
               <div
-                className={`${bubbleRadius} ${bubblePadding} shadow-sm ring-1 ${
+                className={`${bubbleRadius} ${bubblePadding} shadow-sm ring-1 transition-colors duration-200 ${
                   mine
-                    ? "bg-amber-100 text-slate-900 ring-amber-200"
+                    ? "bg-amber-100 text-slate-900 ring-amber-200/90"
                     : "bg-white text-slate-900 ring-slate-200"
                 }`}
               >
@@ -207,9 +224,13 @@ function MessageBubbleComponent({
                   <MessageActionsMenu
                     canReply
                     canUnsend={mine}
+                    canPin
+                    isPinned={isPinned}
                     onReply={handleReply}
                     onUnsend={handleUnsend}
                     onReact={handleReact}
+                    onPin={handlePin}
+                    onUnpin={handleUnpin}
                     compact={compact}
                     align={mine ? "right" : "left"}
                     variant={mine ? "mine" : "incoming"}

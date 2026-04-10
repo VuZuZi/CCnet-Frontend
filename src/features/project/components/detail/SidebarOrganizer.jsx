@@ -15,9 +15,13 @@ function formatCurrency(value) {
 }
 
 export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
-  const currentAmount = project?.currentAmount || 0;
-  const targetAmount = project?.targetAmount || 1;
-  const progressPercent = Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
+  const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
+  const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
+
+  const availableBalance = project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
+  const targetAmount = project?.targetAmount ?? 1;
+  const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
+  const progressPercent = Math.min(Math.round((availableBalance / targetAmount) * 100), 100);
 
   const projectId = project?._id;
   const pendingCountRef = useRef(null);
@@ -27,18 +31,10 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
   const getPendingCount = () => {
     if (!pendingData) return 0;
-    if (pendingData?.data?.data && Array.isArray(pendingData.data.data)) {
-      return pendingData.data.data.length;
-    }
-    if (pendingData?.data && Array.isArray(pendingData.data)) {
-      return pendingData.data.length;
-    }
-    if (Array.isArray(pendingData)) {
-      return pendingData.length;
-    }
-    if (pendingData?.data?.total) {
-      return pendingData.data.total;
-    }
+    if (pendingData?.data?.data && Array.isArray(pendingData.data.data)) return pendingData.data.data.length;
+    if (pendingData?.data && Array.isArray(pendingData.data)) return pendingData.data.length;
+    if (Array.isArray(pendingData)) return pendingData.length;
+    if (pendingData?.data?.total) return pendingData.data.total;
     return 0;
   };
 
@@ -46,24 +42,14 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
   const handlePendingVolunteersClick = () => {
     if (pendingCountRef.current) {
-      pendingCountRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-
+      pendingCountRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
       pendingCountRef.current.classList.add('ring-4', 'ring-[#FBBF24]/30', 'scale-110');
-
       setTimeout(() => {
         if (pendingCountRef.current) {
-          pendingCountRef.current.classList.remove(
-            'ring-4',
-            'ring-[#FBBF24]/30',
-            'scale-110'
-          );
+          pendingCountRef.current.classList.remove('ring-4', 'ring-[#FBBF24]/30', 'scale-110');
         }
       }, 1000);
     }
-
     if (onNavigateToVolunteerTab) {
       onNavigateToVolunteerTab('volunteer', 'pending');
     }
@@ -79,44 +65,50 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
           </div>
           <h2 className="text-lg font-bold text-slate-900">Command Center</h2>
         </div>
-
         <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-white shadow-sm">
           <ShieldCheck className="h-4 w-4" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
-            Admin View
-          </span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Admin View</span>
         </div>
       </div>
 
       <div className="space-y-4">
-        <div>
-          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-            Funds in Escrow
-          </p>
-          <div className="mt-2 flex items-end gap-3">
-            <div className="text-4xl font-extrabold tracking-tight text-slate-900">
-              {formatCurrency(currentAmount)}đ
+        {isFunded && (
+          <>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
+                Funds in Escrow
+              </p>
+              <div className="mt-2 flex items-end gap-3">
+                <div className="text-4xl font-extrabold tracking-tight text-slate-900">
+                  {formatCurrency(availableBalance)}đ
+                </div>
+              </div>
+              {pendingRefunds > 0 && (
+                <p className="mt-1 text-xs font-medium text-amber-600">
+                  ({formatCurrency(pendingRefunds)}đ đang chờ Kế toán hoàn trả)
+                </p>
+              )}
+              <p className="mt-1 text-sm text-slate-500">Goal: {formatCurrency(targetAmount)}đ</p>
             </div>
-          </div>
-          <p className="mt-1 text-sm text-slate-500">Goal: {formatCurrency(targetAmount)}đ</p>
-        </div>
-
-        <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-          <div
-            className="relative h-full rounded-full bg-[linear-gradient(90deg,#FBBF24_0%,#F59E0B_100%)] transition-all duration-1000"
-            style={{ width: `${progressPercent}%` }}
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm">
-              <Wallet size={18} />
+            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
+              <div
+                className="relative h-full rounded-full bg-[linear-gradient(90deg,#C084FC_0%,#A855F7_100%)] transition-all duration-1000"
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
-            <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
-            <p className="mt-1 text-sm font-medium text-slate-500">Funded</p>
-          </div>
+          </>
+        )}
 
+        <div className={`grid ${isFunded ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+          {isFunded && (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm">
+                <Wallet size={18} />
+              </div>
+              <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
+              <p className="mt-1 text-sm font-medium text-slate-500">Funded</p>
+            </div>
+          )}
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
               <Users size={18} />
@@ -127,27 +119,17 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
         </div>
       </div>
 
-      <div
-        className="flex items-center justify-between rounded-[24px] border border-emerald-100 bg-emerald-50/80 p-4 transition hover:border-emerald-200 hover:bg-emerald-50"
-      >
-        <div
-          className="group flex cursor-pointer items-center gap-3"
-          onClick={handlePendingVolunteersClick}
-        >
+      <div className="flex items-center justify-between rounded-[24px] border border-emerald-100 bg-emerald-50/80 p-4 transition hover:border-emerald-200 hover:bg-emerald-50">
+        <div className="group flex cursor-pointer items-center gap-3" onClick={handlePendingVolunteersClick}>
           <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm transition group-hover:scale-105">
             <Users className="h-5 w-5" />
           </div>
-
           <div>
             <p className="text-sm font-bold text-emerald-900">Pending Volunteers</p>
             <p className="text-xs text-emerald-700">Review applications</p>
           </div>
         </div>
-
-        <div
-          ref={pendingCountRef}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white shadow-md transition-all duration-300"
-        >
+        <div ref={pendingCountRef} className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white shadow-md transition-all duration-300">
           {isLoading ? (
             <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           ) : (
@@ -157,22 +139,23 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
       </div>
 
       <div className="flex flex-col gap-3 pt-2">
-        <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-5 py-4 text-sm font-bold text-slate-500">
-          <Lock className="h-5 w-5" />
-          Request Disbursement
-        </button>
-
-        <p className="text-center text-xs text-slate-500">
-          Submit milestone evidence to unlock.
-        </p>
-
-        <div className="my-1 border-t border-slate-100" />
+        {isFunded && (
+          <>
+            <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-5 py-4 text-sm font-bold text-slate-500">
+              <Lock className="h-5 w-5" />
+              Request Disbursement
+            </button>
+            <p className="text-center text-xs text-slate-500">
+              Submit Phase 1 evidence to unlock.
+            </p>
+            <div className="my-1 border-t border-slate-100" />
+          </>
+        )}
 
         <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
           <Edit className="h-4 w-4" />
           Edit Project Details
         </button>
-
         <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
           <MessageSquare className="h-4 w-4" />
           Open Project Group Chat

@@ -74,7 +74,10 @@ export const notificationApi = {
     const response = await httpClient.post(createNotificationUrl('/stream/session'));
     return unwrapResponse(response);
   },
-
+async getNotificationById(notificationId) {
+  const response = await httpClient.get(createNotificationUrl(`/${notificationId}`));
+  return unwrapResponse(response);
+},
   hasAccessToken() {
     return Boolean(tokenManager.getAccessToken());
   },

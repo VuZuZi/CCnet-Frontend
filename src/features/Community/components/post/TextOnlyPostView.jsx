@@ -16,36 +16,36 @@ const SharedEntityCard = ({ entity }) => {
     : "bg-red-50 text-red-700 border-red-100";
 
   return (
-    <div className="mt-4 border border-slate-200 rounded-xl overflow-hidden bg-slate-50 flex flex-col sm:flex-row relative">
-      <div className="w-full sm:w-[160px] h-[140px] sm:h-auto shrink-0 bg-slate-200 border-b sm:border-b-0 sm:border-r border-slate-200 relative">
+    <div className="relative mt-4 flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 sm:flex-row">
+      <div className="relative h-[140px] w-full shrink-0 border-b border-slate-200 bg-slate-200 sm:h-auto sm:w-[160px] sm:border-b-0 sm:border-r">
         {entity.thumbnail ? (
           <img
             src={entity.thumbnail}
             alt="Thumbnail"
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">
+          <div className="flex h-full w-full items-center justify-center text-sm font-medium text-slate-400">
             No Image
           </div>
         )}
         <span
-          className={`absolute top-2 left-2 px-2 py-1 text-[9px] font-bold uppercase rounded-md shadow-sm text-white ${badgeClass}`}
+          className={`absolute left-2 top-2 rounded-md px-2 py-1 text-[9px] font-bold uppercase text-white shadow-sm ${badgeClass}`}
         >
           {isProject ? "PROJECT" : "NEED HELP"}
         </span>
       </div>
-      <div className="p-4 flex flex-col flex-1 bg-white">
-        <h4 className="font-bold text-slate-900 line-clamp-2 mb-1.5">
+      <div className="flex flex-1 flex-col bg-white p-4">
+        <h4 className="mb-1.5 line-clamp-2 font-bold text-slate-900">
           {entity.title}
         </h4>
-        <p className="text-sm text-slate-500 line-clamp-2 mb-3">
+        <p className="mb-3 line-clamp-2 text-sm text-slate-500">
           {entity.description || "Nhấn để xem chi tiết..."}
         </p>
         <div className="mt-auto">
           <Link
             to={linkTo}
-            className={`inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-bold transition-colors border hover:opacity-80 ${btnClass}`}
+            className={`inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm font-bold transition-colors hover:opacity-80 ${btnClass}`}
           >
             {isProject ? "Xem Dự Án" : "Giúp Đỡ Ngay"}
             <FiArrowRight className="ml-1" />
@@ -62,6 +62,7 @@ const TextOnlyPostView = ({
   setCommentContent,
   toggleReaction,
   addComment,
+  targetCommentId = "",
 }) => {
   const isLiked = post.userReaction === "like";
   const isDisliked = post.userReaction === "dislike";
@@ -148,10 +149,10 @@ const TextOnlyPostView = ({
   };
 
   return (
-    <div className="flex flex-col items-center justify-center px-4 pb-8 min-h-[80vh]">
-      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-2xl w-full">
-        <div className="flex items-center gap-4 mb-6 pb-6 border-b border-slate-100">
-          <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-xl font-bold text-slate-500 shrink-0">
+    <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 pb-8">
+      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl md:p-8">
+        <div className="mb-6 flex items-center gap-4 border-b border-slate-100 pb-6">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xl font-bold text-slate-500">
             {post.authorName.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -162,13 +163,13 @@ const TextOnlyPostView = ({
           </div>
         </div>
 
-        <div className="prose prose-slate prose-lg max-w-none whitespace-pre-wrap leading-relaxed text-slate-800 break-words">
+        <div className="prose prose-slate prose-lg max-w-none whitespace-pre-wrap break-words leading-relaxed text-slate-800">
           {post.content}
         </div>
 
         <SharedEntityCard entity={post.sharedEntity} />
 
-        <div className="flex items-center gap-6 py-4 border-t border-b border-slate-100 mt-6 mb-6">
+        <div className="mb-6 mt-6 flex items-center gap-6 border-b border-t border-slate-100 py-4">
           <button
             onClick={() =>
               toggleReaction.mutate({
@@ -176,7 +177,9 @@ const TextOnlyPostView = ({
                 type: "like",
               })
             }
-            className={`flex items-center gap-2 font-bold text-sm transition-all hover:opacity-70 ${isLiked ? "text-yellow-500" : "text-slate-500"}`}
+            className={`flex items-center gap-2 text-sm font-bold transition-all hover:opacity-70 ${
+              isLiked ? "text-yellow-500" : "text-slate-500"
+            }`}
           >
             <span
               className={`material-symbols-outlined ${isLiked ? "fill-current" : ""}`}
@@ -193,7 +196,9 @@ const TextOnlyPostView = ({
                 type: "dislike",
               })
             }
-            className={`flex items-center gap-2 font-bold text-sm transition-all hover:opacity-70 ${isDisliked ? "text-red-500" : "text-slate-500"}`}
+            className={`flex items-center gap-2 text-sm font-bold transition-all hover:opacity-70 ${
+              isDisliked ? "text-red-500" : "text-slate-500"
+            }`}
           >
             <span
               className={`material-symbols-outlined ${isDisliked ? "fill-current" : ""}`}
@@ -202,14 +207,14 @@ const TextOnlyPostView = ({
             </span>
           </button>
 
-          <div className="flex items-center gap-2 text-slate-500 font-bold text-sm ml-auto">
+          <div className="ml-auto flex items-center gap-2 text-sm font-bold text-slate-500">
             <span className="material-symbols-outlined">chat_bubble</span>{" "}
             {totalComments} Comments
           </div>
         </div>
 
         <div>
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3 flex items-center justify-between">
             <span className="text-[14px] font-bold text-slate-900">
               Comments ({totalComments})
             </span>
@@ -217,11 +222,11 @@ const TextOnlyPostView = ({
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setIsSortOpen(!isSortOpen)}
-                className="text-[14px] font-semibold text-gray-600 hover:text-gray-900 flex items-center"
+                className="flex items-center text-[14px] font-semibold text-gray-600 hover:text-gray-900"
               >
                 {getSortLabel()}
                 <svg
-                  className="w-4 h-4 ml-1"
+                  className="ml-1 h-4 w-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -236,28 +241,28 @@ const TextOnlyPostView = ({
               </button>
 
               {isSortOpen && (
-                <div className="absolute top-full right-0 mt-2 w-[260px] bg-white border border-gray-100 rounded-lg shadow-[0_4px_20px_rgba(0,0,0,0.15)] z-50 py-2">
+                <div className="absolute right-0 top-full z-50 mt-2 w-[260px] rounded-lg border border-gray-100 bg-white py-2 shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
                   <button
                     onClick={() => handleSortChange("relevant")}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-left transition-colors hover:bg-gray-50"
                   >
-                    <div className="font-semibold text-[14px] text-gray-900">
+                    <div className="text-[14px] font-semibold text-gray-900">
                       Phù hợp nhất
                     </div>
                   </button>
                   <button
                     onClick={() => handleSortChange("newest")}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-left transition-colors hover:bg-gray-50"
                   >
-                    <div className="font-semibold text-[14px] text-gray-900">
+                    <div className="text-[14px] font-semibold text-gray-900">
                       Mới nhất
                     </div>
                   </button>
                   <button
                     onClick={() => handleSortChange("all")}
-                    className="w-full text-left px-4 py-2.5 hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 py-2.5 text-left transition-colors hover:bg-gray-50"
                   >
-                    <div className="font-semibold text-[14px] text-gray-900">
+                    <div className="text-[14px] font-semibold text-gray-900">
                       Tất cả bình luận
                     </div>
                   </button>
@@ -266,73 +271,83 @@ const TextOnlyPostView = ({
             </div>
           </div>
 
-          <div className="flex flex-col gap-4 mb-4 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="custom-scrollbar mb-4 flex max-h-[320px] flex-col gap-4 overflow-y-auto pr-2">
             {allComments.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-gray-400 text-sm">Chưa có bình luận nào.</p>
+              <div className="py-10 text-center">
+                <p className="text-sm text-gray-400">Chưa có bình luận nào.</p>
               </div>
             ) : (
-              allComments.map((comment) => (
-                <div
-                  key={comment._id}
-                  className="flex gap-3 items-start w-full"
-                >
-                  <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center text-xs font-bold text-slate-500 shrink-0">
-                    {(
-                      comment.author?.fullName ||
-                      comment.author?.username ||
-                      "U"
-                    )
-                      .charAt(0)
-                      .toUpperCase()}
-                  </div>
-                  <div className="text-sm bg-slate-50 px-4 py-3 rounded-2xl flex-1 border border-slate-100 min-w-0 break-words">
-                    <span className="font-bold text-slate-900 mr-2">
-                      {comment.author?.fullName ||
+              allComments.map((comment) => {
+                const commentId = comment._id || comment.id || "";
+                const isTarget =
+                  targetCommentId &&
+                  String(commentId) === String(targetCommentId);
+
+                return (
+                  <div
+                    key={comment._id || comment.id}
+                    id={commentId ? `comment-${commentId}` : undefined}
+                    className={`flex w-full items-start gap-3 rounded-2xl transition-all duration-300 ${
+                      isTarget ? "bg-yellow-50/70 p-2" : ""
+                    }`}
+                  >
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-500">
+                      {(
+                        comment.author?.fullName ||
                         comment.author?.username ||
-                        "Anonymous"}
-                    </span>
-                    <span className="text-slate-700 break-words whitespace-pre-wrap">
-                      {comment.content}
-                    </span>
+                        "U"
+                      )
+                        .charAt(0)
+                        .toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1 break-words rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3 text-sm">
+                      <span className="mr-2 font-bold text-slate-900">
+                        {comment.author?.fullName ||
+                          comment.author?.username ||
+                          "Anonymous"}
+                      </span>
+                      <span className="whitespace-pre-wrap break-words text-slate-700">
+                        {comment.content}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
 
             {hasMoreComments && (
               <button
                 onClick={() => setPage((prev) => (prev === 0 ? 1 : prev + 1))}
                 disabled={isLoadingComments}
-                className="text-[13.5px] font-semibold text-gray-500 hover:underline hover:text-gray-800 pt-2 block"
+                className="block pt-2 text-[13.5px] font-semibold text-gray-500 hover:text-gray-800 hover:underline"
               >
                 {isLoadingComments ? "Đang tải..." : "Xem thêm bình luận"}
               </button>
             )}
           </div>
 
-          <div className="pt-4 mt-2 border-t border-gray-100">
+          <div className="mt-2 border-t border-gray-100 pt-4">
             <form
               onSubmit={onCommentSubmit}
               className="flex items-center space-x-2"
             >
-              <div className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 focus-within:ring-2 focus-within:ring-yellow-400 transition-all">
+              <div className="flex-1 rounded-full bg-gray-100 px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-yellow-400">
                 <input
                   type="text"
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   placeholder="Viết bình luận..."
-                  className="w-full bg-transparent border-none outline-none focus:ring-0 text-[14px]"
+                  className="w-full border-none bg-transparent text-[14px] outline-none focus:ring-0"
                   disabled={addComment.isPending}
                 />
               </div>
               <button
                 type="submit"
                 disabled={!commentContent.trim() || addComment.isPending}
-                className="text-yellow-500 font-bold text-sm px-2 disabled:opacity-40 hover:text-yellow-600 transition-colors cursor-pointer"
+                className="cursor-pointer px-2 text-sm font-bold text-yellow-500 transition-colors hover:text-yellow-600 disabled:opacity-40"
               >
                 <svg
-                  className="w-5 h-5 transform rotate-45"
+                  className="h-5 w-5 rotate-45 transform"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >

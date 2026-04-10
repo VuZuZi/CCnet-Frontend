@@ -9,7 +9,7 @@ export function useAuthInit() {
   }, [checkAuthSession]);
 
   return {
-    isLoading, 
+    isLoading,
     isAuthenticated,
   };
 }

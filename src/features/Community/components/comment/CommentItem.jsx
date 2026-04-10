@@ -10,26 +10,42 @@ const formatTimeAgo = (dateString) => {
   return `${Math.floor(diffInHours / 24)}ngày trước`;
 };
 
-const CommentItem = ({ comment, isReply = false }) => {
+const CommentItem = ({
+  comment,
+  isReply = false,
+  targetCommentId = "",
+}) => {
   if (!comment) return null;
 
   const authorName =
     comment.author?.fullName || comment.author?.username || "Anonymous";
   const authorInitials = authorName.substring(0, 1).toUpperCase();
+  const commentId = comment._id || comment.id || "";
+  const isTarget =
+    !isReply &&
+    targetCommentId &&
+    String(commentId) === String(targetCommentId);
 
   return (
     <div
-      className={`flex space-x-3 w-full min-w-0 ${isReply ? "mt-3 border-l-2 border-yellow-100 pl-3" : ""}`}
+      id={!isReply && commentId ? `comment-${commentId}` : undefined}
+      className={`flex w-full min-w-0 space-x-3 transition-all duration-300 ${
+        isReply ? "mt-3 border-l-2 border-yellow-100 pl-3" : ""
+      } ${isTarget ? "rounded-2xl bg-yellow-50/70 p-2" : ""}`}
     >
       <div
-        className={`${isReply ? "size-7 text-[10px]" : "size-8 text-xs"} rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shrink-0`}
+        className={`${
+          isReply ? "size-7 text-[10px]" : "size-8 text-xs"
+        } rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shrink-0`}
       >
         {authorInitials}
       </div>
 
       <div className="flex-1 min-w-0">
         <div
-          className={`p-3 rounded-2xl max-w-full inline-block ${isReply ? "bg-gray-50 border border-yellow-50" : "bg-gray-100"}`}
+          className={`p-3 rounded-2xl max-w-full inline-block ${
+            isReply ? "bg-gray-50 border border-yellow-50" : "bg-gray-100"
+          }`}
         >
           <div className="flex items-center space-x-2 mb-0.5">
             <h4 className="text-xs font-bold text-gray-900 truncate">
@@ -58,6 +74,7 @@ const CommentItem = ({ comment, isReply = false }) => {
             key={reply._id || reply.id}
             comment={reply}
             isReply={true}
+            targetCommentId={targetCommentId}
           />
         ))}
       </div>

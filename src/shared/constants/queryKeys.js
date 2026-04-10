@@ -88,3 +88,15 @@ export const invalidateQueries = {
     queryClient.invalidateQueries({ queryKey: queryKeys.helpRequests.detail(helpRequestId) });
   },
 };
+
+export const GLOBAL_QUERY_KEYS = {
+  WALLET_ME: ['wallet', 'me'],
+  WALLET_HISTORY: ['wallet', 'history'],
+  
+  PROJECT_DETAIL: (id) => ['projects', 'detail', id],
+  PROJECT_WORKSPACE: ['projects', 'workspace'],
+  PROJECT_ADMIN_LIST: ['project-management', 'projects'],
+  
+  ORGANIZER_REQUEST_ME: ['organizer-request', 'me'],
+  PROFILE_ME: ['profile', 'me']
+};
