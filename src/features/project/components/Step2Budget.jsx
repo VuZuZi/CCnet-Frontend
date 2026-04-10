@@ -3,10 +3,11 @@ import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createDraftStep2Schema } from '../validations/projectSchema';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
-import { useUpdateDraftProject } from '../hooks/useProjectMutations';
+import { useCreateDraftProject, useUpdateDraftProject } from '../hooks/useProjectMutations';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { ArrowLeft, ArrowRight, Plus, Trash2, Save, Loader2 } from 'lucide-react';
 import { devConfig } from '@/config/app.config';
+import { useNavigate } from 'react-router-dom';
 
 const formatDateForInput = (isoString) => {
   if (!isoString) return '';
@@ -14,9 +15,12 @@ const formatDateForInput = (isoString) => {
 };
 
 export default function Step2Budget() {
-  const { formData, updateFormData, nextStep, prevStep, projectId } = useProjectDraftStore();
-  const { mutateAsync: updateDraft, isPending } = useUpdateDraftProject();
+  const navigate = useNavigate();
+  const { formData, updateFormData, nextStep, prevStep, projectId, setProjectId } = useProjectDraftStore();
+  const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
+  const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
   const toast = useToast();
+  const isPending = isCreating || isUpdating;
 
   const isFunded = formData.projectType === 'FUNDED';
   const schema = createDraftStep2Schema(formData.startDate, formData.endDate);
@@ -57,13 +61,25 @@ export default function Step2Budget() {
     }
   }, [needsVolunteers, setValue]);
 
-  const executeSave = async (data, goNext = false) => {
-    if (!projectId) {
-      toast.error('Lỗi nghiêm trọng: Không tìm thấy ID dự án. Vui lòng quay lại Bước 1.');
-      return;
-    }
-
+  const executeSave = async (data) => {
     try {
+      const normalizedVolunteerRoles = (data.volunteerRoles || []).map((role) => {
+        const normalizedSkills = Array.isArray(role?.skillsRequired)
+          ? role.skillsRequired
+          : String(role?.skills || '')
+              .split(',')
+              .map((s) => s.trim())
+              .filter(Boolean);
+
+        return {
+          title: role?.title || '',
+          quantity: Number(role?.quantity || 0),
+          skillsRequired: normalizedSkills,
+          location: role?.location || '',
+          duration: role?.duration || '',
+        };
+      });
+
       const step2Payload = isFunded ? data : {
         ...data,
         targetAmount: 0,
@@ -73,21 +89,36 @@ export default function Step2Budget() {
         milestones: data.milestones.map(m => ({ ...m, targetAmount: 0 }))
       };
 
-      updateFormData(step2Payload);
+      const normalizedPayload = {
+        ...step2Payload,
+        volunteerRoles: step2Payload.needsVolunteers ? normalizedVolunteerRoles : [],
+      };
 
-      const fullFormData = useProjectDraftStore.getState().formData;
+      updateFormData(normalizedPayload);
 
-      await updateDraft({ 
-        id: projectId, 
-        data: fullFormData 
-      });
+      // Send merged data directly to avoid stale store reads between set and get.
+      const fullFormData = {
+        ...useProjectDraftStore.getState().formData,
+        ...normalizedPayload,
+      };
 
-      if (goNext) {
-        nextStep();
+      if (!projectId) {
+        const created = await createDraft(fullFormData);
+        if (created?._id) {
+          setProjectId(created._id);
+          navigate(`/projects/create/${created._id}/edit`, { replace: true });
+        }
       } else {
-        toast.success('Đã lưu bản nháp an toàn!');
+        await updateDraft({ 
+          id: projectId, 
+          data: fullFormData 
+        });
       }
+
+      toast.success('Đã lưu bản nháp an toàn!');
     } catch (error) {
+      const apiMessage = error?.response?.data?.message || 'Lưu nháp thất bại ở Bước 2. Vui lòng kiểm tra lại dữ liệu.';
+      toast.error(apiMessage);
       devConfig.error("[CTO Log] Save Step 2 Failed:", error);
     }
   };
@@ -97,7 +128,36 @@ export default function Step2Budget() {
     toast.error("Có lỗi ở các trường nhập liệu. Vui lòng kéo lên và kiểm tra các ô màu đỏ.");
   };
 
-  const handleNextStep = handleSubmit((data) => executeSave(data, true), onInvalid);
+  const handleNextStep = handleSubmit((data) => {
+    const step2Payload = isFunded ? data : {
+      ...data,
+      targetAmount: 0,
+      mvpAmount: 0,
+      surplusPolicy: '',
+      budgetBreakdown: [],
+      milestones: data.milestones.map(m => ({ ...m, targetAmount: 0 })),
+    };
+
+    const normalizedVolunteerRoles = (step2Payload.volunteerRoles || []).map((role) => ({
+      title: role?.title || '',
+      quantity: Number(role?.quantity || 0),
+      skillsRequired: Array.isArray(role?.skillsRequired)
+        ? role.skillsRequired
+        : String(role?.skills || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
+      location: role?.location || '',
+      duration: role?.duration || '',
+    }));
+
+    updateFormData({
+      ...step2Payload,
+      volunteerRoles: step2Payload.needsVolunteers ? normalizedVolunteerRoles : [],
+    });
+
+    nextStep();
+  }, onInvalid);
 
   return (
     <form className="pb-32 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -273,7 +333,7 @@ export default function Step2Budget() {
               type="button" 
               onClick={() => {
                 const currentData = getValues();
-                executeSave(currentData, false);
+                executeSave(currentData);
               }} 
               disabled={isPending} 
               className="hidden md:flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm disabled:opacity-50"

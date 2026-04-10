@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
-import { useProjectDetail } from '../hooks/useProjectQueries';
+import { useProjectDetail, useWorkspaceProjects } from '../hooks/useProjectQueries';
 import { useHelpRequestAsProjectData } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import { format } from 'date-fns';
 import { CheckCircle2 } from 'lucide-react';
@@ -16,6 +16,7 @@ const STEPS = [
 ];
 
 export function CreateProjectPage() {
+    const navigate = useNavigate();
     const { id } = useParams();
     const location = useLocation();
     const isEditMode = !!id || location.pathname.includes('edit');
@@ -26,7 +27,21 @@ export function CreateProjectPage() {
     const [isHydrated, setIsHydrated] = useState(!isEditMode && !helpRequestId);
 
     const { data: draftData, isLoading, isError } = useProjectDetail(id);
+    const { data: draftListData } = useWorkspaceProjects({ page: 1, limit: 100, status: 'DRAFT' });
     const { data: helpRequestData, isLoading: isHelpRequestLoading, isError: isHelpRequestError } = useHelpRequestAsProjectData(helpRequestId);
+    const draftOptions = draftListData?.projects || [];
+
+    const handleDraftSelection = (selectedDraftId) => {
+        if (!selectedDraftId) {
+            resetDraft();
+            navigate('/projects/create', { replace: true });
+            return;
+        }
+
+        if (String(selectedDraftId) === String(id)) return;
+        setIsHydrated(false);
+        navigate(`/projects/create/${selectedDraftId}/edit`, { replace: true });
+    };
 
     useEffect(() => {
         if (!isEditMode && !helpRequestId) {
@@ -41,23 +56,36 @@ export function CreateProjectPage() {
                 return format(new Date(isoString), 'yyyy-MM-dd');
             };
 
+            const normalizeCoverMedia = () => {
+                if (!draftData.coverMedia) return [];
+                return Array.isArray(draftData.coverMedia)
+                    ? draftData.coverMedia
+                    : [draftData.coverMedia];
+            };
+
             const normalizedData = {
+                projectType: draftData.projectType || 'FUNDED',
                 title: draftData.title || '',
                 category: draftData.category || '',
                 location: draftData.location || null,
                 description: draftData.description || '',
-                isFundraising: draftData.targetAmount > 0,
+                beneficiaryInfo: draftData.beneficiaryInfo || { details: '' },
                 targetAmount: draftData.targetAmount || 0,
+                mvpAmount: draftData.mvpAmount || 0,
+                budgetBreakdown: draftData.budgetBreakdown || [],
+                surplusPolicy: draftData.surplusPolicy || '',
                 startDate: parseDateLocal(draftData.startDate),
                 endDate: parseDateLocal(draftData.endDate),
                 needsVolunteers: draftData.needsVolunteers || false,
                 milestones: draftData.milestones?.length ? draftData.milestones : [],
                 volunteerRoles: draftData.volunteerRoles || [],
-                coverMedia: draftData.coverMedia ? [draftData.coverMedia] : [],
+                coverMedia: normalizeCoverMedia(),
                 documents: draftData.documents || [],
-                deletedDocumentIds: []
+                deletedDocumentIds: [],
+                fromHelpRequestId: draftData.fromHelpRequestId || null,
             };
 
+            resetDraft();
             updateFormData(normalizedData);
             setProjectId(id);
             setIsHydrated(true);
@@ -137,6 +165,30 @@ export function CreateProjectPage() {
                     <div className="hidden md:flex items-center text-sm text-slate-500 gap-1.5 ml-8 mt-2">
                         <CheckCircle2 size={18} className="text-slate-400" />
                         Draft saved just now
+                    </div>
+                </div>
+
+                <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:items-center">
+                        <div>
+                            <p className="text-sm font-bold text-slate-900">Chọn bản draft để tiếp tục</p>
+                            <p className="mt-1 text-xs text-slate-500">
+                                Bạn có thể chọn một bản nháp đã lưu hoặc chọn "Không dùng draft" để bắt đầu biểu mẫu mới.
+                            </p>
+                        </div>
+
+                        <select
+                            value={id || ''}
+                            onChange={(e) => handleDraftSelection(e.target.value)}
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                        >
+                            <option value="">Không dùng draft (tạo mới)</option>
+                            {draftOptions.map((draft) => (
+                                <option key={draft._id} value={draft._id}>
+                                    {draft.title || 'Draft chưa có tiêu đề'} - {draft.category || 'No category'}
+                                </option>
+                            ))}
+                        </select>
                     </div>
                 </div>
 

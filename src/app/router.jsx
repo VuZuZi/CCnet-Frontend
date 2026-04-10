@@ -115,9 +115,9 @@ const CreateProjectPage = lazy(() =>
   })),
 );
 
-const WorkspaceProjectsPage = lazy(() =>
-  import("@/features/project/pages/WorkspaceProjectsPage").then((m) => ({
-    default: m.WorkspaceProjectsPage || m.default,
+const OrganizerWorkspacePage = lazy(() =>
+  import("@/features/project/pages/OrganizerWorkspacePage").then((m) => ({
+    default: m.OrganizerWorkspacePage || m.default,
   })),
 );
 
@@ -209,6 +209,14 @@ export const router = createBrowserRouter([
               </ProtectedRoute>
             ),
           },
+          {
+            path: "create/:id/edit",
+            element: (
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
+                {withSuspense(CreateProjectPage)}
+              </ProtectedRoute>
+            ),
+          },
           { path: ":id", element: withSuspense(ProjectDetailPage) },
         ],
       },
@@ -221,8 +229,12 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
+            path: "workspace",
+            element: withSuspense(OrganizerWorkspacePage),
+          },
+          {
             path: "workspace/projects",
-            element: <MockAdminPage title="Dự Án Của Tôi" />,
+            element: withSuspense(OrganizerWorkspacePage),
           },
           {
             path: "workspace/stats",
@@ -267,13 +279,21 @@ export const router = createBrowserRouter([
       },
 
       {
+        path: "dashboard",
+        element: (
+          <ProtectedRoute allowedRoles={[ROLES.USER, "user"]}>
+            {withSuspense(DashboardPage)}
+          </ProtectedRoute>
+        ),
+      },
+
+      {
         element: (
           <ProtectedRoute allowedRoles={CONSUMER_ROLES}>
             <Outlet />
           </ProtectedRoute>
         ),
         children: [
-          { path: "dashboard", element: withSuspense(DashboardPage) },
           { path: "following", element: withSuspense(FollowingPage) },
           { path: "community", element: withSuspense(CommunityPage) },
           { path: "community/:id", element: withSuspense(PostDetailPage) },
@@ -288,24 +308,6 @@ export const router = createBrowserRouter([
         ],
       },
 
-      {
-        element: (
-          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER]}>
-            <Outlet />
-          </ProtectedRoute>
-        ),
-        children: [
-          { path: "projects/create", element: withSuspense(CreateProjectPage) },
-          {
-            path: "workspace/projects",
-            element: withSuspense(WorkspaceProjectsPage),
-          },
-          {
-            path: "workspace/stats",
-            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
-          },
-        ],
-      },
     ],
   },
 

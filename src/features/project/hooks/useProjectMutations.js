@@ -43,7 +43,7 @@ export const useSubmitProject = () => {
       toast.success('Đã gửi dự án để chờ duyệt thành công!');
       queryClient.invalidateQueries({ queryKey: ['projects', 'workspace'] });
       resetDraft();
-      navigate('/dashboard');
+      navigate('/projects');
     },
     onError: (error) => toast.error(getErrorMessage(error))
   });

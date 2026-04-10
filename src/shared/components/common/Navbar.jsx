@@ -60,6 +60,10 @@ export function Navbar() {
   const user = useAuthStore(authSelectors.user);
   const { logout } = useLogout();
   const location = useLocation();
+  const normalizedRole = String(user?.role || '').toLowerCase();
+  const isOrganizer = normalizedRole === 'organizer';
+  const userMainRoute = isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD;
+  const userMainLabel = isOrganizer ? 'Không gian làm việc của bạn' : 'Dashboard';
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -209,10 +213,10 @@ export function Navbar() {
               </Link>
 
               <Link
-                to={ROUTES.DASHBOARD}
+                to={userMainRoute}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50"
               >
-                <LayoutDashboard size={18} /> Dashboard
+                <LayoutDashboard size={18} /> {userMainLabel}
               </Link>
 
               <button
@@ -341,6 +345,8 @@ function OrganizerNeedHelpAction({ user }) {
 function UserDropdown({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
+  const normalizedRole = String(user?.role || '').toLowerCase();
+  const isOrganizer = normalizedRole === 'organizer';
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -382,11 +388,11 @@ function UserDropdown({ user, onLogout }) {
           </Link>
 
           <Link
-            to={ROUTES.DASHBOARD}
+            to={isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD}
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LayoutDashboard size={16} /> Dashboard
+            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Dashboard'}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-slate-100" />

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import {
   ShieldCheck,
   Users,
@@ -23,18 +23,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
   const pendingCountRef = useRef(null);
 
   const { useProjectPendingApplications } = useVolunteerQueries();
-  const { data: pendingData, isLoading, error } = useProjectPendingApplications(projectId);
-
-  useEffect(() => {
-    if (pendingData) {
-      console.log(' pendingData structure:', {
-        hasData: !!pendingData.data,
-        dataKeys: pendingData.data ? Object.keys(pendingData.data) : 'no data',
-        dataData: pendingData?.data?.data,
-        length: pendingData?.data?.data?.length,
-      });
-    }
-  }, [pendingData, isLoading, error]);
+  const { data: pendingData, isLoading } = useProjectPendingApplications(projectId);
 
   const getPendingCount = () => {
     if (!pendingData) return 0;
@@ -81,7 +70,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
   };
 
   return (
-    <div className="sticky top-28 flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+    <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
       <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-5">
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/25 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">
@@ -114,7 +103,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
 
         <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
           <div
-            className="relative h-full rounded-full bg-[linear-gradient(90deg,#C084FC_0%,#A855F7_100%)] transition-all duration-1000"
+            className="relative h-full rounded-full bg-[linear-gradient(90deg,#FBBF24_0%,#F59E0B_100%)] transition-all duration-1000"
             style={{ width: `${progressPercent}%` }}
           />
         </div>
@@ -174,7 +163,7 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
         </button>
 
         <p className="text-center text-xs text-slate-500">
-          Submit Phase 1 evidence to unlock.
+          Submit milestone evidence to unlock.
         </p>
 
         <div className="my-1 border-t border-slate-100" />

@@ -43,7 +43,6 @@ export function ProjectDetailPage() {
   };
 
   const identity = useMemo(() => {
-    console.log('[identity] currentUser.id:', currentUser?.id, 'project.organizerId._id:', project?.organizerId?._id);
     if (!currentUser || !project) return 'GUEST';
     if (String(project.organizerId?._id) === String(currentUser.id)) return 'ORGANIZER';
     return 'USER';
@@ -69,7 +68,7 @@ export function ProjectDetailPage() {
   const renderTabContent = () => {
     switch (activeTab) {
       case 'story':
-        return <TabStory project={project} isOrganizer={isOrganizer} onVolunteerClick={onVolunteerClick} />;
+        return <TabStory project={project} />;
       case 'volunteer':
         return (
           <div ref={volunteerManagerRef}>
@@ -91,7 +90,6 @@ export function ProjectDetailPage() {
           <ProjectCommunityFeed
             project={project}
             isOrganizer={isOrganizer}
-            onVolunteerClick={onVolunteerClick}
           />
         );
       default:
@@ -106,32 +104,33 @@ export function ProjectDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#FFFDF8_0%,#FFF8E6_100%)] pb-20">
-      <div className="border-b border-[#FBBF24]/15 bg-white/70 backdrop-blur-sm">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_8%_0%,#FFE8B3_0%,transparent_26%),radial-gradient(circle_at_92%_18%,#E7F2FF_0%,transparent_24%),linear-gradient(180deg,#FFFDF8_0%,#FFF7E2_100%)] pb-20">
+      <div className="border-b border-[#F59E0B]/15 bg-white/75 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/20 bg-[#FFFBEB] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#B45309] shadow-sm">
-            Project Detail
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#F59E0B]/25 bg-[#FFFBEB] px-4 py-2 text-xs font-extrabold uppercase tracking-[0.16em] text-[#B45309] shadow-sm">
+            Project Details Workspace
           </div>
         </div>
       </div>
 
-      <main className="mx-auto flex max-w-7xl flex-col gap-8 px-4 pt-8 sm:px-6 lg:flex-row lg:px-8">
-        <div className="w-full space-y-8 lg:w-[66%]">
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 pt-8 sm:px-6 lg:grid-cols-12 lg:px-8">
+        <section className="w-full space-y-8 lg:col-span-8">
           <ProjectCover project={project} isOrganizer={isOrganizer} />
           <ProjectHeader project={project} isOrganizer={isOrganizer} />
 
-          <div className="items-center rounded-[28px] border border-slate-200/80 bg-white/90 p-3 shadow-sm backdrop-blur-sm">
+          <div className="items-center rounded-[28px] border border-slate-200/80 bg-white/95 p-3 shadow-sm backdrop-blur-sm">
             <ProjectTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               isOrganizer={isOrganizer}
             />
 
-            <div className="animate-in fade-in duration-300">{renderTabContent()}</div>
+            <div className="animate-in fade-in pt-1 duration-300">{renderTabContent()}</div>
           </div>
-        </div>
+        </section>
 
-        <div className="w-full lg:w-[34%]">
+        <aside className="w-full lg:col-span-4">
+          <div className="lg:sticky lg:top-6">
           {isOrganizer ? (
             <SidebarOrganizer
               project={project}
@@ -140,7 +139,8 @@ export function ProjectDetailPage() {
           ) : (
             <SidebarPublic project={project} />
           )}
-        </div>
+          </div>
+        </aside>
       </main>
     </div>
   );

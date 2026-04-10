@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import DOMPurify from 'dompurify'; 
@@ -22,6 +22,11 @@ const formatDateForInput = (isoString) => {
 export default function Step1Story() {
   const navigate = useNavigate();
   const toast = useToast();
+  const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [draftMeta, setDraftMeta] = useState({
+    title: '',
+    projectType: 'FUNDED',
+  });
   
   const { 
     formData, 
@@ -35,7 +40,7 @@ export default function Step1Story() {
   const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
   const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
 
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm({
     resolver: zodResolver(draftStep1Schema),
     defaultValues: {
       projectType: formData.projectType || 'FUNDED',
@@ -69,13 +74,16 @@ export default function Step1Story() {
     };
   };
 
-  const executeSave = async (data, isExit = false) => {
+  const executeSaveDraft = async (data, isExit = false) => {
     try {
       const payload = processPayload(data);
       updateFormData(payload);
 
       if (!projectId) {
-        await createDraft(payload);
+        const created = await createDraft(payload);
+        if (created?._id) {
+          navigate(`/projects/create/${created._id}/edit`, { replace: true });
+        }
       } else {
         await updateDraft({ 
             id: projectId, 
@@ -86,18 +94,35 @@ export default function Step1Story() {
 
       if (isExit) {
         toast.success('Draft saved securely!');
-        navigate('/dashboard'); 
-      } else {
-        nextStep();
+        navigate('/projects'); 
       }
     } catch (error) {
       devConfig.error("[CTO Log] Save Step 1 Failed:", error);
     }
   };
 
-  const onSubmitNext = (data) => executeSave(data, false);
+  const onSubmitNext = (data) => {
+    const payload = processPayload(data);
+    updateFormData(payload);
+    nextStep();
+  };
   
-  const handleSaveAndExit = handleSubmit((data) => executeSave(data, true));
+  const handleSaveAndExit = handleSubmit((data) => executeSaveDraft(data, true));
+
+  const openSaveModal = () => {
+    setDraftMeta({
+      title: getValues('title') || '',
+      projectType: getValues('projectType') || 'FUNDED',
+    });
+    setIsSaveModalOpen(true);
+  };
+
+  const confirmSaveDraft = async () => {
+    setValue('title', draftMeta.title, { shouldValidate: true, shouldDirty: true });
+    setValue('projectType', draftMeta.projectType, { shouldValidate: true, shouldDirty: true });
+    setIsSaveModalOpen(false);
+    await handleSaveAndExit();
+  };
 
   const handleRemoveDocument = (file) => {
       if (file && file._id) {
@@ -305,7 +330,7 @@ export default function Step1Story() {
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <button 
             type="button" 
-            onClick={handleSaveAndExit}
+            onClick={openSaveModal}
             disabled={isPending}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
           >
@@ -324,6 +349,60 @@ export default function Step1Story() {
           </button>
         </div>
       </div>
+
+      {isSaveModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-7">
+            <h3 className="text-lg font-black text-slate-900">Lưu bản draft</h3>
+            <p className="mt-1 text-sm text-slate-500">
+              Đặt tên draft và chọn loại dự án trước khi lưu. Bạn có thể tiếp tục chỉnh sửa sau.
+            </p>
+
+            <div className="mt-5 space-y-4">
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Tên draft</label>
+                <input
+                  value={draftMeta.title}
+                  onChange={(e) => setDraftMeta((prev) => ({ ...prev, title: e.target.value }))}
+                  placeholder="Nhập tên draft..."
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Loại dự án</label>
+                <select
+                  value={draftMeta.projectType}
+                  onChange={(e) => setDraftMeta((prev) => ({ ...prev, projectType: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
+                >
+                  <option value="FUNDED">Funded Project</option>
+                  <option value="VOLUNTEER_ONLY">Volunteer Only</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setIsSaveModalOpen(false)}
+                className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmSaveDraft}
+                disabled={isPending}
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <Save size={14} />
+                Lưu draft
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
