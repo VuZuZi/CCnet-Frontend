@@ -12,7 +12,7 @@ import { chatKeys } from '@/features/chat/constants/chat.queryKeys';
 import { getEntityId } from '@/features/chat/utils/id';
 
 function getIncomingConversationId(payload) {
-  return String(payload?.conversationId || payload?.message?.conversationId || '');
+  return String(payload?.conversationId || payload?.message?.conversationId || payload?.pin?.conversationId || '');
 }
 
 function getIncomingMessage(payload) {
@@ -25,6 +25,30 @@ function patchMessageList(queryClient, conversationId, updater) {
 
 function patchConversationList(queryClient, updater) {
   queryClient.setQueryData(chatKeys.conversations(), updater);
+}
+
+function patchPinnedList(queryClient, conversationId, updater) {
+  queryClient.setQueryData(chatKeys.pinnedMessages(conversationId), updater);
+}
+
+function upsertPinnedItem(list, item) {
+  const safeList = Array.isArray(list) ? list : [];
+  const messageId = String(item?.messageId || item?.message?._id || '');
+
+  const filtered = safeList.filter(
+    (entry) => String(entry?.messageId || entry?.message?._id || '') !== messageId
+  );
+
+  return [item, ...filtered];
+}
+
+function removePinnedItem(list, messageId) {
+  const safeList = Array.isArray(list) ? list : [];
+  const targetId = String(messageId || '');
+
+  return safeList.filter(
+    (entry) => String(entry?.messageId || entry?.message?._id || '') !== targetId
+  );
 }
 
 export function onRealtimeMessageNew(
@@ -87,5 +111,27 @@ export function onRealtimeConversationUpdated(payload, { queryClient }) {
 
   patchConversationList(queryClient, (oldData) =>
     patchConversationById(oldData, conversation)
+  );
+}
+
+export function onRealtimeMessagePinned(payload, { queryClient }) {
+  const incomingCid = String(payload?.conversationId || payload?.pin?.conversationId || '');
+  const pin = payload?.pin;
+
+  if (!incomingCid || !pin) return;
+
+  patchPinnedList(queryClient, incomingCid, (oldData) =>
+    upsertPinnedItem(oldData, pin)
+  );
+}
+
+export function onRealtimeMessageUnpinned(payload, { queryClient }) {
+  const incomingCid = String(payload?.conversationId || '');
+  const messageId = String(payload?.messageId || '');
+
+  if (!incomingCid || !messageId) return;
+
+  patchPinnedList(queryClient, incomingCid, (oldData) =>
+    removePinnedItem(oldData, messageId)
   );
 }

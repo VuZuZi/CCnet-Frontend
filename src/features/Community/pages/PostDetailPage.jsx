@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useEffect, useMemo, useState } from "react";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { usePostDetail } from "../hooks/usePosts";
 import { usePostMutations } from "../hooks/usePostMutations";
@@ -45,10 +45,45 @@ const ErrorState = () => (
   </div>
 );
 
+function highlightAndScrollToComment(commentId) {
+  if (!commentId) return;
+
+  const targetId = `comment-${commentId}`;
+  let attempts = 0;
+  const maxAttempts = 12;
+
+  const run = () => {
+    const element = document.getElementById(targetId);
+
+    if (!element) {
+      attempts += 1;
+      if (attempts < maxAttempts) {
+        window.setTimeout(run, 250);
+      }
+      return;
+    }
+
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    element.classList.add("ring-2", "ring-yellow-400", "ring-offset-2", "rounded-2xl");
+    window.setTimeout(() => {
+      element.classList.remove("ring-2", "ring-yellow-400", "ring-offset-2", "rounded-2xl");
+    }, 2500);
+  };
+
+  run();
+}
+
 export function PostDetailPage() {
   const { id: postId } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [commentContent, setCommentContent] = useState("");
+
+  const targetCommentId = searchParams.get("commentId") || "";
 
   const { data: responseData, isLoading, isError } = usePostDetail(postId);
   const { addComment, toggleReaction } = usePostMutations();
@@ -64,22 +99,32 @@ export function PostDetailPage() {
     );
   };
 
-  if (isLoading) return <LoadingState />;
-  if (isError || !responseData?.data) return <ErrorState />;
+  const currentPost = responseData?.data || null;
 
-  const currentPost = responseData.data;
-  const mappedPost = {
-    ...currentPost,
-    id: currentPost._id,
-    authorName:
-      currentPost.author?.fullName ||
-      currentPost.author?.username ||
-      "Anonymous",
-    timeAgo: formatTimeAgo(currentPost.createdAt),
-    comments: currentPost.latestComments || currentPost.comments || [],
-    userReaction: currentPost.userReaction,
-    stats: currentPost.stats || { likes: 0, comments: 0 },
-  };
+  const mappedPost = useMemo(() => {
+    if (!currentPost) return null;
+
+    return {
+      ...currentPost,
+      id: currentPost._id,
+      authorName:
+        currentPost.author?.fullName ||
+        currentPost.author?.username ||
+        "Anonymous",
+      timeAgo: formatTimeAgo(currentPost.createdAt),
+      comments: currentPost.latestComments || currentPost.comments || [],
+      userReaction: currentPost.userReaction,
+      stats: currentPost.stats || { likes: 0, comments: 0 },
+    };
+  }, [currentPost]);
+
+  useEffect(() => {
+    if (!mappedPost || !targetCommentId) return;
+    highlightAndScrollToComment(targetCommentId);
+  }, [mappedPost, targetCommentId]);
+
+  if (isLoading) return <LoadingState />;
+  if (isError || !responseData?.data || !mappedPost) return <ErrorState />;
 
   const hasMedia = mappedPost.images && mappedPost.images.length > 0;
 
@@ -93,8 +138,13 @@ export function PostDetailPage() {
           <FiArrowLeft /> Back
         </Link>
       </div>
+
       {hasMedia ? (
-        <PostTheaterMode post={mappedPost} onClose={handleClose} />
+        <PostTheaterMode
+          post={mappedPost}
+          onClose={handleClose}
+          targetCommentId={targetCommentId}
+        />
       ) : (
         <TextOnlyPostView
           post={mappedPost}
@@ -103,6 +153,7 @@ export function PostDetailPage() {
           handleCommentSubmit={handleCommentSubmit}
           toggleReaction={toggleReaction}
           addComment={addComment}
+          targetCommentId={targetCommentId}
         />
       )}
     </div>
