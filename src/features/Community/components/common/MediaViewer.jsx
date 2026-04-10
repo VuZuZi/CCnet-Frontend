@@ -1,89 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
-const MediaViewer = ({ images, onClose }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
+const MediaViewer = ({ images, initialIndex = 0 }) => {
+  // 1. Khởi tạo state với initialIndex
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
-  const currentImg = images?.[currentIndex]?.url;
+  // Cập nhật currentIndex nếu initialIndex thay đổi (ví dụ: khi mở modal với ảnh khác)
+  useEffect(() => {
+    setCurrentIndex(initialIndex);
+  }, [initialIndex]);
 
-  const nextImage = (e) => {
-    e.stopPropagation();
-    if (images?.length > 1) {
-      setIsLoading(true);
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }
+  if (!images || images.length === 0) return null;
+
+  const currentMedia = images[currentIndex];
+
+  // Logic chuyển ảnh
+  const handleNext = (e) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài làm đóng modal
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation(); // Ngăn sự kiện click lan ra ngoài
+    setCurrentIndex(
+      (prevIndex) => (prevIndex - 1 + images.length) % images.length,
+    );
   };
 
   return (
-    <section className="relative w-full md:w-[60%] bg-black flex items-center justify-center group select-none">
-      <button
-        onClick={onClose}
-        className="absolute top-4 left-4 p-2 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all z-20 hover:scale-110"
-      >
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            d="M6 18L18 6M6 6l12 12"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 border-3 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-        </div>
-      )}
-
-      {currentImg ? (
-        <img
-          src={currentImg}
-          alt="Post Content"
-          className={`w-full h-full object-contain transition-opacity duration-300 ${isLoading ? "opacity-0" : "opacity-100"}`}
-          onLoad={() => setIsLoading(false)}
-        />
-      ) : (
-        <div className="text-gray-600">No media available</div>
-      )}
-
-      {images?.length > 1 && (
+    <div className="w-full h-full flex items-center justify-center relative p-2 md:p-6">
+      {/* 2. MŨI TÊN BÊN TRÁI (Previous) */}
+      {images.length > 1 && (
         <button
-          onClick={nextImage}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-black/40 hover:bg-black/60 text-white rounded-full transition-all z-10 opacity-0 group-hover:opacity-100"
+          onClick={handlePrev}
+          className="absolute left-4 top-1/2 -translate-y-1/2 z-[60] p-3 bg-gray-900/60 hover:bg-gray-800/80 rounded-full text-white transition-all shadow-lg"
         >
-          <svg
-            className="h-8 w-8"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              d="M9 5l7 7-7 7"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <span className="material-symbols-outlined text-3xl">
+            chevron_left
+          </span>
         </button>
       )}
 
-      {images?.length > 1 && (
-        <div className="absolute bottom-4 flex gap-1.5">
-          {images.map((_, i) => (
-            <div
-              key={i}
-              className={`h-1.5 w-1.5 rounded-full ${i === currentIndex ? "bg-yellow-500" : "bg-white/30"}`}
-            />
-          ))}
-        </div>
+      {/* Hiển thị Media chính */}
+      <div className="max-w-full max-h-full flex items-center justify-center overflow-hidden">
+        {currentMedia.type === "video" ? (
+          <video
+            src={currentMedia.url}
+            controls
+            autoPlay
+            className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded"
+          />
+        ) : (
+          <img
+            src={currentMedia.url}
+            alt={`Post media ${currentIndex + 1}`}
+            className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded"
+          />
+        )}
+      </div>
+
+      {/* 3. MŨI TÊN BÊN PHẢI (Next) */}
+      {images.length > 1 && (
+        <button
+          onClick={handleNext}
+          className="absolute right-4 top-1/2 -translate-y-1/2 z-[60] p-3 bg-gray-900/60 hover:bg-gray-800/80 rounded-full text-white transition-all shadow-lg"
+        >
+          <span className="material-symbols-outlined text-3xl">
+            chevron_right
+          </span>
+        </button>
       )}
-    </section>
+
+      {/* Bộ đếm ảnh (ví dụ: 2/5) */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[60] py-1 px-3 bg-gray-900/70 rounded-full text-white text-xs font-semibold">
+        {currentIndex + 1} / {images.length}
+      </div>
+    </div>
   );
 };
 

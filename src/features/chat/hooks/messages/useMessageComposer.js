@@ -2,18 +2,27 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { useChatStore, chatSelectors } from "@/features/chat/stores/useChatStore";
 import { useSendMessage } from "@/features/chat/hooks/messages/useSendMessage";
-import { validateAndMergeChatFiles } from "@/features/chat/utils/chatUpload.validate";
+import {
+  validateAndMergeChatFiles,
+  isVideoLikeFile,
+} from "@/features/chat/utils/chatUpload.validate";
 
 function isImageFile(file) {
   return String(file?.type || "").startsWith("image/");
 }
 
 function buildPreviewItems(files = []) {
-  return (Array.isArray(files) ? files : []).map((file) => ({
-    file,
-    isImage: isImageFile(file),
-    previewUrl: isImageFile(file) ? URL.createObjectURL(file) : "",
-  }));
+  return (Array.isArray(files) ? files : []).map((file) => {
+    const isImage = isImageFile(file);
+    const isVideo = isVideoLikeFile(file);
+
+    return {
+      file,
+      isImage,
+      isVideo,
+      previewUrl: isImage || isVideo ? URL.createObjectURL(file) : "",
+    };
+  });
 }
 
 function revokePreviewItems(previewItems = []) {

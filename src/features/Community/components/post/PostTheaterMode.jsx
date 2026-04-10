@@ -1,106 +1,243 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import MediaViewer from "../common/MediaViewer";
 import CommentItem from "../comment/CommentItem";
 import { usePostMutations } from "../../hooks/usePostMutations";
+import { useQuery } from "@tanstack/react-query";
+import httpClient from "@/shared/lib/httpClient";
 
-const PostTheaterMode = ({ post, onClose }) => {
+const PostTheaterMode = ({
+  post,
+  onClose,
+  initialIndex = 0,
+  targetCommentId = "",
+}) => {
   const [commentContent, setCommentContent] = useState("");
+  const [sortMode, setSortMode] = useState("relevant");
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [allComments, setAllComments] = useState(post?.latestComments || []);
+  const dropdownRef = useRef(null);
+
   const { addComment } = usePostMutations();
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, []);
+
+  const { data: commentsData, isLoading: isLoadingComments } = useQuery({
+    queryKey: ["postComments", post?._id, page, sortMode],
+    queryFn: async () => {
+      const res = await httpClient.get(
+        `/posts/${post._id}/comments?page=${page}&sort=${sortMode}`,
+      );
+      return res.data;
+    },
+    enabled: !!post?._id && page > 0,
+  });
+
+  useEffect(() => {
+    if (commentsData) {
+      const fetchedData =
+        commentsData?.data?.data || commentsData?.data || commentsData;
+      if (Array.isArray(fetchedData) && fetchedData.length > 0) {
+        setAllComments((prev) => {
+          const newComments = [...prev, ...fetchedData];
+          return Array.from(
+            new Map(newComments.map((c) => [c._id, c])).values(),
+          );
+        });
+      }
+    }
+  }, [commentsData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsSortOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   if (!post) return null;
 
   const authorName =
     post.author?.fullName || post.author?.username || "Anonymous";
   const authorInitials = authorName.substring(0, 1).toUpperCase();
-  const comments = post.latestComments || post.comments || [];
+  const totalComments = post.stats?.comments || 0;
+  const hasMoreComments = allComments.length < totalComments;
 
   const handlePostComment = async (e) => {
     e.preventDefault();
     if (!commentContent.trim() || addComment.isPending) return;
-
     try {
-      await addComment.mutateAsync({
+      const result = await addComment.mutateAsync({
         postId: post._id,
         content: commentContent,
       });
+      const newComment = result?.data || result;
+      if (newComment && newComment._id) {
+        setAllComments((prev) => [newComment, ...prev]);
+      }
       setCommentContent("");
     } catch (err) {
-      console.error("Comment failed:", err);
+      console.error(err);
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 backdrop-blur-sm sm:p-4 md:p-10">
-      <div className="w-full max-w-7xl bg-white shadow-2xl flex flex-col md:flex-row h-full md:h-[90vh] overflow-hidden md:rounded-2xl">
-        <MediaViewer images={post.images} onClose={onClose} />
+  const handleSortChange = (mode) => {
+    setSortMode(mode);
+    setAllComments([]);
+    setPage(1);
+    setIsSortOpen(false);
+  };
 
-        <section className="w-full md:w-[420px] flex flex-col bg-white border-l border-gray-100">
-          <header className="p-4 border-b border-gray-50 flex items-center justify-between">
+  const getSortLabel = () => {
+    if (sortMode === "relevant") return "Phù hợp nhất";
+    if (sortMode === "newest") return "Mới nhất";
+    return "Tất cả bình luận";
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-stretch justify-center bg-black/95">
+      <div className="my-auto flex h-screen w-full max-w-7xl flex-col overflow-hidden bg-white shadow-2xl md:flex-row md:rounded-2xl">
+        <div className="relative flex h-full flex-1 items-center justify-center overflow-hidden bg-black">
+          <button
+            onClick={onClose}
+            className="absolute left-4 top-4 z-[50] rounded-full bg-gray-800/50 p-2 text-white hover:bg-gray-700/50 md:hidden"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
+          <MediaViewer
+            images={post.images}
+            onClose={onClose}
+            initialIndex={initialIndex}
+          />
+        </div>
+
+        <section className="relative flex h-full min-h-0 w-full flex-col border-l border-gray-100 bg-white md:w-[420px]">
+          <header className="flex shrink-0 items-center justify-between border-b border-gray-100 p-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-yellow-400 text-black flex items-center justify-center font-bold text-sm shrink-0">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-black">
                 {authorInitials}
               </div>
-              <div>
-                <h4 className="font-bold text-sm text-gray-900 leading-tight">
+              <div className="min-w-0">
+                <h4 className="truncate text-sm font-bold leading-tight text-gray-900">
                   {authorName}
                 </h4>
-                <p className="text-[11px] text-gray-400 uppercase tracking-tighter">
+                <p className="text-[11px] uppercase tracking-tighter text-gray-400">
                   Community Member
                 </p>
               </div>
             </div>
+            <button
+              onClick={onClose}
+              className="hidden p-1 text-gray-400 hover:text-gray-600 md:flex"
+            >
+              <span className="material-symbols-outlined text-3xl">close</span>
+            </button>
           </header>
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar p-4">
-            <article className="text-sm text-gray-800 leading-relaxed whitespace-pre-wrap mb-6">
-              {post.content}
-            </article>
+          <div className="custom-scrollbar flex-1 min-h-0 w-full overflow-y-auto p-4">
+            <div className="mb-6 w-full overflow-hidden">
+              <article className="break-all whitespace-pre-wrap text-sm leading-relaxed text-gray-800">
+                <div className="custom-scrollbar overflow-x-auto">
+                  {post.content}
+                </div>
+              </article>
+            </div>
 
-            <div className="flex items-center justify-between py-2 border-y border-gray-50 mb-6">
-              <span className="text-xs font-bold text-gray-500">
-                {comments.length} Bình luận
-              </span>
-              <span className="text-xs text-gray-400">
+            <div className="mb-3 flex w-full items-center justify-between border-y border-gray-50 py-2 text-xs font-bold text-gray-500">
+              <span>{totalComments} Bình luận</span>
+              <span className="font-normal text-gray-400">
                 {new Date(post.createdAt).toLocaleDateString()}
               </span>
             </div>
 
-            <div className="space-y-6">
-              {comments.length === 0 ? (
-                <div className="text-center py-10">
-                  <p className="text-gray-400 text-sm">
-                    Chưa có bình luận nào.
-                  </p>
+            <div className="relative mb-4 w-full" ref={dropdownRef}>
+              <button
+                onClick={() => setIsSortOpen(!isSortOpen)}
+                className="flex items-center text-[14px] font-semibold text-gray-600 hover:text-gray-900"
+              >
+                {getSortLabel()}
+                <span className="material-symbols-outlined ml-1 text-sm">
+                  expand_more
+                </span>
+              </button>
+
+              {isSortOpen && (
+                <div className="absolute left-0 top-full z-50 mt-1 w-[280px] rounded-lg border border-gray-100 bg-white py-1 shadow-xl">
+                  {["relevant", "newest", "all"].map((mode) => (
+                    <button
+                      key={mode}
+                      onClick={() => handleSortChange(mode)}
+                      className="w-full px-4 py-2.5 text-left transition-colors hover:bg-gray-50"
+                    >
+                      <div className="text-sm font-semibold text-gray-900">
+                        {mode === "relevant"
+                          ? "Phù hợp nhất"
+                          : mode === "newest"
+                            ? "Mới nhất"
+                            : "Tất cả bình luận"}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="w-full space-y-4">
+              {allComments.length === 0 ? (
+                <div className="w-full py-10 text-center text-sm text-gray-400">
+                  Chưa có bình luận nào.
                 </div>
               ) : (
-                comments.map((comment) => (
-                  <CommentItem key={comment._id} comment={comment} />
+                allComments.map((comment) => (
+                  <CommentItem
+                    key={comment._id || comment.id}
+                    comment={comment}
+                    targetCommentId={targetCommentId}
+                  />
                 ))
+              )}
+
+              {hasMoreComments && (
+                <button
+                  onClick={() => setPage((prev) => (prev === 0 ? 1 : prev + 1))}
+                  disabled={isLoadingComments}
+                  className="block w-full pt-2 text-center text-[13.5px] font-semibold text-gray-500 hover:underline"
+                >
+                  {isLoadingComments ? "Đang tải..." : "Xem thêm bình luận"}
+                </button>
               )}
             </div>
           </div>
 
-          <footer className="p-4 border-t border-gray-100 bg-gray-50/50">
+          <footer className="mt-auto shrink-0 border-t border-gray-100 bg-white p-4">
             <form
               onSubmit={handlePostComment}
-              className="flex items-center space-x-2"
+              className="flex w-full items-center space-x-2"
             >
-              <div className="flex-1 bg-white border border-gray-200 rounded-full px-4 py-2 focus-within:border-yellow-500 focus-within:ring-2 focus-within:ring-yellow-100 transition-all">
+              <div className="min-w-0 flex-1 rounded-full border border-transparent bg-gray-100 px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-yellow-400">
                 <input
                   type="text"
                   value={commentContent}
                   onChange={(e) => setCommentContent(e.target.value)}
                   placeholder="Viết bình luận..."
-                  className="w-full bg-transparent border-none focus:ring-0 text-sm"
+                  className="min-w-0 w-full border-none bg-transparent text-[14px] outline-none focus:ring-0"
                   disabled={addComment.isPending}
                 />
               </div>
               <button
                 type="submit"
                 disabled={!commentContent.trim() || addComment.isPending}
-                className="text-yellow-600 font-bold text-sm px-2 disabled:opacity-40 hover:text-yellow-700 transition-colors"
+                className="flex shrink-0 items-center justify-center font-bold text-yellow-500 transition-colors hover:text-yellow-600 disabled:opacity-40"
               >
-                {addComment.isPending ? "..." : "Gửi"}
+                <span className="material-symbols-outlined text-2xl">send</span>
               </button>
             </form>
           </footer>

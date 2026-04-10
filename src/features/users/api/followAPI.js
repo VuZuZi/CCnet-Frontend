@@ -23,9 +23,9 @@ export const followAPI = {
     return unwrap(res.data);
   },
 
-  async getMyFollowing(limit = 50) {
+  async getMyFollowing(limit = 50, type = "user") {
     const res = await httpClient.get("/follow/following", {
-      params: { limit },
+      params: { limit, type },
     });
     return unwrap(res.data);
   },

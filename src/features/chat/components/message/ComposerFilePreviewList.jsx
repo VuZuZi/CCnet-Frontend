@@ -1,4 +1,4 @@
-import { Paperclip, X } from "lucide-react";
+import { Paperclip, Play, X } from "lucide-react";
 import { formatChatFileSize } from "@/features/chat/utils/chatUpload.validate";
 
 export function ComposerFilePreviewList({ previewItems = [], onRemove }) {
@@ -19,6 +19,33 @@ export function ComposerFilePreviewList({ previewItems = [], onRemove }) {
               alt={item.file.name}
               className="h-full w-full object-cover"
             />
+
+            <button
+              type="button"
+              onClick={() => onRemove?.(idx)}
+              className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/65 text-white hover:bg-black/80"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : item.isVideo ? (
+          <div
+            key={`${item.file.name}-${idx}`}
+            className="group relative h-20 w-28 overflow-hidden rounded-xl border border-amber-200 bg-black"
+          >
+            <video
+              src={item.previewUrl}
+              className="h-full w-full object-cover"
+              muted
+              playsInline
+              preload="metadata"
+            />
+
+            <div className="absolute inset-0 flex items-center justify-center bg-black/25">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-white/90 text-slate-900">
+                <Play className="ml-0.5 h-3.5 w-3.5" />
+              </div>
+            </div>
 
             <button
               type="button"

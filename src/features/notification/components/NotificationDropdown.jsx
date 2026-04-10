@@ -1,4 +1,5 @@
-import { Sparkles } from 'lucide-react';
+import { Settings, Sparkles } from 'lucide-react';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import NotificationList from './NotificationList';
 
 export default function NotificationDropdown({
@@ -10,11 +11,16 @@ export default function NotificationDropdown({
   onRead,
   onDelete,
   onClose,
+  onOpenSettings,
 }) {
+  const user = useAuthStore(authSelectors.user);
+  const role = String(user?.role || '').toLowerCase();
+  const canManageSettings = role === 'user' || role === 'organizer';
+
   if (!isOpen) return null;
 
   return (
-    <div className="absolute right-0 top-16 z-50 w-[390px] overflow-hidden rounded-[22px] border border-[#FBBF24]/35 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200">
+    <div className="animate-in fade-in zoom-in-95 slide-in-from-top-2 absolute right-0 top-16 z-50 w-[390px] overflow-hidden rounded-[22px] border border-[#FBBF24]/35 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl duration-200">
       <div className="border-b border-[#F59E0B]/25 bg-[linear-gradient(135deg,#FDE68A_0%,#FBBF24_55%,#F59E0B_100%)] px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>
@@ -31,14 +37,31 @@ export default function NotificationDropdown({
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={onMarkAllRead}
-            disabled={unreadCount === 0}
-            className="rounded-xl border border-white/50 bg-white/90 px-3.5 py-2 text-[11px] font-bold text-[#B45309] shadow-[0_6px_16px_rgba(255,255,255,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-[#92400E] hover:shadow-[0_10px_24px_rgba(255,255,255,0.38)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
-          >
-            Mark all read
-          </button>
+          <div className="flex items-center gap-2">
+            {canManageSettings ? (
+              <button
+                type="button"
+                title="Notification settings"
+                aria-label="Notification settings"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onOpenSettings?.();
+                }}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-white/50 bg-white/90 text-[#B45309] shadow-[0_6px_16px_rgba(255,255,255,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-[#92400E] hover:shadow-[0_10px_24px_rgba(255,255,255,0.38)]"
+              >
+                <Settings size={16} />
+              </button>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={onMarkAllRead}
+              disabled={unreadCount === 0}
+              className="rounded-xl border border-white/50 bg-white/90 px-3.5 py-2 text-[11px] font-bold text-[#B45309] shadow-[0_6px_16px_rgba(255,255,255,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-[#92400E] hover:shadow-[0_10px_24px_rgba(255,255,255,0.38)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
+            >
+              Mark all read
+            </button>
+          </div>
         </div>
       </div>
 

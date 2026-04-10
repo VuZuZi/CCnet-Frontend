@@ -13,11 +13,15 @@ function isImageFile(file) {
   return String(file?.type || "").startsWith("image/");
 }
 
+function isVideoFile(file) {
+  return String(file?.type || "").startsWith("video/");
+}
+
 function isAllowedFile(file) {
   const extension = getExtension(file?.name || "");
   const mimeType = String(file?.type || "").toLowerCase();
 
-  if (isImageFile(file)) {
+  if (isImageFile(file) || isVideoFile(file)) {
     return true;
   }
 
@@ -40,6 +44,8 @@ export function formatChatFileSize(bytes = 0) {
 export function getChatUploadHint() {
   return `Tối đa ${CHAT_UPLOAD_LIMITS.maxFiles} tệp, ảnh ${formatChatFileSize(
     CHAT_UPLOAD_LIMITS.maxImageSizeBytes
+  )}/tệp, video ${formatChatFileSize(
+    CHAT_UPLOAD_LIMITS.maxVideoSizeBytes
   )}/tệp, file ${formatChatFileSize(CHAT_UPLOAD_LIMITS.maxFileSizeBytes)}/tệp.`;
 }
 
@@ -72,6 +78,15 @@ export function validateAndMergeChatFiles(existingFiles = [], selectedFiles = []
         );
         continue;
       }
+    } else if (isVideoFile(file)) {
+      if (Number(file.size || 0) > CHAT_UPLOAD_LIMITS.maxVideoSizeBytes) {
+        rejectedMessages.push(
+          `Video "${file.name}" vượt quá ${formatChatFileSize(
+            CHAT_UPLOAD_LIMITS.maxVideoSizeBytes
+          )}.`
+        );
+        continue;
+      }
     } else if (Number(file.size || 0) > CHAT_UPLOAD_LIMITS.maxFileSizeBytes) {
       rejectedMessages.push(
         `Tệp "${file.name}" vượt quá ${formatChatFileSize(
@@ -88,4 +103,12 @@ export function validateAndMergeChatFiles(existingFiles = [], selectedFiles = []
     acceptedFiles,
     rejectedMessages: Array.from(new Set(rejectedMessages)),
   };
+}
+
+export function isVideoLikeFile(file) {
+  return isVideoFile(file);
+}
+
+export function isImageLikeFile(file) {
+  return isImageFile(file);
 }

@@ -26,11 +26,11 @@ function patchNotificationListQueries(queryClient, updater) {
 }
 
 function prependUniqueItem(previous, incomingItem) {
-  const currentItems = previous.items || [];
+  const currentItems = previous?.items || [];
   const deduped = currentItems.filter((item) => item.id !== incomingItem.id);
   const nextItems = [incomingItem, ...deduped];
-  const limit = previous.pagination?.limit || nextItems.length;
-  const currentTotal = previous.pagination?.total || 0;
+  const limit = previous?.pagination?.limit || nextItems.length;
+  const currentTotal = previous?.pagination?.total || 0;
   const alreadyExists = currentItems.some((item) => item.id === incomingItem.id);
   const nextTotal = alreadyExists ? currentTotal : currentTotal + 1;
 
@@ -38,7 +38,7 @@ function prependUniqueItem(previous, incomingItem) {
     ...previous,
     items: nextItems.slice(0, limit),
     pagination: {
-      ...previous.pagination,
+      ...previous?.pagination,
       total: nextTotal,
       totalPages: calculateTotalPages(nextTotal, limit),
     },
@@ -48,7 +48,7 @@ function prependUniqueItem(previous, incomingItem) {
 function markNotificationAsRead(previous, notificationId, readAt = null) {
   return {
     ...previous,
-    items: (previous.items || []).map((item) =>
+    items: (previous?.items || []).map((item) =>
       item.id === notificationId
         ? {
           ...item,
@@ -63,7 +63,7 @@ function markNotificationAsRead(previous, notificationId, readAt = null) {
 function markAllNotificationsAsRead(previous, readAt = null) {
   return {
     ...previous,
-    items: (previous.items || []).map((item) => ({
+    items: (previous?.items || []).map((item) => ({
       ...item,
       isRead: true,
       readAt: readAt || item.readAt || null,
@@ -72,16 +72,16 @@ function markAllNotificationsAsRead(previous, readAt = null) {
 }
 
 function removeNotification(previous, notificationId) {
-  const nextItems = (previous.items || []).filter((item) => item.id !== notificationId);
-  const currentTotal = previous.pagination?.total || 0;
-  const limit = previous.pagination?.limit || 20;
+  const nextItems = (previous?.items || []).filter((item) => item.id !== notificationId);
+  const currentTotal = previous?.pagination?.total || 0;
+  const limit = previous?.pagination?.limit || 20;
   const nextTotal = Math.max(currentTotal - 1, 0);
 
   return {
     ...previous,
     items: nextItems,
     pagination: {
-      ...previous.pagination,
+      ...previous?.pagination,
       total: nextTotal,
       totalPages: Math.max(1, Math.ceil(nextTotal / limit)),
     },
@@ -221,6 +221,16 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       );
     };
 
+    const bumpUnreadCount = () => {
+      queryClient.setQueryData(
+        NOTIFICATION_QUERY_KEYS.unreadCount,
+        (previous) => {
+          const current = Number(previous ?? 0);
+          return current + 1;
+        }
+      );
+    };
+
     const invalidateNotificationList = () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATION_QUERY_KEYS.list });
     };
@@ -231,10 +241,18 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       });
     };
 
+    const refreshAllNotificationQueries = () => {
+      invalidateNotificationList();
+      invalidateUnreadCount();
+    };
+
     const handleConnected = () => {
       runtime.retryAttempt = 0;
       runtime.suppressReconnectUntil = 0;
       clearReconnectTimer();
+
+      // refresh nhẹ khi stream vừa nối lại để tránh lệch state
+      refreshAllNotificationQueries();
     };
 
     const handleCreated = (event) => {
@@ -243,11 +261,32 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         const item = transformNotification(payload.notification);
         if (!item?.id && !item?.type) return;
 
-        // Lưu vào cache danh sách chuông thông báo
-        patchNotificationListQueries(queryClient, (previous) =>
-          prependUniqueItem(previous, item)
+        // Logic cập nhật List từ nhánh dev2
+        if (!item?.id) {
+          refreshAllNotificationQueries();
+          return;
+        }
+
+        let didPatchAtLeastOneList = false;
+
+        queryClient.setQueriesData(
+          { queryKey: NOTIFICATION_QUERY_KEYS.list },
+          (previous) => {
+            if (!previous) return previous;
+            didPatchAtLeastOneList = true;
+            return prependUniqueItem(previous, item);
+          }
         );
 
+        if (!didPatchAtLeastOneList) {
+          invalidateNotificationList();
+        }
+
+        if (!item.isRead) {
+          bumpUnreadCount();
+        }
+
+        // Khai báo projectId từ nhánh feature/Hieu_Donate để dùng cho bên dưới
         const projectId =
           item.entityId ||
           item.metadata?.projectId ||
@@ -264,6 +303,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           patchProjectQueries(queryClient, projectId, nextStatus);
         }
 
+        // Logic xử lý Donate từ nhánh feature/Hieu_Donate
         if (item.type === 'donation_successful') {
           toast.success(`🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.`);
 
@@ -296,8 +336,9 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           }
         }
       } catch (err) {
+        // Kết hợp log lỗi của nhánh feature và fallback của nhánh dev2
         console.error('SSE Created Handler Error:', err);
-        invalidateNotificationList();
+        refreshAllNotificationQueries();
       }
     };
 
@@ -314,26 +355,61 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       try {
         const payload = JSON.parse(event.data);
         const notificationId = payload.notificationId;
-        if (!notificationId) return;
 
-        patchNotificationListQueries(queryClient, (previous) =>
-          markNotificationAsRead(previous, notificationId, payload.readAt || null)
+        // Logic an toàn từ nhánh dev2
+        if (!notificationId) {
+          refreshAllNotificationQueries();
+          return;
+        }
+
+        let didPatch = false;
+
+        queryClient.setQueriesData(
+          { queryKey: NOTIFICATION_QUERY_KEYS.list },
+          (previous) => {
+            if (!previous) return previous;
+            didPatch = true;
+            return markNotificationAsRead(previous, notificationId, payload.readAt || null);
+          }
         );
+
+        if (!didPatch) {
+          invalidateNotificationList();
+        }
+
+        if (typeof payload.unreadCount === 'number') {
+          setUnreadCount(payload.unreadCount);
+        } else {
+          invalidateUnreadCount();
+        }
       } catch {
-        invalidateNotificationList();
+        refreshAllNotificationQueries();
       }
     };
 
     const handleReadAll = (event) => {
       try {
         const payload = JSON.parse(event.data);
-        patchNotificationListQueries(queryClient, (previous) =>
-          markAllNotificationsAsRead(previous, payload.readAt || null)
+
+        // Logic an toàn từ nhánh dev2
+        let didPatch = false;
+
+        queryClient.setQueriesData(
+          { queryKey: NOTIFICATION_QUERY_KEYS.list },
+          (previous) => {
+            if (!previous) return previous;
+            didPatch = true;
+            return markAllNotificationsAsRead(previous, payload.readAt || null);
+          }
         );
+
+        if (!didPatch) {
+          invalidateNotificationList();
+        }
+
         setUnreadCount(0);
       } catch {
-        invalidateNotificationList();
-        invalidateUnreadCount();
+        refreshAllNotificationQueries();
       }
     };
 
@@ -341,13 +417,35 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       try {
         const payload = JSON.parse(event.data);
         const notificationId = payload.notificationId;
-        if (!notificationId) return;
 
-        patchNotificationListQueries(queryClient, (previous) =>
-          removeNotification(previous, notificationId)
+        // Logic an toàn từ nhánh dev2
+        if (!notificationId) {
+          refreshAllNotificationQueries();
+          return;
+        }
+
+        let didPatch = false;
+
+        queryClient.setQueriesData(
+          { queryKey: NOTIFICATION_QUERY_KEYS.list },
+          (previous) => {
+            if (!previous) return previous;
+            didPatch = true;
+            return removeNotification(previous, notificationId);
+          }
         );
+
+        if (!didPatch) {
+          invalidateNotificationList();
+        }
+
+        if (typeof payload.unreadCount === 'number') {
+          setUnreadCount(payload.unreadCount);
+        } else {
+          invalidateUnreadCount();
+        }
       } catch {
-        invalidateNotificationList();
+        refreshAllNotificationQueries();
       }
     };
 

@@ -10,6 +10,9 @@ import {
   Trash2,
   ArrowUpRight,
   Dot,
+  Eye,
+  Heart,
+  MessageCircle,
 } from 'lucide-react';
 
 function getTypeIcon(type) {
@@ -28,6 +31,10 @@ function getTypeIcon(type) {
       return ShieldCheck;
     case 'system_announcement':
       return Megaphone;
+    case 'post_reacted':
+      return Heart;
+    case 'post_commented':
+      return MessageCircle;
     default:
       return Bell;
   }
@@ -49,13 +56,32 @@ function getTypeAccent(isRead) {
   };
 }
 
+function isPostNotification(type) {
+  return type === 'post_reacted' || type === 'post_commented';
+}
+
 export default function NotificationItem({ item, onRead, onDelete, onClose }) {
   const navigate = useNavigate();
   const Icon = getTypeIcon(item.type);
   const accent = getTypeAccent(item.isRead);
-  const isNavigable = Boolean(item.actionUrl);
+  const hasRelatedAction = Boolean(item.actionUrl);
+  const shouldOpenRelatedOnCardClick = isPostNotification(item.type) && hasRelatedAction;
+  const canOpenDetail = Boolean(item.id);
 
-  const openNotification = () => {
+  const openNotificationDetail = () => {
+    if (!item.id) return;
+
+    if (!item.isRead) {
+      onRead(item.id);
+    }
+
+    onClose?.();
+    navigate(`/notifications/${item.id}`);
+  };
+
+  const openRelatedContent = (event) => {
+    event?.stopPropagation?.();
+
     if (!item.actionUrl) return;
 
     if (!item.isRead) {
@@ -67,30 +93,36 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
   };
 
   const handleCardClick = () => {
-    if (!isNavigable) return;
-    openNotification();
+    if (shouldOpenRelatedOnCardClick) {
+      openRelatedContent();
+      return;
+    }
+
+    if (canOpenDetail) {
+      openNotificationDetail();
+    }
   };
 
   const handleCardKeyDown = (event) => {
-    if (!isNavigable) return;
+    if (!canOpenDetail && !shouldOpenRelatedOnCardClick) return;
 
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
-      openNotification();
+      handleCardClick();
     }
   };
 
   return (
     <div
-      role={isNavigable ? 'button' : undefined}
-      tabIndex={isNavigable ? 0 : undefined}
-      onClick={handleCardClick}
+      role={canOpenDetail || shouldOpenRelatedOnCardClick ? 'button' : undefined}
+      tabIndex={canOpenDetail || shouldOpenRelatedOnCardClick ? 0 : undefined}
+      onClick={canOpenDetail || shouldOpenRelatedOnCardClick ? handleCardClick : undefined}
       onKeyDown={handleCardKeyDown}
       className={`group relative border-b border-slate-100/80 px-5 py-3.5 transition-all duration-200 ${
         item.isRead
           ? 'bg-transparent'
           : 'bg-[linear-gradient(90deg,rgba(255,251,235,0.95),rgba(255,255,255,1))]'
-      } ${isNavigable ? 'cursor-pointer hover:bg-white' : 'hover:bg-white'}`}
+      } ${(canOpenDetail || shouldOpenRelatedOnCardClick) ? 'cursor-pointer hover:bg-white' : 'hover:bg-white'}`}
     >
       {!item.isRead && (
         <div className="absolute left-0 top-3.5 h-12 w-1 rounded-r-full bg-[#FBBF24]" />
@@ -123,7 +155,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
             </span>
           </div>
 
-          <p className="mb-3 text-[13px] leading-6 text-slate-600">
+          <p className="mb-3 whitespace-pre-wrap text-[13px] leading-6 text-slate-600">
             {item.message}
           </p>
 
@@ -135,24 +167,35 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
                   event.stopPropagation();
                   onRead(item.id);
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <CheckCheck size={13} />
+                <CheckCheck size={14} />
                 Mark read
               </button>
             )}
 
-            {item.actionUrl && (
+            {canOpenDetail && !shouldOpenRelatedOnCardClick && (
               <button
                 type="button"
                 onClick={(event) => {
                   event.stopPropagation();
-                  openNotification();
+                  openNotificationDetail();
                 }}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50 hover:shadow-sm"
+                className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <ArrowUpRight size={13} />
-                Open
+                <Eye size={14} />
+                View detail
+              </button>
+            )}
+
+            {hasRelatedAction && (
+              <button
+                type="button"
+                onClick={openRelatedContent}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-[#FFFBEB] px-3 py-1.5 text-[12px] font-semibold text-[#B45309] transition hover:border-amber-300 hover:bg-amber-50"
+              >
+                <ArrowUpRight size={14} />
+                {isPostNotification(item.type) ? 'Open post' : 'Open related'}
               </button>
             )}
 
@@ -162,9 +205,9 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
                 event.stopPropagation();
                 onDelete(item.id);
               }}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 bg-white px-3 py-1.5 text-[11px] font-semibold text-red-600 transition hover:-translate-y-0.5 hover:bg-red-50 hover:shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5 text-[12px] font-semibold text-red-600 transition hover:border-red-200 hover:bg-red-100"
             >
-              <Trash2 size={13} />
+              <Trash2 size={14} />
               Delete
             </button>
           </div>

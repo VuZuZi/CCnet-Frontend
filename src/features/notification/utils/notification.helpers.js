@@ -33,6 +33,10 @@ export function getNotificationLabel(type) {
     case 'transaction_failed':
     case 'transaction_refunded':
       return 'Transaction';
+    case 'post_reacted':
+      return 'Post reaction';
+    case 'post_commented':
+      return 'Post comment';
     default:
       return 'Notification';
   }
