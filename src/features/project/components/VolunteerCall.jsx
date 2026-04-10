@@ -1,120 +1,358 @@
-import { Users, ChevronLeft, ChevronRight, MapPin, Globe } from 'lucide-react';
+import { useEffect, useMemo, useRef } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Globe,
+  MapPin,
+  Users,
+  Heart,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 
-export function VolunteerCall() {
-  const volunteers = [
-    {
-      id: 1,
-      title: 'Ngày hội dọn dẹp công viên',
-      location: 'Hà Nội',
-      isOnline: false,
-      desc: 'Tham gia sáng kiến làm sạch cộng đồng hàng tháng của chúng tôi tại Công viên Thống Nhất.',
-      current: 8,
-      target: 10,
-      image: 'https://images.unsplash.com/photo-1618477461853-cf6ed80f419e?q=80&w=600&auto=format&fit=crop',
-      color: 'green'
-    },
-    {
-      id: 2,
-      title: 'Phân phát thực phẩm cuối tuần',
-      location: 'TP.HCM',
-      isOnline: false,
-      desc: 'Hỗ trợ tổ chức và phân phát các gói thực phẩm cho các gia đình khó khăn trong cuối tuần này.',
-      current: 2,
-      target: 15,
-      image: 'https://images.unsplash.com/photo-1593113565214-80afcb4a4288?q=80&w=600&auto=format&fit=crop',
-      color: 'yellow'
-    },
-    {
-      id: 3,
-      title: 'Dạy tin học cho người cao tuổi',
-      location: 'Trực tuyến',
-      isOnline: true,
-      desc: 'Hướng dẫn các kỹ năng máy tính cơ bản cho người cao tuổi qua các buổi học 1 kèm 1 trực tuyến.',
-      current: 18,
-      target: 20,
-      image: 'https://images.unsplash.com/photo-1573164574572-cb89e39749b4?q=80&w=600&auto=format&fit=crop',
-      color: 'blue'
-    },
-    {
-      id: 4,
-      title: 'Hỗ trợ trạm cứu hộ động vật',
-      location: 'Đà Nẵng',
-      isOnline: false,
-      desc: 'Hỗ trợ dắt chó đi dạo, cho ăn và dọn dẹp, bảo trì trạm cứu hộ chung.',
-      current: 5,
-      target: 5,
-      image: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?q=80&w=600&auto=format&fit=crop',
-      color: 'purple'
+const colorByCategory = {
+  Y_TE: {
+    bg: "bg-card-blue-bg",
+    border: "border-blue-100",
+    text: "text-blue-900",
+    barBg: "bg-blue-200",
+    barFill: "bg-blue-500",
+    icon: "text-blue-600",
+  },
+  GIAO_DUC: {
+    bg: "bg-card-purple-bg",
+    border: "border-purple-100",
+    text: "text-purple-900",
+    barBg: "bg-purple-200",
+    barFill: "bg-purple-500",
+    icon: "text-purple-600",
+  },
+  MOI_TRUONG: {
+    bg: "bg-card-green-bg",
+    border: "border-green-100",
+    text: "text-green-900",
+    barBg: "bg-green-200",
+    barFill: "bg-green-500",
+    icon: "text-green-600",
+  },
+  THIEN_TAI: {
+    bg: "bg-red-50",
+    border: "border-red-100",
+    text: "text-red-900",
+    barBg: "bg-red-200",
+    barFill: "bg-red-500",
+    icon: "text-red-600",
+  },
+  XAY_DUNG: {
+    bg: "bg-card-yellow-bg",
+    border: "border-amber-100",
+    text: "text-amber-900",
+    barBg: "bg-amber-200",
+    barFill: "bg-amber-500",
+    icon: "text-amber-600",
+  },
+};
+
+function getProjectColors(project) {
+  return colorByCategory[project?.category] || colorByCategory.MOI_TRUONG;
+}
+
+function getVolunteerStats(project) {
+  const current = Number(
+    project?.stats?.currentVolunteers ??
+      project?.stats?.volunteerJoined ??
+      0
+  );
+
+  const target =
+    Number(
+      project?.stats?.targetVolunteers ?? project?.stats?.volunteerNeeded ?? 0
+    ) ||
+    Number(
+      Array.isArray(project?.volunteerRoles)
+        ? project.volunteerRoles.reduce(
+            (sum, role) => sum + Number(role?.quantity || 0),
+            0
+          )
+        : 0
+    );
+
+  const percent =
+    target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+
+  return { current, target, percent, isFull: target > 0 && current >= target };
+}
+
+function getFundingStats(project) {
+  const current = Number(
+    project?.financialDetail?.availableBalance ??
+      project?.currentAmount ??
+      project?.stats?.raisedAmount ??
+      0
+  );
+
+  const target = Number(
+    project?.targetAmount ?? project?.stats?.targetAmount ?? 0
+  );
+
+  const percent =
+    target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
+
+  return { current, target, percent, isComplete: target > 0 && current >= target };
+}
+
+function stripHtmlTags(value) {
+  return String(value || "")
+    .replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+export function VolunteerCall({ projects = [] }) {
+  const scrollerRef = useRef(null);
+  const intervalRef = useRef(null);
+  const isHoveredRef = useRef(false);
+  const manualPauseTimeoutRef = useRef(null);
+  const isManualPausedRef = useRef(false);
+
+  const items = useMemo(
+    () =>
+      (Array.isArray(projects) ? projects : []).filter(
+        (project) => project?._id
+      ),
+    [projects]
+  );
+
+  const loopItems = useMemo(() => {
+    if (!items.length) return [];
+    return [...items, ...items];
+  }, [items]);
+
+  const pauseAutoScrollTemporarily = (duration = 900) => {
+    isManualPausedRef.current = true;
+
+    if (manualPauseTimeoutRef.current) {
+      clearTimeout(manualPauseTimeoutRef.current);
     }
-  ];
 
-  const getColorClasses = (color) => {
-    const map = {
-      green: { bg: 'bg-card-green-bg', border: 'border-green-100', text: 'text-green-900', barBg: 'bg-green-200', barFill: 'bg-green-500', icon: 'text-green-600' },
-      yellow: { bg: 'bg-card-yellow-bg', border: 'border-amber-100', text: 'text-amber-900', barBg: 'bg-amber-200', barFill: 'bg-amber-500', icon: 'text-amber-600' },
-      blue: { bg: 'bg-card-blue-bg', border: 'border-blue-100', text: 'text-blue-900', barBg: 'bg-blue-200', barFill: 'bg-blue-500', icon: 'text-blue-600' },
-      purple: { bg: 'bg-card-purple-bg', border: 'border-purple-100', text: 'text-purple-900', barBg: 'bg-purple-200', barFill: 'bg-purple-500', icon: 'text-purple-600' }
-    };
-    return map[color] || map.green;
+    manualPauseTimeoutRef.current = setTimeout(() => {
+      isManualPausedRef.current = false;
+    }, duration);
   };
+
+  const normalizeLoopPosition = () => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    const resetPoint = scroller.scrollWidth / 2;
+
+    if (scroller.scrollLeft >= resetPoint) {
+      scroller.scrollLeft -= resetPoint;
+    } else if (scroller.scrollLeft < 0) {
+      scroller.scrollLeft += resetPoint;
+    }
+  };
+
+  const scrollByOffset = (offset) => {
+    const scroller = scrollerRef.current;
+    if (!scroller) return;
+
+    pauseAutoScrollTemporarily(1200);
+
+    scroller.scrollBy({
+      left: offset,
+      behavior: "smooth",
+    });
+
+    setTimeout(() => {
+      normalizeLoopPosition();
+    }, 450);
+  };
+
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller || items.length <= 1) return;
+
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+
+    intervalRef.current = setInterval(() => {
+      if (!scroller) return;
+      if (isHoveredRef.current) return;
+      if (isManualPausedRef.current) return;
+
+      const resetPoint = scroller.scrollWidth / 2;
+      const nextLeft = scroller.scrollLeft + 1;
+
+      if (nextLeft >= resetPoint) {
+        scroller.scrollLeft = 0;
+      } else {
+        scroller.scrollLeft = nextLeft;
+      }
+    }, 16);
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      if (manualPauseTimeoutRef.current) {
+        clearTimeout(manualPauseTimeoutRef.current);
+        manualPauseTimeoutRef.current = null;
+      }
+    };
+  }, [items.length]);
+
+  const handleMouseEnter = () => {
+    isHoveredRef.current = true;
+  };
+
+  const handleMouseLeave = () => {
+    isHoveredRef.current = false;
+  };
+
+  if (!items.length) return null;
 
   return (
     <section className="mb-12">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
-          <Users className="text-emerald-500" size={24} /> Kêu gọi tình nguyện viên
+      <div className="mb-6 flex items-center justify-between">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <Users className="text-emerald-500" size={24} />
+          Kêu gọi tình nguyện viên
         </h2>
+
         <div className="flex gap-2">
-          <button className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm hover:bg-slate-50 border border-slate-200 transition-colors">
+          <button
+            type="button"
+            onClick={() => scrollByOffset(-360)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition-colors hover:bg-slate-50"
+          >
             <ChevronLeft className="text-slate-600" size={20} />
           </button>
-          <button className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm hover:bg-slate-50 border border-slate-200 transition-colors">
+
+          <button
+            type="button"
+            onClick={() => scrollByOffset(360)}
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white shadow-sm transition-colors hover:bg-slate-50"
+          >
             <ChevronRight className="text-slate-600" size={20} />
           </button>
         </div>
       </div>
-      
-      <div className="flex overflow-x-auto gap-6 pb-4 no-scrollbar snap-x">
-        {volunteers.map((vol) => {
-          const colors = getColorClasses(vol.color);
-          const percent = Math.round((vol.current / vol.target) * 100);
-          const isFull = vol.current >= vol.target;
+
+      <div
+        ref={scrollerRef}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="flex gap-6 overflow-x-auto pb-4 no-scrollbar"
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        {loopItems.map((project, index) => {
+          const cover =
+            project?.coverMedia?.url ||
+            "https://images.unsplash.com/photo-1593113598332-cd59a93c6132?q=80&w=1200&auto=format&fit=crop";
+
+          const colors = getProjectColors(project);
+          const { current, target, percent, isFull } = getVolunteerStats(project);
+          const { current: raisedAmount, target: targetAmount, percent: fundingPercent } =
+            getFundingStats(project);
+
+          const isOnline = /trực tuyến|online/i.test(
+            project?.location?.address || ""
+          );
+          const isFunded = project?.projectType === "FUNDED";
 
           return (
-            <div key={vol.id} className="snap-start min-w-[300px] w-[300px] bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col">
-              <div className="h-32 bg-slate-200 relative">
-                <img alt={vol.title} className="w-full h-full object-cover" src={vol.image} loading="lazy" />
-                <span className="absolute top-3 right-3 bg-white/90 text-slate-900 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 backdrop-blur-sm shadow-sm">
-                  {vol.isOnline ? <Globe size={14} /> : <MapPin size={14} />} {vol.location}
+            <div
+              key={`${project._id}-${index}`}
+              className="flex min-w-[320px] w-[320px] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
+            >
+              <Link
+                to={`/projects/${project._id}`}
+                className="relative block h-36 bg-slate-200"
+              >
+                <img
+                  alt={project?.title}
+                  className="h-full w-full object-cover"
+                  src={cover}
+                  loading="lazy"
+                />
+
+                <span className="absolute right-3 top-3 flex items-center gap-1 rounded-md bg-white/90 px-2 py-1 text-xs font-bold text-slate-900 shadow-sm backdrop-blur-sm">
+                  {isOnline ? <Globe size={14} /> : <MapPin size={14} />}
+                  {project?.location?.address || "Chưa cập nhật"}
                 </span>
-              </div>
-              
-              <div className="p-5 flex-1 flex flex-col">
-                <h4 className="font-bold text-slate-900 mb-2 text-lg line-clamp-1">{vol.title}</h4>
-                <p className="text-sm text-slate-500 mb-4 line-clamp-2">{vol.desc}</p>
-                
+              </Link>
+
+              <div className="flex flex-1 flex-col p-5">
+                <Link to={`/projects/${project._id}`}>
+                  <h4 className="mb-2 line-clamp-1 text-lg font-bold text-slate-900 hover:text-amber-600">
+                    {project?.title}
+                  </h4>
+                </Link>
+
+                <p className="mb-4 line-clamp-2 text-sm text-slate-500">
+                  {stripHtmlTags(project?.summary || project?.description) ||
+                    "Dự án đang cần thêm tình nguyện viên tham gia hỗ trợ."}
+                </p>
+
                 <div className="mt-auto">
-                  <div className={`flex items-center gap-2 mb-4 ${colors.bg} p-3 rounded-xl border ${colors.border}`}>
+                  <div
+                    className={`mb-4 flex items-center gap-2 rounded-xl border p-3 ${colors.bg} ${colors.border}`}
+                  >
                     <Users className={colors.icon} size={20} />
                     <div className="flex-1">
-                      <div className={`flex justify-between text-xs font-bold ${colors.text} mb-1.5`}>
-                        <span>Cần tuyển</span>
-                        <span>{vol.current}/{vol.target}</span>
+                      <div
+                        className={`mb-1.5 flex justify-between text-xs font-bold ${colors.text}`}
+                      >
+                        <span>{isFull ? "Đã đủ" : "Cần tuyển"}</span>
+                        <span>
+                          {current}/{target || 0}
+                        </span>
                       </div>
-                      <div className={`w-full h-1.5 ${colors.barBg} rounded-full overflow-hidden`}>
-                        <div className={`h-full ${colors.barFill} rounded-full transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+
+                      <div
+                        className={`h-1.5 w-full overflow-hidden rounded-full ${colors.barBg}`}
+                      >
+                        <div
+                          className={`h-full rounded-full ${colors.barFill}`}
+                          style={{ width: `${percent}%` }}
+                        />
                       </div>
                     </div>
                   </div>
-                  
+
+                  {isFunded && targetAmount > 0 ? (
+                    <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
+                      <Heart size={16} className="text-amber-500" />
+                      <span>
+                        {raisedAmount.toLocaleString("vi-VN")}đ /{" "}
+                        {targetAmount.toLocaleString("vi-VN")}đ
+                      </span>
+                      <span className="ml-auto text-amber-600">
+                        {fundingPercent}%
+                      </span>
+                    </div>
+                  ) : null}
+
                   {isFull ? (
-                    <button className="w-full py-3 px-4 text-sm font-bold text-slate-500 bg-slate-100 rounded-xl cursor-not-allowed border border-slate-200" disabled>
-                      Đã đủ số lượng
-                    </button>
+                    <Link
+                      to={`/projects/${project._id}`}
+                      className="flex w-full items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-100"
+                    >
+                      Xem chi tiết
+                    </Link>
                   ) : (
-                    <button className="w-full py-3 px-4 text-sm font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800 transition-colors shadow-sm">
-                      Đăng ký tham gia
-                    </button>
+                    <Link
+                      to={`/projects/${project._id}`}
+                      className="flex w-full items-center justify-center rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white shadow-sm shadow-emerald-500/20 transition-colors hover:bg-emerald-600"
+                    >
+                      Tham gia
+                    </Link>
                   )}
                 </div>
               </div>
@@ -125,3 +363,5 @@ export function VolunteerCall() {
     </section>
   );
 }
+
+export default VolunteerCall;

@@ -2,6 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { followAPI } from "../../users/api/followAPI";
 import { userAPI } from "../../users/api/userAPI";
 
+const projectDetailKeys = (projectId) => [
+  ["projects", "detail", projectId],
+  ["project", projectId],
+];
+
 export const useSuggestedUsers = (limit = 5) => {
   return useQuery({
     queryKey: ["suggestedUsers", limit],
@@ -34,6 +39,7 @@ export const useFollowMutations = () => {
       queryClient.invalidateQueries({ queryKey: ["followStatus", userId] });
       queryClient.invalidateQueries({ queryKey: ["myFollowing"] });
       queryClient.invalidateQueries({ queryKey: ["suggestedUsers"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 
@@ -44,21 +50,30 @@ export const useFollowMutations = () => {
       queryClient.invalidateQueries({ queryKey: ["myFollowing"] });
       queryClient.invalidateQueries({ queryKey: ["suggestedUsers"] });
       queryClient.invalidateQueries({ queryKey: ["follow"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 
   const toggleProjectFollow = useMutation({
     mutationFn: (projectId) => followAPI.toggleProjectFollow(projectId),
     onMutate: async (projectId) => {
-      await queryClient.cancelQueries({ queryKey: ["project", projectId] });
-      const previousProject = queryClient.getQueryData(["project", projectId]);
+      const detailKeys = projectDetailKeys(projectId);
 
-      if (previousProject) {
-        queryClient.setQueryData(["project", projectId], (old) => {
+      await Promise.all(
+        detailKeys.map((key) => queryClient.cancelQueries({ queryKey: key })),
+      );
+
+      const previousSnapshots = detailKeys.map((key) => ({
+        key,
+        data: queryClient.getQueryData(key),
+      }));
+
+      detailKeys.forEach((key) => {
+        queryClient.setQueryData(key, (old) => {
           if (!old) return old;
 
-          const isCurrentlyFollowing = old.isFollowing;
-          const currentFollowerCount = old.stats?.followerCount || 0;
+          const isCurrentlyFollowing = Boolean(old.isFollowing);
+          const currentFollowerCount = Number(old.stats?.followerCount || 0);
 
           return {
             ...old,
@@ -71,22 +86,24 @@ export const useFollowMutations = () => {
             },
           };
         });
-      }
-      return { previousProject };
+      });
+
+      return { previousSnapshots };
     },
-    onError: (err, projectId, context) => {
-      if (context?.previousProject) {
-        queryClient.setQueryData(
-          ["project", projectId],
-          context.previousProject,
-        );
-      }
+    onError: (_err, _projectId, context) => {
+      (context?.previousSnapshots || []).forEach(({ key, data }) => {
+        queryClient.setQueryData(key, data);
+      });
     },
-    onSettled: (_, __, projectId) => {
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["project", projectId] });
-        queryClient.invalidateQueries({ queryKey: ["projects"] });
-      }, 1500);
+    onSettled: (_data, _error, projectId) => {
+      const detailKeys = projectDetailKeys(projectId);
+
+      detailKeys.forEach((key) => {
+        queryClient.invalidateQueries({ queryKey: key });
+      });
+
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["myFollowing"] });
     },
   });
 

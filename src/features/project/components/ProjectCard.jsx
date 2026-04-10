@@ -1,28 +1,141 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Share2, Users } from "lucide-react";
+import {
+  MapPin,
+  Share2,
+  Users,
+  CalendarDays,
+  Clock3,
+  CircleDot,
+  CheckCircle2,
+  UserRound,
+} from "lucide-react";
 import { ShareModal } from "../../Community/components/common/ShareModal";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+
+function normalizeId(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") return value._id || value.id || "";
+  return "";
+}
+
+function formatPostedDate(dateString) {
+  if (!dateString) return "Không rõ ngày đăng";
+
+  const date = new Date(dateString);
+  if (Number.isNaN(date.getTime())) return "Không rõ ngày đăng";
+
+  const now = new Date();
+  const diffMs = now - date;
+  const oneHourMs = 60 * 60 * 1000;
+
+  if (diffMs < oneHourMs) {
+    return "Vừa đăng";
+  }
+
+  const datePart = date.toLocaleDateString("vi-VN");
+  const timePart = date.toLocaleTimeString("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+
+  return `${datePart} • ${timePart}`;
+}
+
+function getDaysLeft(endDate) {
+  if (!endDate) return null;
+  const diff = new Date(endDate).getTime() - Date.now();
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function getCategoryLabel(category) {
+  const map = {
+    Y_TE: "Y tế",
+    GIAO_DUC: "Giáo dục",
+    MOI_TRUONG: "Môi trường",
+    THIEN_TAI: "Thiên tai",
+    XAY_DUNG: "Xây dựng",
+  };
+  return map[category] || "Khác";
+}
+
+function isFundingCompleted(project, currentAmount, targetAmount, fundingPercent) {
+  const normalizedStatus = String(project?.status || "").toUpperCase();
+
+  return (
+    (targetAmount > 0 && Number(currentAmount) >= Number(targetAmount)) ||
+    Number(fundingPercent) >= 100 ||
+    normalizedStatus === "COMPLETED_SUCCESSFULLY" ||
+    normalizedStatus === "COMPLETED_PARTIAL"
+  );
+}
 
 export function ProjectCard({ project }) {
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const currentUser = useAuthStore((state) => state.user);
 
-  // Phân loại dự án theo BE
-  const isVolunteerOnly = project.projectType === 'VOLUNTEER_ONLY';
-  const isFunded = project.projectType === 'FUNDED' || !project.projectType; // Fallback an toàn cho dự án cũ
+  const currentUserId = normalizeId(currentUser?._id || currentUser?.id);
 
-  // Logic dữ liệu: FUNDED
-  const currentAmount = project.currentAmount || 0;
-  const targetAmount = project.targetAmount || 0;
-  const fundingPercent = targetAmount > 0
-    ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100)
-    : 0;
+  const organizerRaw = project?.organizerId;
+  const organizerId = normalizeId(organizerRaw);
+  const organizerName =
+    typeof organizerRaw === "object"
+      ? organizerRaw?.fullName || ""
+      : "";
 
-  // Logic dữ liệu: VOLUNTEER_ONLY
-  const currentVolunteers = project?.stats?.currentVolunteers || 0;
-  const targetVolunteers = project?.stats?.targetVolunteers || 0;
-  const volunteerPercent = targetVolunteers > 0
-    ? Math.min(Math.round((currentVolunteers / targetVolunteers) * 100), 100)
-    : 0;
+  const isOwner = Boolean(currentUserId && organizerId === currentUserId);
+
+  const isVolunteerOnly = project?.projectType === "VOLUNTEER_ONLY";
+  const isFunded = project?.projectType === "FUNDED" || !project?.projectType;
+  const needsVolunteers = Boolean(project?.needsVolunteers || isVolunteerOnly);
+  const isMixedProject = isFunded && needsVolunteers;
+
+  const currentAmount = Number(
+    project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0
+  );
+
+  const targetAmount = Number(project?.targetAmount || 0);
+
+  const fundingPercent =
+    targetAmount > 0
+      ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100)
+      : 0;
+
+  const fundingCompleted = isFunded
+    ? isFundingCompleted(project, currentAmount, targetAmount, fundingPercent)
+    : false;
+
+  const currentVolunteers = Number(
+    project?.stats?.currentVolunteers ??
+      project?.stats?.volunteerJoined ??
+      0
+  );
+
+  const targetVolunteers =
+    Number(
+      project?.stats?.targetVolunteers ?? project?.stats?.volunteerNeeded ?? 0
+    ) ||
+    Number(
+      Array.isArray(project?.volunteerRoles)
+        ? project.volunteerRoles.reduce(
+            (sum, role) => sum + Number(role?.quantity || 0),
+            0
+          )
+        : 0
+    );
+
+  const volunteerPercent =
+    targetVolunteers > 0
+      ? Math.min(Math.round((currentVolunteers / targetVolunteers) * 100), 100)
+      : 0;
+
+  const isVolunteerFull =
+    Boolean(project?.isVolunteerFull) ||
+    (targetVolunteers > 0 && currentVolunteers >= targetVolunteers);
+
+  const daysLeft = getDaysLeft(project?.endDate);
+  const postedText = formatPostedDate(project?.createdAt);
 
   const getCategoryStyles = (cat) => {
     const styles = {
@@ -35,95 +148,204 @@ export function ProjectCard({ project }) {
     return styles[cat] || "bg-slate-100 text-slate-800";
   };
 
-  const catStyle = getCategoryStyles(project.category);
-  
+  const catStyle = getCategoryStyles(project?.category);
+
   const shareData = {
-    entityId: project._id,
+    entityId: project?._id,
     entityModel: "Project",
-    title: project.title,
-    thumbnail: project.coverMedia?.url || "",
-    description: project.summary || project.description || "Hãy cùng chung tay đóng góp cho dự án ý nghĩa này!",
+    title: project?.title,
+    thumbnail: project?.coverMedia?.url || "",
+    description:
+      project?.summary ||
+      project?.description ||
+      "Hãy cùng chung tay đóng góp cho dự án ý nghĩa này!",
   };
+
+  const primaryAction = (() => {
+    if (isOwner) {
+      return {
+        label: "Quản lý",
+        className: "bg-slate-900 text-white shadow-sm hover:bg-slate-800",
+      };
+    }
+
+    if (isFunded && !fundingCompleted) {
+      return {
+        label: "Đóng góp",
+        className:
+          "bg-amber-400 text-slate-900 shadow-sm shadow-amber-500/20 hover:bg-amber-500",
+      };
+    }
+
+    if ((isVolunteerOnly || needsVolunteers) && !isVolunteerFull && !isFunded) {
+      return {
+        label: "Tham gia",
+        className:
+          "bg-emerald-500 text-white shadow-sm shadow-emerald-500/20 hover:bg-emerald-600",
+      };
+    }
+
+    return {
+      label: "Xem chi tiết",
+      className:
+        "border border-slate-200 bg-slate-50 text-slate-700 hover:bg-slate-100",
+    };
+  })();
 
   return (
     <>
-      <div className="bg-white rounded-2xl overflow-hidden border border-slate-100 shadow-sm flex flex-col hover:shadow-md transition-shadow group h-full relative">
-        <div className="h-48 bg-slate-200 relative overflow-hidden flex-shrink-0">
+      <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-shadow hover:shadow-md">
+        <div className="relative h-48 flex-shrink-0 overflow-hidden bg-slate-200">
           <img
-            src={project.coverMedia?.url || "/placeholder-project.jpg"}
-            alt={project.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            src={project?.coverMedia?.url || "/placeholder-project.jpg"}
+            alt={project?.title}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
-          
-          <div className="absolute top-3 right-3 flex flex-col gap-2 items-end">
-            <span className={`text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm shadow-sm ${catStyle}`}>
-              {project.category || "Khác"}
+
+          <div className="absolute right-3 top-3 flex flex-col items-end gap-2">
+            <span
+              className={`rounded-lg px-3 py-1.5 text-xs font-bold shadow-sm backdrop-blur-sm ${catStyle}`}
+            >
+              {getCategoryLabel(project?.category)}
             </span>
-            {/* Huy hiệu dành riêng cho dự án TNV */}
-            {isVolunteerOnly && (
-               <span className="bg-emerald-100/90 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-lg backdrop-blur-sm shadow-sm flex items-center gap-1.5 border border-emerald-200/50">
-                 <Users size={12} strokeWidth={2.5} /> Tình nguyện
-               </span>
+
+            {(isVolunteerOnly || needsVolunteers) && (
+              <span className="flex items-center gap-1.5 rounded-lg border border-emerald-200/50 bg-emerald-100/90 px-3 py-1.5 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-sm">
+                <Users size={12} strokeWidth={2.5} />
+                {isMixedProject ? "Tuyển TNV" : "Tình nguyện"}
+              </span>
+            )}
+
+            {fundingCompleted && (
+              <span className="flex items-center gap-1.5 rounded-lg border border-emerald-200/60 bg-emerald-100/95 px-3 py-1.5 text-xs font-bold text-emerald-800 shadow-sm backdrop-blur-sm">
+                <CheckCircle2 size={12} strokeWidth={2.5} />
+                Đã đạt mục tiêu
+              </span>
+            )}
+
+            {isOwner && (
+              <span className="rounded-lg border border-slate-200 bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-800 shadow-sm backdrop-blur-sm">
+                Dự án của bạn
+              </span>
             )}
           </div>
 
-          {project.isUrgent && (
-            <span className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-sm tracking-wide">
+          {project?.isUrgent && !fundingCompleted && (
+            <span className="absolute left-3 top-3 rounded-lg bg-red-500 px-3 py-1.5 text-xs font-bold tracking-wide text-white shadow-sm">
               KHẨN CẤP
             </span>
           )}
         </div>
 
-        <div className="p-6 flex-1 flex flex-col">
-          <h4 className="font-bold text-slate-900 mb-2 text-lg line-clamp-2 group-hover:text-amber-600 transition-colors">
+        <div className="flex flex-1 flex-col p-6">
+          <h4 className="mb-2 line-clamp-2 text-lg font-bold text-slate-900 transition-colors group-hover:text-amber-600">
             <Link
-              to={`/projects/${project._id}`}
+              to={`/projects/${project?._id}`}
               className="focus:outline-none before:absolute before:inset-0"
             >
-              {project.title}
+              {project?.title}
             </Link>
           </h4>
 
-          <div className="flex items-center gap-1.5 text-slate-500 text-sm mb-6">
+          {!isOwner && organizerName ? (
+  <div className="mb-3 flex items-center gap-1.5 text-sm font-medium text-slate-500">
+    <UserRound size={15} className="flex-shrink-0" />
+    <span className="truncate">{organizerName}</span>
+  </div>
+) : null}
+
+          <div className="mb-3 flex items-center gap-1.5 text-sm text-slate-500">
             <MapPin size={16} className="flex-shrink-0" />
             <span className="truncate">
-              {project.location?.address || "Chưa cập nhật địa điểm"}
+              {project?.location?.address || "Chưa cập nhật địa điểm"}
             </span>
           </div>
 
-          <div className="mt-auto relative z-10">
-            {/* UI TIẾN ĐỘ GÂY QUỸ (FUNDED) */}
+          <div className="mb-5 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold text-slate-600">
+              <CalendarDays size={13} />
+              {postedText}
+            </span>
+
+            {daysLeft !== null && (
+              <span
+                className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                  daysLeft < 0
+                    ? "border-slate-200 bg-slate-50 text-slate-500"
+                    : daysLeft <= 7
+                    ? "border-amber-200 bg-amber-50 text-amber-700"
+                    : "border-blue-200 bg-blue-50 text-blue-700"
+                }`}
+              >
+                <Clock3 size={13} />
+                {daysLeft < 0
+                  ? "Đã kết thúc"
+                  : daysLeft === 0
+                  ? "Hôm nay"
+                  : `Còn ${daysLeft} ngày`}
+              </span>
+            )}
+
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
+              <CircleDot size={12} />
+              {isFunded
+                ? fundingCompleted
+                  ? "Hoàn thành gây quỹ"
+                  : needsVolunteers
+                  ? "Gây quỹ + tuyển TNV"
+                  : "Gây quỹ"
+                : isVolunteerFull
+                ? "Đã đủ TNV"
+                : "Đang tuyển TNV"}
+            </span>
+          </div>
+
+          <div className="relative z-10 mt-auto">
             {isFunded && (
               <div className="mb-6">
-                <div className="flex justify-between text-sm font-bold mb-2">
+                <div className="mb-2 flex justify-between text-sm font-bold">
                   <span className="text-slate-900">
-                    {currentAmount.toLocaleString()} đ{" "}
-                    <span className="text-slate-500 text-xs font-normal">đã góp</span>
+                    {Number(currentAmount).toLocaleString("vi-VN")} đ{" "}
+                    <span className="text-xs font-normal text-slate-500">
+                      đã góp
+                    </span>
                   </span>
-                  <span className="text-amber-500">{fundingPercent}%</span>
+                  <span
+                    className={
+                      fundingCompleted ? "text-emerald-600" : "text-amber-500"
+                    }
+                  >
+                    {fundingPercent}%
+                  </span>
                 </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full bg-amber-400 rounded-full transition-all duration-1000 ease-out"
+                    className={`h-full rounded-full transition-all duration-1000 ease-out ${
+                      fundingCompleted ? "bg-emerald-500" : "bg-amber-400"
+                    }`}
                     style={{ width: `${fundingPercent}%` }}
                   />
                 </div>
               </div>
             )}
 
-            {/* UI TIẾN ĐỘ TÌNH NGUYỆN VIÊN (VOLUNTEER_ONLY) */}
-            {isVolunteerOnly && (
+            {(isVolunteerOnly || needsVolunteers) && (
               <div className="mb-6">
-                <div className="flex justify-between text-sm font-bold mb-2">
+                <div className="mb-2 flex justify-between text-sm font-bold">
                   <span className="text-slate-900">
-                    {currentVolunteers.toLocaleString()} <span className="text-slate-500 text-xs font-normal">/ {targetVolunteers} TNV</span>
+                    {currentVolunteers.toLocaleString("vi-VN")}{" "}
+                    <span className="text-xs font-normal text-slate-500">
+                      / {targetVolunteers} TNV
+                    </span>
                   </span>
                   <span className="text-emerald-600">{volunteerPercent}%</span>
                 </div>
-                <div className="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden">
+
+                <div className="h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
                   <div
-                    className="h-full bg-emerald-400 rounded-full transition-all duration-1000 ease-out"
+                    className="h-full rounded-full bg-emerald-400 transition-all duration-1000 ease-out"
                     style={{ width: `${volunteerPercent}%` }}
                   />
                 </div>
@@ -132,31 +354,20 @@ export function ProjectCard({ project }) {
 
             <div className="flex gap-3">
               <Link
-                to={`/projects/${project._id}`}
-                className="flex-1 flex items-center justify-center py-3 px-4 text-center text-sm font-bold text-slate-700 bg-slate-50 border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+                to={`/projects/${project?._id}`}
+                className={`flex flex-1 items-center justify-center rounded-xl px-4 py-3 text-center text-sm font-bold transition-colors ${primaryAction.className}`}
               >
-                Chi tiết
+                {primaryAction.label}
               </Link>
-              
-              {isFunded ? (
-                <button className="flex-1 py-3 px-4 text-sm font-bold text-slate-900 bg-amber-400 rounded-xl hover:bg-amber-500 transition-colors shadow-sm shadow-amber-500/20">
-                  Đóng góp
-                </button>
-              ) : (
-                <Link 
-                  to={`/projects/${project._id}?tab=volunteer`}
-                  className="flex-1 flex items-center justify-center py-3 px-4 text-sm font-bold text-white bg-emerald-500 rounded-xl hover:bg-emerald-600 transition-colors shadow-sm shadow-emerald-500/20"
-                >
-                  Tham gia
-                </Link>
-              )}
 
               <button
+                type="button"
                 onClick={(e) => {
                   e.preventDefault();
+                  e.stopPropagation();
                   setIsShareOpen(true);
                 }}
-                className="flex items-center justify-center px-4 text-slate-500 bg-slate-50 border border-slate-200 rounded-xl hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                className="flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
               >
                 <Share2 size={18} />
               </button>
@@ -169,8 +380,10 @@ export function ProjectCard({ project }) {
         isOpen={isShareOpen}
         onClose={() => setIsShareOpen(false)}
         sharedData={shareData}
-        initialText={`Dự án ý nghĩa: "${project.title}". Mọi người cùng chung tay nhé! 🚀`}
+        initialText={`Dự án ý nghĩa: "${project?.title}". Mọi người cùng chung tay nhé! 🚀`}
       />
     </>
   );
 }
+
+export default ProjectCard;

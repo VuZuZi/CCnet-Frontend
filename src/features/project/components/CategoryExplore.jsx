@@ -1,64 +1,139 @@
-import { HeartPulse, GraduationCap, TreePine, LifeBuoy, LayoutGrid } from 'lucide-react';
+import {
+  HeartPulse,
+  GraduationCap,
+  TreePine,
+  LifeBuoy,
+  Hammer,
+  LayoutGrid,
+  Check,
+  Loader2,
+} from 'lucide-react';
 
-export function CategoryExplore() {
-  const categories = [
-    {
-      id: 'medical',
-      title: 'Y tế & Sức khỏe',
-      count: '124 Dự án',
-      icon: <HeartPulse className="text-blue-500" size={32} />,
-      bgClass: 'bg-card-blue-bg border-blue-100',
-      textClass: 'text-blue-900',
-      subTextClass: 'text-blue-700',
-    },
-    {
-      id: 'education',
-      title: 'Giáo dục',
-      count: '86 Dự án',
-      icon: <GraduationCap className="text-purple-500" size={32} />,
-      bgClass: 'bg-card-purple-bg border-purple-100',
-      textClass: 'text-purple-900',
-      subTextClass: 'text-purple-700',
-    },
-    {
-      id: 'environment',
-      title: 'Môi trường',
-      count: '52 Dự án',
-      icon: <TreePine className="text-green-500" size={32} />,
-      bgClass: 'bg-card-green-bg border-green-100',
-      textClass: 'text-green-900',
-      subTextClass: 'text-green-700',
-    },
-    {
-      id: 'emergency',
-      title: 'Cứu trợ khẩn cấp',
-      count: '18 Dự án',
-      icon: <LifeBuoy className="text-red-500" size={32} />,
-      bgClass: 'bg-red-50 border-red-100',
-      textClass: 'text-red-900',
-      subTextClass: 'text-red-700',
-    }
-  ];
+const CATEGORY_CONFIG = [
+  {
+    value: 'Y_TE',
+    title: 'Y tế & Sức khỏe',
+    icon: HeartPulse,
+    bgClass: 'bg-card-blue-bg border-blue-100',
+    textClass: 'text-blue-900',
+    subTextClass: 'text-blue-700',
+    iconClass: 'text-blue-500',
+  },
+  {
+    value: 'GIAO_DUC',
+    title: 'Giáo dục',
+    icon: GraduationCap,
+    bgClass: 'bg-card-purple-bg border-purple-100',
+    textClass: 'text-purple-900',
+    subTextClass: 'text-purple-700',
+    iconClass: 'text-purple-500',
+  },
+  {
+    value: 'MOI_TRUONG',
+    title: 'Môi trường',
+    icon: TreePine,
+    bgClass: 'bg-card-green-bg border-green-100',
+    textClass: 'text-green-900',
+    subTextClass: 'text-green-700',
+    iconClass: 'text-green-500',
+  },
+  {
+    value: 'THIEN_TAI',
+    title: 'Cứu trợ khẩn cấp',
+    icon: LifeBuoy,
+    bgClass: 'bg-red-50 border-red-100',
+    textClass: 'text-red-900',
+    subTextClass: 'text-red-700',
+    iconClass: 'text-red-500',
+  },
+  {
+    value: 'XAY_DUNG',
+    title: 'Xây dựng',
+    icon: Hammer,
+    bgClass: 'bg-card-yellow-bg border-amber-100',
+    textClass: 'text-amber-900',
+    subTextClass: 'text-amber-700',
+    iconClass: 'text-amber-500',
+  },
+];
+
+export function CategoryExplore({
+  activeCategory = '',
+  onCategorySelect,
+  countsByCategory = {},
+  isCountsLoading = false,
+}) {
+  const handleSelect = (value) => {
+    if (!onCategorySelect) return;
+    onCategorySelect(activeCategory === value ? '' : value);
+  };
 
   return (
     <section className="mb-12 mt-12">
-      <h2 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2">
-        <LayoutGrid className="text-amber-500" size={24} /> Khám phá theo danh mục
-      </h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {categories.map((cat) => (
-          <div
-            key={cat.id}
-            className={`${cat.bgClass} p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer hover:shadow-md transition-shadow border group`}
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+          <LayoutGrid className="text-amber-500" size={24} />
+          Khám phá theo danh mục
+        </h2>
+
+        {activeCategory ? (
+          <button
+            type="button"
+            onClick={() => onCategorySelect?.('')}
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
           >
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
-              {cat.icon}
-            </div>
-            <h3 className={`font-bold ${cat.textClass}`}>{cat.title}</h3>
-            <p className={`text-xs mt-1 font-medium ${cat.subTextClass}`}>{cat.count}</p>
-          </div>
-        ))}
+            Xóa lọc danh mục
+          </button>
+        ) : null}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4">
+        {CATEGORY_CONFIG.map((cat) => {
+          const Icon = cat.icon;
+          const isActive = activeCategory === cat.value;
+          const visibleCount = Number(countsByCategory?.[cat.value] || 0);
+
+          return (
+            <button
+              key={cat.value}
+              type="button"
+              onClick={() => handleSelect(cat.value)}
+              className={[
+                cat.bgClass,
+                'relative p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all border group',
+                isActive
+                  ? 'ring-2 ring-amber-400 shadow-md -translate-y-0.5'
+                  : 'hover:shadow-md',
+              ].join(' ')}
+            >
+              {isActive ? (
+                <span className="absolute right-3 top-3 inline-flex h-7 w-7 items-center justify-center rounded-full bg-amber-400 text-slate-900 shadow-sm">
+                  <Check size={15} strokeWidth={3} />
+                </span>
+              ) : null}
+
+              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+                <Icon className={cat.iconClass} size={32} />
+              </div>
+
+              <h3 className={`font-bold ${cat.textClass}`}>{cat.title}</h3>
+
+              <p className={`text-xs mt-1 font-medium ${cat.subTextClass} flex items-center gap-1.5`}>
+                {isCountsLoading ? (
+                  <>
+                    <Loader2 className="animate-spin" size={12} />
+                    Đang cập nhật...
+                  </>
+                ) : (
+                  <>{visibleCount} Dự án</>
+                )}
+              </p>
+            </button>
+          );
+        })}
       </div>
     </section>
   );
 }
+
+export default CategoryExplore;

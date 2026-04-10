@@ -59,7 +59,7 @@ const prepareProjectPayload = (data) => {
   }
 
   payload = cleanEmptyStrings(payload);
-  
+
   return payload;
 };
 
@@ -83,6 +83,11 @@ export const projectAPI = {
 
   getFeatured: async () => {
     const response = await httpClient.get('/project/featured');
+    return response.data?.data;
+  },
+
+  getVolunteerNeeded: async () => {
+    const response = await httpClient.get('/project/volunteers-needed');
     return response.data?.data;
   },
 
@@ -134,8 +139,8 @@ export const projectAPI = {
     return response.data?.data;
   },
 
-  toggleFeedCommentLike: async (projectId, postId, commentId) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/comments/${commentId}/like`);
+  toggleFeedCommentLike: async (projectId, commentId) => {
+    const response = await httpClient.post(`/project/${projectId}/feed/comments/${commentId}/like`);
     return response.data?.data;
   },
 };
