@@ -59,7 +59,7 @@ const prepareProjectPayload = (data) => {
   }
 
   payload = cleanEmptyStrings(payload);
-  
+
   return payload;
 };
 
@@ -83,6 +83,11 @@ export const projectAPI = {
 
   getFeatured: async () => {
     const response = await httpClient.get('/project/featured');
+    return response.data?.data;
+  },
+
+  getVolunteerNeeded: async () => {
+    const response = await httpClient.get('/project/volunteers-needed');
     return response.data?.data;
   },
 
