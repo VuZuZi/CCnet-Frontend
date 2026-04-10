@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { BadgeCheck, Calendar, Users, Wallet, Eye, Clock, Trash2, RefreshCw, Search } from "lucide-react";
 import { useState, useMemo } from "react";
 import AdminProjectDetailModal from "../components/projects/AdminProjectDetailModal";
+import { PROJECT_STATUS } from "@/shared/constants/project";
 
 const ProjectManagement = () => {
   const { t } = useTranslation();
@@ -53,18 +54,73 @@ const ProjectManagement = () => {
     return date.toLocaleDateString("vi-VN");
   };
 
+  const UI_STATUS = {
+    ACTIVE: "ACTIVE",
+    PENDING_APPROVAL: "PENDING_APPROVAL",
+    DRAFT: "DRAFT",
+    PAUSED: "PAUSED",
+    COMPLETED: "COMPLETED",
+    CANCELLED: "CANCELLED",
+  };
+
+  const mapProjectStatus = (status) => {
+    const normalized = String(status || "").trim().toUpperCase();
+    if (["ACTIVE", PROJECT_STATUS.FUNDING, PROJECT_STATUS.RECRUITING, PROJECT_STATUS.EXECUTING].includes(normalized)) {
+      return UI_STATUS.ACTIVE;
+    }
+    if ([PROJECT_STATUS.COMPLETED_SUCCESSFULLY, PROJECT_STATUS.COMPLETED_PARTIAL, "COMPLETED"].includes(normalized)) {
+      return UI_STATUS.COMPLETED;
+    }
+    if ([PROJECT_STATUS.CANCELLED_BY_PLATFORM, PROJECT_STATUS.CANCELLED_BY_ORGANIZER, PROJECT_STATUS.CANCELLED_FRAUD, PROJECT_STATUS.REJECTED, "CANCELLED"].includes(normalized)) {
+      return UI_STATUS.CANCELLED;
+    }
+    if ([PROJECT_STATUS.PENDING_APPROVAL, PROJECT_STATUS.UNDER_REVIEW].includes(normalized)) {
+      return UI_STATUS.PENDING_APPROVAL;
+    }
+    if (normalized === PROJECT_STATUS.PAUSED) {
+      return UI_STATUS.PAUSED;
+    }
+    if (normalized === PROJECT_STATUS.DRAFT) {
+      return UI_STATUS.DRAFT;
+    }
+    return normalized || UI_STATUS.DRAFT;
+  };
+
+  const ACTIVE_STATUS_SET = new Set([
+    "ACTIVE",
+    PROJECT_STATUS.FUNDING,
+    PROJECT_STATUS.RECRUITING,
+    PROJECT_STATUS.EXECUTING,
+  ]);
+
+  const COMPLETED_STATUS_SET = new Set([
+    PROJECT_STATUS.COMPLETED_SUCCESSFULLY,
+    PROJECT_STATUS.COMPLETED_PARTIAL,
+    "COMPLETED",
+  ]);
+
   const getStatusStyle = (status) => {
     switch (status) {
-      case "ACTIVE":
+      case UI_STATUS.ACTIVE:
+      case PROJECT_STATUS.FUNDING:
+      case PROJECT_STATUS.RECRUITING:
+      case PROJECT_STATUS.EXECUTING:
         return { bg: "bg-emerald-50", text: "text-emerald-700", border: "border-emerald-100", icon: "🟢" };
-      case "PENDING_APPROVAL":
+      case PROJECT_STATUS.PENDING_APPROVAL:
+      case PROJECT_STATUS.UNDER_REVIEW:
         return { bg: "bg-amber-50", text: "text-amber-700", border: "border-amber-100", icon: "🟡" };
-      case "DRAFT":
+      case PROJECT_STATUS.DRAFT:
         return { bg: "bg-slate-50", text: "text-slate-600", border: "border-slate-200", icon: "📝" };
-      case "PAUSED":
+      case PROJECT_STATUS.PAUSED:
         return { bg: "bg-orange-50", text: "text-orange-700", border: "border-orange-100", icon: "⏸️" };
+      case PROJECT_STATUS.COMPLETED_SUCCESSFULLY:
+      case PROJECT_STATUS.COMPLETED_PARTIAL:
       case "COMPLETED":
         return { bg: "bg-blue-50", text: "text-blue-700", border: "border-blue-100", icon: "" };
+      case PROJECT_STATUS.CANCELLED_BY_PLATFORM:
+      case PROJECT_STATUS.CANCELLED_BY_ORGANIZER:
+      case PROJECT_STATUS.CANCELLED_FRAUD:
+      case PROJECT_STATUS.REJECTED:
       case "CANCELLED":
         return { bg: "bg-rose-50", text: "text-rose-700", border: "border-rose-100", icon: "❌" };
       default:
@@ -74,12 +130,25 @@ const ProjectManagement = () => {
 
   const getStatusLabel = (status) => {
     const labels = {
-      ACTIVE: "Đang hoạt động",
-      PENDING_APPROVAL: "Chờ duyệt",
-      DRAFT: "Bản nháp",
-      PAUSED: "Tạm dừng",
-      COMPLETED: "Hoàn thành",
-      CANCELLED: "Đã hủy",
+      [UI_STATUS.ACTIVE]: "Đang hoạt động",
+      [PROJECT_STATUS.FUNDING]: "Đang hoạt động",
+      [PROJECT_STATUS.RECRUITING]: "Đang hoạt động",
+      [PROJECT_STATUS.EXECUTING]: "Đang hoạt động",
+      [PROJECT_STATUS.PENDING_APPROVAL]: "Chờ duyệt",
+      [PROJECT_STATUS.UNDER_REVIEW]: "Đang xem xét",
+      [PROJECT_STATUS.DRAFT]: "Bản nháp",
+      [PROJECT_STATUS.PAUSED]: "Tạm dừng",
+      [PROJECT_STATUS.COMPLETED_SUCCESSFULLY]: "Hoàn thành",
+      [PROJECT_STATUS.COMPLETED_PARTIAL]: "Hoàn thành",
+      [UI_STATUS.PENDING_APPROVAL]: "Chờ duyệt",
+      [UI_STATUS.DRAFT]: "Bản nháp",
+      [UI_STATUS.PAUSED]: "Tạm dừng",
+      [UI_STATUS.COMPLETED]: "Hoàn thành",
+      [UI_STATUS.CANCELLED]: "Đã hủy",
+      [PROJECT_STATUS.CANCELLED_BY_PLATFORM]: "Đã hủy",
+      [PROJECT_STATUS.CANCELLED_BY_ORGANIZER]: "Đã hủy",
+      [PROJECT_STATUS.CANCELLED_FRAUD]: "Đã hủy",
+      [PROJECT_STATUS.REJECTED]: "Bị từ chối",
     };
     return labels[status] || status;
   };
@@ -108,7 +177,9 @@ const ProjectManagement = () => {
 
   // Lọc dự án theo status + search
   const filteredProjects = useMemo(() => {
-    const byStatus = filterStatus === "ALL" ? projects : projects.filter((p) => p.status === filterStatus);
+    const byStatus = filterStatus === "ALL"
+      ? projects
+      : projects.filter((p) => mapProjectStatus(p.status) === filterStatus);
     return byStatus.filter(isMatch);
   }, [projects, filterStatus, normalizedQuery]);
 
@@ -116,10 +187,10 @@ const ProjectManagement = () => {
   const stats = useMemo(() => {
     const counts = {
       total: projects.length,
-      ACTIVE: projects.filter(p => p.status === "ACTIVE").length,
-      PENDING_APPROVAL: projects.filter(p => p.status === "PENDING_APPROVAL").length,
-      DRAFT: projects.filter(p => p.status === "DRAFT").length,
-      COMPLETED: projects.filter(p => p.status === "COMPLETED").length,
+      ACTIVE: projects.filter((p) => mapProjectStatus(p.status) === UI_STATUS.ACTIVE).length,
+      PENDING_APPROVAL: projects.filter((p) => mapProjectStatus(p.status) === PROJECT_STATUS.PENDING_APPROVAL).length,
+      DRAFT: projects.filter((p) => mapProjectStatus(p.status) === PROJECT_STATUS.DRAFT).length,
+      COMPLETED: projects.filter((p) => mapProjectStatus(p.status) === "COMPLETED").length,
     };
     return counts;
   }, [projects]);
@@ -216,7 +287,8 @@ const ProjectManagement = () => {
             : 0;
 
           const descriptionText = stripHtml(project.description) || "Không có mô tả";
-          const statusStyle = getStatusStyle(project.status);
+          const displayStatus = mapProjectStatus(project.status);
+          const statusStyle = getStatusStyle(displayStatus);
           const daysRemaining = getDaysRemaining(project.endDate);
           const isExpired = daysRemaining !== null && daysRemaining < 0;
           const coverUrl = project?.coverMedia?.url || null;
@@ -273,7 +345,7 @@ const ProjectManagement = () => {
                   {/* Actions */}
                   <div className="flex flex-col items-end gap-2 ml-4">
                     <select
-                      value={project.status || "DRAFT"}
+                      value={displayStatus}
                       onChange={(e) => updateProjectStatus(project._id, e.target.value)}
                       className="text-xs font-medium border border-gray-200 rounded-xl px-3 py-1.5 bg-white text-gray-700 hover:border-amber-300 transition-colors cursor-pointer"
                     >
@@ -378,7 +450,7 @@ const ProjectManagement = () => {
                     </div>
                   )}
 
-                  {isExpired && project.status === "ACTIVE" && (
+                  {isExpired && mapProjectStatus(project.status) === UI_STATUS.ACTIVE && (
                     <div className="flex items-center gap-1 bg-red-50 px-2 py-1 rounded-full">
                       <span className="text-xs font-bold text-red-600">Đã kết thúc</span>
                     </div>
@@ -402,15 +474,12 @@ const ProjectManagement = () => {
       <AdminProjectDetailModal
         open={Boolean(selectedProject)}
         project={selectedProject}
-        onActivate={async (projectToActivate) => {
-          if (!projectToActivate?._id) return;
-          const updated = await updateProjectStatus(projectToActivate._id, "ACTIVE");
-          setSelectedProject((prev) => (prev ? { ...prev, ...(updated || {}), status: "ACTIVE" } : prev));
-        }}
-        onChangeStatus={async (projectToUpdate, status) => {
-          if (!projectToUpdate?._id) return;
-          const updated = await updateProjectStatus(projectToUpdate._id, status);
-          setSelectedProject((prev) => (prev ? { ...prev, ...(updated || {}), status } : prev));
+        onStatusChange={async (projectId, status) => {
+          if (!projectId) return;
+          const updated = await updateProjectStatus(projectId, status);
+          const nextStatus = updated?.status || status;
+          setSelectedProject((prev) => (prev ? { ...prev, ...(updated || {}), status: nextStatus } : prev));
+          return updated;
         }}
         onClose={() => setSelectedProject(null)}
       />
