@@ -103,15 +103,26 @@ const PostTheaterMode = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-stretch justify-center bg-black/95">
-      <div className="my-auto flex h-screen w-full max-w-7xl flex-col overflow-hidden bg-white shadow-2xl md:flex-row md:rounded-2xl">
+    // 1. THẺ NỀN ĐEN BÊN NGOÀI: Đã thêm onClick={onClose} để bấm nền đen thoát
+    <div
+      className="fixed inset-0 z-[9999] flex items-stretch justify-center bg-black/95 overflow-y-auto py-10"
+      onClick={onClose}
+    >
+      {/* 2. NÚT BACK CỐ ĐỊNH: Dùng fixed để luôn neo ở góc trên trái màn hình */}
+      <button
+        onClick={onClose}
+        className="fixed left-6 top-6 z-[10000] flex items-center gap-2 text-slate-300 hover:text-white font-medium transition-colors"
+      >
+        <span className="material-symbols-outlined text-xl">arrow_back</span>
+        Back
+      </button>
+
+      {/* 3. KHUNG HIỂN THỊ CHÍNH Ở GIỮA: Đã thêm e.stopPropagation() để chặn click lan ra nền đen */}
+      <div
+        className="my-auto flex h-[90vh] min-h-[600px] w-full max-w-7xl flex-col overflow-hidden bg-white shadow-2xl md:flex-row md:rounded-2xl cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="relative flex h-full flex-1 items-center justify-center overflow-hidden bg-black">
-          <button
-            onClick={onClose}
-            className="absolute left-4 top-4 z-[50] rounded-full bg-gray-800/50 p-2 text-white hover:bg-gray-700/50 md:hidden"
-          >
-            <span className="material-symbols-outlined">close</span>
-          </button>
           <MediaViewer
             images={post.images}
             onClose={onClose}
@@ -134,6 +145,7 @@ const PostTheaterMode = ({
                 </p>
               </div>
             </div>
+            {/* Mình đã ẩn nút close trên header đi vì đã có nút Back to đùng ở ngoài */}
             <button
               onClick={onClose}
               className="hidden p-1 text-gray-400 hover:text-gray-600 md:flex"

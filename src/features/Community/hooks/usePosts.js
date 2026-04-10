@@ -8,11 +8,14 @@ export const usePosts = (limit = 10, feedType = "for-you") => {
     queryFn: ({ pageParam = null }) => {
       const params = { limit };
       if (pageParam) params.cursor = pageParam;
+
+      if (feedType === "saved") {
+        return postAPI.getSavedPosts(params);
+      }
       if (feedType === "following") {
         params.type = "following";
       }
 
-      // Gọi API
       return postAPI.getPosts(params);
     },
 
@@ -20,6 +23,7 @@ export const usePosts = (limit = 10, feedType = "for-you") => {
 
     getNextPageParam: (lastPage) => {
       console.log("Dữ liệu trang cuối:", lastPage);
+      if (lastPage.message?.hasMore === false) return undefined;
       return lastPage.message?.nextCursor || undefined;
     },
 

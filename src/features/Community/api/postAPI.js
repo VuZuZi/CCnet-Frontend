@@ -11,7 +11,10 @@ export const postAPI = {
     const { data } = await httpClient.get("/posts", { params });
     return data;
   },
-
+  getSavedPosts: async (params = { limit: 10 }) => {
+    const { data } = await httpClient.get("/posts/saved/all", { params });
+    return data;
+  },
   getPostById: async (id) => {
     const { data } = await httpClient.get(`/posts/${id}`);
     return data;
@@ -35,7 +38,10 @@ export const postAPI = {
     const { data } = await httpClient.delete(`/posts/${postId}`);
     return data;
   },
-
+  toggleSave: async (postId) => {
+    const { data } = await httpClient.post(`/posts/${postId}/save`);
+    return data;
+  },
   toggleReaction: async (postId, type) => {
     const { data } = await httpClient.post(`/posts/${postId}/reaction`, {
       type,
