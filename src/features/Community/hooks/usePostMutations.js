@@ -40,7 +40,11 @@ export const usePostMutations = () => {
 
       queryClient.setQueryData(["posts"], (old) =>
         updatePagesHelper(old, (data) =>
-          data.filter((post) => post._id !== postId),
+          data.map((post) =>
+            post._id === postId || post.id === postId
+              ? { ...post, isSaved: !post.isSaved }
+              : post,
+          ),
         ),
       );
 
@@ -60,32 +64,29 @@ export const usePostMutations = () => {
       const previousPosts = queryClient.getQueryData(["posts"]);
       const previousSinglePost = queryClient.getQueryData(["post", postId]);
 
-      // 🚨 Hàm tính toán số Like mới cực kỳ rõ ràng, không lồng ngoằng
       const calculateNewStats = (post) => {
         let likes = post.stats?.likes || 0;
         const currentReaction = post.userReaction;
 
         if (type === "like") {
           if (currentReaction === "like") {
-            likes -= 1; // Đang like bấm phát nữa -> Bỏ like
+            likes -= 1;
           } else {
-            likes += 1; // Đang null hoặc dislike bấm like -> Thêm like
+            likes += 1;
           }
         } else if (type === "dislike") {
           if (currentReaction === "like") {
-            likes -= 1; // Đang like mà quay xe sang dislike -> Mất 1 like
+            likes -= 1;
           }
-          // Nếu đang null hoặc đang dislike mà bấm dislike -> Số like không bị ảnh hưởng
         }
 
         return {
           ...post,
-          userReaction: currentReaction === type ? null : type, // Bấm lại chính nút đó thì hủy (null)
-          stats: { ...post.stats, likes: Math.max(0, likes) }, // Đảm bảo Like không bao giờ âm
+          userReaction: currentReaction === type ? null : type,
+          stats: { ...post.stats, likes: Math.max(0, likes) },
         };
       };
 
-      // Áp dụng cho danh sách Posts (Trang chủ)
       queryClient.setQueryData(["posts"], (old) =>
         updatePagesHelper(old, (data) =>
           data.map((post) =>
@@ -108,7 +109,6 @@ export const usePostMutations = () => {
       return { previousPosts, previousSinglePost };
     },
     onError: (err, vars, context) => {
-      // Có lỗi thì khôi phục lại dữ liệu cũ ngay lập tức
       queryClient.setQueryData(["posts"], context.previousPosts);
       if (context.previousSinglePost) {
         queryClient.setQueryData(
@@ -131,7 +131,45 @@ export const usePostMutations = () => {
       postAPI.reportPost({ postId, payload }),
     onError: () => {},
   });
+  const toggleSavePost = useMutation({
+    mutationFn: (postId) => postAPI.toggleSave(postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      await queryClient.cancelQueries({ queryKey: ["post", postId] });
 
+      const previousPosts = queryClient.getQueryData(["posts"]);
+      const previousSinglePost = queryClient.getQueryData(["post", postId]);
+
+      queryClient.setQueryData(["posts"], (old) =>
+        updatePagesHelper(old, (data) =>
+          data.map((post) =>
+            post._id === postId ? { ...post, isSaved: !post.isSaved } : post,
+          ),
+        ),
+      );
+
+      if (previousSinglePost) {
+        queryClient.setQueryData(["post", postId], (old) => {
+          if (!old || !old.data) return old;
+          return {
+            ...old,
+            data: { ...old.data, isSaved: !old.data.isSaved },
+          };
+        });
+      }
+
+      return { previousPosts, previousSinglePost };
+    },
+    onError: (err, postId, context) => {
+      // Nếu lỗi mạng, trả lại trạng thái cũ
+      queryClient.setQueryData(["posts"], context.previousPosts);
+      if (context.previousSinglePost) {
+        queryClient.setQueryData(["post", postId], context.previousSinglePost);
+      }
+      toast.error("Không thể lưu bài viết. Vui lòng thử lại!");
+    },
+    onSettled: (_, __, postId) => refreshPosts(postId),
+  });
   return {
     createPost,
     reportPost,
@@ -139,5 +177,6 @@ export const usePostMutations = () => {
     toggleReaction,
     updatePost,
     deletePost,
+    toggleSavePost,
   };
 };

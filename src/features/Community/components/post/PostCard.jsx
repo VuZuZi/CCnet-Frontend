@@ -75,10 +75,8 @@ const SharedEntityCard = ({ entity }) => {
     ? `/projects/${entity.entityId}`
     : `/need-help/${entity.entityId}`;
 
-  // Huy hiệu: Xanh cho Project, Đỏ cho Cứu trợ khẩn cấp
   const badgeClass = isProject ? "bg-blue-600" : "bg-red-500";
 
-  // Style Nút bấm Vàng nổi bật chung cho cả 2 loại
   const btnClass =
     "bg-amber-400 text-slate-900 hover:bg-amber-500 shadow-sm shadow-amber-400/30";
 
@@ -151,7 +149,8 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   useClickOutside(menuRef, () => setShowMenu(false));
   useClickOutside(sortRef, () => setIsSortOpen(false));
 
-  const { toggleReaction, addComment, deletePost } = usePostMutations();
+  const { toggleReaction, addComment, deletePost, toggleSavePost } =
+    usePostMutations();
 
   const { data: commentsData } = useQuery({
     queryKey: ["postComments", post?._id, page, sortMode],
@@ -275,15 +274,26 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                     />
                   </>
                 ) : (
-                  <MenuBtn
-                    icon="warning"
-                    label="Report"
-                    variant="warning"
-                    onClick={() => {
-                      onReport(post._id);
-                      setShowMenu(false);
-                    }}
-                  />
+                  <>
+                    <MenuBtn
+                      icon={post.isSaved ? "bookmark_added" : "bookmark"}
+                      label={post.isSaved ? "Unsave" : "Save"}
+                      onClick={() => {
+                        toggleSavePost.mutate(post._id);
+                        setShowMenu(false);
+                      }}
+                    />
+
+                    <MenuBtn
+                      icon="warning"
+                      label="Report"
+                      variant="warning"
+                      onClick={() => {
+                        onReport(post._id);
+                        setShowMenu(false);
+                      }}
+                    />
+                  </>
                 )}
               </div>
             )}
