@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // THÊM useNavigate
 import { FiArrowRight } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
@@ -75,6 +75,9 @@ const TextOnlyPostView = ({
   );
   const dropdownRef = useRef(null);
 
+  // KHAI BÁO HOOK CHUYỂN TRANG
+  const navigate = useNavigate();
+
   const { data: commentsData, isLoading: isLoadingComments } = useQuery({
     queryKey: ["postComments", post?.id || post?._id, page, sortMode],
     queryFn: async () => {
@@ -148,9 +151,28 @@ const TextOnlyPostView = ({
     }
   };
 
+  const handleBack = () => {
+    navigate(-1);
+  };
+
   return (
-    <div className="flex min-h-[80vh] flex-col items-center justify-center px-4 pb-8">
-      <div className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl md:p-8">
+    <div
+      className="fixed inset-0 z-[9999] bg-[#111111] overflow-y-auto flex flex-col items-center pt-20 px-4 pb-12"
+      onClick={handleBack}
+    >
+      <button
+        onClick={handleBack}
+        className="fixed left-6 top-6 z-[100] flex items-center gap-2 text-slate-300 hover:text-white font-medium transition-colors"
+      >
+        <span className="material-symbols-outlined text-xl">arrow_back</span>
+        Back
+      </button>
+
+      {/* 3. KHUNG BÀI VIẾT: Chặn sự kiện lan ra ngoài bằng stopPropagation */}
+      <div
+        className="w-full max-w-2xl rounded-2xl bg-white p-6 shadow-2xl md:p-8 cursor-default"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="mb-6 flex items-center gap-4 border-b border-slate-100 pb-6">
           <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xl font-bold text-slate-500">
             {post.authorName.charAt(0).toUpperCase()}

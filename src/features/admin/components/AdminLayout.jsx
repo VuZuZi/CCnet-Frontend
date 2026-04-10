@@ -60,7 +60,8 @@ export function AdminLayout() {
   const handleLogout = () => {
     if (
       window.confirm(
-        t("common.confirm_logout") || "Bạn có chắc chắn muốn đăng xuất?",
+        t("Bạn có chắc chắn muốn đăng xuất?") ||
+          "Bạn có chắc chắn muốn đăng xuất?",
       )
     ) {
       logout();
@@ -98,7 +99,7 @@ export function AdminLayout() {
                 className={({ isActive }) =>
                   `flex items-center gap-3 rounded-xl px-3 py-3 transition-all ${
                     isActive
-                      ? "bg-amber-500 text-white shadow-md shadow-amber-500/20"
+                      ? "bg-yellow-400  text-white shadow-md shadow-amber-500/20"
                       : "text-slate-500 hover:bg-amber-50 hover:text-amber-600"
                   }`
                 }
@@ -118,7 +119,7 @@ export function AdminLayout() {
             className="flex w-full items-center gap-3 rounded-xl px-3 py-3 font-semibold text-red-500 transition-all hover:bg-red-50"
           >
             <LogOut size={20} className="shrink-0" />
-            {isSidebarOpen && <span>{t("navigation.logout")}</span>}
+            {isSidebarOpen && <span>{t("Logout")}</span>}
           </button>
         </div>
       </aside>
@@ -139,7 +140,7 @@ export function AdminLayout() {
             <button
               onClick={handleLogout}
               className="group flex items-center gap-4 rounded-xl p-1.5 transition-colors hover:bg-slate-50"
-              title={t("navigation.logout")}
+              title={t("Logout")}
             >
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-bold text-slate-800 transition-colors group-hover:text-red-600">

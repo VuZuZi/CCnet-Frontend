@@ -3,7 +3,6 @@ import { useAuthStore } from "../../auth/stores/useAuthStore";
 
 import ProfileWidget from "../components/sidebar/ProfileWidget";
 import FeedNav from "../components/sidebar/FeedNav";
-import CommunityList from "../components/sidebar/CommunityList";
 import SpotlightWidget from "../components/sidebar/SpotlightWidget";
 import SuggestedUsers from "../components/sidebar/SuggestedUsers";
 
@@ -39,7 +38,6 @@ const CommunityPage = () => {
             <div className="sticky top-8 space-y-6">
               <ProfileWidget user={user} />
               <FeedNav activeFeed={feedType} onChangeFeed={setFeedType} />
-              <CommunityList />
             </div>
           </aside>
 
