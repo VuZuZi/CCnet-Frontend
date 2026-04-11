@@ -14,5 +14,15 @@ export const transactionAPI = {
     refund: async ({ id, reason }) => {
         const response = await httpClient.post(`/transactions/${id}/refund`, { reason });
         return response.data;
+    },
+
+    getMyDonations: async (params) => {
+        const response = await httpClient.get('/transactions/me/donations', { params });
+        return response.data.data;
+    },
+
+    getProjectDonors: async (projectId, params) => {
+        const response = await httpClient.get(`/transactions/project/${projectId}/donations`, { params });
+        return response.data.data;
     }
 };

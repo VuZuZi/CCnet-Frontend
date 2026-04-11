@@ -8,6 +8,7 @@ import { PageLoader } from '@/shared/components/ui/PageLoader';
 import { ProjectCover } from '../components/detail/ProjectCover';
 import { ProjectHeader } from '../components/detail/ProjectHeader';
 import { ProjectTabs } from '../components/detail/ProjectTabs';
+import { ProjectFinancialsTab } from '../components/detail/ProjectFinancialsTab';
 import { TabStory } from '../components/detail/TabStory';
 import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';
 import { SidebarPublic } from '../components/detail/SidebarPublic';
@@ -125,13 +126,7 @@ export function ProjectDetailPage() {
         );
 
       case "financials":
-        return (
-          <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
-            <div className="flex h-64 items-center justify-center rounded-[24px] border border-dashed border-slate-200 bg-[#FFFBEB] text-sm font-semibold text-slate-500">
-              Nội dung Financial Management đang được xây dựng...
-            </div>
-          </div>
-        );
+        return <ProjectFinancialsTab project={project} />;
 
       case "community":
         return (
