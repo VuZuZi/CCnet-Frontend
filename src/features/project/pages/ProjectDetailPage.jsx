@@ -197,7 +197,6 @@ export function ProjectDetailPage() {
             <div className="animate-in fade-in duration-300">
               {renderTabContent()}
             </div>
-            <div className="animate-in fade-in pt-1 duration-300">{renderTabContent()}</div>
           </div>
         </section>
 
