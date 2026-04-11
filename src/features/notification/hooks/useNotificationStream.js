@@ -11,6 +11,8 @@ import {
 import { transformNotification } from '../utils/notification.transformer';
 import { calculateTotalPages } from '../utils/notification.helpers';
 
+import { TRANSACTION_QUERY_KEYS } from '@/features/transaction/constants/transaction.queryKeys';
+
 const SESSION_REQUEST_COOLDOWN_MS = 2000;
 const MAX_RECONNECT_DELAY_MS = 30000;
 const DEV_STRICTMODE_CLEANUP_GRACE_MS = 1200;
@@ -253,7 +255,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       refreshAllNotificationQueries();
     };
 
-    const handleCreated = (event) => {
+const handleCreated = (event) => {
       try {
         const payload = JSON.parse(event.data);
         const item = transformNotification(payload.notification);
@@ -295,35 +297,48 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           patchProjectQueries(queryClient, projectId, nextStatus);
         }
 
-        if (item.type === 'donation_successful') {
-          toast.success(`🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.`);
+        // 1. Cập nhật block donation_successful & transaction_failed
+        if (item.type === 'donation_successful' || item.type === 'transaction_failed') {
+          if (item.type === 'donation_successful') {
+            toast.success(`🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.`);
 
-          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
-          queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY });
+            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
+            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY });
+            // THÊM: Invalidate lịch sử ủng hộ của cá nhân
+            queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
+
+            if (projectId) {
+              queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
+            }
+          } else if (item.type === 'transaction_failed') {
+            toast.error(` Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.`);
+          }
 
           if (projectId) {
-            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
-
             globalEventBus.dispatchEvent(
               new CustomEvent(APP_EVENTS.DONATION_SUCCESS, {
-                detail: { projectId: String(projectId) }
+                detail: { projectId: String(projectId), status: item.type }
               })
             );
           }
         }
 
-        if (item.type === 'transaction_failed') {
-          toast.error(` Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.`);
-        }
-
+        // 2. Cập nhật block transaction_refunded
         if (item.type === 'transaction_refunded') {
           toast.success(`Hoàn tiền dự án thành công. Số dư đã được cộng lại vào ví cá nhân của bạn.`);
 
           queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
           queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY });
+          
+          // THÊM: Invalidate để item trong "Lịch sử ủng hộ" đổi màu/trạng thái
+          queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
 
           if (projectId) {
-            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
+            globalEventBus.dispatchEvent(
+              new CustomEvent(APP_EVENTS.REFUND_SUCCESS, {
+                detail: { projectId: String(projectId) }
+              })
+            );
           }
         }
       } catch (err) {

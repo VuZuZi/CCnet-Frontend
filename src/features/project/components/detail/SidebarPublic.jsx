@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Heart,
@@ -9,6 +9,7 @@ import {
   Wallet,
   UserPlus,
   UserCheck,
+  Lock
 } from "lucide-react";
 import { ApplyVolunteerButton } from "@/features/volunteer/components/ApplyVolunteerButton";
 import { DonateModal } from '@/features/transaction/components/DonateModal';
@@ -25,6 +26,7 @@ function formatCurrency(value) {
 export function SidebarPublic({ project }) {
   const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
   const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
+  const isFundingPhase = project?.status === 'FUNDING';
 
   const availableBalance = project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
   const targetAmount = project?.targetAmount ?? 1;
@@ -64,6 +66,13 @@ export function SidebarPublic({ project }) {
 
   const { mutateAsync: reportProject, isPending: isReporting } = useReportProject();
   const toast = useToast();
+
+  useEffect(() => {
+    if (!isFundingPhase && isDonateOpen) {
+        toast.info('Dự án đã đạt 110% mục tiêu và đóng gọi vốn. Cảm ơn sự quan tâm của bạn!');
+        setIsDonateOpen(false);
+    }
+  }, [isFundingPhase, isDonateOpen, toast]);
 
   const handleShare = async () => {
     const shareUrl = window.location.href;
@@ -226,16 +235,26 @@ export function SidebarPublic({ project }) {
         </div>
       )}
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 mt-6">
         {isFunded && (
-          <button
-            type="button"
-            onClick={handleDonateClick}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] px-5 py-4 text-base font-bold text-white shadow-[0_14px_30px_rgba(251,191,36,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,158,11,0.32)]"
-          >
-            <Heart className="h-5 w-5 fill-current" />
-            Donate Now
-          </button>
+          isFundingPhase ? (
+            <button
+              type="button"
+              onClick={handleDonateClick}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] px-5 py-4 text-base font-bold text-white shadow-[0_14px_30px_rgba(251,191,36,0.28)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_36px_rgba(245,158,11,0.32)]"
+            >
+              <Heart className="h-5 w-5 fill-current" />
+              Donate Now
+            </button>
+          ) : (
+            <button
+              disabled
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-4 text-base font-bold text-slate-400 cursor-not-allowed"
+            >
+              <Lock className="h-5 w-5" />
+              Đã đóng gọi vốn
+            </button>
+          )
         )}
 
         <ApplyVolunteerButton
@@ -245,7 +264,7 @@ export function SidebarPublic({ project }) {
         />
       </div>
 
-      <div className="border-t border-slate-100 pt-5">
+      <div className="border-t border-slate-100 pt-5 mt-6">
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
@@ -382,6 +401,7 @@ export function SidebarPublic({ project }) {
         onClose={() => setIsDonateOpen(false)}
         projectId={project?._id || project?.id}
         projectTitle={project?.title || project?.name}
+        projectStatus={project?.status}
       />
     </div>
   );

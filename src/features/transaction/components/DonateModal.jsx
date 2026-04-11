@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,48 +6,56 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Modal } from '@/shared/components/ui/Modal';
 import { useDonateMutation } from '../hooks/useTransactionMutations';
 import { useMyWallet } from '@/features/wallet/hooks/useWalletQueries';
-import { CreditCard, Wallet, ExternalLink, ShieldCheck } from 'lucide-react';
+import { CreditCard, Wallet, ExternalLink, ShieldCheck, EyeOff } from 'lucide-react';
 import { globalEventBus, APP_EVENTS } from '@/shared/lib/eventBus';
 
 const donateSchema = z.object({
     amount: z.number().min(2000, 'Số tiền ủng hộ tối thiểu là 2.000đ'),
     paymentMethod: z.enum(['PAYOS', 'WALLET']),
+    isAnonymous: z.boolean().optional().default(false),
 });
 
 const SUGGESTED_AMOUNTS = [50000, 100000, 200000, 500000];
 
-export function DonateModal({ isOpen, onClose, projectId, projectTitle }) {
+export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectStatus }) {
     const [payOsData, setPayOsData] = useState(null);
     const [displayAmount, setDisplayAmount] = useState('');
 
     const { data: wallet } = useMyWallet();
     const donateMutation = useDonateMutation();
 
-    const { handleSubmit, formState: { errors }, watch, setValue, reset } = useForm({
+    const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm({
         resolver: zodResolver(donateSchema),
-        defaultValues: { paymentMethod: 'PAYOS', amount: 0 }
+        defaultValues: { paymentMethod: 'PAYOS', amount: 0, isAnonymous: false }
     });
 
     const selectedMethod = watch('paymentMethod');
     const watchAmount = watch('amount');
 
-    // Reset form mỗi khi đóng/mở
     useEffect(() => {
         if (isOpen) {
             setDisplayAmount('');
-            reset({ paymentMethod: 'PAYOS', amount: 0 });
+            reset({ paymentMethod: 'PAYOS', amount: 0, isAnonymous: false });
             setPayOsData(null);
         }
     }, [isOpen, reset]);
 
-    // LẮNG NGHE SỰ KIỆN TỪ REAL-TIME
+    const handleClose = () => {
+        onClose();
+    };
+
+    const handleCloseRef = useRef(handleClose);
+
+    useEffect(() => {
+        handleCloseRef.current = handleClose;
+    });
+
     useEffect(() => {
         if (!isOpen || !projectId) return;
 
         const handleDonationSuccess = (event) => {
-            // Chỉ đóng modal nếu ID dự án khớp
             if (event.detail?.projectId === String(projectId)) {
-                handleClose();
+                handleCloseRef.current();
             }
         };
 
@@ -56,11 +64,6 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle }) {
             globalEventBus.removeEventListener(APP_EVENTS.DONATION_SUCCESS, handleDonationSuccess);
         };
     }, [isOpen, projectId]);
-
-    const handleClose = () => {
-        if (donateMutation.isPending) return;
-        onClose();
-    };
 
     const handleAmountChange = (e) => {
         const rawValue = e.target.value.replace(/\D/g, '');
@@ -80,10 +83,16 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle }) {
     };
 
     const onSubmit = (data) => {
+        if (projectStatus && projectStatus !== 'FUNDING') {
+            handleClose();
+            return;
+        }
+
         const payload = {
             projectId,
             amount: data.amount,
             paymentMethod: data.paymentMethod,
+            isAnonymous: data.isAnonymous,
             returnUrl: `${window.location.origin}/payment/result?status=success`,
             cancelUrl: `${window.location.origin}/payment/result?status=cancel&cancel=true`,
         };
@@ -180,6 +189,22 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle }) {
                         {selectedMethod === 'WALLET' && (wallet?.balance || 0) < watchAmount && (
                             <p className="text-right text-xs font-semibold text-rose-500">Số dư ví không đủ để thanh toán mức này.</p>
                         )}
+                    </div>
+
+                    <div className="pt-2">
+                        <label className="flex items-center gap-3 cursor-pointer p-3 hover:bg-slate-50 rounded-2xl border border-transparent hover:border-slate-200 transition-all">
+                            <input
+                                type="checkbox"
+                                {...register('isAnonymous')}
+                                className="w-5 h-5 rounded border-slate-300 text-amber-500 focus:ring-amber-500 cursor-pointer accent-amber-500"
+                            />
+                            <div className="flex flex-col">
+                                <span className="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                                    Quyên góp ẩn danh <EyeOff size={14} className="text-slate-400" />
+                                </span>
+                                <span className="text-xs text-slate-500 font-medium">Tên của bạn sẽ được giấu trên sao kê của dự án</span>
+                            </div>
+                        </label>
                     </div>
 
                     <button

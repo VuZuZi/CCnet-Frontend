@@ -4,7 +4,7 @@ import { useChatStore } from '@/features/chat/stores/useChatStore';
 import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useToast } from '@/shared/contexts/ToastContext';
-import { Wallet, User as UserIcon } from 'lucide-react';
+import { Wallet, User as UserIcon, Heart } from 'lucide-react'; // Đã thêm icon Heart
 
 import { useProfileIdentity } from "../hooks/useProfileIdentity";
 import { useProfile } from "../hooks/useProfile";
@@ -21,6 +21,8 @@ import { SkillsSection } from "../components/profile/SkillsSection";
 import { UpgradeBanner } from "../components/profile/UpgradeBanner";
 import { WalletDashboard } from '@/features/wallet/components/WalletDashboard';
 import { BankAccountManager } from '@/features/bank/components/BankAccountManager';
+import { DonationHistoryList } from '@/features/transaction/components/DonationHistoryList';
+
 export function UserProfilePage() {
   const { id: urlId } = useParams();
 
@@ -114,10 +116,10 @@ export function UserProfilePage() {
       <div className="max-w-7xl mx-auto">
 
         {isOwnProfile && (
-          <div className="mb-8 flex gap-6 border-b border-slate-200">
+          <div className="mb-8 flex gap-6 border-b border-slate-200 overflow-x-auto">
             <button
               onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold transition-colors ${activeTab === 'profile'
+              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold whitespace-nowrap transition-colors ${activeTab === 'profile'
                   ? 'border-amber-400 text-slate-900'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
@@ -126,17 +128,27 @@ export function UserProfilePage() {
             </button>
             <button
               onClick={() => setActiveTab('wallet')}
-              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold transition-colors ${activeTab === 'wallet'
+              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold whitespace-nowrap transition-colors ${activeTab === 'wallet'
                   ? 'border-amber-400 text-slate-900'
                   : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
             >
               <Wallet size={18} /> Ví & Thanh toán
             </button>
+            <button
+              onClick={() => setActiveTab('donations')}
+              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold whitespace-nowrap transition-colors ${activeTab === 'donations' 
+                  ? 'border-amber-400 text-slate-900' 
+                  : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+            >
+              <Heart size={18} /> Lịch sử ủng hộ
+            </button>
           </div>
         )}
 
-        {activeTab === 'profile' ? (
+        {/* Nội dung tương ứng với các tab */}
+        {activeTab === 'profile' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
             <section className="lg:col-span-2 space-y-8">
               <ProfileHeroCard
@@ -164,7 +176,9 @@ export function UserProfilePage() {
               <UpgradeBanner isOwnProfile={isOwnProfile} />
             </aside>
           </div>
-        ) : (
+        )}
+        
+        {activeTab === 'wallet' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
             <section className="lg:col-span-2 space-y-8">
               <WalletDashboard />
@@ -174,8 +188,16 @@ export function UserProfilePage() {
             </aside>
           </div>
         )}
+
+        {activeTab === 'donations' && (
+          <div className="animate-in fade-in duration-300">
+            <DonationHistoryList />
+          </div>
+        )}
+
       </div>
 
+      {/* Report Modal */}
       {reportModalOpen && (
         <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
           <div className="w-full max-w-2xl rounded-3xl bg-white shadow-xl overflow-hidden">
