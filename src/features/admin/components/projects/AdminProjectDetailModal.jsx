@@ -21,6 +21,17 @@ const formatDateOnly = (value) => {
 
 const formatVnd = (value) => Number(value || 0).toLocaleString("vi-VN");
 
+const mapProjectStatus = (status) => {
+  const normalized = String(status || "").trim().toUpperCase();
+  if (["ACTIVE", "FUNDING", "RECRUITING", "EXECUTING"].includes(normalized)) return "ACTIVE";
+  if (["COMPLETED_SUCCESSFULLY", "COMPLETED_PARTIAL", "COMPLETED"].includes(normalized)) return "COMPLETED";
+  if (["CANCELLED_BY_PLATFORM", "CANCELLED_BY_ORGANIZER", "CANCELLED_FRAUD", "REJECTED", "CANCELLED"].includes(normalized)) return "CANCELLED";
+  if (["PENDING_APPROVAL", "UNDER_REVIEW"].includes(normalized)) return "PENDING_APPROVAL";
+  if (normalized === "PAUSED") return "PAUSED";
+  if (normalized === "DRAFT") return "DRAFT";
+  return normalized || "DRAFT";
+};
+
 const isImageLike = (url, mimetype) => {
   const type = String(mimetype || "").toLowerCase();
   if (type.includes("image/")) return true;
@@ -69,16 +80,17 @@ const STATUS_CONFIG = {
   PAUSED: { label: "Tạm ngưng", icon: PauseCircle, color: "text-orange-600", bg: "bg-orange-50", border: "border-orange-200" },
   CANCELLED: { label: "Đã hủy", icon: XCircle, color: "text-red-600", bg: "bg-red-50", border: "border-red-200" },
   DRAFT: { label: "Bản nháp", icon: AlertCircle, color: "text-gray-500", bg: "bg-gray-50", border: "border-gray-200" },
+  COMPLETED: { label: "Hoàn thành", icon: CheckCircle, color: "text-blue-600", bg: "bg-blue-50", border: "border-blue-200" },
 };
 
 export function AdminProjectDetailModal({ open, project, onClose, onStatusChange }) {
   const [search, setSearch] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
-  const [selectedStatus, setSelectedStatus] = useState(project?.status || "");
+  const [selectedStatus, setSelectedStatus] = useState(mapProjectStatus(project?.status));
 
   useEffect(() => {
     if (open && project) {
-      setSelectedStatus(project.status || "");
+      setSelectedStatus(mapProjectStatus(project.status));
     }
   }, [open, project]);
 
@@ -120,8 +132,8 @@ export function AdminProjectDetailModal({ open, project, onClose, onStatusChange
 
     setIsUpdating(true);
     try {
-      await onStatusChange(project._id, newStatus);
-      setSelectedStatus(newStatus);
+      const updated = await onStatusChange(project._id, newStatus);
+      setSelectedStatus(mapProjectStatus(updated?.status || newStatus));
     } catch (error) {
       console.error("Failed to update status:", error);
     } finally {
@@ -199,6 +211,8 @@ export function AdminProjectDetailModal({ open, project, onClose, onStatusChange
               >
                 <option value="PENDING_APPROVAL">📋 Chờ duyệt</option>
                 <option value="ACTIVE">✅ Kích hoạt</option>
+                <option value="FUNDING" disabled>✅ Đang gây quỹ</option>
+                <option value="RECRUITING" disabled>✅ Tuyển tình nguyện viên</option>
                 <option value="PAUSED">⏸️ Tạm ngưng</option>
                 <option value="CANCELLED">❌ Hủy</option>
                 <option value="DRAFT">📝 Bản nháp</option>
