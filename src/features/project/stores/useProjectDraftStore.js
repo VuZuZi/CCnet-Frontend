@@ -15,7 +15,6 @@ const initialFormData = {
   targetAmount: 0,
   mvpAmount: 0,
   budgetBreakdown: [],
-  surplusPolicy: '',
 
   milestones: [],
 
