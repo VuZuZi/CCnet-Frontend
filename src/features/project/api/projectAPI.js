@@ -53,6 +53,7 @@ const prepareProjectPayload = (data) => {
   if (payload.milestones && Array.isArray(payload.milestones)) {
     payload.milestones = payload.milestones.map((m) => ({
       ...m,
+      startDate: m.startDate ? new Date(m.startDate).toISOString() : undefined,
       endDate: m.endDate ? new Date(m.endDate).toISOString() : undefined,
       targetAmount: m.targetAmount ? Number(m.targetAmount) : 0,
     }));

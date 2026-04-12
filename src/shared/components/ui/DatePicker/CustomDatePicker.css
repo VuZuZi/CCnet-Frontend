@@ -1,0 +1,58 @@
+@reference "tailwindcss";
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+
+.react-datepicker {
+  @apply !border-slate-200 !shadow-2xl !rounded-2xl !font-sans overflow-hidden;
+}
+
+.react-datepicker__header {
+  @apply !bg-slate-50 !border-b-slate-100 !pt-3 !rounded-t-2xl;
+}
+
+.react-datepicker__triangle {
+  @apply !hidden;
+}
+
+.react-datepicker__current-month {
+  @apply !text-slate-800 !font-bold !mb-1;
+}
+
+.react-datepicker__day-name {
+  @apply !text-slate-500 !font-medium;
+}
+
+.react-datepicker__day {
+  @apply !rounded-lg !m-1 !transition-colors !text-slate-900;
+}
+
+.react-datepicker__day:hover {
+  @apply !bg-[#fbbf24]/20 !text-slate-900;
+}
+
+.react-datepicker__day--selected {
+  @apply !bg-[#fbbf24] !text-white !font-bold;
+}
+
+.react-datepicker__day--keyboard-selected {
+  @apply !bg-[#fbbf24]/70 !text-white;
+}
+
+.react-datepicker__day--today {
+  @apply !font-bold !text-[#fbbf24];
+}
+
+.react-datepicker__navigation {
+  @apply !top-[14px];
+}
+
+.react-datepicker__navigation-icon::before {
+  border-color: #94a3b8 !important;
+  border-width: 2px 2px 0 0 !important;
+}
+
+.react-datepicker__navigation:hover .react-datepicker__navigation-icon::before {
+  border-color: #fbbf24 !important; 
+}

@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
-import { useParams, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useParams, useLocation, useNavigate } from 'react-router-dom';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useProjectDetail } from '../hooks/useProjectQueries';
 import { useHelpRequestAsProjectData } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import { format } from 'date-fns';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Trash2, AlertTriangle, X } from 'lucide-react';
+import { useToast } from '@/shared/contexts/ToastContext';
 import Step1Story from '../components/Step1Story';
 import Step2Budget from '../components/Step2Budget';
 import Step3Preview from '../components/Step3Preview';
@@ -18,7 +19,11 @@ const STEPS = [
 export function CreateProjectPage() {
     const { id } = useParams();
     const location = useLocation();
+    const navigate = useNavigate();
+    const toast = useToast();
     const isEditMode = !!id || location.pathname.includes('edit');
+
+    const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
 
     const queryParams = new URLSearchParams(location.search);
     const helpRequestId = queryParams.get('helpRequestId');
@@ -29,7 +34,6 @@ export function CreateProjectPage() {
 
     useEffect(() => {
         if (!isEditMode && !helpRequestId) {
-            if (projectId) resetDraft();
             return;
         }
 
@@ -72,6 +76,7 @@ export function CreateProjectPage() {
             updateFormData(normalizedData);
             setProjectId(id);
         }
+        
         if (helpRequestId && helpRequestData) {
             if (projectId) resetDraft();
 
@@ -90,12 +95,19 @@ export function CreateProjectPage() {
                 coverMedia: helpRequestData.coverMedia || [],
                 documents: helpRequestData.documents || [],
                 deletedDocumentIds: [],
-                fromHelpRequestId: helpRequestId // Store the help request ID
+                fromHelpRequestId: helpRequestId
             };
 
             updateFormData(normalizedData);
         }
     }, [isEditMode, draftData, helpRequestId, helpRequestData, id, projectId, resetDraft, setProjectId, updateFormData]);
+
+    const handleDiscardDraft = () => {
+        resetDraft();
+        setIsDiscardModalOpen(false);
+        toast.success('Đã hủy bản nháp thành công');
+        navigate('/projects');
+    };
 
     const isPageReady = !isEditMode && !helpRequestId
         ? true
@@ -150,6 +162,15 @@ export function CreateProjectPage() {
                     <div className="hidden md:flex items-center text-sm text-slate-500 gap-1.5 ml-8 mt-2">
                         <CheckCircle2 size={18} className="text-slate-400" />
                         Draft saved just now
+                        
+                        <span className="mx-2 text-slate-300">|</span>
+                        <button 
+                            onClick={() => setIsDiscardModalOpen(true)}
+                            className="flex items-center gap-1 text-red-500 hover:text-red-600 font-medium transition-colors"
+                        >
+                            <Trash2 size={14} />
+                            Hủy bản nháp
+                        </button>
                     </div>
                 </div>
 
@@ -158,6 +179,37 @@ export function CreateProjectPage() {
                     {currentStep === 2 && <Step2Budget />}
                     {currentStep === 3 && <Step3Preview />}
                 </div>
+
+                {isDiscardModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+                        <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+                            <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full mb-4">
+                                <AlertTriangle className="text-red-500" size={24} />
+                            </div>
+                            
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">Hủy bản nháp dự án?</h3>
+                            <p className="text-slate-600 mb-6">
+                                Hành động này sẽ xóa toàn bộ thông tin bạn đã nhập và không thể hoàn tác. Bạn có chắc chắn muốn bắt đầu lại từ đầu không?
+                            </p>
+                            
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setIsDiscardModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                                >
+                                    Tiếp tục soạn thảo
+                                </button>
+                                <button
+                                    onClick={handleDiscardDraft}
+                                    className="flex-1 px-4 py-2.5 font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                                >
+                                    Xác nhận Hủy
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );
