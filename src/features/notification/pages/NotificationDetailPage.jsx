@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   Bell,
@@ -12,23 +12,35 @@ import {
   MailWarning,
   Heart,
   MessageCircle,
-} from "lucide-react";
-import { notificationApi } from "../api/notification.api";
+  Loader2,
+  ArrowUpRight,
+} from 'lucide-react';
+
+import { notificationApi } from '../api/notification.api';
+import {
+  getNotificationPrimaryActionLabel,
+  shouldPreferRelatedNavigation,
+} from '../utils/notification.helpers';
 
 function getTypeIcon(type) {
-  switch (String(type || "").toLowerCase()) {
-    case "follow_created":
+  switch (String(type || '').toLowerCase()) {
+    case 'follow_created':
       return UserPlus;
-    case "project_updated":
+    case 'project_updated':
+    case 'project_approved':
+    case 'project_cancelled':
+    case 'project_rejected':
       return FolderKanban;
-    case "organizer_request_submitted":
-    case "organizer_request_updated":
+    case 'organizer_request_submitted':
+    case 'organizer_request_updated':
+    case 'organizer_request_approved':
+    case 'organizer_request_declined':
       return ShieldCheck;
-    case "system_announcement":
+    case 'system_announcement':
       return Megaphone;
-    case "post_reacted":
+    case 'post_reacted':
       return Heart;
-    case "post_commented":
+    case 'post_commented':
       return MessageCircle;
     default:
       return Bell;
@@ -36,66 +48,77 @@ function getTypeIcon(type) {
 }
 
 function getTypeLabel(type) {
-  switch (String(type || "").toLowerCase()) {
-    case "follow_created":
-      return "Follow";
-    case "project_updated":
-      return "Project update";
-    case "organizer_request_submitted":
-      return "Organizer request";
-    case "organizer_request_updated":
-      return "Organizer update";
-    case "system_announcement":
-      return "System announcement";
-    case "post_reacted":
-      return "Post reaction";
-    case "post_commented":
-      return "Post comment";
+  switch (String(type || '').toLowerCase()) {
+    case 'follow_created':
+      return 'Follow';
+    case 'project_updated':
+    case 'project_approved':
+    case 'project_cancelled':
+    case 'project_rejected':
+      return 'Project';
+    case 'organizer_request_submitted':
+    case 'organizer_request_updated':
+    case 'organizer_request_approved':
+    case 'organizer_request_declined':
+      return 'Organizer request';
+    case 'system_announcement':
+      return 'System announcement';
+    case 'post_reacted':
+      return 'Post reaction';
+    case 'post_commented':
+      return 'Post comment';
+    case 'help_request_assigned':
+    case 'help_request_reassigned':
+    case 'help_request_verified':
+    case 'help_request_rejected':
+    case 'help_request_completed':
+    case 'help_request_assignment_responded':
+      return 'NeedHelp';
     default:
-      return "Notification";
+      return 'Notification';
   }
 }
 
 function getSeverityLabel(severity) {
-  const value = String(severity || "info").toLowerCase();
+  const value = String(severity || 'info').toLowerCase();
 
   switch (value) {
-    case "success":
-      return "Success";
-    case "warning":
-      return "Warning";
-    case "error":
-      return "Error";
+    case 'success':
+      return 'Success';
+    case 'warning':
+      return 'Warning';
+    case 'error':
+      return 'Error';
     default:
-      return "Info";
+      return 'Info';
   }
 }
 
 function getSeverityClass(severity) {
-  const value = String(severity || "info").toLowerCase();
+  const value = String(severity || 'info').toLowerCase();
 
   switch (value) {
-    case "success":
-      return "border-emerald-200 bg-emerald-50 text-emerald-700";
-    case "warning":
-      return "border-amber-200 bg-amber-50 text-amber-700";
-    case "error":
-      return "border-rose-200 bg-rose-50 text-rose-700";
+    case 'success':
+      return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+    case 'warning':
+      return 'border-amber-200 bg-amber-50 text-amber-700';
+    case 'error':
+      return 'border-rose-200 bg-rose-50 text-rose-700';
     default:
-      return "border-slate-200 bg-slate-50 text-slate-700";
+      return 'border-slate-200 bg-slate-50 text-slate-700';
   }
 }
 
 function formatDateTime(value) {
-  if (!value) return "--";
+  if (!value) return '--';
 
   try {
-    return new Intl.DateTimeFormat("vi-VN", {
-      dateStyle: "medium",
-      timeStyle: "short",
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
     }).format(new Date(value));
   } catch {
-    return "--";
+    return '--';
   }
 }
 
@@ -105,13 +128,13 @@ export default function NotificationDetailPage() {
 
   const [item, setItem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
     const fetchDetail = async () => {
       try {
         setIsLoading(true);
-        setErrorMessage("");
+        setErrorMessage('');
 
         const data = await notificationApi.getNotificationById(id);
         setItem(data || null);
@@ -119,7 +142,7 @@ export default function NotificationDetailPage() {
         setErrorMessage(
           error?.response?.data?.message ||
             error?.message ||
-            "Không tải được chi tiết notification."
+            'Không tải được chi tiết notification.'
         );
       } finally {
         setIsLoading(false);
@@ -132,6 +155,15 @@ export default function NotificationDetailPage() {
   }, [id]);
 
   const Icon = useMemo(() => getTypeIcon(item?.type), [item?.type]);
+
+  const prefersRelatedNavigation = shouldPreferRelatedNavigation(
+    item?.type,
+    item?.actionUrl
+  );
+  const primaryActionLabel = getNotificationPrimaryActionLabel(
+    item?.type,
+    item?.actionUrl
+  );
 
   if (isLoading) {
     return (
@@ -191,7 +223,7 @@ export default function NotificationDetailPage() {
               Không thể mở notification
             </h1>
             <p className="mt-3 text-sm leading-6 text-slate-500">
-              {errorMessage || "Notification không tồn tại hoặc bạn không có quyền truy cập."}
+              {errorMessage || 'Notification không tồn tại hoặc bạn không có quyền truy cập.'}
             </p>
           </div>
         </div>
@@ -200,6 +232,50 @@ export default function NotificationDetailPage() {
   }
 
   const isRead = Boolean(item.readAt);
+
+  if (prefersRelatedNavigation && item.actionUrl) {
+    return (
+      <div className="min-h-[calc(100vh-80px)] bg-[#FFFDF7]">
+        <div className="mx-auto max-w-4xl px-6 py-10 lg:px-8">
+          <div className="rounded-[32px] border border-[#F2E6C9] bg-white p-8 shadow-sm">
+            <div className="flex flex-col items-center text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#FFF7DB] text-[#E99A00] shadow-[0_10px_30px_rgba(250,204,21,0.18)]">
+                <Loader2 size={28} className="animate-spin" />
+              </div>
+
+              <h1 className="mt-5 text-2xl font-black text-[#0F2747]">
+                Notification này nên mở trực tiếp trang liên quan
+              </h1>
+
+              <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500">
+                Bạn có thể chuyển thẳng đến nội dung liên quan để tiếp tục thao tác.
+              </p>
+
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(item.actionUrl)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3 text-sm font-bold text-[#B45309] transition hover:bg-amber-50"
+                >
+                  <ArrowUpRight size={16} />
+                  {primaryActionLabel || 'Open related'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                >
+                  <ArrowLeft size={16} />
+                  Quay lại
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-[radial-gradient(circle_at_top,#FFF5CC_0%,#FFF8E8_18%,#FFFDF7_42%,#FFFDF7_100%)]">
@@ -241,16 +317,16 @@ export default function NotificationDetailPage() {
                   <span
                     className={`inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-bold ${
                       isRead
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border-amber-200 bg-amber-50 text-amber-700"
+                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                        : 'border-amber-200 bg-amber-50 text-amber-700'
                     }`}
                   >
-                    {isRead ? "Đã đọc" : "Chưa đọc"}
+                    {isRead ? 'Đã đọc' : 'Chưa đọc'}
                   </span>
                 </div>
 
                 <h1 className="text-3xl font-black leading-tight tracking-tight text-[#0F2747] lg:text-[40px]">
-                  {item.title || "Untitled notification"}
+                  {item.title || 'Untitled notification'}
                 </h1>
 
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-500">
@@ -271,7 +347,7 @@ export default function NotificationDetailPage() {
 
             <div className="mt-8 rounded-[28px] border border-[#F4E8C9] bg-[linear-gradient(180deg,#FFFDF8_0%,#FFF8E8_100%)] p-6 lg:p-7">
               <p className="whitespace-pre-wrap text-[15px] leading-8 text-slate-700 lg:text-base">
-                {item.message || "No message content."}
+                {item.message || 'No message content.'}
               </p>
             </div>
 
@@ -294,6 +370,19 @@ export default function NotificationDetailPage() {
                 </p>
               </div>
             </div>
+
+            {item.actionUrl ? (
+              <div className="mt-6">
+                <button
+                  type="button"
+                  onClick={() => navigate(item.actionUrl)}
+                  className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3 text-sm font-bold text-[#B45309] transition hover:bg-amber-50"
+                >
+                  <ArrowUpRight size={16} />
+                  {primaryActionLabel || 'Open related'}
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

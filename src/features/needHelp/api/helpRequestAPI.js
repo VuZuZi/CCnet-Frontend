@@ -2,7 +2,9 @@ import httpClient from '@/shared/lib/httpClient';
 
 const sanitizeQueryParams = (params = {}) =>
   Object.fromEntries(
-    Object.entries(params).filter(([, value]) => value !== '' && value !== undefined && value !== null)
+    Object.entries(params).filter(
+      ([, value]) => value !== '' && value !== undefined && value !== null
+    )
   );
 
 export const helpRequestAPI = {
@@ -64,6 +66,25 @@ export const helpRequestAPI = {
     return response.data?.data;
   },
 
+  verify: async ({ id, approved, rejectionReason }) => {
+    const payload = { approved };
+
+    if (
+      approved === false &&
+      typeof rejectionReason === 'string' &&
+      rejectionReason.trim()
+    ) {
+      payload.rejectionReason = rejectionReason.trim();
+    }
+
+    const response = await httpClient.patch(
+      `/help-requests/${id}/verify`,
+      payload
+    );
+
+    return response.data?.data;
+  },
+
   getOrganizerSuggestions: async (id, params = {}) => {
     const response = await httpClient.get(`/help-requests/${id}/organizer-suggestions`, {
       params: sanitizeQueryParams(params),
@@ -97,3 +118,5 @@ export const helpRequestAPI = {
     return response.data?.data;
   },
 };
+
+export default helpRequestAPI;

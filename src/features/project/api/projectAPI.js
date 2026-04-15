@@ -1,4 +1,4 @@
-import httpClient from '@/shared/lib/httpClient';
+import httpClient from "@/shared/lib/httpClient";
 
 const sanitizeMediaPayload = (mediaArray) => {
   if (!Array.isArray(mediaArray)) return [];
@@ -6,12 +6,12 @@ const sanitizeMediaPayload = (mediaArray) => {
   return mediaArray
     .map((media) => {
       const cleanMedia = {
-        _id: media._id || undefined,
-        url: media.url || undefined,
-        publicId: media.publicId || undefined,
-        originalName: media.originalName || undefined,
-        mimetype: media.mimetype || undefined,
-        size: media.size ? Number(media.size) : undefined,
+        _id: media?._id || undefined,
+        url: media?.url || undefined,
+        publicId: media?.publicId || undefined,
+        originalName: media?.originalName || undefined,
+        mimetype: media?.mimetype || media?.mimeType || undefined,
+        size: media?.size ? Number(media.size) : undefined,
       };
 
       Object.keys(cleanMedia).forEach((key) => {
@@ -27,13 +27,15 @@ const sanitizeMediaPayload = (mediaArray) => {
 
 const cleanEmptyStrings = (obj) => {
   if (Array.isArray(obj)) return obj.map(cleanEmptyStrings);
-  if (obj !== null && typeof obj === 'object') {
+
+  if (obj !== null && typeof obj === "object") {
     return Object.fromEntries(
       Object.entries(obj)
         .map(([k, v]) => [k, cleanEmptyStrings(v)])
-        .filter(([_, v]) => v !== "")
+        .filter(([, v]) => v !== ""),
     );
   }
+
   return obj;
 };
 
@@ -60,14 +62,13 @@ const prepareProjectPayload = (data) => {
   }
 
   payload = cleanEmptyStrings(payload);
-
   return payload;
 };
 
 export const projectAPI = {
   createDraft: async (data) => {
     const payload = prepareProjectPayload(data);
-    const response = await httpClient.post('/project', payload);
+    const response = await httpClient.post("/project", payload);
     return response.data?.data;
   },
 
@@ -83,17 +84,17 @@ export const projectAPI = {
   },
 
   getFeatured: async () => {
-    const response = await httpClient.get('/project/featured');
+    const response = await httpClient.get("/project/featured");
     return response.data?.data;
   },
 
   getVolunteerNeeded: async () => {
-    const response = await httpClient.get('/project/volunteers-needed');
+    const response = await httpClient.get("/project/volunteers-needed");
     return response.data?.data;
   },
 
   getExplore: async (params) => {
-    const response = await httpClient.get('/project/explore', { params });
+    const response = await httpClient.get("/project/explore", { params });
     return response.data?.data;
   },
 
@@ -102,12 +103,18 @@ export const projectAPI = {
     return response.data?.data;
   },
 
+  // Detail riêng cho màn Organizer edit draft
+  getDraftDetail: async (id) => {
+    const response = await httpClient.get(`/project/${id}/draft`);
+    return response.data?.data;
+  },
+
   getWorkspaceProjects: async (params = {}) => {
-    const response = await httpClient.get('/project/organizer/my-projects', {
+    const response = await httpClient.get("/project/organizer/my-projects", {
       params: {
         page: params.page ?? 1,
         limit: params.limit ?? 10,
-        status: params.status ?? 'ALL',
+        status: params.status ?? "ALL",
       },
     });
     return response.data?.data;
@@ -126,7 +133,10 @@ export const projectAPI = {
   },
 
   createFeedComment: async (projectId, postId, data) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/comments`, data);
+    const response = await httpClient.post(
+      `/project/${projectId}/feed/posts/${postId}/comments`,
+      data,
+    );
     return response.data?.data;
   },
 

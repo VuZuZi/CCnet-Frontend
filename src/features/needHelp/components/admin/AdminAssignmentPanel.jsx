@@ -1,7 +1,10 @@
 import { useState } from 'react';
+import { ArrowRight, ShieldCheck, UserRound } from 'lucide-react';
 
 import { useAssignOrganizer } from '../../hooks/useHelpRequestMutations';
 import { OrganizerSuggestionModal } from './OrganizerSuggestionModal';
+
+const ASSIGNABLE_STATUSES = ['VERIFIED', 'IN_PROGRESS'];
 
 export function AdminAssignmentPanel({ helpRequest }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -16,29 +19,62 @@ export function AdminAssignmentPanel({ helpRequest }) {
     setIsOpen(false);
   };
 
+  const assignedName = helpRequest?.assignedOrganizerId?.fullName;
+  const isAssignable = ASSIGNABLE_STATUSES.includes(helpRequest?.status);
+  const buttonLabel = assignedName ? 'Reassign' : 'Assign Organizer';
+
+  const handleOpenModal = () => {
+    if (!isAssignable || assignMutation.isPending) {
+      return;
+    }
+    setIsOpen(true);
+  };
+
   return (
-    <section className="rounded-[28px] border border-amber-200 bg-amber-50 p-5 sm:p-6">
-      <h3 className="text-base font-bold text-slate-900">Admin Assignment</h3>
-      <p className="mt-1 text-sm text-slate-600">
-        Assign this need help request to an organizer. Suggestions are ranked by relevance and location.
-      </p>
+    <section className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm sm:px-6">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="min-w-0">
+          <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
+            <ShieldCheck size={13} />
+            Assignment
+          </div>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-        >
-          Assign Organizer
-        </button>
+          <h3 className="mt-3 text-lg font-bold tracking-tight text-slate-900">
+            Organizer Assignment
+          </h3>
 
-        {helpRequest?.assignedOrganizerId?.fullName ? (
-          <span className="text-sm text-slate-700">
-            Current organizer: <strong>{helpRequest.assignedOrganizerId.fullName}</strong>
-          </span>
-        ) : (
-          <span className="text-sm text-slate-500">No organizer assigned yet.</span>
-        )}
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Assign this request to a suitable organizer based on relevance and location.
+          </p>
+
+          {!isAssignable ? (
+            <p className="mt-2 text-sm font-medium text-amber-700">
+              Verify this request first before assigning an organizer.
+            </p>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+              <UserRound size={13} />
+              Current organizer
+            </div>
+            <p className="mt-1 text-sm font-semibold text-slate-900">
+              {assignedName || 'Not assigned yet'}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleOpenModal}
+            disabled={!isAssignable || assignMutation.isPending}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {buttonLabel}
+            <ArrowRight size={16} />
+          </button>
+        </div>
       </div>
 
       <OrganizerSuggestionModal

@@ -6,6 +6,7 @@ const ACCOUNT_NAME_REGEX = /^[\p{L}\s.'-]{2,150}$/u;
 
 const emptyToUndefined = (value) => {
   if (typeof value !== "string") return value;
+
   const trimmed = value.trim();
   return trimmed === "" ? undefined : trimmed;
 };

@@ -9,9 +9,10 @@ export const PROJECT_QUERY_KEYS = {
   explore: (filters) => [...PROJECT_BASE_KEY, "explore", filters],
   workspace: (filters) => [...PROJECT_BASE_KEY, "workspace", filters],
   detail: (id) => [...PROJECT_BASE_KEY, "detail", id],
+  draftDetail: (id) => [...PROJECT_BASE_KEY, "draft-detail", id],
   featured: [...PROJECT_BASE_KEY, "featured"],
   volunteerNeeded: [...PROJECT_BASE_KEY, "volunteer-needed"],
-  categoryCount: (filters, category) => [ 
+  categoryCount: (filters, category) => [
     ...PROJECT_BASE_KEY,
     "category-count",
     filters,
@@ -22,8 +23,8 @@ export const PROJECT_QUERY_KEYS = {
 function cleanFilters(filters = {}) {
   return Object.fromEntries(
     Object.entries(filters).filter(
-      ([, value]) => value !== "" && value !== null && value !== undefined
-    )
+      ([, value]) => value !== "" && value !== null && value !== undefined,
+    ),
   );
 }
 
@@ -58,6 +59,15 @@ export const useProjectDetail = (id) => {
   });
 };
 
+export const useProjectDraftDetail = (id) => {
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.draftDetail(id),
+    queryFn: () => projectAPI.getDraftDetail(id),
+    enabled: !!id,
+    staleTime: 60 * 1000,
+  });
+};
+
 export const useFeaturedProject = () => {
   return useQuery({
     queryKey: PROJECT_QUERY_KEYS.featured,
@@ -87,8 +97,8 @@ export const useProjectCategoryCounts = (filters = {}) => {
         key !== "category" &&
         value !== "" &&
         value !== null &&
-        value !== undefined
-    )
+        value !== undefined,
+    ),
   );
 
   const queries = useQueries({
@@ -123,7 +133,6 @@ export const useProjectCategoryCounts = (filters = {}) => {
     isFetching: queries.some((query) => query.isFetching),
   };
 };
-
 
 export const useWorkspaceProjects = (filters = {}) => {
   return useQuery({

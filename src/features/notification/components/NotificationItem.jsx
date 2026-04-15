@@ -15,19 +15,28 @@ import {
   MessageCircle,
 } from 'lucide-react';
 
+import { getNotificationPrimaryActionLabel } from '../utils/notification.helpers';
+
 function getTypeIcon(type) {
   switch (type) {
     case 'follow_created':
       return UserPlus;
     case 'project_updated':
+    case 'project_approved':
+    case 'project_cancelled':
+    case 'project_rejected':
       return FolderKanban;
     case 'help_request_assigned':
+    case 'help_request_reassigned':
     case 'help_request_verified':
+    case 'help_request_rejected':
     case 'help_request_completed':
     case 'help_request_assignment_responded':
       return HeartHandshake;
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
+    case 'organizer_request_approved':
+    case 'organizer_request_declined':
       return ShieldCheck;
     case 'system_announcement':
       return Megaphone;
@@ -56,25 +65,27 @@ function getTypeAccent(isRead) {
   };
 }
 
-function isPostNotification(type) {
-  return type === 'post_reacted' || type === 'post_commented';
-}
-
 export default function NotificationItem({ item, onRead, onDelete, onClose }) {
   const navigate = useNavigate();
   const Icon = getTypeIcon(item.type);
   const accent = getTypeAccent(item.isRead);
+
   const hasRelatedAction = Boolean(item.actionUrl);
-  const shouldOpenRelatedOnCardClick = isPostNotification(item.type) && hasRelatedAction;
-  const canOpenDetail = Boolean(item.id);
+  const prefersRelatedNavigation = Boolean(item.prefersRelatedNavigation && item.actionUrl);
+  const canOpenDetail = Boolean(item.id && item.canOpenDetail);
+  const primaryActionLabel =
+    item.primaryActionLabel || getNotificationPrimaryActionLabel(item.type, item.actionUrl);
+
+  const markReadIfNeeded = () => {
+    if (!item.isRead && item.id) {
+      onRead(item.id);
+    }
+  };
 
   const openNotificationDetail = () => {
     if (!item.id) return;
 
-    if (!item.isRead) {
-      onRead(item.id);
-    }
-
+    markReadIfNeeded();
     onClose?.();
     navigate(`/notifications/${item.id}`);
   };
@@ -84,27 +95,29 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
 
     if (!item.actionUrl) return;
 
-    if (!item.isRead) {
-      onRead(item.id);
-    }
-
+    markReadIfNeeded();
     onClose?.();
     navigate(item.actionUrl);
   };
 
   const handleCardClick = () => {
-    if (shouldOpenRelatedOnCardClick) {
+    if (prefersRelatedNavigation) {
       openRelatedContent();
       return;
     }
 
     if (canOpenDetail) {
       openNotificationDetail();
+      return;
+    }
+
+    if (hasRelatedAction) {
+      openRelatedContent();
     }
   };
 
   const handleCardKeyDown = (event) => {
-    if (!canOpenDetail && !shouldOpenRelatedOnCardClick) return;
+    if (!prefersRelatedNavigation && !canOpenDetail && !hasRelatedAction) return;
 
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -112,17 +125,19 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
     }
   };
 
+  const isInteractive = prefersRelatedNavigation || canOpenDetail || hasRelatedAction;
+
   return (
     <div
-      role={canOpenDetail || shouldOpenRelatedOnCardClick ? 'button' : undefined}
-      tabIndex={canOpenDetail || shouldOpenRelatedOnCardClick ? 0 : undefined}
-      onClick={canOpenDetail || shouldOpenRelatedOnCardClick ? handleCardClick : undefined}
+      role={isInteractive ? 'button' : undefined}
+      tabIndex={isInteractive ? 0 : undefined}
+      onClick={isInteractive ? handleCardClick : undefined}
       onKeyDown={handleCardKeyDown}
       className={`group relative border-b border-slate-100/80 px-5 py-3.5 transition-all duration-200 ${
         item.isRead
           ? 'bg-transparent'
           : 'bg-[linear-gradient(90deg,rgba(255,251,235,0.95),rgba(255,255,255,1))]'
-      } ${(canOpenDetail || shouldOpenRelatedOnCardClick) ? 'cursor-pointer hover:bg-white' : 'hover:bg-white'}`}
+      } ${isInteractive ? 'cursor-pointer hover:bg-white' : 'hover:bg-white'}`}
     >
       {!item.isRead && (
         <div className="absolute left-0 top-3.5 h-12 w-1 rounded-r-full bg-[#FBBF24]" />
@@ -174,7 +189,18 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
               </button>
             )}
 
-            {canOpenDetail && !shouldOpenRelatedOnCardClick && (
+            {hasRelatedAction && (
+              <button
+                type="button"
+                onClick={openRelatedContent}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-[#FFFBEB] px-3 py-1.5 text-[12px] font-semibold text-[#B45309] transition hover:border-amber-300 hover:bg-amber-50"
+              >
+                <ArrowUpRight size={14} />
+                {primaryActionLabel || 'Open related'}
+              </button>
+            )}
+
+            {canOpenDetail && (
               <button
                 type="button"
                 onClick={(event) => {
@@ -185,17 +211,6 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
               >
                 <Eye size={14} />
                 View detail
-              </button>
-            )}
-
-            {hasRelatedAction && (
-              <button
-                type="button"
-                onClick={openRelatedContent}
-                className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-[#FFFBEB] px-3 py-1.5 text-[12px] font-semibold text-[#B45309] transition hover:border-amber-300 hover:bg-amber-50"
-              >
-                <ArrowUpRight size={14} />
-                {isPostNotification(item.type) ? 'Open post' : 'Open related'}
               </button>
             )}
 
