@@ -11,7 +11,7 @@ import { ProjectTabs } from '../components/detail/ProjectTabs';
 import { ProjectFinancialsTab } from '../components/detail/ProjectFinancialsTab';
 import { TabStory } from '../components/detail/TabStory';
 import { VolunteerManager } from '@/features/volunteer/components/VolunteerManager.jsx';
-import { SidebarPublic } from '../components/detail/SidebarPublic';
+import { SidebarPublic } from '../components/sidebar/SidebarPublic';
 import { SidebarOrganizer } from '../components/detail/SidebarOrganizer';
 import { ProjectCommunityFeed } from '@/features/project/components/detail/ProjectCommunityFeed';
 import { useConversations } from "@/features/chat/hooks/conversations/useConversations";

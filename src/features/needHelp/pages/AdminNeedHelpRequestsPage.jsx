@@ -1,27 +1,26 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   ClipboardList,
   Flame,
-  History,
   Loader2,
   ShieldCheck,
   Sparkles,
   TimerReset,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { useHelpRequests } from '../hooks/useHelpRequestQueries';
-import { AdminNeedHelpFilters } from '../components/admin/AdminNeedHelpFilters';
-import { AdminNeedHelpHorizontalList } from '../components/admin/AdminNeedHelpHorizontalList';
+import { useHelpRequests } from "../hooks/useHelpRequestQueries";
+import { AdminNeedHelpFilters } from "../components/admin/AdminNeedHelpFilters";
+import { AdminNeedHelpHorizontalList } from "../components/admin/AdminNeedHelpHorizontalList";
+import AdminHistoryButton from "@/features/admin/components/AdminHistoryButton";
 
-function SummaryCard({ icon: Icon, label, value, tone = 'slate' }) {
+function SummaryCard({ icon: Icon, label, value, tone = "slate" }) {
   const toneMap = {
-    slate: 'border-slate-200 bg-slate-50 text-slate-700',
-    amber: 'border-amber-200 bg-amber-50 text-amber-700',
-    sky: 'border-sky-200 bg-sky-50 text-sky-700',
-    emerald: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    slate: "border-slate-200 bg-slate-50 text-slate-700",
+    amber: "border-amber-200 bg-amber-50 text-amber-700",
+    sky: "border-sky-200 bg-sky-50 text-sky-700",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
   };
 
   return (
@@ -85,8 +84,8 @@ function PaginationBar({ pagination, onPageChange }) {
             onClick={() => onPageChange(page)}
             className={`h-10 min-w-10 rounded-xl px-3 text-sm font-semibold transition-colors ${
               page === currentPage
-                ? 'bg-amber-500 text-slate-950'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? "bg-amber-500 text-slate-950"
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200"
             }`}
           >
             {page}
@@ -109,14 +108,18 @@ function PaginationBar({ pagination, onPageChange }) {
 
 export function AdminNeedHelpRequestsPage() {
   const [filters, setFilters] = useState({
-    search: '',
-    status: '',
-    urgencyLevel: '',
+    search: "",
+    status: "",
+    urgencyLevel: "",
     page: 1,
     limit: 8,
   });
 
-  const { data, isLoading } = useHelpRequests(filters, filters.page, filters.limit);
+  const { data, isLoading } = useHelpRequests(
+    filters,
+    filters.page,
+    filters.limit
+  );
   const items = data?.data || [];
   const pagination = data?.pagination;
 
@@ -124,10 +127,15 @@ export function AdminNeedHelpRequestsPage() {
     return items.reduce(
       (acc, item) => {
         acc.total += 1;
-        if (item.status === 'PENDING') acc.pending += 1;
-        if (item.status === 'VERIFIED') acc.verified += 1;
-        if (item.status === 'IN_PROGRESS') acc.inProgress += 1;
-        if (item.urgencyLevel === 'HIGH' || item.urgencyLevel === 'CRITICAL') acc.priority += 1;
+        if (item.status === "PENDING") acc.pending += 1;
+        if (item.status === "VERIFIED") acc.verified += 1;
+        if (item.status === "IN_PROGRESS") acc.inProgress += 1;
+        if (
+          item.urgencyLevel === "HIGH" ||
+          item.urgencyLevel === "CRITICAL"
+        ) {
+          acc.priority += 1;
+        }
         return acc;
       },
       {
@@ -163,27 +171,39 @@ export function AdminNeedHelpRequestsPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Review submitted requests, moderate publication status, and assign the right
-                organizer with a faster and cleaner workflow.
+                Review submitted requests, moderate publication status, and
+                assign the right organizer with a faster and cleaner workflow.
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 xl:min-w-[520px]">
-              <div className="flex justify-end">
-                <Link
-                  to="/admin/need-help-action-logs"
-                  className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 shadow-[0_12px_22px_-14px_rgba(245,158,11,0.7)] transition-colors hover:bg-amber-400"
-                >
-                  <History size={16} />
-                  View History
-                </Link>
-              </div>
+            <div className="flex flex-col items-end gap-3 xl:min-w-[520px]">
+              <AdminHistoryButton to="/admin/need-help-action-logs" />
 
               <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <SummaryCard icon={ClipboardList} label="Loaded On Page" value={summary.total} tone="slate" />
-                <SummaryCard icon={ShieldCheck} label="Pending Review" value={summary.pending} tone="amber" />
-                <SummaryCard icon={TimerReset} label="Verified" value={summary.verified} tone="sky" />
-                <SummaryCard icon={Flame} label="High Priority" value={summary.priority} tone="emerald" />
+                <SummaryCard
+                  icon={ClipboardList}
+                  label="Loaded On Page"
+                  value={summary.total}
+                  tone="slate"
+                />
+                <SummaryCard
+                  icon={ShieldCheck}
+                  label="Pending Review"
+                  value={summary.pending}
+                  tone="amber"
+                />
+                <SummaryCard
+                  icon={TimerReset}
+                  label="Verified"
+                  value={summary.verified}
+                  tone="sky"
+                />
+                <SummaryCard
+                  icon={Flame}
+                  label="High Priority"
+                  value={summary.priority}
+                  tone="emerald"
+                />
               </div>
             </div>
           </div>
@@ -210,7 +230,7 @@ export function AdminNeedHelpRequestsPage() {
               </h2>
               <p className="mt-1 text-sm text-slate-500">
                 Page {pagination?.page || 1}
-                {pagination?.totalPages ? ` / ${pagination.totalPages}` : ''}
+                {pagination?.totalPages ? ` / ${pagination.totalPages}` : ""}
               </p>
             </div>
 
@@ -223,7 +243,10 @@ export function AdminNeedHelpRequestsPage() {
             <AdminNeedHelpHorizontalList items={items} />
           </div>
 
-          <PaginationBar pagination={pagination} onPageChange={handlePageChange} />
+          <PaginationBar
+            pagination={pagination}
+            onPageChange={handlePageChange}
+          />
         </section>
       )}
     </div>

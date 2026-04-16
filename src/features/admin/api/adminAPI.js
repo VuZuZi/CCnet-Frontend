@@ -8,15 +8,6 @@ export const adminAPI = {
   toggleBan: (userId, payload = {}) =>
     httpClient.patch(`/admin/users/${userId}/ban`, payload),
 
-  /*
-  Disabled by team request: no more Verify / Verified feature in UI
-  toggleVerified: (userId, isVerified, reason = "") =>
-    httpClient.patch(`/admin/users/${userId}/verify`, {
-      isVerified,
-      ...(reason ? { reason } : {}),
-    }),
-  */
-
   updateUserStatus: (userId, status, reason = "") =>
     httpClient.patch(`/admin/users/${userId}/status`, {
       status,
@@ -43,6 +34,15 @@ export const adminAPI = {
 
   createNotification: (payload) =>
     httpClient.post("/admin/notifications", payload),
+
+  getNotificationHistory: (params = {}) =>
+    httpClient.get("/admin/action-logs", {
+      params: {
+        ...params,
+        targetType: "system_notification",
+        action: "SEND_SYSTEM_NOTIFICATION",
+      },
+    }),
 };
 
 export default adminAPI;

@@ -3,7 +3,10 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { strictStep2Schema } from "../validations/projectSchema";
 import { useProjectDraftStore } from "../stores/useProjectDraftStore";
-import { useCreateDraftProject, useUpdateDraftProject } from "../hooks/useProjectMutations";
+import {
+  useCreateDraftProject,
+  useUpdateDraftProject,
+} from "../hooks/useProjectMutations";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { ArrowLeft, ArrowRight, Save, Loader2 } from "lucide-react";
@@ -16,29 +19,18 @@ import { FinancialPlanBlock } from "./FinancialPlanBlock";
 import { BudgetBreakdownBlock } from "./BudgetBreakdownBlock";
 import { MilestonesBlock } from "./MilestonesBlock";
 import { VolunteerRolesBlock } from "./VolunteerRolesBlock";
+import { persistProjectDraft } from "../services/projectDraftPersist.service";
+import {
+  buildStep2Payload,
+  formatDateForInput,
+  getProjectTierLimits,
+} from "../utils/projectDraft.utils";
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
-const formatDateForInput = (isoString) => {
-  if (!isoString) return "";
-  return new Date(isoString).toISOString().split("T")[0];
-};
-
-const getTierLimits = (tier) => {
-  switch (tier) {
-    case 3:
-      return { maxFunding: 999999999999 };
-    case 2:
-      return { maxFunding: 200000000 };
-    case 1:
-    default:
-      return { maxFunding: 50000000 };
-  }
-};
-
 export default function Step2Budget() {
   const user = useAuthStore((state) => state.user);
-  const { maxFunding } = getTierLimits(user?.kycTier || 1);
+  const { maxFunding } = getProjectTierLimits(user?.kycTier || 1);
 
   const {
     formData,
@@ -49,8 +41,10 @@ export default function Step2Budget() {
     setProjectId,
   } = useProjectDraftStore();
 
-  const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
-  const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
+  const { mutateAsync: createDraft, isPending: isCreating } =
+    useCreateDraftProject();
+  const { mutateAsync: updateDraft, isPending: isUpdating } =
+    useUpdateDraftProject();
   const toast = useToast();
 
   const isPending = isCreating || isUpdating;
@@ -75,16 +69,20 @@ export default function Step2Budget() {
     defaultValues: {
       targetAmount: formData.targetAmount || 0,
       mvpAmount: formData.mvpAmount || 0,
-      budgetBreakdown: formData.budgetBreakdown?.length ? formData.budgetBreakdown : [],
+      budgetBreakdown: formData.budgetBreakdown?.length
+        ? formData.budgetBreakdown
+        : [],
       milestones: formData.milestones?.length
-        ? formData.milestones.map((m) => ({
-            ...m,
-            startDate: formatDateForInput(m.startDate),
-            endDate: formatDateForInput(m.endDate),
+        ? formData.milestones.map((milestone) => ({
+            ...milestone,
+            startDate: formatDateForInput(milestone.startDate),
+            endDate: formatDateForInput(milestone.endDate),
           }))
         : [],
       needsVolunteers: isFunded ? (formData.needsVolunteers || false) : true,
-      volunteerRoles: formData.volunteerRoles?.length ? formData.volunteerRoles : [],
+      volunteerRoles: formData.volunteerRoles?.length
+        ? formData.volunteerRoles
+        : [],
     },
   });
 
@@ -101,63 +99,30 @@ export default function Step2Budget() {
     }
   }, [isFunded, setValue, getValues]);
 
-  const normalizeDataForSave = (data) => {
-    const normalizedVolunteerRoles = (data.volunteerRoles || []).map((role) => ({
-      title: role?.title || "",
-      quantity: Number(role?.quantity || 0),
-      skillsRequired: Array.isArray(role?.skillsRequired)
-        ? role.skillsRequired
-        : String(role?.skills || "")
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean),
-      location: role?.location || "",
-      duration: role?.duration || "",
-    }));
-
-    const step2Payload = isFunded
-      ? data
-      : {
-          ...data,
-          targetAmount: 0,
-          mvpAmount: 0,
-          budgetBreakdown: [],
-          milestones: data.milestones.map((m) => ({ ...m, targetAmount: 0 })),
-        };
-
-    return {
-      ...step2Payload,
-      volunteerRoles: step2Payload.needsVolunteers ? normalizedVolunteerRoles : [],
-    };
-  };
-
   const executeSave = async (data, isAutoSave = false) => {
     try {
-      const normalizedPayload = normalizeDataForSave(data);
+      const normalizedPayload = buildStep2Payload(data, isFunded);
       updateFormData(normalizedPayload);
 
-      const fullFormData = {
-        ...useProjectDraftStore.getState().formData,
-        ...normalizedPayload,
-      };
+      await persistProjectDraft({
+        projectId,
+        formData,
+        payload: normalizedPayload,
+        createDraft,
+        updateDraft,
+        setProjectId,
+        deletedDocumentIds: formData.deletedDocumentIds,
+        silent: isAutoSave,
+      });
 
-      if (!projectId) {
-        const created = await createDraft(
-          isAutoSave ? { ...fullFormData, silent: true } : fullFormData,
-        );
-        if (created?._id) setProjectId(created._id);
-      } else {
-        await updateDraft({
-          id: projectId,
-          data: fullFormData,
-          silent: isAutoSave,
-        });
+      if (!isAutoSave) {
+        toast.success("Đã lưu bản nháp an toàn!");
       }
 
-      if (!isAutoSave) toast.success("Đã lưu bản nháp an toàn!");
       return true;
     } catch (error) {
-      const apiMessage = error?.response?.data?.message || "Lưu dữ liệu thất bại.";
+      const apiMessage =
+        error?.response?.data?.message || "Lưu dữ liệu thất bại.";
       toast.error(apiMessage);
       devConfig.error("[CTO Log] Save Step 2 Failed:", error);
       return false;
@@ -180,11 +145,18 @@ export default function Step2Budget() {
 
   return (
     <form className="pb-32 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <fieldset disabled={isPending} className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed">
+      <fieldset
+        disabled={isPending}
+        className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
         {isFunded && (
           <>
             <FinancialPlanBlock control={control} errors={errors} />
-            <BudgetBreakdownBlock control={control} register={register} errors={errors} />
+            <BudgetBreakdownBlock
+              control={control}
+              register={register}
+              errors={errors}
+            />
           </>
         )}
 

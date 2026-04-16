@@ -1,14 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
+import { format } from "date-fns";
+import { CheckCircle2, Trash2, AlertTriangle } from "lucide-react";
+
 import { useProjectDraftStore } from "../stores/useProjectDraftStore";
 import { useProjectDraftDetail } from "../hooks/useProjectQueries";
 import { useHelpRequestAsProjectData } from "@/features/needHelp/hooks/useHelpRequestQueries";
-import { format } from "date-fns";
-import { CheckCircle2, Trash2, AlertTriangle } from "lucide-react";
 import { useToast } from "@/shared/contexts/ToastContext";
-import Step1Story from "../components/Step1Story";
+import Step1Story from "../components/create-project/step1/Step1Story";
 import Step2Budget from "../components/Step2Budget";
-import Step3Preview from "../components/Step3Preview";
+import Step3Preview from "../components/create-project/step3/Step3Preview";
 
 const STEPS = [
   { id: 1, title: "Story & Evidence" },
@@ -16,17 +17,79 @@ const STEPS = [
   { id: 3, title: "Preview & Submit" },
 ];
 
+const parseDateLocal = (isoString) => {
+  if (!isoString) return "";
+  return format(new Date(isoString), "yyyy-MM-dd");
+};
+
+const normalizeCoverMedia = (coverMedia) => {
+  if (!coverMedia) return [];
+  return Array.isArray(coverMedia) ? coverMedia : [coverMedia];
+};
+
+const buildDraftFormData = (draftData) => ({
+  projectType: draftData.projectType || "FUNDED",
+  title: draftData.title || "",
+  category: draftData.category || "",
+  location: draftData.location || null,
+  description: draftData.description || "",
+  beneficiaryInfo: draftData.beneficiaryInfo || { details: "" },
+  targetAmount: draftData.targetAmount || 0,
+  mvpAmount: draftData.mvpAmount || 0,
+  budgetBreakdown: draftData.budgetBreakdown || [],
+  surplusPolicy: draftData.surplusPolicy || "",
+  startDate: parseDateLocal(draftData.startDate),
+  endDate: parseDateLocal(draftData.endDate),
+  needsVolunteers: draftData.needsVolunteers || false,
+  milestones: draftData.milestones?.length ? draftData.milestones : [],
+  volunteerRoles: draftData.volunteerRoles || [],
+  coverMedia: normalizeCoverMedia(draftData.coverMedia),
+  documents: draftData.documents || [],
+  deletedDocumentIds: [],
+  fromHelpRequestId: draftData.fromHelpRequestId || null,
+});
+
+const buildHelpRequestFormData = (helpRequestData, helpRequestId) => {
+  const inferredProjectType =
+    helpRequestData.isFundraising === false ? "VOLUNTEER_ONLY" : "FUNDED";
+
+  return {
+    projectType: helpRequestData.projectType || inferredProjectType,
+    title: helpRequestData.title || "",
+    category: helpRequestData.category || "",
+    location: helpRequestData.location || null,
+    description: helpRequestData.description || "",
+    beneficiaryInfo: helpRequestData.beneficiaryInfo || { details: "" },
+    targetAmount: helpRequestData.targetAmount || 0,
+    mvpAmount: 0,
+    budgetBreakdown: [],
+    startDate: "",
+    endDate: "",
+    needsVolunteers: false,
+    milestones: [],
+    volunteerRoles: [],
+    coverMedia: helpRequestData.coverMedia || [],
+    documents: helpRequestData.documents || [],
+    deletedDocumentIds: [],
+    fromHelpRequestId: helpRequestId,
+  };
+};
+
 export function CreateProjectPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
-  const isEditMode = !!id || location.pathname.includes("edit");
 
+  const isEditMode = Boolean(id || location.pathname.includes("edit"));
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
 
-  const queryParams = new URLSearchParams(location.search);
+  const queryParams = useMemo(
+    () => new URLSearchParams(location.search),
+    [location.search],
+  );
   const helpRequestId = queryParams.get("helpRequestId");
+
   const { currentStep, updateFormData, setProjectId, resetDraft, projectId } =
     useProjectDraftStore();
 
@@ -43,73 +106,18 @@ export function CreateProjectPage() {
     }
 
     if (isEditMode && draftData) {
-      const parseDateLocal = (isoString) => {
-        if (!isoString) return "";
-        return format(new Date(isoString), "yyyy-MM-dd");
-      };
-
-      const normalizeCoverMedia = () => {
-        if (!draftData.coverMedia) return [];
-        return Array.isArray(draftData.coverMedia)
-          ? draftData.coverMedia
-          : [draftData.coverMedia];
-      };
-
-      const normalizedData = {
-        projectType: draftData.projectType || "FUNDED",
-        title: draftData.title || "",
-        category: draftData.category || "",
-        location: draftData.location || null,
-        description: draftData.description || "",
-        beneficiaryInfo: draftData.beneficiaryInfo || { details: "" },
-        targetAmount: draftData.targetAmount || 0,
-        mvpAmount: draftData.mvpAmount || 0,
-        budgetBreakdown: draftData.budgetBreakdown || [],
-        surplusPolicy: draftData.surplusPolicy || "",
-        startDate: parseDateLocal(draftData.startDate),
-        endDate: parseDateLocal(draftData.endDate),
-        needsVolunteers: draftData.needsVolunteers || false,
-        milestones: draftData.milestones?.length ? draftData.milestones : [],
-        volunteerRoles: draftData.volunteerRoles || [],
-        coverMedia: normalizeCoverMedia(),
-        documents: draftData.documents || [],
-        deletedDocumentIds: [],
-        fromHelpRequestId: draftData.fromHelpRequestId || null,
-      };
-
       resetDraft();
-      updateFormData(normalizedData);
+      updateFormData(buildDraftFormData(draftData));
       setProjectId(id);
+      return;
     }
 
     if (helpRequestId && helpRequestData) {
-      if (projectId) resetDraft();
+      if (projectId) {
+        resetDraft();
+      }
 
-      const inferredProjectType =
-        helpRequestData.isFundraising === false ? "VOLUNTEER_ONLY" : "FUNDED";
-
-      const normalizedData = {
-        projectType: helpRequestData.projectType || inferredProjectType,
-        title: helpRequestData.title || "",
-        category: helpRequestData.category || "",
-        location: helpRequestData.location || null,
-        description: helpRequestData.description || "",
-        beneficiaryInfo: helpRequestData.beneficiaryInfo || { details: "" },
-        targetAmount: helpRequestData.targetAmount || 0,
-        mvpAmount: 0,
-        budgetBreakdown: [],
-        startDate: "",
-        endDate: "",
-        needsVolunteers: false,
-        milestones: [],
-        volunteerRoles: [],
-        coverMedia: helpRequestData.coverMedia || [],
-        documents: helpRequestData.documents || [],
-        deletedDocumentIds: [],
-        fromHelpRequestId: helpRequestId,
-      };
-
-      updateFormData(normalizedData);
+      updateFormData(buildHelpRequestFormData(helpRequestData, helpRequestId));
     }
   }, [
     isEditMode,
@@ -166,32 +174,33 @@ export function CreateProjectPage() {
                 <div key={step.id} className="flex items-center flex-1">
                   <div className="flex flex-col items-center flex-1 relative z-10">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300
-                        ${
-                          isActive
-                            ? "bg-[#fbbf24] text-white"
-                            : isCompleted
-                              ? "bg-[#fbbf24] text-white"
-                              : "bg-slate-200 text-slate-500"
-                        }`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300 ${
+                        isActive || isCompleted
+                          ? "bg-[#fbbf24] text-white"
+                          : "bg-slate-200 text-slate-500"
+                      }`}
                     >
                       {isCompleted ? "✓" : step.id}
                     </div>
 
                     <span
-                      className={`text-sm mt-2 absolute top-8 whitespace-nowrap transition-colors
-                        ${isActive ? "font-bold text-slate-900" : "font-medium text-slate-500"}`}
+                      className={`text-sm mt-2 absolute top-8 whitespace-nowrap transition-colors ${
+                        isActive
+                          ? "font-bold text-slate-900"
+                          : "font-medium text-slate-500"
+                      }`}
                     >
                       {step.title}
                     </span>
                   </div>
 
-                  {!isLast && (
+                  {!isLast ? (
                     <div
-                      className={`h-1 flex-1 -mx-4 rounded-full z-0 transition-colors duration-300
-                        ${isCompleted ? "bg-[#fbbf24]" : "bg-slate-200"}`}
+                      className={`h-1 flex-1 -mx-4 rounded-full z-0 transition-colors duration-300 ${
+                        isCompleted ? "bg-[#fbbf24]" : "bg-slate-200"
+                      }`}
                     />
-                  )}
+                  ) : null}
                 </div>
               );
             })}
@@ -213,12 +222,12 @@ export function CreateProjectPage() {
         </div>
 
         <div className="mt-12 pb-32">
-          {currentStep === 1 && <Step1Story />}
-          {currentStep === 2 && <Step2Budget />}
-          {currentStep === 3 && <Step3Preview />}
+          {currentStep === 1 ? <Step1Story /> : null}
+          {currentStep === 2 ? <Step2Budget /> : null}
+          {currentStep === 3 ? <Step3Preview /> : null}
         </div>
 
-        {isDiscardModalOpen && (
+        {isDiscardModalOpen ? (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
             <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
               <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full mb-4">
@@ -249,8 +258,10 @@ export function CreateProjectPage() {
               </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
 }
+
+export default CreateProjectPage;

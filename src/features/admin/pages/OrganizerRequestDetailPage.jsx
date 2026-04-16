@@ -1,5 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, Info, History } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Info, CheckCircle2 } from "lucide-react";
 import OrganizerRequestStatusBadge from "../components/organizerRequest/OrganizerRequestStatusBadge";
 import OrganizerDocumentList from "../components/organizerRequest/OrganizerDocumentList";
 import OrganizerReviewActions from "../components/organizerRequest/OrganizerReviewActions";
@@ -46,6 +46,8 @@ export function OrganizerRequestDetailPage() {
   const isNameChanged =
     Boolean(currentName) && currentName !== request.fullNameSnapshot;
 
+  const isApproved = request.status === "APPROVED";
+
   return (
     <div className="space-y-6">
       <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm">
@@ -60,21 +62,19 @@ export function OrganizerRequestDetailPage() {
                 <ArrowLeft size={16} />
                 Back to Organizer Requests
               </button>
-
-              <button
-                type="button"
-                onClick={() => navigate("/admin/organizer-action-logs")}
-                className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
-              >
-                <History size={16} />
-                View History
-              </button>
             </div>
 
             <h1 className="text-[30px] font-black leading-none tracking-tight text-slate-900">
               Organizer Request Details
             </h1>
             <p className="mt-2 text-sm text-slate-500">ID: {request._id}</p>
+
+            {isApproved && (
+              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+                <CheckCircle2 size={18} />
+                Request approved — user has been granted Organizer role (KYC Tier 1).
+              </div>
+            )}
           </div>
 
           <OrganizerRequestStatusBadge status={request.status} />
@@ -115,7 +115,7 @@ export function OrganizerRequestDetailPage() {
                 {isNameChanged && (
                   <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-amber-100 px-2.5 py-1 text-[11px] font-medium text-amber-800">
                     <Info size={14} />
-                    Currently user has changed name to: {currentName}
+                    Current name: {currentName}
                   </div>
                 )}
               </InfoBox>

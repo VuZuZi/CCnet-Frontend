@@ -1,12 +1,15 @@
 import { useMemo } from "react";
-import { ChevronLeft, ChevronRight, FileClock, History } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileClock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import OrganizerRequestFilters from "../components/organizerRequest/OrganizerRequestFilters";
 import OrganizerRequestTable from "../components/organizerRequest/OrganizerRequestTable";
 import { useOrganizerRequests } from "../hooks/useOrganizerRequests";
+import AdminHistoryButton from "@/features/admin/components/AdminHistoryButton";
 
 const buildVisiblePages = (current, total) => {
-  if (total <= 5) return Array.from({ length: total }, (_, index) => index + 1);
+  if (total <= 5) {
+    return Array.from({ length: total }, (_, index) => index + 1);
+  }
 
   if (current <= 3) return [1, 2, 3, 4, total];
   if (current >= total - 2) return [1, total - 3, total - 2, total - 1, total];
@@ -18,7 +21,9 @@ const StatCard = ({ label, value, className = "" }) => (
   <div
     className={`rounded-[22px] border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${className}`}
   >
-    <p className="text-[10px] font-bold uppercase tracking-[0.14em]">{label}</p>
+    <p className="text-[10px] font-bold uppercase tracking-[0.14em]">
+      {label}
+    </p>
     <p className="mt-2 text-[30px] font-black leading-none">{value}</p>
   </div>
 );
@@ -65,14 +70,9 @@ export function OrganizerRequestsPage() {
           </div>
 
           <div className="flex flex-col items-end gap-3">
-            <button
-              type="button"
+            <AdminHistoryButton
               onClick={() => navigate("/admin/organizer-action-logs")}
-              className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
-            >
-              <History size={16} />
-              View History
-            </button>
+            />
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[460px]">
               <StatCard

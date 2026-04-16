@@ -34,6 +34,15 @@ const normalizeListResponse = (response) => {
   return [];
 };
 
+const normalizeProjectsResponse = (response) => {
+  const payload = normalizeResponseData(response);
+
+  return {
+    items: Array.isArray(payload?.items) ? payload.items : [],
+    pagination: payload?.pagination || null,
+  };
+};
+
 const ensureReason = (reason, actionLabel) => {
   const normalizedReason = String(reason || "").trim();
 
@@ -73,7 +82,8 @@ export const useAdminDashboard = (activeTab) => {
 
   const projectsQuery = useQuery({
     queryKey: ADMIN_PROJECTS_QUERY_KEY,
-    queryFn: async () => normalizeListResponse(await adminAPI.getProjects()),
+    queryFn: async () =>
+      normalizeProjectsResponse(await adminAPI.getProjects()),
     enabled: activeTab === "projects",
     refetchOnWindowFocus: false,
     staleTime: 30 * 1000,
@@ -95,7 +105,8 @@ export const useAdminDashboard = (activeTab) => {
 
   const statsData = statsQuery.data || null;
   const usersData = usersQuery.data || [];
-  const projectsData = projectsQuery.data || [];
+  const projectsData = projectsQuery.data?.items || [];
+  const projectsPagination = projectsQuery.data?.pagination || null;
   const reportsData = reportsQuery.data || [];
 
   const isLoadingAny =
@@ -136,11 +147,16 @@ export const useAdminDashboard = (activeTab) => {
   };
 
   const setProjectInProjectsCache = (projectId, updater) => {
-    queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev = []) =>
-      prev.map((project) =>
-        project._id === projectId ? updater(project) : project
-      )
-    );
+    queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev) => {
+      if (!prev?.items) return prev;
+
+      return {
+        ...prev,
+        items: prev.items.map((project) =>
+          project._id === projectId ? updater(project) : project
+        ),
+      };
+    });
   };
 
   /* =========================
@@ -259,9 +275,14 @@ export const useAdminDashboard = (activeTab) => {
     const normalizedReason = ensureReason(payload?.reason, "delete project");
     const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
 
-    queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev = []) =>
-      prev.filter((project) => project._id !== projectId)
-    );
+    queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev) => {
+      if (!prev?.items) return prev;
+
+      return {
+        ...prev,
+        items: prev.items.filter((project) => project._id !== projectId),
+      };
+    });
 
     try {
       await adminAPI.deleteProject(projectId, { reason: normalizedReason });
@@ -362,6 +383,7 @@ export const useAdminDashboard = (activeTab) => {
       stats: statsData,
       users: usersData,
       projects: projectsData,
+      projectsPagination,
       reports: reportsData,
       loading: isLoadingAny,
       ...queryFlags,
@@ -370,6 +392,7 @@ export const useAdminDashboard = (activeTab) => {
       statsData,
       usersData,
       projectsData,
+      projectsPagination,
       reportsData,
       isLoadingAny,
       queryFlags.isStatsFetching,

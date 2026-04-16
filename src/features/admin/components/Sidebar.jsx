@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   Users,
@@ -11,33 +11,55 @@ import {
 } from "lucide-react";
 
 const MENU_ITEMS = [
-  { path: "/admin", label: "Dashboard", icon: LayoutDashboard, end: true },
+  {
+    path: "/admin",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    end: true,
+    matchPaths: ["/admin"],
+  },
   {
     path: "/admin/notifications",
     label: "Notifications",
     icon: Bell,
     end: false,
+    matchPaths: ["/admin/notifications", "/admin/notifications/history"],
   },
   {
     path: "/admin/users",
     label: "User Management",
     icon: Users,
     end: false,
+    matchPaths: ["/admin/users", "/admin/user-action-logs"],
   },
   {
     path: "/admin/organizers",
     label: "Organizer Requests",
     icon: ShieldCheck,
     end: false,
+    matchPaths: ["/admin/organizers", "/admin/organizer-action-logs"],
   },
   {
     path: "/admin/need-help",
     label: "NeedHelp Requests",
     icon: HeartHandshake,
     end: false,
+    matchPaths: ["/admin/need-help", "/admin/need-help-action-logs"],
   },
-  { path: "/admin/projects", label: "Projects", icon: Rocket, end: false },
-  { path: "/admin/reports", label: "Reports & Logs", icon: Flag, end: false },
+  {
+    path: "/admin/projects",
+    label: "Projects",
+    icon: Rocket,
+    end: false,
+    matchPaths: ["/admin/projects"],
+  },
+  {
+    path: "/admin/reports",
+    label: "Reports & Logs",
+    icon: Flag,
+    end: false,
+    matchPaths: ["/admin/reports"],
+  },
 ];
 
 export function Sidebar({
@@ -45,6 +67,17 @@ export function Sidebar({
   onLogout,
   logoutLabel = "Logout",
 }) {
+  const location = useLocation();
+
+  const isItemActive = (item) => {
+    return item.matchPaths.some((prefix) => {
+      if (prefix === "/admin") {
+        return location.pathname === "/admin";
+      }
+      return location.pathname.startsWith(prefix);
+    });
+  };
+
   return (
     <aside
       className={`z-30 flex h-screen shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white transition-all duration-300 ${
@@ -75,42 +108,37 @@ export function Sidebar({
       <nav className="flex-1 space-y-2 px-3 pb-4">
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon;
+          const active = isItemActive(item);
 
           return (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.end}
-              className={({ isActive }) =>
-                `group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 ${
-                  isActive
-                    ? "bg-amber-400 text-slate-900 shadow-sm"
-                    : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                } ${isOpen ? "justify-start" : "justify-center"}`
-              }
+              className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 ${
+                active
+                  ? "bg-amber-400 text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              } ${isOpen ? "justify-start" : "justify-center"}`}
               title={!isOpen ? item.label : undefined}
             >
-              {({ isActive }) => (
-                <>
-                  {!isOpen && isActive ? (
-                    <span className="absolute left-1 top-1/2 h-7 w-1 -translate-y-1/2 rounded-full bg-slate-900/80" />
-                  ) : null}
+              {!isOpen && active ? (
+                <span className="absolute left-1 top-1/2 h-7 w-1 -translate-y-1/2 rounded-full bg-slate-900/80" />
+              ) : null}
 
-                  <Icon
-                    size={19}
-                    strokeWidth={2.2}
-                    className={`shrink-0 transition-transform duration-200 ${
-                      isActive ? "scale-105" : "group-hover:scale-105"
-                    }`}
-                  />
+              <Icon
+                size={19}
+                strokeWidth={2.2}
+                className={`shrink-0 transition-transform duration-200 ${
+                  active ? "scale-105" : "group-hover:scale-105"
+                }`}
+              />
 
-                  {isOpen ? (
-                    <span className="truncate text-sm font-semibold">
-                      {item.label}
-                    </span>
-                  ) : null}
-                </>
-              )}
+              {isOpen ? (
+                <span className="truncate text-sm font-semibold">
+                  {item.label}
+                </span>
+              ) : null}
             </NavLink>
           );
         })}

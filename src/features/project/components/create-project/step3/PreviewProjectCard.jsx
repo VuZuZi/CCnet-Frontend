@@ -1,0 +1,152 @@
+import PreviewStatusPill from "./PreviewStatusPill";
+import {
+  getPreviewCategoryLabel,
+  getPreviewProjectTypeLabel,
+} from "./utils/step3Preview.utils";
+
+const formatMoney = (value) => Number(value || 0).toLocaleString("vi-VN");
+
+export function PreviewProjectCard({ formData }) {
+  const milestones = Array.isArray(formData?.milestones) ? formData.milestones : [];
+  const volunteerRoles = Array.isArray(formData?.volunteerRoles)
+    ? formData.volunteerRoles
+    : [];
+
+  return (
+    <div className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
+      <div className="flex flex-wrap items-center gap-2">
+        <PreviewStatusPill tone="amber">
+          {getPreviewProjectTypeLabel(formData?.projectType)}
+        </PreviewStatusPill>
+
+        <PreviewStatusPill tone="blue">
+          {getPreviewCategoryLabel(formData?.category)}
+        </PreviewStatusPill>
+
+        {formData?.needsVolunteers ? (
+          <PreviewStatusPill tone="emerald">Needs Volunteers</PreviewStatusPill>
+        ) : null}
+      </div>
+
+      <div>
+        <h2 className="text-2xl font-black tracking-tight text-slate-900">
+          {formData?.title || "Untitled project"}
+        </h2>
+
+        <p className="mt-2 text-sm text-slate-500">
+          {formData?.location?.address || "No location yet"}
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+            Beneficiaries
+          </p>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+            {formData?.beneficiaryInfo?.details || "No beneficiary details"}
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+            Timeline
+          </p>
+          <p className="mt-2 text-sm leading-6 text-slate-700">
+            Start: {formData?.startDate || "N/A"}
+          </p>
+          <p className="text-sm leading-6 text-slate-700">
+            End: {formData?.endDate || "N/A"}
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
+          Story
+        </p>
+        <div
+          className="prose prose-slate mt-3 max-w-none text-sm"
+          dangerouslySetInnerHTML={{
+            __html: formData?.description || "<p>No project story yet.</p>",
+          }}
+        />
+      </div>
+
+      {formData?.projectType === "FUNDED" ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-amber-700">
+            Fundraising
+          </p>
+          <p className="mt-2 text-lg font-black text-slate-900">
+            {formatMoney(formData?.targetAmount)}đ
+          </p>
+
+          {milestones.length > 0 ? (
+            <div className="mt-4 space-y-3">
+              {milestones.map((milestone, index) => (
+                <div
+                  key={`${milestone?.title || "milestone"}-${index}`}
+                  className="rounded-xl border border-amber-200 bg-white p-3"
+                >
+                  <p className="font-bold text-slate-900">
+                    {milestone?.title || `Milestone ${index + 1}`}
+                  </p>
+                  <p className="mt-1 text-sm text-slate-600">
+                    {formatMoney(milestone?.targetAmount)}đ
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      {formData?.needsVolunteers ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+          <p className="text-xs font-bold uppercase tracking-[0.08em] text-emerald-700">
+            Volunteer Roles
+          </p>
+
+          {volunteerRoles.length === 0 ? (
+            <p className="mt-2 text-sm text-emerald-700">
+              No volunteer roles added yet.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {volunteerRoles.map((role, index) => (
+                <div
+                  key={`${role?.title || "role"}-${index}`}
+                  className="rounded-xl border border-emerald-200 bg-white p-3"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="font-bold text-slate-900">
+                      {role?.title || `Role ${index + 1}`}
+                    </p>
+                    <p className="text-sm font-semibold text-emerald-700">
+                      {Number(role?.quantity || 0)} người
+                    </p>
+                  </div>
+
+                  {role?.skills ? (
+                    <p className="mt-1 text-sm text-slate-600">
+                      Skills: {role.skills}
+                    </p>
+                  ) : null}
+
+                  {role?.location ? (
+                    <p className="mt-1 text-sm text-slate-600">
+                      Location/Time: {role.location}
+                    </p>
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default PreviewProjectCard;

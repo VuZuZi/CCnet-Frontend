@@ -18,6 +18,7 @@ import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestD
 import OrganizerActionLogsPage from "@/features/admin/pages/OrganizerActionLogsPage";
 import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
 import AdminNotificationsPage from "@/features/admin/pages/AdminNotificationsPage";
+import AdminNotificationHistoryPage from "@/features/admin/pages/AdminNotificationHistoryPage";
 import AdminActionLogsPage from "@/features/admin/pages/AdminActionLogsPage";
 import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
 import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
@@ -363,6 +364,10 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: "notifications", element: <AdminNotificationsPage /> },
+      {
+        path: "notifications/history",
+        element: <AdminNotificationHistoryPage />,
+      },
       { path: "users", element: <UserManagement /> },
       { path: "user-action-logs", element: <AdminActionLogsPage /> },
       { path: "organizers", element: <OrganizerRequestsPage /> },

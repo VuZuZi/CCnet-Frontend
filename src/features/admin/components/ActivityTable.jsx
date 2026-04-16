@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import {
   AlertTriangle,
@@ -8,120 +8,14 @@ import {
   Loader2,
   Shield,
 } from "lucide-react";
-
-import { PROJECT_STATUS } from "@/shared/constants/project";
+import useActivityTableActions from "../hooks/useActivityTableActions";
+import { normalizeProjectStatus } from "../utils/projectStatus.utils";
 import {
-  getApprovedStatus,
-  getDropdownStatusLabel,
-  getProjectStatusLabel,
-  getResumeStatus,
-  normalizeProjectStatus,
-} from "../utils/projectStatus.utils";
-
-const resolveTargetLabel = (report) => {
-  const target = report?.target_ref;
-
-  if (report?.target_type === "project") {
-    return target?.title || `Project ${target?._id?.slice(-4) || ""}`;
-  }
-
-  if (report?.target_type === "user") {
-    return (
-      target?.fullName ||
-      target?.email ||
-      target?.username ||
-      `User ${target?._id?.slice(-4) || ""}`
-    );
-  }
-
-  return target?.content || target?._id || report?.target_type || "Unknown";
-};
-
-const resolveTargetLink = (report) => {
-  const target = report?.target_ref;
-
-  // Do not assume an admin-specific project detail route exists.
-  if (report?.target_type === "project" && target?._id) {
-    return null;
-  }
-
-  if (report?.target_type === "user" && target?._id) {
-    return `/users/${target._id}`;
-  }
-
-  return null;
-};
-
-const resolveReporterLabel = (reporter) => {
-  if (!reporter) return "Unknown";
-  return reporter.fullName || reporter.username || reporter.email || "Unknown";
-};
-
-const buildReportActionReason = (report) =>
-  `Action from report moderation #${report?._id?.slice(-6) || ""}`;
-
-const getReportProjectStatusOptions = (project) => {
-  const currentStatus = normalizeProjectStatus(project?.status);
-
-  let statuses = [currentStatus];
-
-  switch (currentStatus) {
-    case PROJECT_STATUS.PENDING_APPROVAL:
-    case PROJECT_STATUS.REVISION_REQUESTED:
-      statuses = [
-        currentStatus,
-        getApprovedStatus(project),
-        PROJECT_STATUS.REVISION_REQUESTED,
-        PROJECT_STATUS.REJECTED,
-      ];
-      break;
-
-    case PROJECT_STATUS.FUNDING:
-    case PROJECT_STATUS.RECRUITING:
-    case PROJECT_STATUS.EXECUTING:
-    case PROJECT_STATUS.ACTIVE:
-      statuses = [
-        currentStatus,
-        PROJECT_STATUS.PAUSED,
-        PROJECT_STATUS.COMPLETED_SUCCESSFULLY,
-        PROJECT_STATUS.CANCELLED_BY_PLATFORM,
-      ];
-      break;
-
-    case PROJECT_STATUS.PAUSED:
-      statuses = [
-        currentStatus,
-        getResumeStatus(project),
-        PROJECT_STATUS.COMPLETED_SUCCESSFULLY,
-        PROJECT_STATUS.CANCELLED_BY_PLATFORM,
-      ];
-      break;
-
-    default:
-      statuses = [currentStatus];
-      break;
-  }
-
-  return [...new Set(statuses)].map((status) => {
-    const normalized = normalizeProjectStatus(status);
-    const isResumeOption =
-      currentStatus === PROJECT_STATUS.PAUSED &&
-      (normalized === PROJECT_STATUS.FUNDING ||
-        normalized === PROJECT_STATUS.RECRUITING);
-
-    return {
-      value: normalized,
-      label:
-        normalized === currentStatus &&
-        (currentStatus === PROJECT_STATUS.PENDING_APPROVAL ||
-          currentStatus === PROJECT_STATUS.REVISION_REQUESTED)
-          ? "🟡 Chờ duyệt"
-          : getDropdownStatusLabel(normalized, project?.projectType, {
-              isResume: isResumeOption,
-            }) || getProjectStatusLabel(normalized),
-    };
-  });
-};
+  getReportProjectStatusOptions,
+  resolveReporterLabel,
+  resolveTargetLabel,
+  resolveTargetLink,
+} from "../utils/activityTable.utils";
 
 const ActivityTable = ({
   activities = [],
@@ -130,48 +24,66 @@ const ActivityTable = ({
   onUserBanToggle,
   loading,
 }) => {
-  const [projectStatuses, setProjectStatuses] = useState({});
-  const [userActionLoadingMap, setUserActionLoadingMap] = useState({});
-  const [projectActionLoadingMap, setProjectActionLoadingMap] = useState({});
+  const {
+    safeActivities,
+    projectStatuses,
+    userActionLoadingMap,
+    projectActionLoadingMap,
+    handleProjectStatusSelect,
+    handleProjectStatusApply,
+    handleUserBanToggle,
+  } = useActivityTableActions({
+    activities,
+    onProjectStatusChange,
+    onUserBanToggle,
+  });
 
-  const safeActivities = useMemo(
-    () => (Array.isArray(activities) ? activities : []),
-    [activities]
+  const rows = useMemo(
+    () =>
+      safeActivities.map((report) => {
+        const target = report?.target_ref;
+        const targetLabel = resolveTargetLabel(report);
+        const targetLink = resolveTargetLink(report);
+
+        const projectStatusOptions = getReportProjectStatusOptions(target);
+        const currentProjectStatus = normalizeProjectStatus(
+          projectStatuses[report._id] || target?.status || ""
+        );
+        const originalProjectStatus = normalizeProjectStatus(target?.status || "");
+
+        const isPending = report?.status === "pending";
+        const isProject = report?.target_type === "project";
+        const isUser = report?.target_type === "user";
+
+        const isUserLoading = Boolean(userActionLoadingMap[report._id]);
+        const isProjectLoading = Boolean(projectActionLoadingMap[report._id]);
+
+        const canApplyProjectStatus =
+          Boolean(currentProjectStatus) &&
+          currentProjectStatus !== originalProjectStatus;
+
+        return {
+          report,
+          target,
+          targetLabel,
+          targetLink,
+          projectStatusOptions,
+          currentProjectStatus,
+          isPending,
+          isProject,
+          isUser,
+          isUserLoading,
+          isProjectLoading,
+          canApplyProjectStatus,
+        };
+      }),
+    [
+      safeActivities,
+      projectStatuses,
+      userActionLoadingMap,
+      projectActionLoadingMap,
+    ]
   );
-
-  const handleProjectStatusApply = async (report) => {
-    const target = report?.target_ref;
-    if (!target?._id || !onProjectStatusChange) return;
-
-    const currentStatus = normalizeProjectStatus(target?.status);
-    const nextStatus = normalizeProjectStatus(
-      projectStatuses[report._id] || currentStatus
-    );
-
-    if (!nextStatus || nextStatus === currentStatus) return;
-
-    try {
-      setProjectActionLoadingMap((prev) => ({ ...prev, [report._id]: true }));
-      await onProjectStatusChange(target._id, {
-        status: nextStatus,
-        reason: buildReportActionReason(report),
-      });
-    } finally {
-      setProjectActionLoadingMap((prev) => ({ ...prev, [report._id]: false }));
-    }
-  };
-
-  const handleUserBanToggle = async (report) => {
-    const target = report?.target_ref;
-    if (!target?._id || !onUserBanToggle) return;
-
-    try {
-      setUserActionLoadingMap((prev) => ({ ...prev, [report._id]: true }));
-      await onUserBanToggle(target._id, buildReportActionReason(report));
-    } finally {
-      setUserActionLoadingMap((prev) => ({ ...prev, [report._id]: false }));
-    }
-  };
 
   if (loading) {
     return (
@@ -215,34 +127,22 @@ const ActivityTable = ({
           </thead>
 
           <tbody className="divide-y divide-slate-100">
-            {safeActivities.length > 0 ? (
-              safeActivities.map((report) => {
-                const target = report?.target_ref;
-                const targetLabel = resolveTargetLabel(report);
-                const targetLink = resolveTargetLink(report);
-
-                const projectStatusOptions = getReportProjectStatusOptions(target);
-                const currentProjectStatus = normalizeProjectStatus(
-                  projectStatuses[report._id] || target?.status || ""
-                );
-                const originalProjectStatus = normalizeProjectStatus(
-                  target?.status || ""
-                );
-
-                const isPending = report?.status === "pending";
-                const isProject = report?.target_type === "project";
-                const isUser = report?.target_type === "user";
-
-                const isUserLoading = Boolean(userActionLoadingMap[report._id]);
-                const isProjectLoading = Boolean(
-                  projectActionLoadingMap[report._id]
-                );
-
-                const canApplyProjectStatus =
-                  Boolean(currentProjectStatus) &&
-                  currentProjectStatus !== originalProjectStatus;
-
-                return (
+            {rows.length > 0 ? (
+              rows.map(
+                ({
+                  report,
+                  target,
+                  targetLabel,
+                  targetLink,
+                  projectStatusOptions,
+                  currentProjectStatus,
+                  isPending,
+                  isProject,
+                  isUser,
+                  isUserLoading,
+                  isProjectLoading,
+                  canApplyProjectStatus,
+                }) => (
                   <tr
                     key={report._id}
                     className="transition-colors hover:bg-slate-50/40"
@@ -311,10 +211,10 @@ const ActivityTable = ({
                               <select
                                 value={currentProjectStatus}
                                 onChange={(e) =>
-                                  setProjectStatuses((prev) => ({
-                                    ...prev,
-                                    [report._id]: e.target.value,
-                                  }))
+                                  handleProjectStatusSelect(
+                                    report._id,
+                                    e.target.value
+                                  )
                                 }
                                 disabled={isProjectLoading}
                                 className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
@@ -332,7 +232,9 @@ const ActivityTable = ({
                               <button
                                 type="button"
                                 onClick={() => handleProjectStatusApply(report)}
-                                disabled={isProjectLoading || !canApplyProjectStatus}
+                                disabled={
+                                  isProjectLoading || !canApplyProjectStatus
+                                }
                                 className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-[10px] font-bold uppercase text-blue-700 hover:bg-blue-100 disabled:opacity-50"
                               >
                                 {isProjectLoading ? (
@@ -383,8 +285,8 @@ const ActivityTable = ({
                       )}
                     </td>
                   </tr>
-                );
-              })
+                )
+              )
             ) : (
               <tr>
                 <td

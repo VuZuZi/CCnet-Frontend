@@ -36,14 +36,6 @@ const NON_PENDING_STATES = {
     titleClass: "text-indigo-900",
     descClass: "text-indigo-700",
   },
-  APPROVED: {
-    title: "Request approved",
-    desc: "This user has been granted Organizer role (KYC Tier 1).",
-    icon: <CheckCircle2 size={20} className="text-emerald-600" />,
-    wrapperClass: "border-emerald-200 bg-emerald-50",
-    titleClass: "text-emerald-900",
-    descClass: "text-emerald-700",
-  },
   DECLINED: {
     title: "Request declined",
     desc: "The user has received a notification to edit and resubmit their documents.",
@@ -57,8 +49,10 @@ const NON_PENDING_STATES = {
 function useModalScrollLock(isOpen) {
   useEffect(() => {
     if (!isOpen) return;
+
     const originalStyle = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+
     return () => {
       document.body.style.overflow = originalStyle;
     };
@@ -130,6 +124,7 @@ function ActionModal({
           <label className="mb-2 block text-sm font-semibold text-slate-700">
             {isApprove ? "Reason for approval" : "Reason for decline"}
           </label>
+
           <textarea
             {...register("reviewReason")}
             disabled={isProcessing}
@@ -146,6 +141,7 @@ function ActionModal({
                 : "border-slate-200 focus:border-amber-400 focus:ring-amber-100"
             }`}
           />
+
           {errors.reviewReason && (
             <p className="mt-2 text-xs font-medium text-rose-500">
               {errors.reviewReason.message}
@@ -161,6 +157,7 @@ function ActionModal({
             >
               Cancel
             </button>
+
             <button
               type="submit"
               disabled={isProcessing}
@@ -192,6 +189,10 @@ export function OrganizerReviewActions({
 }) {
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
+
+  if (status === "APPROVED") {
+    return null;
+  }
 
   if (status !== "PENDING") {
     const stateConfig =
@@ -232,6 +233,7 @@ export function OrganizerReviewActions({
         >
           Decline
         </button>
+
         <button
           type="button"
           onClick={() => setApproveModalOpen(true)}
