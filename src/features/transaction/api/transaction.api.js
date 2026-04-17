@@ -24,5 +24,15 @@ export const transactionAPI = {
     getProjectDonors: async (projectId, params) => {
         const response = await httpClient.get(`/transactions/project/${projectId}/donations`, { params });
         return response.data.data;
+    },
+
+    checkStatus: async (transactionId) => {
+        const response = await httpClient.get(`/transactions/${transactionId}/status`);
+        return response.data.data;
+    },
+
+    updateMessage: async ({ id, payload }) => {
+        const response = await httpClient.put(`/transactions/${id}/message`, payload);
+        return response.data;
     }
 };
