@@ -1,42 +1,182 @@
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { postAPI } from "../api/postAPI";
+import { useToast } from "@/shared/contexts/ToastContext";
 
-export const usePosts = (limit = 10, feedType = "for-you") => {
-  return useInfiniteQuery({
-    queryKey: ["posts", limit, feedType],
+export const usePostMutations = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
 
-    queryFn: ({ pageParam = null }) => {
-      const params = { limit };
-      if (pageParam) params.cursor = pageParam;
+  const refreshPosts = (postId) => {
+    queryClient.invalidateQueries({ queryKey: ["posts"] });
+    if (postId) queryClient.invalidateQueries({ queryKey: ["post", postId] });
+  };
 
-      if (feedType === "saved") {
-        return postAPI.getSavedPosts(params);
-      }
-      if (feedType === "following") {
-        params.type = "following";
-      }
+  const updatePagesHelper = (oldData, updater) => {
+    if (!oldData) return oldData;
+    return {
+      ...oldData,
+      pages: oldData.pages.map((page) => ({
+        ...page,
+        data: updater(page.data),
+      })),
+    };
+  };
 
-      return postAPI.getPosts(params);
-    },
-
-    initialPageParam: null,
-
-    getNextPageParam: (lastPage) => {
-      console.log("Dữ liệu trang cuối:", lastPage); // Chỉ là log để debug, nhưng mình cứ dịch cho bạn nha
-      if (lastPage.message?.hasMore === false) return undefined;
-      return lastPage.message?.nextCursor || undefined;
-    },
-
-    placeholderData: (previousData) => previousData,
-    staleTime: 1000 * 60 * 5,
+  const createPost = useMutation({
+    mutationFn: (formData) => postAPI.createPost(formData),
+    onSuccess: () => refreshPosts(),
   });
-};
 
-export const usePostDetail = (postId) => {
-  return useQuery({
-    queryKey: ["post", postId],
-    queryFn: () => postAPI.getPostById(postId),
-    enabled: !!postId,
-    staleTime: 1000 * 60 * 5,
+  const addComment = useMutation({
+    mutationFn: ({ postId, content }) => postAPI.addComment(postId, content),
+    onSuccess: (_, { postId }) => refreshPosts(postId),
   });
+
+  const deletePost = useMutation({
+    mutationFn: (postId) => postAPI.deletePost(postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      const previousPosts = queryClient.getQueryData(["posts"]);
+
+      queryClient.setQueryData(["posts"], (old) =>
+        updatePagesHelper(old, (data) =>
+          data.map((post) =>
+            post._id === postId || post.id === postId
+              ? { ...post, isSaved: !post.isSaved }
+              : post,
+          ),
+        ),
+      );
+
+      return { previousPosts };
+    },
+    onError: (err, id, context) =>
+      queryClient.setQueryData(["posts"], context.previousPosts),
+    onSettled: () => refreshPosts(),
+  });
+
+  const toggleReaction = useMutation({
+    mutationFn: ({ postId, type }) => postAPI.toggleReaction(postId, type),
+    onMutate: async ({ postId, type }) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      await queryClient.cancelQueries({ queryKey: ["post", postId] });
+
+      const previousPosts = queryClient.getQueryData(["posts"]);
+      const previousSinglePost = queryClient.getQueryData(["post", postId]);
+
+      const calculateNewStats = (post) => {
+        let likes = post.stats?.likes || 0;
+        const currentReaction = post.userReaction;
+
+        if (type === "like") {
+          if (currentReaction === "like") {
+            likes -= 1;
+          } else {
+            likes += 1;
+          }
+        } else if (type === "dislike") {
+          if (currentReaction === "like") {
+            likes -= 1;
+          }
+        }
+
+        return {
+          ...post,
+          userReaction: currentReaction === type ? null : type,
+          stats: { ...post.stats, likes: Math.max(0, likes) },
+        };
+      };
+
+      queryClient.setQueryData(["posts"], (old) =>
+        updatePagesHelper(old, (data) =>
+          data.map((post) =>
+            post._id === postId ? calculateNewStats(post) : post,
+          ),
+        ),
+      );
+
+      // Áp dụng cho 1 Post cụ thể (Trang chi tiết)
+      if (previousSinglePost) {
+        queryClient.setQueryData(["post", postId], (old) => {
+          if (!old || !old.data) return old;
+          return {
+            ...old,
+            data: calculateNewStats(old.data),
+          };
+        });
+      }
+
+      return { previousPosts, previousSinglePost };
+    },
+    onError: (err, vars, context) => {
+      queryClient.setQueryData(["posts"], context.previousPosts);
+      if (context.previousSinglePost) {
+        queryClient.setQueryData(
+          ["post", vars.postId],
+          context.previousSinglePost,
+        );
+      }
+      toast.error("Không thể tương tác. Vui lòng thử lại!");
+    },
+    onSettled: (_, __, vars) => refreshPosts(vars.postId),
+  });
+
+  const updatePost = useMutation({
+    mutationFn: ({ postId, formData }) => postAPI.updatePost(postId, formData),
+    onSuccess: (_, { postId }) => refreshPosts(postId),
+  });
+
+  const reportPost = useMutation({
+    mutationFn: ({ postId, payload }) =>
+      postAPI.reportPost({ postId, payload }),
+    onError: () => {},
+  });
+  const toggleSavePost = useMutation({
+    mutationFn: (postId) => postAPI.toggleSave(postId),
+    onMutate: async (postId) => {
+      await queryClient.cancelQueries({ queryKey: ["posts"] });
+      await queryClient.cancelQueries({ queryKey: ["post", postId] });
+
+      const previousPosts = queryClient.getQueryData(["posts"]);
+      const previousSinglePost = queryClient.getQueryData(["post", postId]);
+
+      queryClient.setQueryData(["posts"], (old) =>
+        updatePagesHelper(old, (data) =>
+          data.map((post) =>
+            post._id === postId ? { ...post, isSaved: !post.isSaved } : post,
+          ),
+        ),
+      );
+
+      if (previousSinglePost) {
+        queryClient.setQueryData(["post", postId], (old) => {
+          if (!old || !old.data) return old;
+          return {
+            ...old,
+            data: { ...old.data, isSaved: !old.data.isSaved },
+          };
+        });
+      }
+
+      return { previousPosts, previousSinglePost };
+    },
+    onError: (err, postId, context) => {
+      // Nếu lỗi mạng, trả lại trạng thái cũ
+      queryClient.setQueryData(["posts"], context.previousPosts);
+      if (context.previousSinglePost) {
+        queryClient.setQueryData(["post", postId], context.previousSinglePost);
+      }
+      toast.error("Không thể lưu bài viết. Vui lòng thử lại!");
+    },
+    onSettled: (_, __, postId) => refreshPosts(postId),
+  });
+  return {
+    createPost,
+    reportPost,
+    addComment,
+    toggleReaction,
+    updatePost,
+    deletePost,
+    toggleSavePost,
+  };
 };
