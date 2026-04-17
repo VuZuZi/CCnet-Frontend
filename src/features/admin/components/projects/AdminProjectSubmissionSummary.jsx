@@ -12,7 +12,7 @@ export default function AdminProjectSubmissionSummary({
         </div>
         <div>
           <h3 className="text-lg font-bold text-slate-900">
-            Submission Summary
+            Tóm tắt hồ sơ dự án
           </h3>
           <p className="text-sm text-slate-500">Tóm tắt nhanh cho Admin</p>
         </div>
@@ -38,17 +38,17 @@ export default function AdminProjectSubmissionSummary({
           </p>
           {revisionCount > 0 ? (
             <p className="mt-1 text-xs font-medium text-orange-500">
-              Cẩn thận: Đã bị Reject để sửa chữa trước đó.
+              Cẩn thận: Đã bị Từ chối để sửa chữa trước đó.
             </p>
           ) : null}
         </div>
 
         <div className="rounded-2xl bg-slate-50 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-            Organizer
+            Người tổ chức
           </p>
           <p className="mt-1 font-semibold text-slate-900">
-            {project.organizerId?.fullName || "N/A"}
+            {project.organizerId?.fullName || "Không có"}
           </p>
           <p className="text-xs text-slate-500">
             {project.organizerId?.email || ""}

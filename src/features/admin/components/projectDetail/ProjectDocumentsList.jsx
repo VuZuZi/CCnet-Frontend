@@ -8,7 +8,7 @@ export default function ProjectDocumentsList({ documents = [] }) {
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
       <h4 className="mb-4 text-base font-black text-slate-900">
-        Verification Documents
+        Tài liệu Xác minh
       </h4>
 
       {documents.length ? (
@@ -19,7 +19,7 @@ export default function ProjectDocumentsList({ documents = [] }) {
               doc?.originalName ||
               doc?.name ||
               doc?.publicId ||
-              `document-${idx + 1}`;
+              `tai-lieu-${idx + 1}`;
             const mimetype = doc?.mimetype || doc?.mimeType || "";
             const image = isImageLike(url, mimetype);
             const pdf = isPdfLike(url, mimetype, name);
@@ -52,7 +52,7 @@ export default function ProjectDocumentsList({ documents = [] }) {
                     {name}
                   </p>
                   <p className="truncate text-xs text-slate-500">
-                    {mimetype || (pdf ? "application/pdf" : "file")}
+                    {mimetype || (pdf ? "application/pdf" : "tệp")}
                   </p>
                 </div>
 
@@ -66,7 +66,7 @@ export default function ProjectDocumentsList({ documents = [] }) {
         </div>
       ) : (
         <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 p-8 text-center text-sm font-bold text-slate-500">
-          No documents
+          Không có tài liệu
         </div>
       )}
     </div>

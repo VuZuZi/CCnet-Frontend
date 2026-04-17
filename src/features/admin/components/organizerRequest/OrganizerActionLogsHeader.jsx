@@ -22,27 +22,27 @@ export default function OrganizerActionLogsHeader({ stats, onBack }) {
             className="mb-4 inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
           >
             <ArrowLeft size={16} />
-            Back to Organizer Requests
+            Quay lại Yêu cầu Tổ chức
           </button>
 
           <h1 className="text-[34px] font-black leading-none tracking-tight text-slate-900">
-            Organizer Action Logs
+            Lịch sử Quản duyệt Tổ chức
           </h1>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:min-w-[420px]">
           <StatCard
-            label="Total"
+            label="Tổng cộng"
             value={stats.total}
             className="border-slate-200 bg-slate-50 text-slate-700"
           />
           <StatCard
-            label="Approved"
+            label="Đã Duyệt"
             value={stats.approved}
             className="border-emerald-200 bg-emerald-50 text-emerald-700"
           />
           <StatCard
-            label="Declined"
+            label="Đã Từ chối"
             value={stats.declined}
             className="border-rose-200 bg-rose-50 text-rose-700"
           />

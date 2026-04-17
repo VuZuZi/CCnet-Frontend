@@ -15,30 +15,30 @@ import {
 const reasonSchema = z.object({
   reviewReason: z
     .string()
-    .min(5, "Please enter a reason of at least 5 characters")
-    .max(1000, "Reason cannot exceed 1000 characters"),
+    .min(5, "Vui lòng nhập lý do có ít nhất 5 ký tự")
+    .max(1000, "Lý do không được vượt quá 1000 ký tự"),
 });
 
 const NON_PENDING_STATES = {
   AWAITING_MICRO_DEPOSIT: {
-    title: "Awaiting transaction verification",
-    desc: "User is currently in the process of bank transaction reconciliation (Micro-deposit). Cannot approve at this time.",
+    title: "Đang chờ xác minh giao dịch",
+    desc: "Người dùng hiện đang trong quá trình đối soát giao dịch ngân hàng (Micro-deposit). Chưa thể phê duyệt lúc này.",
     icon: <Clock size={20} className="text-sky-600" />,
     wrapperClass: "border-sky-200 bg-sky-50",
     titleClass: "text-sky-900",
     descClass: "text-sky-700",
   },
   SYSTEM_CHECKING: {
-    title: "System is running automatic checks",
-    desc: "The system is running automated checks (AML, Fraud, Cross-link Bank). Please wait until completed.",
+    title: "Hệ thống đang chạy kiểm tra tự động",
+    desc: "Hệ thống đang chạy kiểm tra tự động (AML, Gian lận, Liên kết ngân hàng). Vui lòng đợi đến khi hoàn tất.",
     icon: <Info size={20} className="text-indigo-600" />,
     wrapperClass: "border-indigo-200 bg-indigo-50",
     titleClass: "text-indigo-900",
     descClass: "text-indigo-700",
   },
   DECLINED: {
-    title: "Request declined",
-    desc: "The user has received a notification to edit and resubmit their documents.",
+    title: "Yêu cầu đã bị từ chối",
+    desc: "Người dùng đã nhận được thông báo để chỉnh sửa và nộp lại tài liệu của họ.",
     icon: <Ban size={20} className="text-slate-500" />,
     wrapperClass: "border-slate-200 bg-slate-50",
     titleClass: "text-slate-800",
@@ -111,13 +111,13 @@ function ActionModal({
           </div>
 
           <h3 className="text-xl font-bold text-slate-900">
-            {isApprove ? "Approve Organizer" : "Decline request"}
+            {isApprove ? "Phê duyệt Tổ chức" : "Từ chối yêu cầu"}
           </h3>
         </div>
 
         <form onSubmit={handleSubmit(submit)}>
           <label className="mb-2 block text-sm font-semibold text-slate-700">
-            {isApprove ? "Reason for approval" : "Reason for decline"}
+            {isApprove ? "Lý do phê duyệt" : "Lý do từ chối"}
           </label>
 
           <textarea
@@ -140,7 +140,7 @@ function ActionModal({
               disabled={isProcessing}
               className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
             >
-              Cancel
+              Hủy
             </button>
 
             <button
@@ -153,10 +153,10 @@ function ActionModal({
               }`}
             >
               {isProcessing
-                ? "Processing..."
+                ? "Đang xử lý..."
                 : isApprove
-                ? "Confirm approval"
-                : "Confirm decline"}
+                ? "Xác nhận phê duyệt"
+                : "Xác nhận từ chối"}
             </button>
           </div>
         </form>
@@ -203,12 +203,11 @@ export function OrganizerReviewActions({
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <h3 className="text-lg font-bold text-slate-900">
-        Approval Decision
+        Quyết định phê duyệt
       </h3>
 
       <p className="mb-6 mt-1 text-sm text-slate-500">
-        Ensure you have thoroughly checked the identification documents and
-        organization information before making a decision.
+        Đảm bảo bạn đã kiểm tra kỹ các giấy tờ tùy thân và thông tin tổ chức trước khi đưa ra quyết định.
       </p>
 
       <div className="flex justify-end gap-4">
@@ -216,14 +215,14 @@ export function OrganizerReviewActions({
           onClick={() => setDeclineModalOpen(true)}
           className="rounded-xl bg-rose-100 px-6 py-3 font-bold text-rose-700 hover:bg-rose-200"
         >
-          Decline
+          Từ chối
         </button>
 
         <button
           onClick={() => setApproveModalOpen(true)}
           className="rounded-xl bg-amber-500 px-6 py-3 font-bold text-white hover:bg-amber-600"
         >
-          Approve
+          Phê duyệt
         </button>
       </div>
 

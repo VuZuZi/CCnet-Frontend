@@ -21,7 +21,7 @@ export function OrganizerRequestBankSection({
   return (
     <OrganizerSectionCard
       icon={<Landmark size={18} />}
-      title="Bank Account Information"
+      title="Thông tin tài khoản ngân hàng"
       iconClassName="bg-amber-100 text-amber-700"
     >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
@@ -42,20 +42,20 @@ export function OrganizerRequestBankSection({
         </div>
 
         <div>
-          <label className={labelClass}>Account Number</label>
+          <label className={labelClass}>Số tài khoản</label>
           <input
             {...register("bankAccountNumber")}
-            placeholder="Enter account number"
+            placeholder="Nhập số tài khoản"
             className={inputClass}
           />
           <FormErrorText>{errors.bankAccountNumber?.message}</FormErrorText>
         </div>
 
         <div>
-          <label className={labelClass}>Account Holder Name</label>
+          <label className={labelClass}>Tên chủ tài khoản</label>
           <input
             {...register("bankAccountName")}
-            placeholder="Name on account"
+            placeholder="Tên chủ tài khoản"
             className={inputClass}
           />
           <FormErrorText>{errors.bankAccountName?.message}</FormErrorText>
@@ -63,7 +63,7 @@ export function OrganizerRequestBankSection({
 
         <div className="md:col-span-2">
           <OrganizerDocumentField
-            label="Bank Proof"
+            label="Minh chứng tài khoản"
             description="Ảnh hoặc PDF sao kê / xác nhận tài khoản"
             accept="image/*,.pdf"
             value={bankProof}

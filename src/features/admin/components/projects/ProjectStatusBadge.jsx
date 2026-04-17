@@ -4,7 +4,7 @@ export function ProjectStatusBadge({ status, className = '' }) {
     const defaultStyle = "bg-slate-100 text-slate-700 border-slate-200";
     const style = PROJECT_STATUS_STYLES[status] || defaultStyle;
 
-    const displayText = status?.replace(/_/g, ' ') || 'UNKNOWN';
+    const displayText = status?.replace(/_/g, ' ') || 'KHÔNG XÁC ĐỊNH';
 
     return (
         <span

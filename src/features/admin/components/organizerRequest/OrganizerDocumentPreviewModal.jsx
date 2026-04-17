@@ -40,7 +40,7 @@ export function OrganizerDocumentPreviewModal({
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
       <button
         type="button"
-        aria-label="Close preview"
+        aria-label="Đóng xem trước"
         onClick={onClose}
         className="absolute inset-0 bg-slate-950/70"
       />
@@ -64,7 +64,7 @@ export function OrganizerDocumentPreviewModal({
               className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2 text-sm font-bold text-slate-900 transition hover:bg-amber-300"
             >
               <Download size={16} />
-              Download
+              Tải xuống
             </button>
 
             <button
@@ -96,10 +96,10 @@ export function OrganizerDocumentPreviewModal({
             <div className="flex min-h-[420px] flex-col items-center justify-center rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center">
               <FileText size={40} className="text-slate-400" />
               <p className="mt-4 text-base font-semibold text-slate-800">
-                Preview is not supported for this file type
+                Chế độ xem trước không hỗ trợ loại tệp này
               </p>
               <p className="mt-2 text-sm text-slate-500">
-                Please download the file to open it.
+                Vui lòng tải tệp xuống để mở.
               </p>
               <button
                 type="button"
@@ -107,7 +107,7 @@ export function OrganizerDocumentPreviewModal({
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-amber-400 px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-amber-300"
               >
                 <Download size={16} />
-                Download file
+                Tải tệp xuống
               </button>
             </div>
           )}

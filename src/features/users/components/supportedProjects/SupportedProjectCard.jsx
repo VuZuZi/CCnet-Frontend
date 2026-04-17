@@ -58,8 +58,8 @@ export function SupportedProjectCard({ item }) {
               </h3>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
                 {project.organizer?.fullName
-                  ? `Organizer: ${project.organizer.fullName}`
-                  : "Chưa có thông tin organizer."}
+                  ? `Người tổ chức: ${project.organizer.fullName}`
+                  : "Chưa có thông tin người tổ chức."}
               </p>
             </div>
 

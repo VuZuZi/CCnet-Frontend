@@ -30,14 +30,14 @@ export function UserDirectoryTable({
       <div className="border-b border-slate-100 px-5 py-4">
         <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-xl font-black text-slate-900">User Directory</h2>
+            <h2 className="text-xl font-black text-slate-900">Danh mục người dùng</h2>
             <p className="mt-1 text-sm text-slate-500">
-              Page {page} / {totalPages}
+              Trang {page} / {totalPages}
             </p>
           </div>
 
           <div className="text-sm text-slate-500">
-            Showing {users.length} user(s) on this page
+            Đang hiển thị {users.length} người dùng trên trang này
           </div>
         </div>
       </div>
@@ -46,11 +46,11 @@ export function UserDirectoryTable({
         <table className="w-full table-fixed text-sm">
           <thead className="bg-slate-50">
             <tr className="text-left text-slate-500">
-              <th className="w-[42%] px-5 py-3 font-bold text-slate-600">User</th>
-              <th className="w-[20%] px-5 py-3 font-bold text-slate-600">Role</th>
-              <th className="w-[18%] px-5 py-3 font-bold text-slate-600">Status</th>
+              <th className="w-[42%] px-5 py-3 font-bold text-slate-600">Người dùng</th>
+              <th className="w-[20%] px-5 py-3 font-bold text-slate-600">Vai trò</th>
+              <th className="w-[18%] px-5 py-3 font-bold text-slate-600">Trạng thái</th>
               <th className="w-[20%] px-5 py-3 text-right font-bold text-slate-600">
-                Actions
+                Thao tác
               </th>
             </tr>
           </thead>
@@ -61,14 +61,14 @@ export function UserDirectoryTable({
                 <td colSpan="4" className="px-5 py-14 text-center">
                   <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-500">
                     <Loader2 size={18} className="animate-spin text-amber-500" />
-                    Loading users...
+                    Đang tải danh sách người dùng...
                   </div>
                 </td>
               </tr>
             ) : users.length === 0 ? (
               <tr>
                 <td colSpan="4" className="px-5 py-20 text-center text-slate-400">
-                  No users found.
+                  Không tìm thấy người dùng nào.
                 </td>
               </tr>
             ) : (
@@ -89,7 +89,7 @@ export function UserDirectoryTable({
                           {user.avatar ? (
                             <img
                               src={user.avatar}
-                              alt="avatar"
+                              alt="Ảnh đại diện"
                               className="h-12 w-12 rounded-full object-cover ring-1 ring-slate-200"
                             />
                           ) : (
@@ -100,7 +100,7 @@ export function UserDirectoryTable({
 
                           <div className="min-w-0">
                             <p className="truncate text-[16px] font-semibold tracking-[-0.01em] text-slate-900">
-                              {user.fullName || "Unnamed user"}
+                              {user.fullName || "Người dùng chưa đặt tên"}
                             </p>
 
                             <div className="mt-1 flex items-center gap-2 text-[13px] text-slate-500">
@@ -118,8 +118,8 @@ export function UserDirectoryTable({
                           type="button"
                           onClick={() => onOpenDetail(user)}
                           className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition-all duration-200 hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
-                          aria-label={`View detail for ${user.fullName || "user"}`}
-                          title="View detail"
+                          aria-label={`Xem chi tiết của ${user.fullName || "người dùng"}`}
+                          title="Xem chi tiết"
                         >
                           <Eye size={16} strokeWidth={2.1} />
                         </button>
@@ -150,7 +150,7 @@ export function UserDirectoryTable({
                           type="button"
                           onClick={() => onOpenBanModal(user)}
                           disabled={isBusy}
-                          className={`inline-flex min-w-[92px] items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                          className={`inline-flex min-w-[105px] items-center justify-center gap-2 rounded-full px-4 py-2.5 text-xs font-semibold text-white shadow-sm transition disabled:cursor-not-allowed disabled:opacity-60 ${
                             isBanned
                               ? "bg-emerald-500 hover:bg-emerald-600"
                               : "bg-red-500 hover:bg-red-600"
@@ -163,7 +163,7 @@ export function UserDirectoryTable({
                           ) : (
                             <Ban size={13} strokeWidth={2.2} />
                           )}
-                          {isBanPending ? "..." : isBanned ? "Unban" : "Ban"}
+                          {isBanPending ? "..." : isBanned ? "Mở khóa" : "Khóa"}
                         </button>
                       </div>
                     </td>

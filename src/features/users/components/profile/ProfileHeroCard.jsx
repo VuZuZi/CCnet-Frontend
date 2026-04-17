@@ -56,7 +56,7 @@ export function ProfileHeroCard({
 
     if (file.size > limit) {
       toast.error(
-        `${isAvatar ? "Avatar" : "Cover image"} must be less than ${limitMB}MB`,
+        `${isAvatar ? "Ảnh đại diện" : "Ảnh bìa"} phải nhỏ hơn ${limitMB}MB`,
       );
       e.target.value = null;
       return;
@@ -126,7 +126,7 @@ export function ProfileHeroCard({
                 className="!bg-white/90 hover:!bg-white backdrop-blur-sm shadow-sm text-sm !py-1.5 flex items-center gap-2"
                 onClick={() => coverInputRef.current?.click()}
               >
-                <Camera className="w-4 h-4" /> Change Cover
+                <Camera className="w-4 h-4" /> Đổi Ảnh bìa
               </Button>
             </div>
           )}
@@ -137,7 +137,7 @@ export function ProfileHeroCard({
             <div className="relative group -mt-12 sm:-mt-16 z-10 shrink-0">
               <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white shadow-sm bg-white relative overflow-hidden">
                 <img
-                  alt={user?.fullName || "User"}
+                  alt={user?.fullName || "Người dùng"}
                   className="w-full h-full object-cover"
                   src={displayAvatar}
                 />
@@ -150,7 +150,7 @@ export function ProfileHeroCard({
                   <div
                     className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity"
                     onClick={() => avatarInputRef.current?.click()}
-                    title="Change Avatar"
+                    title="Đổi Ảnh đại diện"
                   >
                     <Camera className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                   </div>
@@ -169,7 +169,7 @@ export function ProfileHeroCard({
                     className="!rounded-full !py-1.5 sm:!py-2 !px-4 sm:!px-5 text-sm font-semibold transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 flex items-center gap-2"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    Message
+                    Nhắn tin
                   </Button>
                   <Button
                     variant={isFollowing ? "secondary" : "yellow"}
@@ -177,7 +177,7 @@ export function ProfileHeroCard({
                     onClick={onToggleFollow}
                     className="!rounded-full !py-1.5 sm:!py-2 !px-4 sm:!px-6 text-sm font-semibold shadow-sm"
                   >
-                    {isFollowing ? "Following" : "Follow"}
+                    {isFollowing ? "Đang theo dõi" : "Theo dõi"}
                   </Button>
                   <Button
                     variant="danger"
@@ -185,7 +185,7 @@ export function ProfileHeroCard({
                     onClick={onReport}
                     className="!rounded-full !py-1.5 sm:!py-2 !px-4 sm:!px-5 text-sm font-semibold"
                   >
-                    Report
+                    Báo cáo
                   </Button>
                 </>
               ) : (
@@ -194,7 +194,7 @@ export function ProfileHeroCard({
                   className="!rounded-full !py-1.5 sm:!py-2 !px-4 sm:!px-5 text-sm font-semibold transition-colors border border-gray-300 bg-white hover:bg-gray-50 text-gray-900 flex items-center gap-2"
                   onClick={() => setIsEditModalOpen(true)}
                 >
-                  Edit Profile
+                  Chỉnh sửa hồ sơ
                 </Button>
               )}
             </div>
@@ -202,17 +202,17 @@ export function ProfileHeroCard({
 
           <div className="mb-3">
             <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-              {user?.fullName || "Unknown User"}
+              {user?.fullName || "Người dùng ẩn danh"}
             </h1>
             <p className="text-gray-500 flex items-center gap-1.5 mt-1 text-sm font-medium">
               <MapPin className="w-4 h-4 text-gray-400" />
-              {user?.location || "Location not set"}
+              {user?.location || "Chưa cập nhật vị trí"}
             </p>
           </div>
 
           <div className="mb-4">
             <p className="text-gray-800 leading-relaxed text-sm sm:text-base max-w-2xl whitespace-pre-wrap">
-              {user?.headline || "No headline provided."}
+              {user?.headline || "Chưa cung cấp tiêu đề."}
             </p>
           </div>
 
@@ -225,7 +225,7 @@ export function ProfileHeroCard({
               <span className="font-bold text-gray-900 mr-1.5">
                 {user?.followingCount || 0}
               </span>
-              <span className="text-gray-500">Following</span>
+              <span className="text-gray-500">Đang theo dõi</span>
             </Link>
 
             <Link
@@ -236,7 +236,7 @@ export function ProfileHeroCard({
               <span className="font-bold text-gray-900 mr-1.5">
                 {user?.followersCount || 0}
               </span>
-              <span className="text-gray-500">Followers</span>
+              <span className="text-gray-500">Người theo dõi</span>
             </Link>
           </div>
         </div>

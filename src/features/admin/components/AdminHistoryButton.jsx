@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 export function AdminHistoryButton({
   onClick,
   to,
-  children = "View History",
+  children = "Xem lịch sử",
   className = "",
   type = "button",
   disabled = false,

@@ -81,15 +81,15 @@ const UserManagement = () => {
         open={confirmState.open}
         title={
           modalUser?.normalizedStatus === "banned"
-            ? "Unban this user?"
-            : "Ban this user?"
+            ? "Bỏ cấm người dùng này?"
+            : "Cấm người dùng này?"
         }
         description={
           modalUser?.normalizedStatus === "banned"
-            ? "This will restore this user's platform access."
-            : "This will restrict this user's access on the platform."
+            ? "Hành động này sẽ khôi phục quyền truy cập nền tảng của người dùng này."
+            : "Hành động này sẽ hạn chế quyền truy cập nền tảng của người dùng này."
         }
-        confirmText={modalUser?.normalizedStatus === "banned" ? "Unban" : "Ban"}
+        confirmText={modalUser?.normalizedStatus === "banned" ? "Bỏ cấm" : "Cấm"}
         confirmClassName={
           modalUser?.normalizedStatus === "banned"
             ? "bg-emerald-600 hover:bg-emerald-700"

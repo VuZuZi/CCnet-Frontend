@@ -11,8 +11,8 @@ function UserBanModal({
   requireReason = false,
   reason = "",
   onReasonChange,
-  reasonLabel = "Reason",
-  reasonPlaceholder = "Enter reason...",
+  reasonLabel = "Lý do",
+  reasonPlaceholder = "Nhập lý do...",
   onClose,
   onConfirm,
 }) {
@@ -45,7 +45,7 @@ function UserBanModal({
         type="button"
         className="absolute inset-0"
         onClick={() => !loading && onClose?.()}
-        aria-label="Close modal"
+        aria-label="Đóng hộp thoại"
       />
 
       <div
@@ -93,7 +93,7 @@ function UserBanModal({
 
           {isReasonInvalid ? (
             <p className="text-xs font-semibold text-red-600">
-              Reason is required for this action.
+              Cần có lý do để thực hiện hành động này.
             </p>
           ) : null}
         </div>
@@ -104,7 +104,7 @@ function UserBanModal({
             onClick={() => !loading && onClose?.()}
             className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
           >
-            Cancel
+            Hủy
           </button>
 
           <button
@@ -114,7 +114,7 @@ function UserBanModal({
             className={`inline-flex min-w-[120px] items-center justify-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-bold text-white transition disabled:opacity-60 ${confirmClassName}`}
           >
             {loading ? <Loader2 size={15} className="animate-spin" /> : null}
-            {loading ? "Processing..." : confirmText}
+            {loading ? "Đang xử lý..." : confirmText}
           </button>
         </div>
       </div>

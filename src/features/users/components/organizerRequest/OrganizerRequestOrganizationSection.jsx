@@ -12,22 +12,22 @@ export function OrganizerRequestOrganizationSection({ register, errors }) {
   return (
     <OrganizerSectionCard
       icon={<Building2 size={18} />}
-      title="Organization Information"
+      title="Thông tin tổ chức"
       iconClassName="bg-violet-100 text-violet-600"
     >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div className="md:col-span-2">
-          <label className={labelClass}>Organization Name</label>
+          <label className={labelClass}>Tên tổ chức</label>
           <input
             {...register("organizationName")}
-            placeholder="Name of your organization or campaign"
+            placeholder="Tên tổ chức hoặc chiến dịch của bạn"
             className={inputClass}
           />
           <FormErrorText>{errors.organizationName?.message}</FormErrorText>
         </div>
 
         <div className="relative">
-          <label className={labelClass}>Organization Type</label>
+          <label className={labelClass}>Loại hình tổ chức</label>
           <select {...register("organizationType")} className={selectClass}>
             {ORGANIZATION_TYPES.map((item) => (
               <option key={item.value} value={item.value}>
@@ -43,7 +43,7 @@ export function OrganizerRequestOrganizationSection({ register, errors }) {
         </div>
 
         <div>
-          <label className={labelClass}>Organization Website (optional)</label>
+          <label className={labelClass}>Trang web tổ chức (tùy chọn)</label>
           <input
             {...register("organizationWebsite")}
             placeholder="https://"

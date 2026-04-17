@@ -40,7 +40,7 @@ export function UserFilters({
           <input
             value={searchInput}
             onChange={(event) => onSearchChange(event.target.value)}
-            placeholder="Search by name, email, role, id..."
+            placeholder="Tìm kiếm theo tên, email, vai trò, ID..."
             className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
           />
         </div>

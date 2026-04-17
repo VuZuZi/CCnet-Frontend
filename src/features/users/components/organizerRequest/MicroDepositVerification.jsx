@@ -14,7 +14,7 @@ export function MicroDepositVerification({ request }) {
         mutationFn: (amountNum) => organizerRequestAPI.verifyDeposit(request._id, { amount: amountNum }),
         onSuccess: async () => {
             await queryClient.invalidateQueries({ queryKey: queryKeys.organizerRequests.me() });
-            toast.success("Bank verification successful!");
+            toast.success("Xác thực ngân hàng thành công!");
         },
         onError: (error) => toast.error(getErrorMessage(error)),
     });
@@ -23,7 +23,7 @@ export function MicroDepositVerification({ request }) {
         e.preventDefault();
         const num = Number(amount);
         if (!num || num < 1000 || num > 5000) {
-            toast.error("Please enter an amount between 1,000 VND and 5,000 VND");
+            toast.error("Vui lòng nhập số tiền từ 1.000 VNĐ đến 5.000 VNĐ");
             return;
         }
         verifyMutation.mutate(num);
@@ -38,20 +38,20 @@ export function MicroDepositVerification({ request }) {
                     <Building size={28} />
                 </div>
 
-                <h2 className="text-center text-2xl font-bold text-slate-900">Bank Verification</h2>
+                <h2 className="text-center text-2xl font-bold text-slate-900">Xác thực ngân hàng</h2>
                 <p className="mt-3 text-center text-sm leading-relaxed text-slate-600">
-                    We have transferred a small amount (from 1,000 VND - 5,000 VND) to your <strong className="text-slate-800">{request?.bankName}</strong> account <strong className="text-slate-800">{maskedAccount}</strong>.
+                    Chúng tôi đã chuyển một khoản tiền nhỏ (từ 1.000 VNĐ - 5.000 VNĐ) vào tài khoản <strong className="text-slate-800">{request?.bankName}</strong> số <strong className="text-slate-800">{maskedAccount}</strong> của bạn.
                 </p>
 
                 <form onSubmit={handleSubmit} className="mt-8">
                     <label className="block text-center text-sm font-medium text-slate-700 mb-2">
-                        Enter the amount you received (VND)
+                        Nhập số tiền bạn nhận được (VNĐ)
                     </label>
                     <input
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        placeholder="Example: 1250"
+                        placeholder="Ví dụ: 1250"
                         className="w-full text-center text-2xl tracking-wider rounded-2xl border-2 border-amber-200 bg-white px-4 py-4 font-bold text-slate-900 outline-none transition focus:border-amber-400"
                         disabled={verifyMutation.isPending}
                         autoFocus
@@ -61,7 +61,7 @@ export function MicroDepositVerification({ request }) {
                         disabled={verifyMutation.isPending || !amount}
                         className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-6 py-4 text-sm font-bold text-slate-900 transition hover:bg-amber-300 disabled:opacity-50"
                     >
-                        {verifyMutation.isPending ? "Verifying..." : "Confirm Amount"}
+                        {verifyMutation.isPending ? "Đang xác thực..." : "Xác nhận số tiền"}
                         <ArrowRight size={18} />
                     </button>
                 </form>

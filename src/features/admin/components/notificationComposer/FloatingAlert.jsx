@@ -24,7 +24,7 @@ export default function FloatingAlert({
         <button
           type="button"
           onClick={onClose}
-          aria-label="Close alert"
+          aria-label="Đóng cảnh báo"
           className="mt-0.5 rounded-full p-1 opacity-70 transition hover:bg-black/5 hover:opacity-100"
         >
           <X size={16} />

@@ -23,11 +23,10 @@ export default function ProjectStatusBanner({ project }) {
 
       <div>
         <p className={`text-sm font-bold ${currentStatusStyle.text}`}>
-          Current status: {currentStatusLabel}
+          Trạng thái hiện tại: {currentStatusLabel}
         </p>
         <p className="mt-1 text-xs text-slate-500">
-          Administrative actions that require reasons are handled on the main
-          page to preserve complete logs.
+          Các hành động quản trị yêu cầu cung cấp lý do sẽ được thực hiện ở trang chính để lưu trữ lịch sử đầy đủ.
         </p>
       </div>
     </div>

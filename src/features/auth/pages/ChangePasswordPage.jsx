@@ -21,15 +21,15 @@ export function ChangePasswordPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!currentPassword) return setError('Please enter your current password.');
-    if (newPassword.length < 6) return setError('New password must be at least 6 characters.');
-    if (newPassword !== confirmPassword) return setError('Passwords do not match.');
+    if (!currentPassword) return setError('Vui lòng nhập mật khẩu hiện tại.');
+    if (newPassword.length < 6) return setError('Mật khẩu mới phải có ít nhất 6 ký tự.');
+    if (newPassword !== confirmPassword) return setError('Mật khẩu không khớp.');
 
     try {
       await changeMutation.mutateAsync({ currentPassword, newPassword });
       setSuccess(true);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to change password. Please try again.');
+      setError(err?.response?.data?.message || 'Đổi mật khẩu thất bại. Vui lòng thử lại.');
     }
   };
 
@@ -40,13 +40,13 @@ export function ChangePasswordPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
             <CheckCircle2 size={32} className="text-emerald-500" />
           </div>
-          <h1 className="text-2xl font-black text-slate-900">Password Changed!</h1>
-          <p className="mt-2 text-sm text-slate-500">Your password has been updated successfully.</p>
+          <h1 className="text-2xl font-black text-slate-900">Đã Đổi Mật Khẩu!</h1>
+          <p className="mt-2 text-sm text-slate-500">Mật khẩu của bạn đã được cập nhật thành công.</p>
           <Link
             to="/profile"
             className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-amber-400 px-6 py-3 font-bold text-slate-900 transition-colors hover:bg-amber-500"
           >
-            Back to Profile
+            Quay lại Hồ sơ
           </Link>
         </div>
       </div>
@@ -62,26 +62,26 @@ export function ChangePasswordPage() {
             className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
           >
             <ArrowLeft size={16} />
-            Back to Profile
+            Quay lại Hồ sơ
           </Link>
 
           <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50">
             <Lock size={22} className="text-amber-500" />
           </div>
-          <h1 className="mt-3 text-2xl font-black text-slate-900">Change Password</h1>
+          <h1 className="mt-3 text-2xl font-black text-slate-900">Đổi Mật Khẩu</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Update your account password. You'll need your current password to proceed.
+            Cập nhật mật khẩu tài khoản của bạn. Bạn sẽ cần mật khẩu hiện tại để tiếp tục.
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">Current Password</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Mật khẩu hiện tại</label>
               <div className="relative">
                 <input
                   type={showCurrent ? 'text' : 'password'}
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="Your current password"
+                  placeholder="Mật khẩu hiện tại của bạn"
                   className={`${inputClass} pr-11`}
                   autoFocus
                 />
@@ -96,13 +96,13 @@ export function ChangePasswordPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">New Password</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Mật khẩu mới</label>
               <div className="relative">
                 <input
                   type={showNew ? 'text' : 'password'}
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="At least 6 characters"
+                  placeholder="Ít nhất 6 ký tự"
                   className={`${inputClass} pr-11`}
                 />
                 <button
@@ -116,12 +116,12 @@ export function ChangePasswordPage() {
             </div>
 
             <div>
-              <label className="mb-1.5 block text-sm font-medium text-slate-700">Confirm New Password</label>
+              <label className="mb-1.5 block text-sm font-medium text-slate-700">Xác nhận Mật khẩu mới</label>
               <input
                 type={showNew ? 'text' : 'password'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Repeat your new password"
+                placeholder="Nhập lại mật khẩu mới"
                 className={inputClass}
               />
             </div>
@@ -135,13 +135,13 @@ export function ChangePasswordPage() {
               className="w-full rounded-2xl font-bold"
               isLoading={changeMutation.isPending}
             >
-              Change Password
+              Đổi Mật Khẩu
             </Button>
 
             <p className="text-center text-xs text-slate-400">
-              Forgot your current password?{' '}
+              Quên mật khẩu hiện tại?{' '}
               <Link to="/forgot-password" className="font-medium text-amber-600 hover:underline">
-                Reset it here
+                Đặt lại tại đây
               </Link>
             </p>
           </form>

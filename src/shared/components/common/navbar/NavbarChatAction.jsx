@@ -133,7 +133,7 @@ export function NavbarChatAction({ hideWidget = false }) {
           type="button"
           onClick={handleToggle}
           className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-          aria-label="Open chat widget"
+          aria-label="Mở cửa sổ trò chuyện"
         >
           <MessageCircle size={24} />
           {unreadConversationCount > 0 ? (
@@ -150,7 +150,7 @@ export function NavbarChatAction({ hideWidget = false }) {
               {isOpen ? (
                 <button
                   type="button"
-                  aria-label="Close chat widget"
+                  aria-label="Đóng cửa sổ trò chuyện"
                   onClick={() => setIsOpen(false)}
                   className="fixed inset-0 z-40 cursor-default bg-transparent"
                 />

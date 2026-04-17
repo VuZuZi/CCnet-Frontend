@@ -31,10 +31,10 @@ export function OrganizerRequestForm({
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
-          Become an Organizer
+          Trở thành Người tổ chức
         </h1>
         <p className="mt-3 text-sm text-slate-500 md:text-base">
-          Submit verification documents to create and manage charity projects.
+          Gửi tài liệu xác minh để tạo và quản lý các dự án từ thiện.
         </p>
       </div>
 
@@ -75,7 +75,7 @@ export function OrganizerRequestForm({
           onClick={() => window.history.back()}
           className="w-full rounded-2xl border border-slate-200 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
         >
-          Cancel
+          Hủy
         </button>
 
         <button
@@ -85,16 +85,15 @@ export function OrganizerRequestForm({
         >
           <ArrowRight size={16} />
           {isSubmitting
-            ? "Submitting..."
+            ? "Đang gửi..."
             : isResubmitting
-            ? "Resubmit Application"
-            : "Submit Application"}
+            ? "Gửi lại đơn đăng ký"
+            : "Gửi đơn đăng ký"}
         </button>
       </div>
 
       <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-700">
-        Your application will be reviewed by CCNet managers. Approval may take
-        1–3 business days.
+        Đơn đăng ký của bạn sẽ được ban quản trị CCNet xét duyệt. Quá trình này có thể mất từ 1–3 ngày làm việc.
       </div>
     </form>
   );

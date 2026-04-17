@@ -84,7 +84,7 @@ function UserDetailModal({ open, user, onClose }) {
         type="button"
         className="absolute inset-0"
         onClick={onClose}
-        aria-label="Close modal"
+        aria-label="Đóng hộp thoại"
       />
 
       <div
@@ -96,7 +96,7 @@ function UserDetailModal({ open, user, onClose }) {
             {user.avatar ? (
               <img
                 src={user.avatar}
-                alt="avatar"
+                alt="Ảnh đại diện"
                 className="h-16 w-16 rounded-3xl object-cover ring-1 ring-slate-200 sm:h-20 sm:w-20"
               />
             ) : (
@@ -108,11 +108,11 @@ function UserDetailModal({ open, user, onClose }) {
             <div className="min-w-0">
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">
                 <CircleUserRound size={12} strokeWidth={2.3} />
-                User Detail
+                Chi tiết người dùng
               </div>
 
               <h3 className="truncate text-xl font-black tracking-tight text-slate-900 sm:text-2xl">
-                {user.fullName || "Unnamed user"}
+                {user.fullName || "Người dùng chưa đặt tên"}
               </h3>
 
               <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -153,14 +153,14 @@ function UserDetailModal({ open, user, onClose }) {
 
             <InfoItem
               icon={<Shield size={16} strokeWidth={2.3} />}
-              label="Role"
+              label="Vai trò"
               value={user.role || "user"}
               tone="violet"
             />
 
             <InfoItem
               icon={<UserRound size={16} strokeWidth={2.3} />}
-              label="User ID"
+              label="ID Người dùng"
               value={user._id}
               mono
               tone="amber"
@@ -168,28 +168,28 @@ function UserDetailModal({ open, user, onClose }) {
 
             <InfoItem
               icon={<CircleOff size={16} strokeWidth={2.3} />}
-              label="Account Status"
+              label="Trạng thái tài khoản"
               value={statusMeta.label}
               tone={statusMeta.label === "Banned" ? "red" : "green"}
             />
 
             <InfoItem
               icon={<CheckCircle2 size={16} strokeWidth={2.3} />}
-              label="isActive"
-              value={user.isActive === false ? "False" : "True"}
+              label="Hoạt động"
+              value={user.isActive === false ? "Không" : "Có"}
               tone={user.isActive === false ? "red" : "green"}
             />
 
             <InfoItem
               icon={<CalendarDays size={16} strokeWidth={2.3} />}
-              label="Created At"
+              label="Ngày tạo"
               value={formatDateTime(user.createdAt)}
               tone="slate"
             />
 
             <InfoItem
               icon={<CalendarDays size={16} strokeWidth={2.3} />}
-              label="Updated At"
+              label="Cập nhật lần cuối"
               value={formatDateTime(user.updatedAt)}
               tone="slate"
             />
@@ -197,7 +197,7 @@ function UserDetailModal({ open, user, onClose }) {
             {"phone" in user ? (
               <InfoItem
                 icon={<UserRound size={16} strokeWidth={2.3} />}
-                label="Phone"
+                label="Số điện thoại"
                 value={user.phone}
                 tone="slate"
               />
@@ -206,7 +206,7 @@ function UserDetailModal({ open, user, onClose }) {
             {"location" in user ? (
               <InfoItem
                 icon={<UserRound size={16} strokeWidth={2.3} />}
-                label="Location"
+                label="Vị trí"
                 value={user.location}
                 tone="slate"
               />
@@ -215,7 +215,7 @@ function UserDetailModal({ open, user, onClose }) {
             {"headline" in user ? (
               <InfoItem
                 icon={<UserRound size={16} strokeWidth={2.3} />}
-                label="Headline"
+                label="Chức danh"
                 value={user.headline}
                 tone="slate"
               />
@@ -225,7 +225,7 @@ function UserDetailModal({ open, user, onClose }) {
               <div className="md:col-span-2">
                 <InfoItem
                   icon={<UserRound size={16} strokeWidth={2.3} />}
-                  label="About"
+                  label="Giới thiệu"
                   value={user.about}
                   tone="slate"
                 />

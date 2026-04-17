@@ -5,28 +5,28 @@ import OrganizerDocumentPreviewModal from "./OrganizerDocumentPreviewModal";
 const DOCUMENT_ITEMS = [
   {
     key: "idCardFront",
-    title: "ID/Passport Front",
-    emptyText: "Not provided",
+    title: "Mặt trước CMND/CCCD",
+    emptyText: "Chưa cung cấp",
   },
   {
     key: "idCardBack",
-    title: "ID/Passport Back",
-    emptyText: "Not provided",
+    title: "Mặt sau CMND/CCCD",
+    emptyText: "Chưa cung cấp",
   },
   {
     key: "selfie",
-    title: "Portrait Photo (Selfie)",
-    emptyText: "Selfie not provided",
+    title: "Ảnh chân dung (Selfie)",
+    emptyText: "Chưa cung cấp ảnh",
   },
   {
     key: "businessLicense",
-    title: "Business License",
-    emptyText: "Not provided",
+    title: "Giấy phép Kinh doanh",
+    emptyText: "Chưa cung cấp",
   },
   {
     key: "bankProof",
-    title: "Bank Proof",
-    emptyText: "Not provided",
+    title: "Minh chứng Ngân hàng",
+    emptyText: "Chưa cung cấp",
   },
 ];
 

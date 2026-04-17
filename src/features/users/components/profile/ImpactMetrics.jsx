@@ -4,8 +4,8 @@ export function ImpactMetrics({ supportedCount = 0, isOwnProfile = false, onOpen
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4" data-purpose="metrics-grid">
       <div className="bg-[#fef3c7] p-6 rounded-2xl flex flex-col justify-center">
-        <span className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">High Trust</span>
-        <span className="text-3xl font-extrabold text-amber-900">850 pts</span>
+        <span className="text-xs font-bold text-amber-800 uppercase tracking-widest mb-1">Độ Tin Cậy Cao</span>
+        <span className="text-3xl font-extrabold text-amber-900">850 điểm</span>
       </div>
       <button
         type="button"
@@ -16,21 +16,21 @@ export function ImpactMetrics({ supportedCount = 0, isOwnProfile = false, onOpen
       >
         <span className="text-xs font-bold text-emerald-800 uppercase tracking-widest mb-1 flex items-center gap-2">
           <FolderKanban size={14} />
-          Total Supported
+          Tổng Hỗ Trợ
         </span>
         <span className="text-3xl font-extrabold text-emerald-900 flex items-end gap-2">
           {supportedCount}
-          <span className="pb-1 text-sm font-semibold text-emerald-700">projects</span>
+          <span className="pb-1 text-sm font-semibold text-emerald-700">dự án</span>
         </span>
         {isOwnProfile ? (
           <span className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 opacity-0 transition-opacity group-hover:opacity-100">
-            View supported projects
+            Xem các dự án đã hỗ trợ
             <ArrowRight size={12} />
           </span>
         ) : null}
       </button>
       <div className="bg-[#e0f2fe] p-6 rounded-2xl flex flex-col justify-center">
-        <span className="text-xs font-bold text-sky-800 uppercase tracking-widest mb-1">Time Donated</span>
+        <span className="text-xs font-bold text-sky-800 uppercase tracking-widest mb-1">Thời Gian Đóng Góp</span>
         <span className="text-3xl font-extrabold text-sky-900">45h</span>
       </div>
     </div>

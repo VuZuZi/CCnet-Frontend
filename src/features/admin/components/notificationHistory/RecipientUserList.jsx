@@ -16,7 +16,7 @@ function getRoleBadgeClass(role) {
 export default function RecipientUserList({
   title,
   users = [],
-  emptyText = "No users available.",
+  emptyText = "Không có người dùng nào.",
 }) {
   const handleCopy = async () => {
     try {
@@ -29,7 +29,7 @@ export default function RecipientUserList({
           .join("\n")
       );
     } catch {
-      console.error("Failed to copy recipient users.");
+      console.error("Sao chép người dùng nhận thất bại.");
     }
   };
 
@@ -41,7 +41,7 @@ export default function RecipientUserList({
             {title}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            {users.length} recipient(s)
+            {users.length} người nhận
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export default function RecipientUserList({
             className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
           >
             <Copy size={12} />
-            Copy Users
+            Sao chép người dùng
           </button>
         ) : null}
       </div>

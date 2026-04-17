@@ -54,7 +54,7 @@ export default function AdminProjectCardHeader({
 
               {documentsCount > 0 ? (
                 <span className="inline-flex rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700">
-                  Documents: {documentsCount}
+                  Tài liệu: {documentsCount}
                 </span>
               ) : null}
             </div>
@@ -64,7 +64,7 @@ export default function AdminProjectCardHeader({
                 {coverUrl ? (
                   <img
                     src={coverUrl}
-                    alt="Project cover"
+                    alt="Ảnh bìa dự án"
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -86,7 +86,7 @@ export default function AdminProjectCardHeader({
                 <div className="mt-3 flex flex-wrap items-center gap-2">
                   <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-sm font-medium text-slate-700">
                     <Users size={14} className="text-slate-400" />
-                    <span>{organizer?.fullName || "N/A"}</span>
+                    <span>{organizer?.fullName || "Không có"}</span>
                   </div>
 
                   {organizer?.email ? (
@@ -148,7 +148,7 @@ export default function AdminProjectCardHeader({
                 onClick={() => onOpenHistory(project)}
                 disabled={isUpdatingThisProject || isDeletingThisProject}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
-                title="View history"
+                title="Xem lịch sử"
               >
                 <History size={16} />
               </button>
@@ -172,8 +172,8 @@ export default function AdminProjectCardHeader({
                 } disabled:opacity-50`}
                 title={
                   canDelete
-                    ? "Delete project"
-                    : "Không thể xóa project ở trạng thái này"
+                    ? "Xóa dự án"
+                    : "Không thể xóa dự án ở trạng thái này"
                 }
               >
                 {isDeletingThisProject ? (

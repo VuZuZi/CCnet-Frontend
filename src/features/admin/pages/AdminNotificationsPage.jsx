@@ -47,17 +47,15 @@ export function AdminNotificationsPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <BellRing size={14} />
-                Admin Notifications
+                Thông báo Quản trị
               </div>
 
               <h1 className="mt-4 text-[28px] font-black leading-none tracking-tight text-slate-900 sm:text-[46px]">
-                Notifications
+                Thông báo
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Create and send in-app system notifications to all users, by
-                role, or to selected users with a clean and traceable admin
-                workflow.
+                Tạo và gửi thông báo hệ thống trong ứng dụng đến tất cả người dùng, theo vai trò hoặc đến những người dùng được chọn với quy trình quản trị minh bạch và có thể theo dõi.
               </p>
             </div>
 
@@ -65,26 +63,26 @@ export function AdminNotificationsPage() {
               <AdminHistoryButton
                 onClick={() => navigate("/admin/notifications/history")}
               >
-                View History
+                Xem Lịch sử
               </AdminHistoryButton>
 
               <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
                 <StatCard
                   icon={SendHorizontal}
-                  label="Send Mode"
-                  value="All users or custom"
+                  label="Chế độ Gửi"
+                  value="Tất cả hoặc tùy chỉnh"
                   tone="amber"
                 />
                 <StatCard
                   icon={ShieldCheck}
-                  label="Audience"
-                  value="Role groups supported"
+                  label="Đối tượng"
+                  value="Hỗ trợ nhóm vai trò"
                   tone="slate"
                 />
                 <StatCard
                   icon={History}
-                  label="Tracking"
-                  value="History available"
+                  label="Theo dõi"
+                  value="Có sẵn lịch sử"
                   tone="emerald"
                 />
               </div>

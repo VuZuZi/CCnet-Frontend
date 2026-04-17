@@ -22,15 +22,15 @@ export function AdminLayout() {
   const handleLogout = () => {
     if (
       window.confirm(
-        t("Are you sure you want to log out?") ||
-          "Are you sure you want to log out?"
+        t("Bạn có chắc chắn muốn đăng xuất không?") ||
+        "Bạn có chắc chắn muốn đăng xuất không?"
       )
     ) {
       logout();
     }
   };
 
-  const displayName = user?.fullName || "System Admin";
+  const displayName = user?.fullName || "Quản trị viên hệ thống";
   const initials = displayName
     .trim()
     .split(" ")
@@ -46,7 +46,7 @@ export function AdminLayout() {
       <Sidebar
         isOpen={isSidebarOpen}
         onLogout={handleLogout}
-        logoutLabel={t("Logout") || "Logout"}
+        logoutLabel={t("Đăng xuất") || "Đăng xuất"}
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -57,7 +57,7 @@ export function AdminLayout() {
                 type="button"
                 onClick={() => setSidebarOpen((prev) => !prev)}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-amber-300 hover:text-amber-700"
-                aria-label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+                aria-label={isSidebarOpen ? "Thu gọn thanh bên" : "Mở rộng thanh bên"}
               >
                 {isSidebarOpen ? (
                   <PanelLeftClose size={18} strokeWidth={2.3} />
@@ -75,7 +75,7 @@ export function AdminLayout() {
                   className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                 />
                 <input
-                  placeholder="Search modules, actions, logs..."
+                  placeholder="Tìm kiếm module, hành động, nhật ký..."
                   className="h-11 w-[300px] rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
                 />
               </div>
@@ -87,20 +87,20 @@ export function AdminLayout() {
                 type="button"
                 onClick={handleLogout}
                 className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-amber-300 hover:bg-amber-50"
-                title={t("Logout") || "Logout"}
+                title={t("Đăng xuất") || "Đăng xuất"}
               >
                 <div className="hidden text-right sm:block">
                   <p className="text-sm font-semibold text-slate-800">
                     {displayName}
                   </p>
-                  <p className="text-[11px] text-slate-400">Admin</p>
+                  <p className="text-[11px] text-slate-400">Quản trị viên</p>
                 </div>
 
                 <div className="relative shrink-0">
                   {user?.avatar ? (
                     <img
                       src={user.avatar}
-                      alt="Avatar"
+                      alt="Ảnh đại diện"
                       className="h-10 w-10 rounded-xl border border-white object-cover shadow-sm ring-1 ring-slate-100"
                     />
                   ) : (

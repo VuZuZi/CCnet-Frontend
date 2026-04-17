@@ -55,7 +55,7 @@ export default function AdminProjectCard({
     resolveProjectTimelineState(project, uiStatus);
 
   const descriptionText =
-    stripHtml(project?.description) || "No description available.";
+    stripHtml(project?.description) || "Không có mô tả.";
   const coverUrl = resolveProjectCoverUrl(project);
   const documentsCount = resolveProjectDocumentsCount(project);
   const organizer = resolveProjectOrganizer(project);

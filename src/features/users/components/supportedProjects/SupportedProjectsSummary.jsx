@@ -81,7 +81,7 @@ export function SupportedProjectsSummary({ summary }) {
       <SummaryCard
         label="Chờ duyệt"
         value={summary.pending}
-        hint="Đang chờ organizer phản hồi"
+        hint="Đang chờ người tổ chức phản hồi"
         icon={Clock3}
         tone="default"
       />

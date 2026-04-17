@@ -26,7 +26,7 @@ export default function NotificationComposerMainForm({
         <div className="space-y-5">
           <div>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <FieldLabel>Title</FieldLabel>
+              <FieldLabel>Tiêu đề</FieldLabel>
               <span className="text-xs font-medium text-slate-400">
                 {titleCount}/200
               </span>
@@ -38,14 +38,14 @@ export default function NotificationComposerMainForm({
               value={form.title}
               onChange={onChange}
               maxLength={200}
-              placeholder="System maintenance tonight"
+              placeholder="Bảo trì hệ thống tối nay"
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
             />
           </div>
 
           <div>
             <div className="mb-2 flex items-center justify-between gap-3">
-              <FieldLabel>Message</FieldLabel>
+              <FieldLabel>Nội dung</FieldLabel>
               <span className="text-xs font-medium text-slate-400">
                 {messageCount}/1000
               </span>
@@ -57,7 +57,7 @@ export default function NotificationComposerMainForm({
               onChange={onChange}
               rows={5}
               maxLength={1000}
-              placeholder="We will perform a scheduled update at 10:00 PM tonight."
+              placeholder="Chúng tôi sẽ thực hiện cập nhật theo lịch trình vào lúc 10:00 tối nay."
               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition-all duration-200 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
             />
           </div>
@@ -67,7 +67,7 @@ export default function NotificationComposerMainForm({
       {form.recipientMode === "custom" ? (
         <div className="space-y-6 rounded-[24px] border border-slate-200 bg-slate-50 p-5">
           <div className="space-y-3">
-            <FieldLabel>Role groups</FieldLabel>
+            <FieldLabel>Nhóm vai trò</FieldLabel>
 
             <div className="flex flex-wrap gap-3">
               {ROLE_OPTIONS.map((option) => {
@@ -94,8 +94,7 @@ export default function NotificationComposerMainForm({
             </div>
 
             <p className="text-xs text-slate-400">
-              Turn on one or more roles. For each enabled role, you can
-              optionally narrow the recipients to selected users only.
+              Bật một hoặc nhiều vai trò. Đối với mỗi vai trò được bật, bạn có thể tùy chọn thu hẹp người nhận chỉ cho những người dùng được chọn.
             </p>
           </div>
 
@@ -116,7 +115,7 @@ export default function NotificationComposerMainForm({
             </div>
           ) : (
             <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-400">
-              Select at least one role to configure recipients.
+              Chọn ít nhất một vai trò để cấu hình người nhận.
             </div>
           )}
         </div>

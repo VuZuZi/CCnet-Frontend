@@ -63,7 +63,7 @@ export function AddBankModal({ isOpen, onClose }) {
         <Modal
             isOpen={isOpen}
             onClose={handleClose}
-            title={step === 1 ? 'Thêm Thẻ Ngân Hàng' : 'Xác Thực Thẻ (Micro-deposit)'}
+            title={step === 1 ? 'Thêm Thẻ Ngân Hàng' : 'Xác Thực Thẻ (Chuyển khoản thử)'}
         >
             {step === 1 ? (
                 <form onSubmit={bankForm.handleSubmit(onSubmitBank)} className="space-y-4">
@@ -110,7 +110,7 @@ export function AddBankModal({ isOpen, onClose }) {
                             }}
                             className="w-full rounded-lg bg-slate-800 py-2 text-xs font-bold text-white opacity-70 hover:opacity-100"
                         >
-                            [DEV ONLY] Điền nhanh Test Amount: {verificationData?.mockAmountForTesting}
+                            [DÀNH CHO DEV] Điền nhanh số tiền thử: {verificationData?.mockAmountForTesting}
                         </button>
                     )}
 

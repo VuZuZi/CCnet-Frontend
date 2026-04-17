@@ -35,19 +35,19 @@ export default function HistorySummaryCards({ stats }) {
     <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
       <SummaryCard
         icon={BellRing}
-        label="Sent Logs"
+        label="Nhật ký đã gửi"
         value={stats?.total ?? 0}
         tone="amber"
       />
       <SummaryCard
         icon={Users}
-        label="All Users"
+        label="Tất cả người dùng"
         value={stats?.allUsers ?? 0}
         tone="slate"
       />
       <SummaryCard
         icon={ShieldCheck}
-        label="Custom"
+        label="Tùy chỉnh"
         value={stats?.custom ?? 0}
         tone="emerald"
       />

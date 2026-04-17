@@ -37,7 +37,7 @@ export function OrganizerDocumentField({
         onSelect?.(result);
       }
     } catch (err) {
-      toast.error("Failed to upload file. Please try again.");
+      toast.error("Tải tệp lên thất bại. Vui lòng thử lại.");
     }
   };
 
@@ -57,7 +57,7 @@ export function OrganizerDocumentField({
       await mediaAPI.deleteMedia(targetId);
       onSelect?.(null);
     } catch (err) {
-      toast.error("Failed to delete file from server, removing locally.");
+      toast.error("Xóa tệp trên máy chủ thất bại, đang xóa cục bộ.");
       onSelect?.(null);
     } finally {
       setIsDeleting(false);
@@ -91,14 +91,14 @@ export function OrganizerDocumentField({
               />
             </div>
             <p className="mb-3 text-xs font-bold text-slate-700">
-              Uploading {progress}%
+              Đang tải lên {progress}%
             </p>
             <button
               type="button"
               onClick={handleCancel}
               className="pointer-events-auto inline-flex items-center gap-1.5 text-xs font-bold text-rose-500 transition hover:text-rose-600"
             >
-              <XCircle size={14} /> Cancel
+              <XCircle size={14} /> Hủy
             </button>
           </div>
         )}
@@ -108,7 +108,7 @@ export function OrganizerDocumentField({
             {isImage && (
               <img
                 src={preview}
-                alt="Preview"
+                alt="Xem trước"
                 className="h-full w-full object-cover opacity-20"
               />
             )}
@@ -151,7 +151,7 @@ export function OrganizerDocumentField({
           onClick={handleDelete}
           disabled={isDeleting}
           className="absolute -right-3 -top-3 z-30 rounded-full border border-slate-200 bg-white p-2 text-rose-500 shadow-sm transition hover:scale-105 hover:bg-rose-50 disabled:opacity-50"
-          title="Remove document"
+          title="Xóa tài liệu"
         >
           <Trash2 size={16} className={isDeleting ? "animate-pulse" : ""} />
         </button>

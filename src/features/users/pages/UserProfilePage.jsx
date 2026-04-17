@@ -105,8 +105,8 @@ export function UserProfilePage() {
   if (isError || !userProfile) {
     return (
       <main className="min-h-screen flex flex-col justify-center items-center bg-gray-50 text-gray-900">
-        <h2 className="text-2xl font-bold text-gray-700">Profile Not Found</h2>
-        <p className="text-gray-500 mt-2">The user you are looking for does not exist or an error occurred.</p>
+        <h2 className="text-2xl font-bold text-gray-700">Không tìm thấy hồ sơ</h2>
+        <p className="text-gray-500 mt-2">Người dùng bạn đang tìm kiếm không tồn tại hoặc đã xảy ra lỗi.</p>
       </main>
     );
   }
@@ -215,11 +215,11 @@ export function UserProfilePage() {
                 <select value={reportReason} onChange={(e) => { setReportReason(e.target.value); setReportError(null); }} className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100">
                   <option value="">Chọn lý do</option>
                   <option value="spam">Spam</option>
-                  <option value="harassment">Harassment</option>
-                  <option value="inappropriate">Inappropriate</option>
-                  <option value="violence">Violence</option>
-                  <option value="hate_speech">Hate speech</option>
-                  <option value="other">Other</option>
+                  <option value="harassment">Quấy rối</option>
+                  <option value="inappropriate">Không phù hợp</option>
+                  <option value="violence">Bạo lực</option>
+                  <option value="hate_speech">Ngôn từ kích động thù địch</option>
+                  <option value="other">Khác</option>
                 </select>
               </div>
               <div>

@@ -24,10 +24,10 @@ export default function MetadataBlock({ item, isExpanded, onToggle }) {
       >
         <div>
           <p className="text-sm font-black tracking-tight text-slate-900">
-            Audit Metadata
+            Siêu dữ liệu kiểm tra
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Technical log details for admin review and debugging.
+            Chi tiết nhật ký kỹ thuật dành cho quản trị viên xem xét và gỡ lỗi.
           </p>
         </div>
 
@@ -38,12 +38,12 @@ export default function MetadataBlock({ item, isExpanded, onToggle }) {
 
       {isExpanded ? (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <InfoRow label="Log ID" value={item?._id || "--"} />
-          <InfoRow label="Action" value={item?.action || "--"} />
-          <InfoRow label="Target type" value={item?.targetType || "--"} />
-          <InfoRow label="Target ID" value={item?.targetId || "--"} />
-          <InfoRow label="Created at" value={formatLogDate(item?.createdAt)} />
-          <InfoRow label="Actor role" value={item?.actorRole || "--"} />
+          <InfoRow label="Mã nhật ký" value={item?._id || "--"} />
+          <InfoRow label="Hành động" value={item?.action || "--"} />
+          <InfoRow label="Loại mục tiêu" value={item?.targetType || "--"} />
+          <InfoRow label="Mã mục tiêu" value={item?.targetId || "--"} />
+          <InfoRow label="Tạo lúc" value={formatLogDate(item?.createdAt)} />
+          <InfoRow label="Vai trò người thực hiện" value={item?.actorRole || "--"} />
         </div>
       ) : null}
     </div>

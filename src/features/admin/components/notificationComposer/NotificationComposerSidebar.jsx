@@ -38,7 +38,7 @@ export default function NotificationComposerSidebar({
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-5">
         <div className="space-y-5">
           <div>
-            <FieldLabel>Recipient mode</FieldLabel>
+            <FieldLabel>Chế độ người nhận</FieldLabel>
 
             <div className="relative mt-2">
               <select
@@ -47,8 +47,8 @@ export default function NotificationComposerSidebar({
                 onChange={onChange}
                 className="w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-sm text-slate-700 shadow-sm outline-none transition-all duration-200 hover:border-slate-300 focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
               >
-                <option value="all">All users</option>
-                <option value="custom">Custom recipients</option>
+                <option value="all">Tất cả người dùng</option>
+                <option value="custom">Người nhận tùy chỉnh</option>
               </select>
 
               <svg
@@ -64,7 +64,7 @@ export default function NotificationComposerSidebar({
           </div>
 
           <div>
-            <FieldLabel>Severity</FieldLabel>
+            <FieldLabel>Mức độ nghiêm trọng</FieldLabel>
 
             <div className="relative mt-2">
               <select
@@ -94,11 +94,11 @@ export default function NotificationComposerSidebar({
 
           <div className="flex flex-wrap gap-2">
             <SummaryPill tone="amber">
-              Recipient mode: {form.recipientMode === "all" ? "All users" : "Custom"}
+              Chế độ người nhận: {form.recipientMode === "all" ? "Tất cả người dùng" : "Tùy chỉnh"}
             </SummaryPill>
 
             <SummaryPill tone="emerald">
-              Severity:{" "}
+              Mức độ nghiêm trọng:{" "}
               {SEVERITY_OPTIONS.find((item) => item.value === form.severity)?.label}
             </SummaryPill>
           </div>
@@ -116,7 +116,7 @@ export default function NotificationComposerSidebar({
           className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-6 py-3 text-sm font-bold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-amber-600 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
         >
           <SendHorizontal size={16} />
-          {isSubmitting ? "Sending..." : "Send notification"}
+          {isSubmitting ? "Đang gửi..." : "Gửi thông báo"}
         </button>
       </div>
     </div>

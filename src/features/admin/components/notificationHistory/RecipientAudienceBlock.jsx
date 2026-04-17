@@ -20,7 +20,7 @@ function ResolutionModeList({ roleSelections = [], resolutionBreakdown = [] }) {
     return {
       role: selection.role,
       mode:
-        matched?.mode === "selected_users" ? "Selected users only" : "All in role",
+        matched?.mode === "selected_users" ? "Chỉ người dùng đã chọn" : "Tất cả trong vai trò",
       selectedCount: matched?.requestedUserCount || 0,
       resolvedCount: matched?.resolvedRecipientCount || 0,
     };
@@ -31,7 +31,7 @@ function ResolutionModeList({ roleSelections = [], resolutionBreakdown = [] }) {
   return (
     <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4">
       <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-        Role resolution
+        Phân giải vai trò
       </p>
 
       <div className="mt-3 grid gap-3">
@@ -50,10 +50,10 @@ function ResolutionModeList({ roleSelections = [], resolutionBreakdown = [] }) {
 
               <div className="flex flex-wrap gap-2">
                 <span className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-700">
-                  Selected: {row.selectedCount}
+                  Đã chọn: {row.selectedCount}
                 </span>
                 <span className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold text-slate-700">
-                  Final: {row.resolvedCount}
+                  Cuối cùng: {row.resolvedCount}
                 </span>
               </div>
             </div>
@@ -75,30 +75,30 @@ export default function RecipientAudienceBlock({
 
   const audienceText =
     normalizedTargetType === "all"
-      ? "Sent to all users in the system."
-      : "Each selected role follows its own rule: if no specific users are chosen inside that role, the system sends to the full role; otherwise it sends only to the selected users in that role.";
+      ? "Đã gửi đến tất cả người dùng trong hệ thống."
+      : "Mỗi vai trò được chọn tuân theo quy tắc riêng: nếu không có người dùng cụ thể nào được chọn trong vai trò đó, hệ thống sẽ gửi cho toàn bộ vai trò; nếu không, hệ thống chỉ gửi cho những người dùng được chọn trong vai trò đó.";
 
   return (
     <div className="rounded-[22px] border border-slate-200 bg-white p-4 shadow-sm">
       <h4 className="text-sm font-black tracking-tight text-slate-900">
-        Recipient Audience
+        Đối tượng nhận
       </h4>
 
       <p className="mt-3 text-sm leading-6 text-slate-600">{audienceText}</p>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        <InfoRow label="Target type" value={normalizedTargetType} />
+        <InfoRow label="Loại mục tiêu" value={normalizedTargetType} />
         <InfoRow
-          label="Role groups"
+          label="Nhóm vai trò"
           value={roles?.length ? roles.join(", ") : "--"}
         />
         <InfoRow
-          label="Resolved recipient count"
+          label="Số lượng người nhận thực tế"
           value={
             resolvedRecipientCount !== null &&
             resolvedRecipientCount !== undefined
               ? String(resolvedRecipientCount)
-              : "Not logged"
+              : "Không được ghi lại"
           }
         />
       </div>

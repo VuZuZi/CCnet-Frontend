@@ -37,7 +37,7 @@ export default function OrganizerActionLogsFilters({
             <input
               value={searchInput}
               onChange={(e) => onSearchChange(e.target.value)}
-              placeholder="Search by admin, applicant, email, organization..."
+              placeholder="Tìm theo quản trị viên, người đăng ký, email, tổ chức..."
               className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
             />
           </div>

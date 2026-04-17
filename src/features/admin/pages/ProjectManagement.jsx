@@ -46,7 +46,7 @@ const ProjectManagement = () => {
       <div className="rounded-2xl border border-slate-200 bg-white p-16 text-center shadow-sm">
         <div className="inline-flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-500 shadow-sm">
           <Loader2 size={18} className="animate-spin text-amber-500" />
-          Loading projects...
+          Đang tải dự án...
         </div>
       </div>
     );
@@ -59,10 +59,10 @@ const ProjectManagement = () => {
           📁
         </div>
         <h2 className="text-xl font-semibold text-slate-900">
-          No projects available
+          Không có dự án nào
         </h2>
         <p className="mt-2 text-sm text-slate-500">
-          There are currently no projects visible in the admin workflow.
+          Hiện không có dự án nào hiển thị trong quy trình quản trị.
         </p>
       </div>
     );
@@ -86,10 +86,10 @@ const ProjectManagement = () => {
             <FolderKanban size={30} strokeWidth={2.1} />
           </div>
           <h2 className="text-xl font-semibold text-slate-900">
-            No matching projects
+            Không có dự án nào khớp
           </h2>
           <p className="mt-2 text-sm text-slate-500">
-            Try changing the status filter or search keyword.
+            Hãy thử thay đổi bộ lọc trạng thái hoặc từ khóa tìm kiếm.
           </p>
         </div>
       ) : (

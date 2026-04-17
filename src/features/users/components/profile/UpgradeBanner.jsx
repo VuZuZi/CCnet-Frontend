@@ -20,36 +20,36 @@ export function UpgradeBanner({ isOwnProfile }) {
 
   const title =
     status === "APPROVED"
-      ? "You are already an Organizer"
+      ? "Bạn đã là Người tổ chức"
       : status === "PENDING"
-        ? "Your application is under review"
+        ? "Đơn đăng ký của bạn đang được xét duyệt"
         : status === "DECLINED"
-          ? "Your application needs revision"
-          : "Ready to make a bigger impact?";
+          ? "Đơn đăng ký của bạn cần được chỉnh sửa"
+          : "Bạn đã sẵn sàng tạo ra tác động lớn hơn chưa?";
 
   const description =
     status === "APPROVED"
-      ? "Your account has been approved for organizer activities."
+      ? "Tài khoản của bạn đã được phê duyệt cho các hoạt động của người tổ chức."
       : status === "PENDING"
-        ? "Your organizer application is being reviewed by the admin team."
+        ? "Đơn đăng ký người tổ chức của bạn đang được ban quản trị xét duyệt."
         : status === "DECLINED"
-          ? "Your application was declined. Review the status and submit again."
-          : "Upgrade to an Organizer profile to start your own initiatives and manage teams.";
+          ? "Đơn đăng ký của bạn đã bị từ chối. Vui lòng xem lại trạng thái và gửi lại."
+          : "Nâng cấp lên hồ sơ Người tổ chức để bắt đầu các sáng kiến của riêng bạn và quản lý nhóm.";
 
   const buttonText =
     status === "APPROVED"
-      ? "View Status"
+      ? "Xem trạng thái"
       : status === "PENDING"
-        ? "Check Status"
+        ? "Kiểm tra trạng thái"
         : status === "DECLINED"
-          ? "Review Status"
-          : "Upgrade Now";
+          ? "Xem lại trạng thái"
+          : "Nâng cấp ngay";
 
   return (
     <div className="bg-[#fbbf24] rounded-2xl p-6 shadow-md" data-purpose="call-to-action">
       <h2 className="text-gray-900 font-bold mb-2">{title}</h2>
       <p className="text-gray-900 text-sm mb-5 opacity-90">
-        {isLoading ? "Checking your organizer status..." : description}
+        {isLoading ? "Đang kiểm tra trạng thái người tổ chức của bạn..." : description}
       </p>
 
       <button
@@ -58,7 +58,7 @@ export function UpgradeBanner({ isOwnProfile }) {
         disabled={isLoading}
         className="w-full bg-white text-gray-900 font-bold py-3 rounded-xl shadow-sm hover:bg-gray-50 transition-colors active:scale-95 duration-75 disabled:opacity-60 disabled:cursor-not-allowed"
       >
-        {isLoading ? "Loading..." : buttonText}
+        {isLoading ? "Đang tải..." : buttonText}
       </button>
     </div>
   );

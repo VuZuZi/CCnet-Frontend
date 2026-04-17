@@ -36,7 +36,7 @@ export function LoginPage() {
 
   return (
     <AuthLayout 
-      title="Welcome back" 
+      title="Chào mừng trở lại" 
       subtitle="Đăng nhập để tiếp tục hành trình lan tỏa yêu thương"
     >
       <div aria-live="polite">
@@ -79,7 +79,7 @@ export function LoginPage() {
 
           <div>
             <label htmlFor="login-password" className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">
-              Password
+              Mật khẩu
             </label>
             <input
               id="login-password"
@@ -134,7 +134,7 @@ export function LoginPage() {
             </Link>
           </p>
           <Link to="#" className="hover:text-slate-900 underline underline-offset-2 transition-colors">
-            Terms & Conditions
+            Điều khoản & Điều kiện
           </Link>
         </div>
       </form>
