@@ -9,211 +9,46 @@ import {
   Sparkles,
   Share2,
   UserRound,
+  BadgeCheck,
 } from "lucide-react";
+
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+import { useFeaturedProject } from "@/features/project/hooks/useProjectQueries";
+import {
+  formatProjectCurrencyVND,
+  getProjectDaysLeft,
+  getProjectFundingStats,
+  getProjectImage,
+  getProjectMode,
+  getProjectPrimaryAction,
+  getProjectVolunteerStats,
+  isProjectClosed,
+  normalizeProjectId,
+  stripProjectHtml,
+} from "../utils/projectDisplay.utils";
 
-function normalizeId(value) {
-  if (!value) return "";
-  if (typeof value === "string") return value;
-  if (typeof value === "object") return value._id || value.id || "";
-  return "";
+function extractCurrentUserApplicationStatus(project) {
+  const candidates = [
+    project?.currentUserParticipation?.volunteerStatus,
+    project?.currentUserParticipation?.status,
+    project?.currentUserVolunteer?.status,
+    project?.myVolunteerApplication?.status,
+    project?.myApplication?.status,
+    project?.applicationStatus,
+    project?.volunteerStatus,
+  ];
+
+  const matched = candidates.find(
+    (value) => value !== null && value !== undefined,
+  );
+
+  return String(matched || "").trim().toUpperCase();
 }
 
-function safeNumber(value, fallback = 0) {
-  const num = Number(value);
-  return Number.isFinite(num) ? num : fallback;
-}
-
-function formatCurrencyVND(value) {
-  return `${safeNumber(value).toLocaleString("vi-VN")}đ`;
-}
-
-function stripHtml(html) {
-  if (!html) return "";
-  return String(html).replace(/<[^>]+>/g, "").trim();
-}
-
-function getDaysLeft(endDate) {
-  if (!endDate) return null;
-  const end = new Date(endDate).getTime();
-  if (Number.isNaN(end)) return null;
-
-  const now = Date.now();
-  const diff = end - now;
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-}
-
-function getProjectImage(project) {
-  if (project?.coverMedia?.url) return project.coverMedia.url;
-  if (Array.isArray(project?.coverMedia) && project?.coverMedia[0]?.url) {
-    return project.coverMedia[0].url;
-  }
-  return "https://images.unsplash.com/photo-1511497584788-876760111969?q=80&w=1600&auto=format&fit=crop";
-}
-
-function getFundingStats(project) {
-  const targetAmount =
-    safeNumber(project?.targetAmount) ||
-    safeNumber(project?.stats?.targetAmount);
-
-  const raisedAmount =
-    safeNumber(project?.financialDetail?.availableBalance) ||
-    safeNumber(project?.currentAmount) ||
-    safeNumber(project?.stats?.raisedAmount) ||
-    safeNumber(project?.stats?.currentAmount);
-
-  const fundingProgress =
-    safeNumber(project?.stats?.fundingProgress) ||
-    (targetAmount > 0
-      ? Math.min(Math.round((raisedAmount / targetAmount) * 100), 100)
-      : 0);
-
-  return {
-    targetAmount,
-    raisedAmount,
-    fundingProgress,
-  };
-}
-
-function getVolunteerStats(project) {
-  const volunteerNeeded =
-    safeNumber(project?.stats?.targetVolunteers) ||
-    safeNumber(project?.stats?.volunteerNeeded) ||
-    (Array.isArray(project?.volunteerRoles)
-      ? project.volunteerRoles.reduce(
-          (sum, role) => sum + safeNumber(role?.quantity),
-          0
-        )
-      : 0);
-
-  const volunteerJoined =
-    safeNumber(project?.stats?.currentVolunteers) ||
-    safeNumber(project?.stats?.volunteerJoined) ||
-    safeNumber(project?.stats?.volunteerCount) ||
-    safeNumber(project?.volunteerCount);
-
-  const volunteerProgress =
-    safeNumber(project?.stats?.volunteerProgress) ||
-    (volunteerNeeded > 0
-      ? Math.min(Math.round((volunteerJoined / volunteerNeeded) * 100), 100)
-      : 0);
-
-  return {
-    volunteerNeeded,
-    volunteerJoined,
-    volunteerProgress,
-  };
-}
-
-function getProjectMode(project) {
-  const isVolunteerOnly = project?.projectType === "VOLUNTEER_ONLY";
-  const isFundedProject = project?.projectType === "FUNDED";
-  const isVolunteerProject = isVolunteerOnly || !!project?.needsVolunteers;
-
-  return {
-    isVolunteerOnly,
-    isVolunteerProject,
-    isFundedProject,
-  };
-}
-
-function isProjectClosed(project) {
-  const normalizedStatus = String(project?.status || "").toUpperCase();
-  return [
-    "COMPLETED",
-    "CLOSED",
-    "CANCELLED",
-    "COMPLETED_SUCCESSFULLY",
-    "COMPLETED_PARTIAL",
-  ].includes(normalizedStatus);
-}
-
-function scoreProject(project) {
-  const { isVolunteerProject, isFundedProject } = getProjectMode(project);
-  const { fundingProgress } = getFundingStats(project);
-  const { volunteerProgress } = getVolunteerStats(project);
-
-  const closed = isProjectClosed(project);
-  const isVolunteerFull = !!project?.isVolunteerFull || volunteerProgress >= 100;
-  const isFundingReached = fundingProgress >= 100;
-  const isOpen = !closed && !isVolunteerFull && !isFundingReached;
-
-  const isUrgent = !!project?.isUrgent;
-  const daysLeft = getDaysLeft(project?.endDate);
-  const isEndingSoon =
-    typeof daysLeft === "number" && daysLeft >= 0 && daysLeft <= 14;
-  const isNearlyFunded = fundingProgress >= 70 && fundingProgress < 100;
-  const isNearlyFullVolunteer =
-    volunteerProgress >= 70 && volunteerProgress < 100;
-
-  let score = 0;
-
-  if (isOpen) score += 100;
-  if (isUrgent) score += 120;
-  if (isEndingSoon) score += 70;
-  if (isFundedProject) score += 60;
-  if (isVolunteerProject) score += 40;
-  if (isNearlyFunded) score += 90;
-  if (isNearlyFullVolunteer) score += 70;
-
-  score += Math.min(fundingProgress, 100);
-  score += Math.min(volunteerProgress, 100) * 0.5;
-
-  return score;
-}
-
-function getPrimaryAction(project, currentUserId, navigate) {
-  const projectId = normalizeId(project?._id || project?.id);
-  const organizerId = normalizeId(project?.organizerId);
-
-  const isOwner = currentUserId && organizerId === currentUserId;
-  const { isVolunteerOnly, isVolunteerProject, isFundedProject } =
-    getProjectMode(project);
-
-  const { fundingProgress } = getFundingStats(project);
-  const { volunteerProgress } = getVolunteerStats(project);
-
-  const closed = isProjectClosed(project);
-  const isVolunteerFull = !!project?.isVolunteerFull || volunteerProgress >= 100;
-  const isFundingReached = fundingProgress >= 100;
-
-  if (isOwner) {
-    return {
-      label: "Quản lý",
-      className: "bg-slate-900 text-white hover:bg-slate-800",
-      onClick: () => navigate(`/projects/${projectId}`),
-    };
-  }
-
-  if (closed || isVolunteerFull || isFundingReached) {
-    return {
-      label: "Xem chi tiết",
-      className: "bg-slate-100 text-slate-700 hover:bg-slate-200",
-      onClick: () => navigate(`/projects/${projectId}`),
-    };
-  }
-
-  if (isFundedProject) {
-    return {
-      label: "Đóng góp",
-      className: "bg-amber-400 text-slate-900 hover:bg-amber-500",
-      onClick: () => navigate(`/projects/${projectId}`),
-    };
-  }
-
-  if (isVolunteerOnly || isVolunteerProject) {
-    return {
-      label: "Tham gia",
-      className: "bg-emerald-500 text-white hover:bg-emerald-600",
-      onClick: () => navigate(`/projects/${projectId}`),
-    };
-  }
-
-  return {
-    label: "Xem chi tiết",
-    className: "bg-slate-100 text-slate-700 hover:bg-slate-200",
-    onClick: () => navigate(`/projects/${projectId}`),
-  };
+function isOwnedByCurrentUser(project, currentUserId) {
+  const organizerRaw = project?.organizerId;
+  const organizerId = normalizeProjectId(organizerRaw);
+  return Boolean(currentUserId && organizerId === currentUserId);
 }
 
 export default function FeaturedProject({
@@ -223,80 +58,119 @@ export default function FeaturedProject({
 }) {
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
-  const currentUserId = normalizeId(currentUser?._id || currentUser?.id);
+  const currentUserId = normalizeProjectId(
+    currentUser?._id || currentUser?.id || currentUser?.userId,
+  );
+
+  const { data: featuredData } = useFeaturedProject();
 
   const featuredProject = useMemo(() => {
-    if (!Array.isArray(projects) || projects.length === 0) return null;
+    const normalizedFeaturedCandidates = [];
 
-    const normalizedFollowedIds = followedOrganizerIds.filter(Boolean);
+    if (featuredData) {
+      if (Array.isArray(featuredData)) {
+        normalizedFeaturedCandidates.push(...featuredData);
+      } else if (featuredData?.project) {
+        normalizedFeaturedCandidates.push(featuredData.project);
+      } else {
+        normalizedFeaturedCandidates.push(featuredData);
+      }
+    }
 
-    const nonOwnerCandidates = projects.filter((project) => {
-      const organizerId = normalizeId(project?.organizerId);
-      const isOwner = currentUserId && organizerId === currentUserId;
-      return !isOwner;
-    });
+    const safeProjects = Array.isArray(projects) ? projects : [];
 
-    const candidates =
-      nonOwnerCandidates.length > 0 ? nonOwnerCandidates : projects;
-
-    if (!candidates.length) return null;
-
-    const followedProjects = candidates.filter((project) => {
-      const organizerId = normalizeId(project?.organizerId);
-      return normalizedFollowedIds.includes(organizerId);
-    });
-
-    const poolToRank =
-      followedProjects.length > 0 ? followedProjects : candidates;
-
-    const sorted = [...poolToRank].sort(
-      (a, b) => scoreProject(b) - scoreProject(a)
+    const firstFeaturedNotOwned = normalizedFeaturedCandidates.find(
+      (project) => project && !isOwnedByCurrentUser(project, currentUserId),
     );
 
-    return sorted[0] || null;
-  }, [projects, followedOrganizerIds, currentUserId]);
+    if (firstFeaturedNotOwned) return firstFeaturedNotOwned;
+
+    const firstListNotOwned = safeProjects.find(
+      (project) => project && !isOwnedByCurrentUser(project, currentUserId),
+    );
+
+    if (firstListNotOwned) return firstListNotOwned;
+
+    return null;
+  }, [featuredData, projects, currentUserId]);
 
   if (!featuredProject) return null;
 
-  const projectId = normalizeId(featuredProject?._id || featuredProject?.id);
+  const projectId = normalizeProjectId(
+    featuredProject?._id || featuredProject?.id,
+  );
   const organizerRaw = featuredProject?.organizerId;
-  const organizerId = normalizeId(organizerRaw);
+  const organizerId = normalizeProjectId(organizerRaw);
   const organizerName =
     typeof organizerRaw === "object" ? organizerRaw?.fullName || "" : "";
-  const isOwner = currentUserId && organizerId === currentUserId;
-  const isFromFollowedOrganizer = followedOrganizerIds.includes(organizerId);
+
+  const normalizedFollowedIds = followedOrganizerIds
+    .filter(Boolean)
+    .map((id) => normalizeProjectId(id));
+
+  const isOwner = Boolean(currentUserId && organizerId === currentUserId);
+  const isFromFollowedOrganizer = normalizedFollowedIds.includes(organizerId);
 
   const imageUrl = getProjectImage(featuredProject);
-  const daysLeft = getDaysLeft(featuredProject?.endDate);
+  const daysLeft = getProjectDaysLeft(featuredProject?.endDate);
 
-  const { isVolunteerProject, isFundedProject } =
-    getProjectMode(featuredProject);
-  const { fundingProgress, targetAmount, raisedAmount } =
-    getFundingStats(featuredProject);
+  const { isVolunteerProject, isFundedProject } = getProjectMode(featuredProject);
+  const { fundingPercent, targetAmount, raisedAmount } =
+    getProjectFundingStats(featuredProject);
   const { volunteerNeeded, volunteerJoined, volunteerProgress } =
-    getVolunteerStats(featuredProject);
+    getProjectVolunteerStats(featuredProject);
 
-  const primaryAction = getPrimaryAction(
-    featuredProject,
+  const currentUserApplicationStatus =
+    extractCurrentUserApplicationStatus(featuredProject);
+
+  const hasJoinedProject =
+    currentUserApplicationStatus === "APPROVED" ||
+    currentUserApplicationStatus === "WITHDRAW_REQUESTED";
+
+  const primaryAction = getProjectPrimaryAction({
+    project: featuredProject,
     currentUserId,
-    navigate
-  );
+    isOwner,
+    navigate,
+  });
+
+  const resolvedPrimaryAction = hasJoinedProject
+    ? {
+        label: "Xem dự án",
+        className:
+          "bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] text-slate-900 hover:brightness-105",
+        onClick: () => navigate(`/projects/${projectId}`),
+      }
+    : primaryAction;
 
   const showSecondaryVolunteerAction =
     !isOwner &&
+    !hasJoinedProject &&
     isFundedProject &&
     isVolunteerProject &&
     !isProjectClosed(featuredProject) &&
     volunteerProgress < 100;
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (typeof onShare === "function") {
       onShare(featuredProject);
       return;
     }
 
     const url = `${window.location.origin}/projects/${projectId}`;
-    navigator.clipboard?.writeText(url);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: featuredProject?.title || "Project",
+          text: "Xem dự án này trên CCNet",
+          url,
+        });
+        return;
+      }
+
+      await navigator.clipboard?.writeText(url);
+    } catch {}
   };
 
   return (
@@ -310,26 +184,26 @@ export default function FeaturedProject({
           />
 
           <div className="absolute bottom-5 left-5 flex flex-wrap gap-3">
-            {featuredProject?.isUrgent && (
+            {featuredProject?.isUrgent ? (
               <span className="inline-flex items-center gap-2 rounded-full bg-red-500 px-4 py-2 text-sm font-bold text-white shadow-sm">
                 <AlertTriangle size={16} />
                 KHẨN CẤP
               </span>
-            )}
+            ) : null}
 
-            {featuredProject?.location?.address && (
+            {featuredProject?.location?.address ? (
               <span className="inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
                 <MapPin size={16} />
                 {featuredProject.location.address}
               </span>
-            )}
+            ) : null}
 
-            {isFromFollowedOrganizer && !isOwner && (
+            {isFromFollowedOrganizer && !isOwner ? (
               <span className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-4 py-2 text-sm font-bold text-amber-800 shadow-sm">
                 <Sparkles size={16} />
                 Gợi ý từ người bạn theo dõi
               </span>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -340,12 +214,12 @@ export default function FeaturedProject({
               DỰ ÁN NỔI BẬT DÀNH CHO BẠN
             </span>
 
-            {typeof daysLeft === "number" && daysLeft >= 0 && (
+            {typeof daysLeft === "number" && daysLeft >= 0 ? (
               <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
                 <Clock3 size={16} />
                 Còn {daysLeft} ngày
               </span>
-            )}
+            ) : null}
           </div>
 
           <h2 className="mb-3 text-2xl font-extrabold leading-tight tracking-tight text-slate-900 sm:text-3xl lg:text-4xl">
@@ -360,79 +234,88 @@ export default function FeaturedProject({
           ) : null}
 
           <p className="mb-5 line-clamp-3 text-base leading-7 text-slate-600">
-            {stripHtml(featuredProject?.description) ||
+            {stripProjectHtml(featuredProject?.description) ||
               "Dự án đang chờ bạn khám phá."}
           </p>
 
           <div className="mb-6 flex flex-wrap gap-3">
-            {isFromFollowedOrganizer && !isOwner && (
+            {hasJoinedProject ? (
+              <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-2">
+                  <BadgeCheck size={16} />
+                  Bạn đã tham gia dự án này
+                </span>
+              </span>
+            ) : null}
+
+            {isFromFollowedOrganizer && !isOwner ? (
               <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
                 Đến từ organizer bạn đang theo dõi
               </span>
-            )}
+            ) : null}
 
-            {featuredProject?.isUrgent && (
+            {featuredProject?.isUrgent ? (
               <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
                 Dự án đang cần hỗ trợ gấp
               </span>
-            )}
+            ) : null}
 
-            {fundingProgress >= 80 && fundingProgress < 100 && (
+            {fundingPercent >= 80 && fundingPercent < 100 ? (
               <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
                 Chỉ còn ít nữa là đạt mục tiêu gây quỹ
               </span>
-            )}
+            ) : null}
 
-            {isOwner && (
+            {isOwner ? (
               <span className="rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
                 Dự án của bạn
               </span>
-            )}
+            ) : null}
           </div>
 
-          {isFundedProject && (
+          {isFundedProject ? (
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 text-slate-800">
                   <Heart size={18} className="text-amber-500" />
                   <div className="text-xl font-extrabold">
-                    {formatCurrencyVND(raisedAmount)}
+                    {formatProjectCurrencyVND(raisedAmount)}
                     <span className="ml-2 text-base font-semibold text-slate-400">
-                      / {formatCurrencyVND(targetAmount)}
+                      / {formatProjectCurrencyVND(targetAmount)}
                     </span>
                   </div>
                 </div>
 
                 <div className="text-2xl font-extrabold text-amber-500">
-                  {fundingProgress}%
+                  {fundingPercent}%
                 </div>
               </div>
 
               <div className="h-3.5 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-amber-400 transition-all duration-500"
-                  style={{ width: `${Math.min(fundingProgress, 100)}%` }}
+                  style={{ width: `${Math.min(fundingPercent, 100)}%` }}
                 />
               </div>
             </div>
-          )}
+          ) : null}
 
-          {isVolunteerProject && (
+          {isVolunteerProject ? (
             <div className="mb-6">
               <div className="flex items-center gap-3 text-lg font-semibold text-emerald-600">
                 <Users size={18} />
                 {volunteerJoined}/{volunteerNeeded || 0} tình nguyện viên
               </div>
             </div>
-          )}
+          ) : null}
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <button
               type="button"
-              onClick={primaryAction.onClick}
-              className={`h-14 rounded-2xl text-lg font-extrabold shadow-sm transition-all ${primaryAction.className}`}
+              onClick={resolvedPrimaryAction.onClick}
+              className={`h-14 rounded-2xl text-lg font-extrabold shadow-sm transition-all ${resolvedPrimaryAction.className}`}
             >
-              {primaryAction.label}
+              {resolvedPrimaryAction.label}
             </button>
 
             {showSecondaryVolunteerAction ? (

@@ -1,352 +1,554 @@
-// src/features/volunteer/components/ApplyVolunteerButton.jsx
-import { useState } from 'react';
-import { Users, CheckCircle, Clock, XCircle, Trash2, X, Edit2 } from 'lucide-react';
-import { VolunteerApplicationModal } from './VolunteerApplicationModal';
-import { VolunteerEditModal } from './VolunteerEditModal';
-import { useAuthStore } from '@/features/auth/stores/useAuthStore';
-import { useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import { volunteerAPI } from '../api/volunteerAPI';
-import { useToast } from '@/shared/contexts/ToastContext';
+import { useMemo, useState } from "react";
+import {
+  Users,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Trash2,
+  X,
+  Edit2,
+  Send,
+} from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-export const ApplyVolunteerButton = ({ projectId, projectName, className = '' }) => {
-  const [showModal, setShowModal] = useState(false);
+import { VolunteerApplicationModal } from "./VolunteerApplicationModal";
+import { VolunteerEditModal } from "./VolunteerEditModal";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+import { useVolunteerMutations } from "../hooks/useVolunteerMutations";
+import { useVolunteerQueries } from "../hooks/useVolunteerQueries";
+import { useToast } from "@/shared/contexts/ToastContext";
+
+function getApplicationStatusConfig(applicationStatus, isVolunteerFull) {
+  switch (applicationStatus) {
+    case "PENDING":
+      return {
+        text: "Đang chờ xét duyệt",
+        icon: Clock,
+        className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
+        disabled: false,
+        showCancel: true,
+        cancelText: "Hủy đơn",
+        showEdit: true,
+        showWithdraw: false,
+      };
+
+    case "APPROVED":
+      return {
+        text: "Đã được chấp nhận",
+        icon: CheckCircle,
+        className:
+          "cursor-default bg-green-100 text-green-700 hover:bg-green-100",
+        disabled: true,
+        showCancel: false,
+        cancelText: "",
+        showEdit: false,
+        showWithdraw: true,
+      };
+
+    case "WITHDRAW_REQUESTED":
+      return {
+        text: "Đang chờ duyệt xin rút",
+        icon: Clock,
+        className:
+          "cursor-default bg-amber-100 text-amber-700 hover:bg-amber-100",
+        disabled: true,
+        showCancel: false,
+        cancelText: "",
+        showEdit: false,
+        showWithdraw: false,
+      };
+
+    case "REJECTED":
+      return {
+        text: "Đã bị từ chối",
+        icon: XCircle,
+        className: "cursor-default bg-red-100 text-red-700 hover:bg-red-100",
+        disabled: true,
+        showCancel: false,
+        cancelText: "",
+        showEdit: false,
+        showWithdraw: false,
+      };
+
+    default:
+      return {
+        text: isVolunteerFull ? "Đã tuyển đủ volunteer" : "Đăng ký tình nguyện",
+        icon: Users,
+        className: isVolunteerFull
+          ? "cursor-not-allowed bg-slate-100 text-slate-400"
+          : "bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] text-slate-900 shadow-[0_14px_30px_rgba(255,193,7,0.28)] hover:brightness-[1.02]",
+        disabled: isVolunteerFull,
+        showCancel: false,
+        cancelText: "",
+        showEdit: false,
+        showWithdraw: false,
+      };
+  }
+}
+
+function getActionBlockedMessage(applicationStatus) {
+  switch (applicationStatus) {
+    case "PENDING":
+      return "Bạn đã có đơn đăng ký đang chờ xét duyệt";
+    case "APPROVED":
+      return "Bạn đã được chấp nhận tham gia dự án này";
+    case "WITHDRAW_REQUESTED":
+      return "Yêu cầu xin rút của bạn đang chờ organizer xử lý";
+    case "REJECTED":
+      return "Đơn đăng ký của bạn đã bị từ chối";
+    default:
+      return null;
+  }
+}
+
+function getCurrentUserId(user) {
+  return user?.id || user?._id || user?.userId || null;
+}
+
+function getProjectId(project, projectId) {
+  return projectId || project?._id || project?.id;
+}
+
+function getProjectName(project, projectName) {
+  return projectName || project?.title || project?.name || "";
+}
+
+function getVolunteerTarget(project) {
+  const targetFromStats = Number(project?.stats?.targetVolunteers ?? 0);
+  if (targetFromStats > 0) return targetFromStats;
+
+  if (Array.isArray(project?.volunteerRoles)) {
+    return project.volunteerRoles.reduce(
+      (sum, role) => sum + Number(role?.quantity || 0),
+      0
+    );
+  }
+
+  return 0;
+}
+
+export const ApplyVolunteerButton = ({
+  project,
+  projectId,
+  projectName,
+  className = "",
+}) => {
+  const [showApplyModal, setShowApplyModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+
   const { isAuthenticated, user } = useAuthStore();
   const navigate = useNavigate();
   const toast = useToast();
 
-  // Fetch application status
-  const { data: application, isLoading, refetch } = useQuery({
-    queryKey: ['volunteer-application', projectId, user?.id],
-    queryFn: async () => {
-      const result = await volunteerAPI.getApplicationByProject(projectId);
-      return result;
-    },
-    enabled: !!isAuthenticated && !!user?.id,
-  });
+  const {
+    updateApplication,
+    cancelApplication,
+    requestWithdraw,
+    isUpdating,
+    isCancelling,
+    isRequestingWithdraw,
+  } = useVolunteerMutations();
 
-  // Mutation để hủy đơn
-  const cancelMutation = useMutation({
-    mutationFn: async () => {
-      return await volunteerAPI.cancelApplication(application?.id);
-    },
-    onSuccess: () => {
-      toast.success('Đã hủy đơn đăng ký thành công');
-      setShowCancelConfirm(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(
-        error.response?.data?.message ||
-        error.message ||
-        'Hủy đơn thất bại. Vui lòng thử lại.',
-      );
-    }
-  });
+  const { useApplicationStatus } = useVolunteerQueries();
 
-  // Mutation để cập nhật đơn
-  const updateMutation = useMutation({
-    mutationFn: async (updateData) => {
-      return await volunteerAPI.updateApplication(application?.id, updateData);
-    },
-    onSuccess: () => {
-      toast.success('Cập nhật đơn đăng ký thành công');
-      setShowEditModal(false);
-      refetch();
-    },
-    onError: (error) => {
-      toast.error(
-        error.response?.data?.message ||
-        error.message ||
-        'Cập nhật thất bại. Vui lòng thử lại.',
-      );
-    }
-  });
+  const effectiveProjectId = getProjectId(project, projectId);
+  const effectiveProjectName = getProjectName(project, projectName);
+  const currentUserId = getCurrentUserId(user);
 
-  const hasApplied = Boolean(application?.id || application?._id);
+  const volunteerTarget = useMemo(() => getVolunteerTarget(project), [project]);
+  const currentVolunteers = Number(project?.stats?.currentVolunteers ?? 0);
+
+  const isVolunteerFull = useMemo(() => {
+    return (
+      Boolean(project?.isVolunteerFull) ||
+      (volunteerTarget > 0 && currentVolunteers >= volunteerTarget)
+    );
+  }, [project, volunteerTarget, currentVolunteers]);
+
+  const { data: application, isFetching: isCheckingApplication } =
+    useApplicationStatus(effectiveProjectId, currentUserId);
+
+  const applicationId = application?.id || application?._id || null;
+  const hasApplied = Boolean(applicationId);
   const applicationStatus = hasApplied
-    ? String(application?.status || '').toUpperCase()
-    : 'NONE';
+    ? String(application?.status || "").toUpperCase()
+    : "NONE";
 
-  const getStatusConfig = () => {
-    switch (applicationStatus) {
-      case 'PENDING':
-        return {
-          text: 'Đang chờ xét duyệt',
-          icon: Clock,
-          className: 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100',
-          disabled: false,
-          showCancel: true,
-          showEdit: true  // ✅ Cho phép chỉnh sửa
-        };
-      case 'APPROVED':
-        return {
-          text: 'Đã được chấp nhận',
-          icon: CheckCircle,
-          className: 'bg-green-100 text-green-700 hover:bg-green-100 cursor-default',
-          disabled: true,
-          showCancel: false,
-          showEdit: false
-        };
-      case 'REJECTED':
-        return {
-          text: 'Đã bị từ chối',
-          icon: XCircle,
-          className: 'bg-red-100 text-red-700 hover:bg-red-100',
-          disabled: false,
-          showCancel: false,
-          showEdit: true
-        };
-      case 'CANCELLED':
-        return {
-          text: 'Đơn đã hủy',
-          icon: XCircle,
-          className: 'bg-gray-100 text-gray-700 hover:bg-gray-100',
-          disabled: false,
-          showCancel: false,
-          showEdit: false
-        };
-      default:
-        return {
-          text: 'Đơn đăng ký đang xử lý',
-          icon: Clock,
-          className: 'bg-slate-100 text-slate-700 cursor-default',
-          disabled: true,
-          showCancel: false,
-          showEdit: false
-        };
-    }
-  };
+  const statusConfig = getApplicationStatusConfig(
+    applicationStatus,
+    isVolunteerFull
+  );
 
-  const statusConfig = getStatusConfig();
-
-  const handleClick = () => {
+  const handlePrimaryClick = () => {
     if (!isAuthenticated) {
-      toast.info('Vui lòng đăng nhập để đăng ký tình nguyện');
-      navigate('/login', { state: { from: `/projects/${projectId}` } });
+      toast.info("Vui lòng đăng nhập để đăng ký tình nguyện");
+      navigate("/login", {
+        state: { from: `/projects/${effectiveProjectId}` },
+      });
       return;
     }
 
-
-    // ✅ Kiểm tra nếu đã có đơn
-    if (hasApplied && applicationStatus === 'PENDING') {
-      toast.info('Bạn đã có đơn đăng ký đang chờ xét duyệt');
+    if (isVolunteerFull && !hasApplied) {
+      toast.info("Dự án hiện đã tuyển đủ tình nguyện viên");
       return;
     }
 
-    if (hasApplied && applicationStatus === 'APPROVED') {
-      toast.success('Bạn đã được chấp nhận tham gia dự án này');
+    const blockedMessage = getActionBlockedMessage(applicationStatus);
+    if (hasApplied && blockedMessage) {
+      if (applicationStatus === "APPROVED") {
+        toast.success(blockedMessage);
+      } else {
+        toast.info(blockedMessage);
+      }
       return;
     }
 
-    // Nếu đơn bị từ chối, cho phép đăng ký lại
-    if (hasApplied && applicationStatus === 'REJECTED') {
-      // Cho phép tạo mới - cần xóa đơn cũ hoặc cho phép tạo mới
-      setShowModal(true);
-      return;
-    }
-
-    // Nếu đơn đã bị hủy, cho phép đăng ký lại
-    if (hasApplied && applicationStatus === 'CANCELLED') {
-      setShowModal(true);
-      return;
-    }
-
-    setShowModal(true);
+    setShowApplyModal(true);
   };
 
-  const handleCancelClick = (e) => {
-    e.stopPropagation();
-    if (!application?.id) {
-      toast.error('Không tìm thấy đơn đăng ký');
-      return;
-    }
-    setShowCancelConfirm(true);
-  };
+  const handleEditClick = (event) => {
+    event.stopPropagation();
 
-  const handleEditClick = (e) => {
-    e.stopPropagation();
-    if (!application?.id) {
-      toast.error('Không tìm thấy đơn đăng ký');
+    if (!applicationId) {
+      toast.error("Không tìm thấy đơn đăng ký");
       return;
     }
+
     setShowEditModal(true);
   };
 
-  const handleConfirmCancel = () => {
-    cancelMutation.mutate();
+  const handleCancelClick = (event) => {
+    event.stopPropagation();
+
+    if (!applicationId) {
+      toast.error("Không tìm thấy đơn đăng ký");
+      return;
+    }
+
+    setShowCancelConfirm(true);
   };
 
-  const handleUpdate = (updateData) => {
-    updateMutation.mutate(updateData);
+  const handleWithdrawClick = (event) => {
+    event.stopPropagation();
+
+    if (!applicationId) {
+      toast.error("Không tìm thấy đơn đăng ký");
+      return;
+    }
+
+    setShowWithdrawModal(true);
   };
 
-  // Nếu đang loading
-  if (isLoading) {
-    return (
-      <>
-        <button
-          disabled
-          className={`w-full py-4 text-base font-bold text-gray-400 bg-gray-100 rounded-2xl flex justify-center items-center gap-2 ${className}`}
-        >
-          <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Đang kiểm tra...
-        </button>
+  const handleConfirmCancel = async () => {
+    if (!applicationId) return;
 
-        {showCancelConfirm && (
-          <CancelConfirmModal
-            onClose={() => setShowCancelConfirm(false)}
-            onConfirm={handleConfirmCancel}
-            isPending={cancelMutation.isPending}
-          />
-        )}
-      </>
-    );
-  }
+    try {
+      await cancelApplication(applicationId);
+      toast.success("Đã hủy đơn đăng ký thành công");
+      setShowCancelConfirm(false);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Hủy đơn thất bại. Vui lòng thử lại."
+      );
+    }
+  };
 
-  // Nếu đã có đơn
-  if (hasApplied && statusConfig) {
+  const handleSubmitWithdraw = async (reason) => {
+    if (!applicationId) return;
+
+    try {
+      await requestWithdraw({
+        id: applicationId,
+        reason,
+      });
+      toast.success("Đã gửi yêu cầu xin rút thành công");
+      setShowWithdrawModal(false);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Gửi yêu cầu xin rút thất bại. Vui lòng thử lại."
+      );
+    }
+  };
+
+  const handleUpdate = async (updateData) => {
+    if (!applicationId) return;
+
+    try {
+      await updateApplication({
+        id: applicationId,
+        data: updateData,
+      });
+      toast.success("Cập nhật đơn đăng ký thành công");
+      setShowEditModal(false);
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Cập nhật thất bại. Vui lòng thử lại."
+      );
+    }
+  };
+
+  if (hasApplied) {
     const StatusIcon = statusConfig.icon;
+
     return (
       <>
         <div className="flex flex-col gap-2">
           <button
             disabled={statusConfig.disabled}
-            onClick={statusConfig.disabled ? undefined : handleClick}
-            className={`w-full py-4 text-base font-bold rounded-2xl flex justify-center items-center gap-2 ${statusConfig.className} ${className}`}
+            onClick={statusConfig.disabled ? undefined : handlePrimaryClick}
+            className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold ${statusConfig.className} ${className}`}
           >
-            <StatusIcon className="w-5 h-5" />
+            <StatusIcon className="h-5 w-5" />
             {statusConfig.text}
-            {applicationStatus === 'REJECTED' && (
-              <span className="text-xs ml-1">(Đăng ký lại)</span>
-            )}
           </button>
 
-          {/* Action Buttons Row */}
+          {isCheckingApplication ? (
+            <p className="text-xs text-slate-500">Đang đồng bộ trạng thái...</p>
+          ) : null}
+
+          {applicationStatus === "WITHDRAW_REQUESTED" && application?.withdrawReason ? (
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+              <div className="font-semibold">Lý do xin rút</div>
+              <div className="mt-1 whitespace-pre-wrap">
+                {application.withdrawReason}
+              </div>
+            </div>
+          ) : null}
+
+          {applicationStatus === "APPROVED" ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+              Nếu muốn rời dự án, bạn cần gửi yêu cầu xin rút và nêu rõ lý do để
+              organizer xét duyệt.
+            </div>
+          ) : null}
+
           <div className="flex gap-2">
-            {/* Nút chỉnh sửa */}
-            {statusConfig.showEdit && (
+            {statusConfig.showEdit ? (
               <button
                 onClick={handleEditClick}
-                disabled={updateMutation.isPending}
-                className="flex-1 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors flex justify-center items-center gap-2"
+                disabled={isUpdating}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-blue-50 py-2 text-sm font-medium text-blue-600 transition-colors hover:bg-blue-100"
               >
-                <Edit2 className="w-4 h-4" />
+                <Edit2 className="h-4 w-4" />
                 Chỉnh sửa
               </button>
-            )}
+            ) : null}
 
-            {/* Nút hủy đơn */}
-            {statusConfig.showCancel && (
+            {statusConfig.showCancel ? (
               <button
                 onClick={handleCancelClick}
-                disabled={cancelMutation.isPending}
-                className="flex-1 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors flex justify-center items-center gap-2"
+                disabled={isCancelling}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-50 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
               >
-                {cancelMutation.isPending ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Đang xử lý...
-                  </>
+                {isCancelling ? (
+                  "Đang xử lý..."
                 ) : (
                   <>
-                    <Trash2 className="w-4 h-4" />
-                    Hủy đơn
+                    <Trash2 className="h-4 w-4" />
+                    {statusConfig.cancelText}
                   </>
                 )}
               </button>
-            )}
+            ) : null}
+
+            {statusConfig.showWithdraw ? (
+              <button
+                onClick={handleWithdrawClick}
+                disabled={isRequestingWithdraw}
+                className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-orange-50 py-2 text-sm font-medium text-orange-700 transition-colors hover:bg-orange-100"
+              >
+                {isRequestingWithdraw ? (
+                  "Đang gửi..."
+                ) : (
+                  <>
+                    <Send className="h-4 w-4" />
+                    Xin rút
+                  </>
+                )}
+              </button>
+            ) : null}
           </div>
         </div>
 
-        {/* Edit Modal */}
-        {showEditModal && (
+        {showEditModal ? (
           <VolunteerEditModal
             isOpen={showEditModal}
             onClose={() => setShowEditModal(false)}
             application={application}
-            projectName={projectName}
+            project={project}
+            projectName={effectiveProjectName}
             onUpdate={handleUpdate}
-            isUpdating={updateMutation.isPending}
+            isUpdating={isUpdating}
           />
-        )}
+        ) : null}
 
-        {/* Cancel Confirm Modal */}
-        {showCancelConfirm && (
-          <CancelConfirmModal
-            onClose={() => setShowCancelConfirm(false)}
-            onConfirm={handleConfirmCancel}
-            isPending={cancelMutation.isPending}
-          />
-        )}
+        <CancelConfirmModal
+          isOpen={showCancelConfirm}
+          onClose={() => setShowCancelConfirm(false)}
+          onConfirm={handleConfirmCancel}
+          isPending={isCancelling}
+        />
+
+        <WithdrawRequestModal
+          isOpen={showWithdrawModal}
+          onClose={() => setShowWithdrawModal(false)}
+          onSubmit={handleSubmitWithdraw}
+          isPending={isRequestingWithdraw}
+        />
       </>
     );
   }
 
-  // Nếu chưa có đơn
   return (
     <>
-      <button
-        onClick={handleClick}
-        className={`w-full py-4 text-base font-bold text-gray-700 bg-gray-100 rounded-2xl hover:bg-gray-200 transition-colors flex justify-center items-center gap-2 ${className}`}
-      >
-        <Users className="w-5 h-5" /> Apply to Volunteer
-      </button>
+      <div className="space-y-2">
+        <button
+          onClick={handlePrimaryClick}
+          disabled={statusConfig.disabled}
+          className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all ${statusConfig.className} ${className}`}
+        >
+          <Users className="h-5 w-5" />
+          {statusConfig.text}
+        </button>
+
+        {isCheckingApplication ? (
+          <p className="text-xs text-slate-500">Đang đồng bộ trạng thái...</p>
+        ) : null}
+      </div>
 
       <VolunteerApplicationModal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        projectId={projectId}
-        projectName={projectName}
-        user={user}
+        isOpen={showApplyModal}
+        onClose={() => setShowApplyModal(false)}
+        project={project}
+        projectId={effectiveProjectId}
+        projectName={effectiveProjectName}
         onSuccess={() => {
-          setShowModal(false);
-          toast.success('Đăng ký thành công!');
-          refetch();
+          setShowApplyModal(false);
+          toast.success("Đăng ký thành công!");
         }}
       />
     </>
   );
 };
 
-// Cancel Confirm Modal Component
-const CancelConfirmModal = ({ onClose, onConfirm, isPending }) => {
+const BaseCenteredModal = ({ isOpen, onClose, children }) => {
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[10000]" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 max-w-md w-full mx-4" onClick={(e) => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-xl font-bold text-gray-900">Xác nhận hủy đơn</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <p className="text-gray-600 mb-6">
-          Bạn có chắc chắn muốn hủy đơn đăng ký tình nguyện này không?
-        </p>
-        <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50"
-          >
-            Giữ lại
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isPending}
-            className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50"
-          >
-            {isPending ? 'Đang xử lý...' : 'Xác nhận hủy'}
-          </button>
-        </div>
+    <div
+      className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/50"
+      onClick={onClose}
+    >
+      <div
+        className="mx-4 w-full max-w-md rounded-2xl bg-white p-6"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {children}
       </div>
     </div>
   );
 };
+
+const ModalHeader = ({ title, onClose }) => {
+  return (
+    <div className="mb-4 flex items-center justify-between">
+      <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+      <button onClick={onClose} className="rounded-lg p-1 hover:bg-gray-100">
+        <X className="h-5 w-5" />
+      </button>
+    </div>
+  );
+};
+
+const CancelConfirmModal = ({ isOpen, onClose, onConfirm, isPending }) => {
+  return (
+    <BaseCenteredModal isOpen={isOpen} onClose={onClose}>
+      <ModalHeader title="Xác nhận hủy đơn" onClose={onClose} />
+
+      <p className="mb-6 text-gray-600">
+        Bạn có chắc chắn muốn hủy đơn đăng ký tình nguyện này không?
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={onClose}
+          disabled={isPending}
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Giữ lại
+        </button>
+
+        <button
+          onClick={onConfirm}
+          disabled={isPending}
+          className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-medium text-white hover:bg-red-700 disabled:opacity-50"
+        >
+          {isPending ? "Đang xử lý..." : "Xác nhận hủy"}
+        </button>
+      </div>
+    </BaseCenteredModal>
+  );
+};
+
+const WithdrawRequestModal = ({ isOpen, onClose, onSubmit, isPending }) => {
+  const [reason, setReason] = useState("");
+
+  const handleClose = () => {
+    setReason("");
+    onClose();
+  };
+
+  const handleSubmit = () => {
+    const trimmedReason = reason.trim();
+    if (!trimmedReason) return;
+    onSubmit(trimmedReason);
+    setReason("");
+  };
+
+  return (
+    <BaseCenteredModal isOpen={isOpen} onClose={handleClose}>
+      <ModalHeader title="Gửi yêu cầu xin rút" onClose={handleClose} />
+
+      <p className="mb-4 text-gray-600">
+        Vui lòng nêu rõ lý do xin rút. Organizer sẽ đọc và quyết định đồng ý
+        hoặc từ chối.
+      </p>
+
+      <textarea
+        value={reason}
+        onChange={(e) => setReason(e.target.value)}
+        rows={5}
+        placeholder="Nhập lý do xin rút..."
+        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
+      />
+
+      <div className="mt-4 flex gap-3">
+        <button
+          onClick={handleClose}
+          disabled={isPending}
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Hủy
+        </button>
+
+        <button
+          onClick={handleSubmit}
+          disabled={isPending || !reason.trim()}
+          className="flex-1 rounded-lg bg-amber-500 px-4 py-2 font-bold text-slate-900 hover:bg-amber-600 disabled:opacity-50"
+        >
+          {isPending ? "Đang gửi..." : "Gửi yêu cầu"}
+        </button>
+      </div>
+    </BaseCenteredModal>
+  );
+};
+
+export default ApplyVolunteerButton;

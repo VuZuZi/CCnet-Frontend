@@ -1,102 +1,188 @@
-import { useFieldArray, useWatch } from 'react-hook-form';
-import { calculateUnallocatedAmount } from '@/features/project/utils/finance.utils';
-import { Plus, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import { MilestoneItem } from './MilestoneItem';
+import { Router } from "express";
+import { z } from "zod";
 
-const cn = (...inputs) => twMerge(clsx(inputs));
+import {
+  authenticate,
+  authorize,
+  optionalAuthenticate,
+} from "../../middlewares/auth.middleware.js";
+import { maybeAuthenticate } from "../../middlewares/maybeAuth.middleware.js";
+import {
+  requireKycTier,
+  ensureKycActive,
+  ensureKycValidFor,
+} from "../../middlewares/kyc.middleware.js";
+import {
+  validateBody,
+  validateQuery,
+} from "../../middlewares/validate.middleware.js";
+import { uploadMedia } from "../../middlewares/upload.middleware.js";
+import { scopePerRequest } from "../../middlewares/di.middleware.js";
 
-export function MilestonesBlock({ control, errors, isFunded, projectStartDate, projectEndDate }) {
-    const { fields, append, remove } = useFieldArray({ control, name: "milestones" });
+import {
+  createDraftSchema,
+  updateDraftSchema,
+  exploreQuerySchema,
+  workspaceQuerySchema,
+} from "./project.validation.js";
 
-    const targetAmount = useWatch({ control, name: 'targetAmount' }) || 0;
-    const milestones = useWatch({ control, name: 'milestones' }) || [];
+const router = Router();
 
-    const unallocatedAmount = calculateUnallocatedAmount(targetAmount, milestones);
-    const allocatedAmount = targetAmount - unallocatedAmount;
-    const allocationPercent = targetAmount > 0 ? Math.min((allocatedAmount / targetAmount) * 100, 100) : 0;
+router.use(scopePerRequest);
 
-    const isPerfectlyAllocated = unallocatedAmount === 0 && targetAmount > 0;
-    const isOverAllocated = unallocatedAmount < 0;
+const resolveProjectController = (req) => {
+  if (!req.scope) {
+    throw new Error("Bắt buộc phải có req.scope.");
+  }
 
-    return (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
-                <div className="w-full sm:flex-1">
-                    <h2 className="text-xl font-bold text-slate-900 mb-1">Tiến Độ Thực Thi (Milestones)</h2>
-                    <p className="text-sm text-slate-500 mb-4">Chia nhỏ dự án thành các giai đoạn để dễ quản lý và giải ngân.</p>
+  const controller = req.scope.resolve("projectController");
 
-                    {isFunded && (
-                        <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                            <div className="flex justify-between items-end mb-2 text-sm font-bold">
-                                <span className="text-slate-600">Phân bổ ngân sách mốc:</span>
-                                <span className={cn(
-                                    isPerfectlyAllocated ? "text-emerald-600" : isOverAllocated ? "text-red-500" : "text-amber-500"
-                                )}>
-                                    {allocatedAmount.toLocaleString()} / {targetAmount.toLocaleString()} VND
-                                </span>
-                            </div>
-                            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                                <div
-                                    className={cn(
-                                        "h-full rounded-full transition-all duration-500",
-                                        isPerfectlyAllocated ? "bg-emerald-500" : isOverAllocated ? "bg-red-500" : "bg-[#fbbf24]"
-                                    )}
-                                    style={{ width: `${allocationPercent}%` }}
-                                />
-                            </div>
-                            <div className="mt-2 flex justify-between items-center text-xs">
-                                <span className="text-slate-500">
-                                    {isOverAllocated ? "Vượt mức:" : "Chưa phân bổ:"}
-                                    <span className={cn("ml-1 font-bold", isOverAllocated ? "text-red-500" : "text-amber-500")}>
-                                        {Math.abs(unallocatedAmount).toLocaleString()} VND
-                                    </span>
-                                </span>
-                                {isPerfectlyAllocated && (
-                                    <span className="text-emerald-600 font-bold flex items-center gap-1">
-                                        <CheckCircle2 size={14} /> Khớp mục tiêu
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
+  if (!controller) {
+    throw new Error("Không resolve được projectController.");
+  }
 
-                <button
-                    type="button"
-                    onClick={() => append({ title: '', description: '', targetAmount: 0, startDate: null, endDate: null, deliverables: '' })}
-                    className="px-4 py-2.5 bg-[#fbbf24] text-white font-bold rounded-xl text-sm hover:bg-[#f59e0b] transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm shadow-[#fbbf24]/20 w-full sm:w-auto justify-center"
-                >
-                    <Plus size={18} /> Thêm Mốc Mới
-                </button>
-            </div>
+  return controller;
+};
 
-            {errors.milestones_sum && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 font-bold text-sm flex items-center gap-2">
-                    <AlertCircle size={18} /> {errors.milestones_sum.message}
-                </div>
-            )}
+const execute = (action) => async (req, res, next) => {
+  try {
+    const controller = resolveProjectController(req);
+    const handler = controller?.[action];
 
-            <div className="space-y-6">
-                {fields.map((field, idx) => (
-                    <MilestoneItem 
-                        key={field.id}
-                        idx={idx}
-                        field={field}
-                        remove={remove}
-                        isFunded={isFunded}
-                        projectStartDate={projectStartDate}
-                        projectEndDate={projectEndDate}
-                    />
-                ))}
-                
-                {fields.length === 0 && (
-                    <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-2xl bg-white">
-                        <p className="text-slate-500">Chưa có mốc thực thi nào. Bắt buộc phải có ít nhất 1 mốc.</p>
-                    </div>
-                )}
-            </div>
-        </div>
-    );
-}
+    if (typeof handler !== "function") {
+      throw new Error(`Action [${action}] không tồn tại.`);
+    }
+
+    await handler.call(controller, req, res, next);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// --- Middleware Groups ---
+const organizerOnly = [authenticate, authorize("Organizer")];
+
+const organizerKycTier1 = [
+  ...organizerOnly,
+  requireKycTier(1),
+  ensureKycActive,
+];
+
+const organizerSubmitGuards = [
+  ...organizerOnly,
+  ensureKycActive,
+  ensureKycValidFor(30),
+];
+
+// --- Schemas ---
+const reportProjectSchema = z.object({
+  reason_code: z.enum([
+    "spam",
+    "harassment",
+    "inappropriate",
+    "violence",
+    "hate_speech",
+    "other",
+  ]),
+  description: z.string().max(1000).optional(),
+});
+
+// --- Routes ---
+router.get("/featured", optionalAuthenticate, execute("getFeatured"));
+
+router.get("/volunteers-needed", execute("getVolunteerNeeded"));
+
+router.get(
+  "/explore",
+  optionalAuthenticate,
+  validateQuery(exploreQuerySchema),
+  execute("getExploreProjects")
+);
+
+router.get(
+  "/organizer/stats",
+  ...organizerOnly,
+  execute("getWorkspaceStats")
+);
+
+router.get(
+  "/organizer/my-projects",
+  ...organizerOnly,
+  validateQuery(workspaceQuerySchema),
+  execute("getWorkspaceProjects")
+);
+
+// Feed Routes
+router.get("/:id/feed/posts", maybeAuthenticate, execute("getFeedPosts"));
+
+router.post(
+  "/:id/feed/posts",
+  authenticate,
+  uploadMedia.single("media"),
+  execute("createFeedPost")
+);
+
+router.get(
+  "/:id/feed/posts/:postId/comments",
+  maybeAuthenticate,
+  execute("listFeedComments")
+);
+
+router.post(
+  "/:id/feed/posts/:postId/comments",
+  authenticate,
+  execute("createFeedComment")
+);
+
+router.post(
+  "/:id/feed/posts/:postId/like",
+  authenticate,
+  execute("toggleFeedPostLike")
+);
+
+router.post(
+  "/:id/feed/comments/:commentId/like",
+  authenticate,
+  execute("toggleFeedCommentLike")
+);
+
+// [CTO ADD]: Placeholder cho Step 2 (Public Evidence API)
+// router.get("/:projectId/milestones/:milestoneId/evidence", execute("getMilestoneEvidencePublic"));
+
+// Project Detail & Actions
+router.get("/:id", optionalAuthenticate, execute("getDetail"));
+
+router.post(
+  "/",
+  ...organizerKycTier1,
+  validateBody(createDraftSchema),
+  execute("createDraft")
+);
+
+router.put(
+  "/:id/draft",
+  ...organizerKycTier1,
+  validateBody(updateDraftSchema),
+  execute("updateDraft")
+);
+
+router.get(
+  "/:id/draft",
+  ...organizerOnly,
+  execute("getDraftDetail")
+);
+
+router.post(
+  "/:id/submit",
+  ...organizerSubmitGuards,
+  execute("submitForApproval")
+);
+
+router.post(
+  "/:id/report",
+  authenticate,
+  validateBody(reportProjectSchema),
+  execute("reportProject")
+);
+
+export default router;

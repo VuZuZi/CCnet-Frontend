@@ -3,12 +3,12 @@ import { cn } from '@/shared/components/ui/Button/Button';
 
 const STATUS_CONFIG = {
   PENDING: {
-    label: 'Submitted',
+    label: 'Pending Review',
     icon: Clock,
     className: 'border border-amber-200 bg-amber-100 text-amber-800',
   },
   VERIFIED: {
-    label: 'Published',
+    label: 'Verified',
     icon: CheckCircle,
     className: 'border border-emerald-200 bg-emerald-100 text-emerald-800',
   },
@@ -60,3 +60,5 @@ export function StatusBadge({ status, size = 'md', className }) {
     </div>
   );
 }
+
+export default StatusBadge;

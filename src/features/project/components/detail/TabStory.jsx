@@ -1,6 +1,7 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp, BookOpenText } from "lucide-react";
 
-import { useState } from 'react';
-import { ChevronDown, ChevronUp, BookOpenText } from 'lucide-react';
+const EMPTY_STORY_HTML = "<p>Chưa có thông tin chi tiết.</p>";
 
 export function TabStory({ project }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -15,15 +16,21 @@ export function TabStory({ project }) {
           </div>
         </div>
 
-        <div className={`relative rounded-2xl bg-slate-50/70 p-4 sm:p-6 transition-all duration-300 ${!isExpanded ? 'max-h-[540px] overflow-hidden' : ''}`}>
+        <div
+          className={`relative rounded-2xl bg-slate-50/70 p-4 sm:p-6 transition-all duration-300 ${
+            !isExpanded ? "max-h-[540px] overflow-hidden" : ""
+          }`}
+        >
           <div
             className="prose prose-slate max-w-none text-[15px] leading-7 text-slate-700"
-            dangerouslySetInnerHTML={{ __html: project?.description || '<p>Chưa có thông tin chi tiết.</p>' }}
+            dangerouslySetInnerHTML={{
+              __html: project?.description || EMPTY_STORY_HTML,
+            }}
           />
 
-          {!isExpanded && (
+          {!isExpanded ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-slate-50 via-slate-50/90 to-transparent" />
-          )}
+          ) : null}
         </div>
 
         <div className="mt-5 flex justify-center">
@@ -31,8 +38,12 @@ export function TabStory({ project }) {
             onClick={() => setIsExpanded((prev) => !prev)}
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
           >
-            {isExpanded ? 'Thu gọn nội dung' : 'Đọc thêm'}
-            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            {isExpanded ? "Thu gọn nội dung" : "Đọc thêm"}
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
           </button>
         </div>
       </div>
