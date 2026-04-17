@@ -40,7 +40,7 @@ function MemberItem({ member }) {
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-semibold text-slate-800">{name}</div>
         <div className="truncate text-xs text-slate-500">
-          {member?.email || member?.username || 'Member'}
+          {member?.email || member?.username || 'Thành viên'}
         </div>
       </div>
     </div>

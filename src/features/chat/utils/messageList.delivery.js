@@ -15,7 +15,6 @@ export function shouldShowDeliveryStatus(messages = [], index, currentUserId) {
     return false;
   }
 
-  // Chỉ hiện status cho tin nhắn mới nhất của mình trong toàn bộ danh sách.
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     const item = messages[i];
     const senderId = String(getSenderId(item?.senderId) || '');

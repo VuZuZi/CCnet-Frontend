@@ -26,7 +26,7 @@ export default function SeenAvatars({
           user?.userId?.fullName ||
           user?.name ||
           user?.email ||
-          'user';
+          'Người dùng';
 
         return avatar ? (
           <img

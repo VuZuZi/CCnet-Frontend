@@ -7,7 +7,7 @@ import { useProjectDraftStore } from "../stores/useProjectDraftStore";
 import { useProjectDraftDetail } from "../hooks/useProjectQueries";
 import { useHelpRequestAsProjectData } from "@/features/needHelp/hooks/useHelpRequestQueries";
 import { useToast } from "@/shared/contexts/ToastContext";
-import Step1Story from "../components/create-project/step1/Step1Story";
+import Step1Story from "../components/Step1Story";
 import Step2Budget from "../components/Step2Budget";
 import Step3Preview from "../components/create-project/step3/Step3Preview";
 
