@@ -27,6 +27,7 @@ export const useCreateDraftProject = () => {
 
 export const useUpdateDraftProject = () => {
   const toast = useToast();
+  const clearDeletedDocumentIds = useProjectDraftStore(state => state.clearDeletedDocumentIds);
 
   return useMutation({
     mutationFn: (variables) => {
@@ -35,6 +36,8 @@ export const useUpdateDraftProject = () => {
       return projectAPI.updateDraft({ id, data });
     },
     onSuccess: (_, variables) => {
+      clearDeletedDocumentIds();
+
       if (!variables?.silent) {
         toast.success('Đã cập nhật bản nháp thành công');
       }

@@ -74,25 +74,65 @@ export const useRefundMutation = () => {
             useTransactionLockStore.getState().lock('Đang xử lý hoàn tiền vào Ví...');
         },
         onSuccess: (res, variables) => {
-            toast.success('Xin hoàn tiền thành công! Số dư đã được cộng vào Ví của bạn.');
+            toast.success('Xin hoàn tiền thành công!');
 
             queryClient.invalidateQueries({ queryKey: WALLET_QUERY_KEYS.me() });
-            queryClient.invalidateQueries({ queryKey: WALLET_QUERY_KEYS.history({ limit: 10 }) });
-
             queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
 
-            if (variables.projectId) {
-                queryClient.invalidateQueries({
-                    queryKey: TRANSACTION_QUERY_KEYS.projectDonors(variables.projectId)
-                });
-                queryClient.invalidateQueries({ queryKey: ['projects', 'detail', variables.projectId] });
-            }
-        },
-        onError: (error) => {
-            toast.error(getErrorMessage(error) || 'Xin hoàn tiền thất bại.');
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            
+            queryClient.invalidateQueries({ queryKey: ['projects', 'explore'] });
         },
         onSettled: () => {
             useTransactionLockStore.getState().unlock();
+        }
+    });
+};
+
+export const useCheckStatusMutation = () => {
+    const toast = useToast();
+
+    return useMutation({
+        mutationFn: transactionAPI.checkStatus,
+        retry: false,
+        onError: (error) => {
+            toast.error(getErrorMessage(error) || 'Không thể kiểm tra trạng thái lúc này.');
+        }
+    });
+};
+
+export const useUpdateDonationMessageMutation = () => {
+    const toast = useToast();
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: transactionAPI.updateMessage,
+        retry: false,
+        onMutate: async ({ id, payload }) => {
+            await queryClient.cancelQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
+
+            const previousDonations = queryClient.getQueryData(TRANSACTION_QUERY_KEYS.myDonations());
+
+            queryClient.setQueriesData({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() }, (oldData) => {
+                if (!oldData || !oldData.donations) return oldData;
+                return {
+                    ...oldData,
+                    donations: oldData.donations.map(tx => 
+                        tx._id === id ? { ...tx, message: payload.message, isAnonymous: payload.isAnonymous } : tx
+                    )
+                };
+            });
+
+            return { previousDonations };
+        },
+        onError: (error, variables, context) => {
+            if (context?.previousDonations) {
+                queryClient.setQueryData(TRANSACTION_QUERY_KEYS.myDonations(), context.previousDonations);
+            }
+            toast.error(getErrorMessage(error) || 'Cập nhật lời nhắn thất bại.');
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
         }
     });
 };

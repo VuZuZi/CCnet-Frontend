@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Modal } from '@/shared/components/ui/Modal';
 import { useRefundMutation } from '../hooks/useTransactionMutations';
-import { AlertTriangle, Info } from 'lucide-react';
+import { AlertTriangle, ShieldCheck } from 'lucide-react';
 
 const refundSchema = z.object({
     reason: z.string().max(255, 'Lý do không quá 255 ký tự').optional(),
@@ -17,8 +17,9 @@ export function RefundModal({ isOpen, onClose, transaction }) {
 
     if (!transaction) return null;
 
+    const penaltyRate = 0.02; 
     const originalAmount = transaction.amount;
-    const penaltyFee = 3000 + Math.round(originalAmount * 0.01);
+    const penaltyFee = Math.round(originalAmount * penaltyRate);
     const refundAmount = originalAmount - penaltyFee;
 
     const handleClose = () => {
@@ -44,17 +45,28 @@ export function RefundModal({ isOpen, onClose, transaction }) {
 
                 <div className="space-y-3">
                     <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Số tiền gốc:</span>
+                        <span className="text-slate-500">Số tiền gốc (Đã quyên góp):</span>
                         <span className="font-bold text-slate-900">{originalAmount.toLocaleString()}đ</span>
                     </div>
+                    
                     <div className="flex justify-between text-sm">
-                        <span className="text-slate-500">Phí nền tảng (khấu trừ):</span>
+                        <span className="text-slate-500 flex items-center gap-1.5">
+                            Phí chống spam (Giữ lại dự án):
+                        </span>
                         <span className="font-bold text-rose-600">-{penaltyFee.toLocaleString()}đ</span>
                     </div>
+                    
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
                         <span className="text-base font-bold text-slate-900">Tiền thực nhận về Ví:</span>
                         <span className="text-xl font-black text-emerald-600">{refundAmount.toLocaleString()}đ</span>
                     </div>
+                </div>
+
+                <div className="flex items-start gap-2 rounded-xl bg-emerald-50 p-3">
+                    <ShieldCheck className="text-emerald-600 mt-0.5" size={16} />
+                    <p className="text-xs text-emerald-700 font-medium">
+                        Khoản phí {penaltyFee.toLocaleString()}đ sẽ được chuyển thẳng vào quỹ của dự án để hỗ trợ mục tiêu thiện nguyện. Hệ thống không thu thêm bất kỳ khoản phí nào.
+                    </p>
                 </div>
 
                 <div>
@@ -68,11 +80,11 @@ export function RefundModal({ isOpen, onClose, transaction }) {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                    <button type="button" onClick={handleClose} className="py-3.5 rounded-2xl font-bold text-slate-600 bg-slate-100">Hủy</button>
+                    <button type="button" onClick={handleClose} className="py-3.5 rounded-2xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">Hủy</button>
                     <button
                         type="submit"
                         disabled={refundMutation.isPending}
-                        className="py-3.5 rounded-2xl font-bold text-white bg-slate-900 hover:bg-rose-600 transition-colors"
+                        className="py-3.5 rounded-2xl font-bold text-white bg-slate-900 hover:bg-rose-600 transition-colors disabled:opacity-50"
                     >
                         Xác nhận hoàn
                     </button>

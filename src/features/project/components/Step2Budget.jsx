@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useNavigate } from 'react-router-dom';
 import { strictStep2Schema } from '../validations/projectSchema';
@@ -10,13 +10,11 @@ import { useToast } from '@/shared/contexts/ToastContext';
 import { ArrowLeft, ArrowRight, Save, Loader2 } from 'lucide-react';
 import { devConfig } from '@/config/app.config';
 
-// --- Utilities ---
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
-// --- UI Blocks ---
 import { FinancialPlanBlock } from './FinancialPlanBlock';
 import { BudgetBreakdownBlock } from './BudgetBreakdownBlock';
 import { MilestonesBlock } from './MilestonesBlock';
@@ -31,7 +29,7 @@ const getTierLimits = (tier) => {
   switch (tier) {
     case 3: return { maxFunding: 999999999999 };
     case 2: return { maxFunding: 200000000 };
-    case 1: 
+    case 1:
     default: return { maxFunding: 50000000 };
   }
 };
@@ -45,11 +43,11 @@ export default function Step2Budget() {
   const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
   const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
   const toast = useToast();
-  
+
   const isPending = isCreating || isUpdating;
   const isFunded = formData.projectType === 'FUNDED';
 
-  const { register, control, handleSubmit, setValue, getValues, formState: { errors } } = useForm({
+  const methods = useForm({
     resolver: zodResolver(strictStep2Schema(isFunded, maxFunding, formData.startDate, formData.endDate)),
     defaultValues: {
       targetAmount: formData.targetAmount || 0,
@@ -67,7 +65,8 @@ export default function Step2Budget() {
     }
   });
 
-  // Business Logic: Nếu là dự án Volunteer-only, tự động ép các giá trị tài chính về 0
+  const { register, control, handleSubmit, setValue, getValues, formState: { errors } } = methods;
+
   useEffect(() => {
     if (!isFunded) {
       setValue('needsVolunteers', true);
@@ -75,13 +74,12 @@ export default function Step2Budget() {
       setValue('mvpAmount', 0);
       setValue('budgetBreakdown', []);
       const currentMilestones = getValues('milestones') || [];
-      currentMilestones.forEach((_, idx) => {
-        setValue(`milestones.${idx}.targetAmount`, 0);
+      currentMilestones.forEach((m, idx) => {
+        if (m.targetAmount > 0) setValue(`milestones.${idx}.targetAmount`, 0);
       });
     }
   }, [isFunded, setValue, getValues]);
 
-  // Hàm Utils xử lý normalize data trước khi đẩy lên API
   const normalizeDataForSave = (data) => {
     const normalizedVolunteerRoles = (data.volunteerRoles || []).map((role) => ({
       title: role?.title || '',
@@ -146,72 +144,73 @@ export default function Step2Budget() {
   });
 
   return (
-    <form className="pb-32 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <fieldset disabled={isPending} className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed">
+    <FormProvider {...methods}>
+      <form className="pb-32 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <fieldset disabled={isPending} className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed">
 
-        {isFunded && (
-          <>
-            <FinancialPlanBlock control={control} errors={errors} />
-            <BudgetBreakdownBlock control={control} errors={errors} />
-          </>
-        )}
+          {isFunded && (
+            <>
+              <FinancialPlanBlock control={control} errors={errors} />
+              <BudgetBreakdownBlock control={control} errors={errors} />
+            </>
+          )}
 
-        <MilestonesBlock 
-          control={control} 
-          errors={errors} 
-          isFunded={isFunded} 
-          projectStartDate={formData.startDate} 
-          projectEndDate={formData.endDate} 
-        />
+          <MilestonesBlock
+            control={control}
+            errors={errors}
+            isFunded={isFunded}
+            projectStartDate={formData.startDate}
+            projectEndDate={formData.endDate}
+          />
 
-        <VolunteerRolesBlock 
-          control={control} 
-          register={register} 
-          errors={errors} 
-          setValue={setValue} 
-          isFunded={isFunded} 
-        />
+          <VolunteerRolesBlock
+            control={control}
+            register={register}
+            errors={errors}
+            setValue={setValue}
+            isFunded={isFunded}
+          />
 
-      </fieldset>
+        </fieldset>
 
-      {/* FOOTER NAVIGATION */}
-      <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 py-4 px-4 sm:px-6 lg:px-8 transition-all duration-300">
-        <div className="max-w-7xl mx-auto flex justify-between items-center gap-4">
-          <button 
-            type="button" 
-            onClick={prevStep} 
-            disabled={isPending} 
-            className="flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
-          >
-            <ArrowLeft size={18} /> Quay lại
-          </button>
-          
-          <div className="flex gap-4">
+        <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 py-4 px-4 sm:px-6 lg:px-8 transition-all duration-300">
+          <div className="max-w-7xl mx-auto flex justify-between items-center gap-4">
             <button
               type="button"
-              onClick={() => executeSave(getValues(), false)}
+              onClick={prevStep}
               disabled={isPending}
-              className="hidden md:flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
             >
-              <Save size={18} /> Lưu Nháp
+              <ArrowLeft size={18} /> Quay lại
             </button>
 
-            <button
-              type="button"
-              onClick={handleNextStep}
-              disabled={isPending}
-              className={cn(
-                "flex items-center gap-2 px-8 py-3 font-bold rounded-xl shadow-sm transition-all",
-                isPending ? "bg-slate-400 text-white" : "bg-[#fbbf24] text-white hover:bg-[#f59e0b] shadow-[#fbbf24]/20"
-              )}
-            >
-              {isPending && <Loader2 className="animate-spin" size={18} />}
-              {isPending ? 'Đang xử lý...' : 'Bước cuối: Xem trước'}
-              {!isPending && <ArrowRight size={18} />}
-            </button>
+            <div className="flex gap-4">
+              <button
+                type="button"
+                onClick={() => executeSave(getValues(), false)}
+                disabled={isPending}
+                className="hidden md:flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm disabled:opacity-50"
+              >
+                <Save size={18} /> Lưu Nháp
+              </button>
+
+              <button
+                type="button"
+                onClick={handleNextStep}
+                disabled={isPending}
+                className={cn(
+                  "flex items-center gap-2 px-8 py-3 font-bold rounded-xl shadow-sm transition-all",
+                  isPending ? "bg-slate-400 text-white" : "bg-[#fbbf24] text-white hover:bg-[#f59e0b] shadow-[#fbbf24]/20"
+                )}
+              >
+                {isPending && <Loader2 className="animate-spin" size={18} />}
+                {isPending ? 'Đang xử lý...' : 'Bước cuối: Xem trước'}
+                {!isPending && <ArrowRight size={18} />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </form>
+      </form>
+    </FormProvider>
   );
 }

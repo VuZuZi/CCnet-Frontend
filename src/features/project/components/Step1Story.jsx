@@ -6,7 +6,7 @@ import { strictStep1Schema } from '../validations/projectSchema';
 import { useAuthStore } from '@/features/auth/stores/useAuthStore';
 import { useProjectDraftStore } from '../stores/useProjectDraftStore';
 import { useCreateDraftProject, useUpdateDraftProject } from '../hooks/useProjectMutations';
-import { Shield, ArrowRight, Save, Loader2 } from 'lucide-react';
+import { Shield, ArrowRight, Save, Loader2, AlertCircle } from 'lucide-react';
 
 import LocationPicker from '@/shared/components/ui/LocationPicker';
 import { TipTapEditor } from '@/shared/components/ui/TipTapEditor';
@@ -33,6 +33,11 @@ export default function Step1Story() {
   const navigate = useNavigate();
   const toast = useToast();
   const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
+  const [isMediaUploading, setIsMediaUploading] = useState(false);
+
+  const [isTypeConfirmModalOpen, setIsTypeConfirmModalOpen] = useState(false);
+  const [pendingType, setPendingType] = useState(null);
+
   const [draftMeta, setDraftMeta] = useState({
     title: '',
     projectType: 'FUNDED',
@@ -71,8 +76,47 @@ export default function Step1Story() {
   });
 
   const isPending = isCreating || isUpdating;
+  const isSubmitDisabled = isPending || isMediaUploading;
+
   const projectTypeValue = watch('projectType');
   const titleValue = watch('title', '');
+
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isMediaUploading || isPending) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [isMediaUploading, isPending]);
+
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+    const currentType = getValues('projectType');
+    const hasBudgetData = formData?.targetAmount > 0 || (formData?.milestones?.some(m => m.targetAmount > 0));
+
+    if (currentType === 'FUNDED' && newType === 'VOLUNTEER_ONLY' && hasBudgetData) {
+      setPendingType(newType);
+      setIsTypeConfirmModalOpen(true);
+    } else {
+      setValue('projectType', newType, { shouldValidate: true, shouldDirty: true });
+    }
+  };
+
+  const confirmChangeType = () => {
+    if (pendingType) {
+      setValue('projectType', pendingType, { shouldValidate: true, shouldDirty: true });
+      updateFormData({
+        targetAmount: 0,
+        mvpAmount: 0,
+        budgetBreakdown: [],
+        milestones: formData?.milestones?.map(m => ({ ...m, targetAmount: 0 })) || []
+      });
+    }
+    setIsTypeConfirmModalOpen(false);
+  };
 
   const processPayload = (data) => {
     const safeDescription = data.description ? DOMPurify.sanitize(data.description) : '';
@@ -124,13 +168,18 @@ export default function Step1Story() {
     const payload = processPayload(validData);
     const fullFormData = { ...formData, ...payload };
     updateFormData(payload);
-    
+
     try {
       if (!projectId) {
         const created = await createDraft({ ...fullFormData, silent: true });
         if (created?._id && setProjectId) setProjectId(created._id);
       } else {
-        await updateDraft({ id: projectId, data: fullFormData, silent: true });
+        await updateDraft({
+          id: projectId,
+          data: { ...fullFormData, deletedDocumentIds: formData.deletedDocumentIds },
+          silent: true
+        });
+        clearDeletedDocumentIds();
       }
       nextStep();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -164,15 +213,15 @@ export default function Step1Story() {
     await executeSaveDraft(dataToSave, true);
   };
 
-  const handleRemoveDocument = (file) => {
-    if (file && file._id) {
-      addDeletedDocumentId(file._id);
+  const handleRemoveMedia = (fileToRemove) => {
+    if (fileToRemove && fileToRemove._id) {
+      addDeletedDocumentId(fileToRemove._id);
     }
   };
 
   return (
     <form onSubmit={handleNextStep} className="pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <fieldset disabled={isPending} className="grid grid-cols-1 lg:grid-cols-12 gap-8 group transition-opacity duration-300 disabled:opacity-60 disabled:cursor-not-allowed">
+      <fieldset disabled={isSubmitDisabled} className="grid grid-cols-1 lg:grid-cols-12 gap-8 group transition-opacity duration-300 disabled:opacity-60 disabled:cursor-not-allowed">
 
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
@@ -180,13 +229,27 @@ export default function Step1Story() {
               <h2 className="text-xl font-bold text-slate-900 mb-4">Project Type</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${projectTypeValue === 'FUNDED' ? 'border-primary bg-primary/5' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <input type="radio" value="FUNDED" {...register('projectType')} className="sr-only" />
+                  <input
+                    type="radio"
+                    value="FUNDED"
+                    name="projectType"
+                    checked={projectTypeValue === 'FUNDED'}
+                    onChange={handleTypeChange}
+                    className="sr-only"
+                  />
                   <div className="font-bold text-slate-900">Funded Project</div>
                   <p className="text-sm text-slate-500 mt-1">Raise funds and recruit volunteers.</p>
                 </label>
 
                 <label className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${projectTypeValue === 'VOLUNTEER_ONLY' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}>
-                  <input type="radio" value="VOLUNTEER_ONLY" {...register('projectType')} className="sr-only" />
+                  <input
+                    type="radio"
+                    value="VOLUNTEER_ONLY"
+                    name="projectType"
+                    checked={projectTypeValue === 'VOLUNTEER_ONLY'}
+                    onChange={handleTypeChange}
+                    className="sr-only"
+                  />
                   <div className="font-bold text-slate-900">Volunteer Only</div>
                   <p className="text-sm text-slate-500 mt-1">No fundraising, human resources only.</p>
                 </label>
@@ -331,6 +394,8 @@ export default function Step1Story() {
                 <MediaDropzone
                   value={field.value}
                   onChange={field.onChange}
+                  onRemove={handleRemoveMedia}
+                  onUploadingStatus={setIsMediaUploading}
                   maxFiles={1}
                   accept={{ 'image/*': [], 'video/*': [] }}
                   uploadContext="project_cover"
@@ -351,7 +416,8 @@ export default function Step1Story() {
                   <MediaDropzone
                     value={field.value}
                     onChange={field.onChange}
-                    onRemove={handleRemoveDocument}
+                    onRemove={handleRemoveMedia}
+                    onUploadingStatus={setIsMediaUploading}
                     maxFiles={5}
                     accept={{ 'application/pdf': [], 'image/*': [] }}
                     uploadContext="project_document"
@@ -371,21 +437,21 @@ export default function Step1Story() {
           <button
             type="button"
             onClick={openSaveModal}
-            disabled={isPending}
+            disabled={isSubmitDisabled}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
           >
-            <Save size={18} /> Save Draft & Exit
+            <Save size={18} /> {isMediaUploading ? 'Đang tải tệp...' : 'Save Draft & Exit'}
           </button>
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isSubmitDisabled}
             className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 font-bold rounded-xl transition-all shadow-sm
-              ${isPending ? 'bg-slate-400 text-white cursor-not-allowed' : 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-yellow-500/20'}`}
+              ${isSubmitDisabled ? 'bg-slate-400 text-white cursor-not-allowed' : 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-yellow-500/20'}`}
           >
             {isPending && <Loader2 className="animate-spin" size={20} />}
-            {isPending ? 'Processing...' : 'Next: Budget & Personnel'}
-            {!isPending && <ArrowRight size={20} />}
+            {isMediaUploading ? 'Vui lòng đợi ảnh tải lên...' : (isPending ? 'Processing...' : 'Next: Budget & Personnel')}
+            {!isSubmitDisabled && !isMediaUploading && <ArrowRight size={20} />}
           </button>
         </div>
       </div>
@@ -433,11 +499,44 @@ export default function Step1Story() {
               <button
                 type="button"
                 onClick={confirmSaveDraft}
-                disabled={isPending}
+                disabled={isSubmitDisabled}
                 className="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                <Save size={14} />
+                {isPending && <Loader2 className="animate-spin" size={14} />}
+                {!isPending && <Save size={14} />}
                 Lưu draft
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isTypeConfirmModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+              <AlertCircle className="text-red-600" size={24} />
+            </div>
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Xóa dữ liệu tài chính?</h3>
+              <p className="text-sm text-slate-500 mt-2">
+                Việc chuyển sang <b>Dự án tình nguyện</b> sẽ xóa toàn bộ kế hoạch ngân sách đã lập ở bước sau. Hành động này không thể hoàn tác.
+              </p>
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsTypeConfirmModalOpen(false)}
+                className="flex-1 px-4 py-2.5 font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={confirmChangeType}
+                className="flex-1 px-4 py-2.5 font-bold text-white bg-red-600 rounded-xl hover:bg-red-700"
+              >
+                Xác nhận xóa
               </button>
             </div>
           </div>

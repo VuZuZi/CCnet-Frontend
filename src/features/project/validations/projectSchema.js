@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { startOfDay } from 'date-fns';
 
 export const PROJECT_TYPE = ['FUNDED', 'VOLUNTEER_ONLY'];
 export const PROJECT_CATEGORY = ['Y_TE', 'GIAO_DUC', 'THIEN_TAI', 'XAY_DUNG', 'MOI_TRUONG', 'KHAC'];
@@ -43,7 +44,8 @@ export const draftStep2Schema = z.object({
     targetAmount: z.coerce.number().optional().default(0),
     startDate: z.coerce.date().optional().or(z.literal('')),
     endDate: z.coerce.date().optional().or(z.literal('')),
-    deliverables: z.string().optional()
+    deliverables: z.string().optional(),
+    location: locationSchema.optional()
   })).optional().default([]),
   needsVolunteers: z.boolean().default(false),
   volunteerRoles: z.array(z.any()).optional().default([]),
@@ -55,8 +57,19 @@ export const strictStep1Schema = (tierMaxDurationDays) => z.object({
   title: z.string().min(10, 'Tên dự án tối thiểu 10 ký tự').max(100, 'Tên dự án tối đa 100 ký tự'),
   category: z.enum(PROJECT_CATEGORY),
   location: locationSchema,
-  startDate: z.coerce.date({ required_error: "Vui lòng chọn ngày bắt đầu", invalid_type_error: "Ngày không hợp lệ" }),
-  endDate: z.coerce.date({ required_error: "Vui lòng chọn ngày kết thúc", invalid_type_error: "Ngày không hợp lệ" }),
+
+  startDate: z.coerce.date({ 
+    required_error: "Vui lòng chọn ngày bắt đầu", 
+    invalid_type_error: "Ngày không hợp lệ" 
+  }).refine((date) => {
+    return startOfDay(date) >= startOfDay(new Date());
+  }, { message: "Ngày bắt đầu không thể ở trong quá khứ" }),
+  
+  endDate: z.coerce.date({ 
+    required_error: "Vui lòng chọn ngày kết thúc", 
+    invalid_type_error: "Ngày không hợp lệ" 
+  }),
+
   description: z.string().min(200, 'Mô tả dự án phải chi tiết và dài tối thiểu 200 ký tự'),
   beneficiaryInfo: z.object({
     details: z.string().min(10, 'Vui lòng mô tả rõ người thụ hưởng')
@@ -74,7 +87,7 @@ export const strictStep1Schema = (tierMaxDurationDays) => z.object({
   if (end <= start) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Ngày kết thúc phải sau ngày bắt đầu', path: ['endDate'] });
   }
-  
+
   const durationDays = (end - start) / (1000 * 60 * 60 * 24);
   if (durationDays > tierMaxDurationDays) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Hạn mức KYC của bạn chỉ cho phép dự án dài tối đa ${tierMaxDurationDays} ngày`, path: ['endDate'] });
@@ -95,7 +108,8 @@ export const strictStep2Schema = (isFunded, tierCapMaxFunding, projectStartDate,
     targetAmount: z.coerce.number().optional().default(0),
     startDate: z.coerce.date({ required_error: "Bắt buộc" }).optional().or(z.literal('')),
     endDate: z.coerce.date({ required_error: "Bắt buộc" }).optional().or(z.literal('')),
-    deliverables: z.string().min(5, "Bắt buộc khai báo kết quả")
+    deliverables: z.string().min(5, "Bắt buộc khai báo kết quả"),
+    location: locationSchema.optional()
   })).optional().default([]),
   needsVolunteers: z.boolean().default(false),
   volunteerRoles: z.array(z.object({

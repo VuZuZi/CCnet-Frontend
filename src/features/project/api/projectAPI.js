@@ -26,7 +26,12 @@ const sanitizeMediaPayload = (mediaArray) => {
 };
 
 const cleanEmptyStrings = (obj) => {
+  if (obj instanceof Date) {
+    return obj;
+  }
+
   if (Array.isArray(obj)) return obj.map(cleanEmptyStrings);
+  
   if (obj !== null && typeof obj === 'object') {
     return Object.fromEntries(
       Object.entries(obj)
@@ -34,39 +39,47 @@ const cleanEmptyStrings = (obj) => {
         .filter(([_, v]) => v !== "")
     );
   }
+  
   return obj;
 };
 
 const prepareProjectPayload = (data) => {
   let payload = { ...data };
 
-  payload.coverMedia = sanitizeMediaPayload(data.coverMedia);
-  payload.documents = sanitizeMediaPayload(data.documents);
-
-  if (!payload.deletedDocumentIds || payload.deletedDocumentIds.length === 0) {
-    delete payload.deletedDocumentIds;
-  }
-
-  if (payload.startDate) payload.startDate = new Date(payload.startDate).toISOString();
-  if (payload.endDate) payload.endDate = new Date(payload.endDate).toISOString();
+  if (payload.coverMedia) payload.coverMedia = sanitizeMediaPayload(payload.coverMedia);
+  if (payload.documents) payload.documents = sanitizeMediaPayload(payload.documents);
 
   if (payload.milestones && Array.isArray(payload.milestones)) {
-    payload.milestones = payload.milestones.map((m) => ({
-      ...m,
-      startDate: m.startDate ? new Date(m.startDate).toISOString() : undefined,
-      endDate: m.endDate ? new Date(m.endDate).toISOString() : undefined,
-      targetAmount: m.targetAmount ? Number(m.targetAmount) : 0,
-    }));
+    payload.milestones = payload.milestones.map(m => {
+      const cleanedMilestone = { ...m };
+      
+      if (!cleanedMilestone.location || !cleanedMilestone.location.coordinates || cleanedMilestone.location.coordinates.length === 0) {
+        delete cleanedMilestone.location;
+      }
+      
+      delete cleanedMilestone.evidencePolicy;
+      
+      return cleanedMilestone;
+    });
   }
 
-  payload = cleanEmptyStrings(payload);
+  let finalPayload = cleanEmptyStrings(payload);
+  
+  if (Array.isArray(data.deletedDocumentIds)) {
+      finalPayload.deletedDocumentIds = data.deletedDocumentIds;
+  }
+  if (Array.isArray(data.volunteerRoles) && data.volunteerRoles.length === 0) {
+      finalPayload.volunteerRoles = [];
+  }
 
-  return payload;
+  return finalPayload;
 };
 
 export const projectAPI = {
   createDraft: async (data) => {
     const payload = prepareProjectPayload(data);
+    delete payload.deletedDocumentIds;
+
     const response = await httpClient.post('/project', payload);
     return response.data?.data;
   },

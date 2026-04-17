@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { X, UploadCloud, Loader2, CloudUpload, FileText, Image as ImageIcon } from 'lucide-react';
 import axios from 'axios';
@@ -9,6 +9,7 @@ export function MediaDropzone({
     value = [],
     onChange,
     onRemove,
+    onUploadingStatus,
     maxFiles = 5,
     accept = { 'image/*': [] },
     uploadContext = 'general',
@@ -16,6 +17,14 @@ export function MediaDropzone({
 }) {
     const [uploadingFiles, setUploadingFiles] = useState({});
     const toast = useToast();
+
+    const isUploadingAny = Object.values(uploadingFiles).some(item => !item.error);
+
+    useEffect(() => {
+        if (onUploadingStatus) {
+            onUploadingStatus(isUploadingAny);
+        }
+    }, [isUploadingAny, onUploadingStatus]);
 
     const dismissError = (fileId) => {
         setUploadingFiles(prev => {
@@ -118,8 +127,6 @@ export function MediaDropzone({
         const newValue = value.filter((_, index) => index !== indexToRemove);
         onChange(newValue);
     };
-
-    const isUploadingAny = Object.values(uploadingFiles).some(item => !item.error);
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
