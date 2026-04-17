@@ -44,18 +44,18 @@ const SharedItemPreview = ({ item, onCancel }) => {
           {item.thumbnail ? (
             <img
               src={item.thumbnail}
-              alt="Thumbnail"
+              alt="Ảnh đại diện"
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium bg-slate-100">
-              No Image
+              Không có ảnh
             </div>
           )}
           <span
             className={`absolute top-2 left-2 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded-md shadow-sm text-white ${isProject ? "bg-blue-600" : "bg-red-500"}`}
           >
-            {isProject ? "Project" : "Need Help"}
+            {isProject ? "Dự án" : "Cần giúp đỡ"}
           </span>
         </div>
 
@@ -99,7 +99,7 @@ const AttachmentGallery = ({ attachments, onRemove }) => {
           ) : (
             <img
               src={att.preview}
-              alt="preview"
+              alt="xem trước"
               className="size-20 object-cover rounded-lg border border-slate-100"
             />
           )}
@@ -201,8 +201,8 @@ const PostForm = ({
     isOverLimit;
 
   const placeholderText = sharedItem
-    ? "Say something about this..."
-    : `What's on your mind, ${user?.fullName || "friend"}?`;
+    ? "Chia sẻ thêm về điều này..."
+    : `${user?.fullName || "Bạn"} đang nghĩ gì vậy?`;
 
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-6 relative">
@@ -265,7 +265,7 @@ const PostForm = ({
               <span className="material-symbols-outlined text-amber-500">
                 image
               </span>
-              Photo/Video
+              Ảnh/Video
             </button>
           )}
         </div>
@@ -275,7 +275,7 @@ const PostForm = ({
           disabled={isPostDisabled}
           className="bg-amber-400 text-slate-900 text-sm font-bold px-6 py-2 rounded-xl hover:bg-amber-500 shadow-sm shadow-amber-400/30 disabled:opacity-50 transition-all min-w-[100px]"
         >
-          {createPost?.isPending ? "Posting..." : "Post"}
+          {createPost?.isPending ? "Đang đăng..." : "Đăng bài"}
         </button>
       </div>
     </div>

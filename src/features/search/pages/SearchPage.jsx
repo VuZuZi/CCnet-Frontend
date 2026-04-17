@@ -52,7 +52,7 @@ function getErrorMessage(error) {
     return apiMessage;
   }
 
-  return "Đã có lỗi xảy ra khi tải kết quả tìm kiếm.";
+  return "Có lỗi xảy ra khi tải kết quả tìm kiếm. Vui lòng thử lại sau.";
 }
 
 export default function SearchPage() {
@@ -62,17 +62,19 @@ export default function SearchPage() {
   const loadMoreRef = useRef(null);
 
   const query = String(searchParams.get("q") || "").trim();
-  const type = String(searchParams.get("type") || "all").trim().toLowerCase();
+  const type = String(searchParams.get("type") || "all")
+    .trim()
+    .toLowerCase();
 
   const filters = useMemo(
     () => ({
       recentOnly: parseBooleanParam(
         searchParams.get("recentOnly"),
-        DEFAULT_POST_FILTERS.recentOnly
+        DEFAULT_POST_FILTERS.recentOnly,
       ),
       viewedOnly: parseBooleanParam(
         searchParams.get("viewedOnly"),
-        DEFAULT_POST_FILTERS.viewedOnly
+        DEFAULT_POST_FILTERS.viewedOnly,
       ),
       dateOrder:
         String(searchParams.get("dateOrder") || DEFAULT_POST_FILTERS.dateOrder)
@@ -80,7 +82,7 @@ export default function SearchPage() {
           .toLowerCase() || "newest",
       location: String(searchParams.get("location") || "").trim(),
     }),
-    [searchParams]
+    [searchParams],
   );
 
   const postFiltersEnabled = shouldEnablePostFilters(type);
@@ -93,7 +95,7 @@ export default function SearchPage() {
         limit: PAGE_BATCH_SIZE,
         filters,
       }),
-    [query, type, filters]
+    [query, type, filters],
   );
 
   const searchQuery = useInfiniteQuery({
@@ -149,7 +151,10 @@ export default function SearchPage() {
       .filter(Boolean);
   }, [pages]);
 
-  const locationOptions = useMemo(() => buildLocationOptions(results), [results]);
+  const locationOptions = useMemo(
+    () => buildLocationOptions(results),
+    [results],
+  );
 
   useEffect(() => {
     const node = loadMoreRef.current;
@@ -167,7 +172,7 @@ export default function SearchPage() {
         root: null,
         rootMargin: "300px 0px",
         threshold: 0,
-      }
+      },
     );
 
     observer.observe(node);

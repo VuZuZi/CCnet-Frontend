@@ -1,11 +1,6 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  AlertTriangle,
-  BadgeCheck,
-  Heart,
-  Sparkles,
-} from "lucide-react";
+import { AlertTriangle, BadgeCheck, Heart, Sparkles } from "lucide-react";
 import { useFeaturedProject } from "@/features/project/hooks/useProjectQueries";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
@@ -69,13 +64,13 @@ function formatCompactCurrencyVND(value) {
 
   if (amount >= 1_000_000_000) {
     return `${(amount / 1_000_000_000).toFixed(
-      amount % 1_000_000_000 === 0 ? 0 : 1
+      amount % 1_000_000_000 === 0 ? 0 : 1,
     )}Bđ`;
   }
 
   if (amount >= 1_000_000) {
     return `${(amount / 1_000_000).toFixed(
-      amount % 1_000_000 === 0 ? 0 : 1
+      amount % 1_000_000 === 0 ? 0 : 1,
     )}Mđ`;
   }
 
@@ -98,17 +93,19 @@ function extractCurrentUserApplicationStatus(project) {
   ];
 
   const matched = candidates.find(
-    (value) => value !== null && value !== undefined
+    (value) => value !== null && value !== undefined,
   );
 
-  return String(matched || "").trim().toUpperCase();
+  return String(matched || "")
+    .trim()
+    .toUpperCase();
 }
 
 const SpotlightWidget = () => {
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
   const currentUserId = normalizeId(
-    currentUser?._id || currentUser?.id || currentUser?.userId
+    currentUser?._id || currentUser?.id || currentUser?.userId,
   );
 
   const { data: featuredProject, isLoading } = useFeaturedProject();
@@ -132,7 +129,7 @@ const SpotlightWidget = () => {
         <div className="flex items-center gap-2 bg-red-50 p-4">
           <AlertTriangle size={18} className="text-red-600" />
           <span className="text-xs font-bold uppercase text-red-700">
-            Urgent Need
+            Cần hỗ trợ gấp
           </span>
         </div>
 
@@ -169,7 +166,7 @@ const SpotlightWidget = () => {
       <div className="flex items-center gap-2 bg-red-50 p-4">
         <AlertTriangle size={18} className="text-red-600" />
         <span className="text-xs font-bold uppercase text-red-700">
-          Urgent Need
+          Cần hỗ trợ gấp
         </span>
       </div>
 

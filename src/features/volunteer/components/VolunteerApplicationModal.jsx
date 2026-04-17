@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { ShieldCheck, Sparkles, X } from 'lucide-react';
-import { VolunteerApplicationForm } from './VolunteerApplicationForm';
-import { useAuthStore } from '@/features/auth/stores/useAuthStore';
+import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
+import { ShieldCheck, Sparkles, X } from "lucide-react";
+import { VolunteerApplicationForm } from "./VolunteerApplicationForm";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
 export const VolunteerApplicationModal = ({
   isOpen,
@@ -23,7 +23,7 @@ export const VolunteerApplicationModal = ({
     if (!isOpen) return;
 
     const handleEsc = (event) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onClose?.();
       }
     };
@@ -33,15 +33,15 @@ export const VolunteerApplicationModal = ({
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
-    window.addEventListener('keydown', handleEsc);
-    document.body.style.overflow = 'hidden';
+    window.addEventListener("keydown", handleEsc);
+    document.body.style.overflow = "hidden";
 
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
 
     return () => {
-      window.removeEventListener('keydown', handleEsc);
+      window.removeEventListener("keydown", handleEsc);
       document.body.style.overflow = previousOverflow;
       document.body.style.paddingRight = previousPaddingRight;
     };
@@ -54,12 +54,12 @@ export const VolunteerApplicationModal = ({
     onClose?.();
   };
 
-  const displayName = user?.fullName || user?.name || 'Người dùng';
-  const displayEmail = user?.email || '';
+  const displayName = user?.fullName || user?.name || "Người dùng";
+  const displayEmail = user?.email || "";
   const displayInitial =
     user?.fullName?.charAt(0)?.toUpperCase() ||
     user?.name?.charAt(0)?.toUpperCase() ||
-    'U';
+    "U";
 
   const modalContent = (
     <div
@@ -77,11 +77,11 @@ export const VolunteerApplicationModal = ({
             <div className="min-w-0">
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#F4DE9A] bg-[#FFF7D6] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#A16207]">
                 <Sparkles size={12} />
-                Volunteer Application
+                Đơn đăng ký tình nguyện
               </div>
 
               <p className="truncate text-sm font-medium text-slate-500">
-                {projectName || project?.title || 'Dự án'}
+                {projectName || project?.title || "Dự án"}
               </p>
 
               <h2 className="mt-1 text-2xl font-black tracking-tight text-[#0F2747]">
@@ -89,7 +89,8 @@ export const VolunteerApplicationModal = ({
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                Hoàn thiện thông tin đăng ký để organizer xem xét hồ sơ của bạn.
+                Hoàn thiện thông tin đăng ký để ban tổ chức xem xét hồ sơ của
+                bạn.
               </p>
             </div>
 
@@ -140,7 +141,7 @@ export const VolunteerApplicationModal = ({
 
               <div className="inline-flex w-fit items-center gap-2 rounded-2xl border border-amber-200 bg-white px-4 py-3 text-sm font-bold text-amber-800 shadow-sm">
                 <ShieldCheck size={18} />
-                Trust Score: {user?.trustScore || 850}
+                Điểm tin cậy: {user?.trustScore || 850}
               </div>
             </div>
           </div>

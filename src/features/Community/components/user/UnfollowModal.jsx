@@ -10,23 +10,23 @@ export const UnfollowModal = ({
 }) => {
   if (!isOpen || !user) return null;
 
-  const titleOf = user?.fullName || user?.email || "this user";
+  const titleOf = user?.fullName || user?.email || "người dùng này";
 
   return (
     <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
       <div className="bg-white rounded-xl shadow-lg w-full max-w-md overflow-hidden flex flex-col">
         <div className="px-6 py-4 border-b border-light-gray flex justify-between items-center bg-white">
-          <h3 className="font-bold text-lg text-black m-0">Unfollow</h3>
+          <h3 className="font-bold text-lg text-black m-0">Bỏ theo dõi</h3>
         </div>
         <div className="p-6 text-black bg-white">
-          Are you sure you want to unfollow <strong>{titleOf}</strong>?
+          Bạn có chắc chắn muốn bỏ theo dõi <strong>{titleOf}</strong> không?
         </div>
         <div className="px-6 py-4 border-t border-light-gray bg-off-white flex justify-end gap-3 rounded-b-xl">
           <Button variant="secondary" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
           <Button variant="danger" isLoading={isPending} onClick={onConfirm}>
-            Unfollow
+            Bỏ theo dõi
           </Button>
         </div>
       </div>

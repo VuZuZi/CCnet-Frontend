@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   CheckCircle,
   XCircle,
@@ -135,7 +135,7 @@ export const VolunteerManager = ({
     if (!Array.isArray(applications) || !applications.length) return;
 
     const found = applications.find(
-      (app) => String(app?._id || "") === String(highlightedApplicationId)
+      (app) => String(app?._id || "") === String(highlightedApplicationId),
     );
 
     if (!found) return;
@@ -162,7 +162,9 @@ export const VolunteerManager = ({
       setApproveTarget(null);
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || error?.message || "Duyệt đơn thất bại"
+        error?.response?.data?.message ||
+          error?.message ||
+          "Duyệt đơn thất bại",
       );
     }
   };
@@ -179,7 +181,9 @@ export const VolunteerManager = ({
       setRejectTarget(null);
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || error?.message || "Từ chối đơn thất bại"
+        error?.response?.data?.message ||
+          error?.message ||
+          "Từ chối đơn thất bại",
       );
     }
   };
@@ -193,7 +197,9 @@ export const VolunteerManager = ({
       setRestoreTarget(null);
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || error?.message || "Khôi phục đơn thất bại"
+        error?.response?.data?.message ||
+          error?.message ||
+          "Khôi phục đơn thất bại",
       );
     }
   };
@@ -209,7 +215,7 @@ export const VolunteerManager = ({
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Xử lý yêu cầu xin rút thất bại"
+          "Xử lý yêu cầu xin rút thất bại",
       );
     }
   };
@@ -228,7 +234,7 @@ export const VolunteerManager = ({
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Từ chối yêu cầu xin rút thất bại"
+          "Từ chối yêu cầu xin rút thất bại",
       );
     }
   };
@@ -245,7 +251,7 @@ export const VolunteerManager = ({
       }
     } catch (error) {
       toast.error(
-        error?.response?.data?.message || "Không thể mở cuộc trò chuyện"
+        error?.response?.data?.message || "Không thể mở cuộc trò chuyện",
       );
     }
   };
@@ -433,12 +439,12 @@ export const VolunteerManager = ({
                           {volunteer?.avatar ? (
                             <img
                               src={volunteer.avatar}
-                              alt={volunteer?.fullName || "Volunteer"}
+                              alt={volunteer?.fullName || "Tình nguyện viên"}
                               className="h-full w-full object-cover"
                             />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center bg-[#FFF8DC] text-xl font-black text-[#B45309]">
-                              {volunteer?.fullName?.charAt(0) || "V"}
+                              {volunteer?.fullName?.charAt(0) || "T"}
                             </div>
                           )}
                         </div>
@@ -447,7 +453,7 @@ export const VolunteerManager = ({
                           <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                             <div className="min-w-0">
                               <h3 className="truncate text-lg font-black text-slate-900">
-                                {volunteer?.fullName || "Volunteer"}
+                                {volunteer?.fullName || "Tình nguyện viên"}
                               </h3>
 
                               <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
@@ -458,7 +464,7 @@ export const VolunteerManager = ({
                                     ? format(
                                         new Date(app.createdAt),
                                         "dd/MM/yyyy",
-                                        { locale: vi }
+                                        { locale: vi },
                                       )
                                     : "--/--/----"}
                                 </span>
@@ -493,7 +499,7 @@ export const VolunteerManager = ({
                             {app.status === "WITHDRAW_REQUESTED" ? (
                               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
                                 <LogOut className="h-3.5 w-3.5" />
-                                Đang chờ organizer phản hồi
+                                Đang chờ ban tổ chức phản hồi
                               </span>
                             ) : null}
                           </div>
@@ -519,7 +525,8 @@ export const VolunteerManager = ({
                             </div>
                           ) : null}
 
-                          {app.status === "WITHDRAW_REQUESTED" && app.withdrawReason ? (
+                          {app.status === "WITHDRAW_REQUESTED" &&
+                          app.withdrawReason ? (
                             <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
                               <div className="text-xs font-bold uppercase tracking-[0.12em] text-amber-600">
                                 Lý do xin rút
@@ -621,7 +628,9 @@ export const VolunteerManager = ({
 
       <RejectApplicationModal
         open={Boolean(rejectTarget)}
-        volunteerName={rejectTarget?.volunteerId?.fullName || "Tình nguyện viên"}
+        volunteerName={
+          rejectTarget?.volunteerId?.fullName || "Tình nguyện viên"
+        }
         isPending={isRejecting}
         onClose={() => setRejectTarget(null)}
         onSubmit={handleRejectConfirm}
@@ -813,7 +822,7 @@ const RejectWithdrawModal = ({
 
       <p className="mb-4 text-gray-600">
         Bạn có thể nhập ghi chú cho {volunteerName}. Ghi chú này sẽ được gửi lại
-        cho volunteer.
+        cho tình nguyện viên.
       </p>
 
       <textarea

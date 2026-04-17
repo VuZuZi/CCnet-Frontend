@@ -1,9 +1,14 @@
-import React, { useMemo, useState } from 'react';
-import { BriefcaseBusiness, CalendarRange, FileText } from 'lucide-react';
-import { useVolunteerMutations } from '../hooks/useVolunteerMutations';
-import { useToast } from '@/shared/contexts/ToastContext';
+import React, { useMemo, useState } from "react";
+import { BriefcaseBusiness, CalendarRange, FileText } from "lucide-react";
+import { useVolunteerMutations } from "../hooks/useVolunteerMutations";
+import { useToast } from "@/shared/contexts/ToastContext";
 
-export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCancel }) => {
+export const VolunteerApplicationForm = ({
+  project,
+  projectId,
+  onSuccess,
+  onCancel,
+}) => {
   const { createApplication, isCreating } = useVolunteerMutations();
   const toast = useToast();
 
@@ -12,7 +17,7 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
 
     return project.volunteerRoles
       .map((role, index) => {
-        const title = String(role?.title || '').trim();
+        const title = String(role?.title || "").trim();
         const quantity = Number(role?.quantity || 0);
 
         if (!title) return null;
@@ -25,36 +30,37 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
           skillsRequired: Array.isArray(role?.skillsRequired)
             ? role.skillsRequired.filter(Boolean)
             : [],
-          duration: role?.duration || '',
-          location: role?.location || '',
+          duration: role?.duration || "",
+          location: role?.location || "",
         };
       })
       .filter(Boolean);
   }, [project]);
 
   const availabilityOptions = [
-    { value: 'FULL_TIME', label: 'Full-time' },
-    { value: 'PART_TIME', label: 'Part-time' },
-    { value: 'WEEKENDS', label: 'Weekends' },
-    { value: 'FLEXIBLE', label: 'Flexible' },
+    { value: "FULL_TIME", label: "Toàn thời gian" },
+    { value: "PART_TIME", label: "Bán thời gian" },
+    { value: "WEEKENDS", label: "Cuối tuần" },
+    { value: "FLEXIBLE", label: "Linh hoạt" },
   ];
 
   const [formData, setFormData] = useState({
     opportunityId: projectId,
-    skills: '',
-    availability: '',
-    motivation: '',
+    skills: "",
+    availability: "",
+    motivation: "",
   });
 
   const [errors, setErrors] = useState({});
 
-  const selectedRole = roleOptions.find((role) => role.value === formData.skills) || null;
+  const selectedRole =
+    roleOptions.find((role) => role.value === formData.skills) || null;
 
   const handleSelectRole = (roleValue) => {
     setFormData((prev) => ({ ...prev, skills: roleValue }));
 
     if (errors.skills) {
-      setErrors((prev) => ({ ...prev, skills: '' }));
+      setErrors((prev) => ({ ...prev, skills: "" }));
     }
   };
 
@@ -62,7 +68,7 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
     setFormData((prev) => ({ ...prev, availability: availabilityValue }));
 
     if (errors.availability) {
-      setErrors((prev) => ({ ...prev, availability: '' }));
+      setErrors((prev) => ({ ...prev, availability: "" }));
     }
   };
 
@@ -70,7 +76,7 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
     setFormData((prev) => ({ ...prev, motivation: e.target.value }));
 
     if (errors.motivation) {
-      setErrors((prev) => ({ ...prev, motivation: '' }));
+      setErrors((prev) => ({ ...prev, motivation: "" }));
     }
   };
 
@@ -78,17 +84,17 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
     const newErrors = {};
 
     if (!formData.skills) {
-      newErrors.skills = 'Vui lòng chọn vị trí ứng tuyển';
+      newErrors.skills = "Vui lòng chọn vị trí ứng tuyển";
     }
 
     if (!formData.availability) {
-      newErrors.availability = 'Vui lòng chọn một khung thời gian';
+      newErrors.availability = "Vui lòng chọn một khung thời gian";
     }
 
     if (!formData.motivation.trim()) {
-      newErrors.motivation = 'Vui lòng chia sẻ động lực tham gia';
+      newErrors.motivation = "Vui lòng chia sẻ động lực tham gia";
     } else if (formData.motivation.trim().length < 10) {
-      newErrors.motivation = 'Nội dung nên có ít nhất 10 ký tự';
+      newErrors.motivation = "Nội dung nên có ít nhất 10 ký tự";
     }
 
     setErrors(newErrors);
@@ -113,7 +119,7 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
       const message =
         error?.response?.data?.message ||
         error?.message ||
-        'Đăng ký thất bại. Vui lòng thử lại sau.';
+        "Đăng ký thất bại. Vui lòng thử lại sau.";
 
       toast.error(message);
     }
@@ -151,8 +157,8 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
                     onClick={() => handleSelectRole(role.value)}
                     className={`rounded-[22px] border p-4 text-left transition-all ${
                       isActive
-                        ? 'border-amber-300 bg-amber-50 shadow-sm ring-2 ring-amber-100'
-                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                        ? "border-amber-300 bg-amber-50 shadow-sm ring-2 ring-amber-100"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                     }`}
                   >
                     <div className="flex items-start justify-between gap-3">
@@ -170,8 +176,8 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
                       <div
                         className={`mt-1 h-4 w-4 rounded-full border-2 ${
                           isActive
-                            ? 'border-amber-500 bg-amber-500'
-                            : 'border-slate-300 bg-white'
+                            ? "border-amber-500 bg-amber-500"
+                            : "border-slate-300 bg-white"
                         }`}
                       />
                     </div>
@@ -194,7 +200,7 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
             </div>
           ) : (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
-              Dự án hiện chưa cấu hình danh sách vai trò volunteer.
+              Dự án hiện chưa cấu hình danh sách vai trò tình nguyện viên.
             </div>
           )}
 
@@ -208,7 +214,7 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
                 <div>Địa điểm: {selectedRole.location}</div>
               ) : null}
               {selectedRole.duration ? (
-                <div className={selectedRole.location ? 'mt-1' : ''}>
+                <div className={selectedRole.location ? "mt-1" : ""}>
                   Thời lượng: {selectedRole.duration}
                 </div>
               ) : null}
@@ -243,14 +249,14 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
                 onClick={() => handleSelectAvailability(option.value)}
                 className={`group rounded-full px-5 py-3 text-sm font-bold transition-all ${
                   isSelected
-                    ? 'border border-amber-300 bg-amber-50 text-amber-800 shadow-sm'
-                    : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900'
+                    ? "border border-amber-300 bg-amber-50 text-amber-800 shadow-sm"
+                    : "border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
                 }`}
               >
                 <span className="inline-flex items-center gap-2">
                   <span
                     className={`h-2.5 w-2.5 rounded-full ${
-                      isSelected ? 'bg-amber-500' : 'bg-slate-300'
+                      isSelected ? "bg-amber-500" : "bg-slate-300"
                     }`}
                   />
                   {option.label}
@@ -275,21 +281,22 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
               Giới thiệu bản thân
             </h3>
             <p className="text-sm text-slate-500">
-              Hãy cho organizer thấy vì sao bạn phù hợp với dự án này
+              Hãy cho ban tổ chức thấy vì sao bạn phù hợp với dự án này
             </p>
           </div>
         </div>
 
         <div className="space-y-2">
           <label className="block text-sm font-bold text-slate-800">
-            Lý do bạn muốn tham gia dự án này <span className="text-red-500">*</span>
+            Lý do bạn muốn tham gia dự án này{" "}
+            <span className="text-red-500">*</span>
           </label>
 
           <div
             className={`overflow-hidden rounded-[24px] border bg-white transition-all ${
               errors.motivation
-                ? 'border-red-400'
-                : 'border-slate-200 shadow-sm'
+                ? "border-red-400"
+                : "border-slate-200 shadow-sm"
             }`}
           >
             <textarea
@@ -306,15 +313,15 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
                 <p className="text-sm text-red-500">{errors.motivation}</p>
               ) : (
                 <p className="text-sm text-slate-500">
-                  Nội dung rõ ràng sẽ giúp organizer đánh giá tốt hơn.
+                  Nội dung rõ ràng sẽ giúp ban tổ chức đánh giá tốt hơn.
                 </p>
               )}
 
               <div
                 className={`rounded-full px-3 py-1 text-xs font-bold ${
                   motivationLength >= 10
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'bg-slate-100 text-slate-500'
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-slate-100 text-slate-500"
                 }`}
               >
                 {motivationLength} ký tự
@@ -325,23 +332,23 @@ export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCanc
       </section>
 
       <div className="flex justify-end gap-3 pt-4 border-t">
-  <button
-    type="button"
-    onClick={onCancel}
-    disabled={isCreating}
-    className="px-5 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100"
-  >
-    Hủy
-  </button>
+        <button
+          type="button"
+          onClick={onCancel}
+          disabled={isCreating}
+          className="px-5 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100"
+        >
+          Hủy
+        </button>
 
-  <button
-    type="submit"
-    disabled={isCreating || roleOptions.length === 0}
-    className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold"
-  >
-    {isCreating ? 'Đang gửi...' : 'Gửi đơn đăng ký'}
-  </button>
-</div>
+        <button
+          type="submit"
+          disabled={isCreating || roleOptions.length === 0}
+          className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold"
+        >
+          {isCreating ? "Đang gửi..." : "Gửi đơn đăng ký"}
+        </button>
+      </div>
     </form>
   );
 };

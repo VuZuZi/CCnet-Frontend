@@ -66,7 +66,7 @@ const PostTheaterMode = ({
   if (!post) return null;
 
   const authorName =
-    post.author?.fullName || post.author?.username || "Anonymous";
+    post.author?.fullName || post.author?.username || "Người ẩn danh";
   const authorInitials = authorName.substring(0, 1).toUpperCase();
   const totalComments = post.stats?.comments || 0;
   const hasMoreComments = allComments.length < totalComments;
@@ -114,7 +114,7 @@ const PostTheaterMode = ({
         className="fixed left-6 top-6 z-[10000] flex items-center gap-2 text-slate-300 hover:text-white font-medium transition-colors"
       >
         <span className="material-symbols-outlined text-xl">arrow_back</span>
-        Back
+        Quay lại
       </button>
 
       {/* 3. KHUNG HIỂN THỊ CHÍNH Ở GIỮA: Đã thêm e.stopPropagation() để chặn click lan ra nền đen */}
@@ -141,7 +141,7 @@ const PostTheaterMode = ({
                   {authorName}
                 </h4>
                 <p className="text-[11px] uppercase tracking-tighter text-gray-400">
-                  Community Member
+                  Thành viên cộng đồng
                 </p>
               </div>
             </div>
@@ -166,7 +166,7 @@ const PostTheaterMode = ({
             <div className="mb-3 flex w-full items-center justify-between border-y border-gray-50 py-2 text-xs font-bold text-gray-500">
               <span>{totalComments} Bình luận</span>
               <span className="font-normal text-gray-400">
-                {new Date(post.createdAt).toLocaleDateString()}
+                {new Date(post.createdAt).toLocaleDateString("vi-VN")}
               </span>
             </div>
 

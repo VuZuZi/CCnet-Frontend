@@ -4,21 +4,17 @@ const formatTimeAgo = (dateString) => {
   const diffInSeconds = Math.floor((new Date() - new Date(dateString)) / 1000);
   if (diffInSeconds < 60) return "vừa xong";
   const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `${diffInMinutes}ph trước`;
+  if (diffInMinutes < 60) return `${diffInMinutes} phút trước`;
   const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `${diffInHours}giờ trước`;
-  return `${Math.floor(diffInHours / 24)}ngày trước`;
+  if (diffInHours < 24) return `${diffInHours} giờ trước`;
+  return `${Math.floor(diffInHours / 24)} ngày trước`;
 };
 
-const CommentItem = ({
-  comment,
-  isReply = false,
-  targetCommentId = "",
-}) => {
+const CommentItem = ({ comment, isReply = false, targetCommentId = "" }) => {
   if (!comment) return null;
 
   const authorName =
-    comment.author?.fullName || comment.author?.username || "Anonymous";
+    comment.author?.fullName || comment.author?.username || "Người ẩn danh";
   const authorInitials = authorName.substring(0, 1).toUpperCase();
   const commentId = comment._id || comment.id || "";
   const isTarget =

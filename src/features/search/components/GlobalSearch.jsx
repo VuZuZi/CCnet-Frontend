@@ -67,7 +67,7 @@ export default function GlobalSearch() {
         <input
           type="text"
           className="h-10 w-full rounded-full border border-slate-200 bg-slate-50/90 pl-10 pr-10 text-sm text-slate-800 shadow-sm transition-all duration-200 placeholder:text-slate-400 focus:border-amber-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-amber-100/70"
-          placeholder="Search"
+          placeholder="Tìm kiếm"
           value={query}
           onFocus={() => setOpen(true)}
           onChange={(event) => {
@@ -90,7 +90,9 @@ export default function GlobalSearch() {
           role="listbox"
         >
           {isLoading ? (
-            <div className="px-4 py-3 text-sm text-slate-500">Searching...</div>
+            <div className="px-4 py-3 text-sm text-slate-500">
+              Đang tìm kiếm...
+            </div>
           ) : groups.length > 0 ? (
             groups.map((group) => (
               <div
@@ -140,7 +142,9 @@ export default function GlobalSearch() {
               </div>
             ))
           ) : (
-            <div className="px-4 py-3 text-sm text-slate-500">No results found</div>
+            <div className="px-4 py-3 text-sm text-slate-500">
+              Không tìm thấy kết quả
+            </div>
           )}
         </div>
       ) : null}

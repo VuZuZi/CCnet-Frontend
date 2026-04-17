@@ -53,7 +53,7 @@ const UserItem = ({ user }) => {
             {displayName}
           </Link>
           <p className="text-slate-400 text-[10px] line-clamp-1">
-            {user.role || "Member"}
+            {user.role || "Thành viên"}
           </p>
         </div>
       </div>
@@ -70,8 +70,8 @@ const UserItem = ({ user }) => {
         {isLoading || follow.isPending || unfollow.isPending
           ? "..."
           : isFollowing
-            ? "Following"
-            : "Follow"}
+            ? "Đang theo dõi"
+            : "Theo dõi"}
       </button>
     </div>
   );
@@ -84,7 +84,7 @@ const SuggestedUsers = () => {
   if (isLoading) {
     return (
       <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 text-center text-sm text-slate-400 animate-pulse">
-        Loading suggestions...
+        Đang tải gợi ý...
       </div>
     );
   }
@@ -101,7 +101,7 @@ const SuggestedUsers = () => {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
       <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4 px-1">
-        Suggested for you
+        Gợi ý cho bạn
       </h3>
       <div className="space-y-4">
         {filteredUsers.map((user) => (
