@@ -19,8 +19,8 @@ export const STATUS_OPTIONS = [
 
 export const TYPE_OPTIONS = [
   { value: "ALL", label: "Tất cả loại dự án" },
-  { value: "FUNDED", label: "Funded" },
-  { value: "VOLUNTEER_ONLY", label: "Volunteer Only" },
+  { value: "FUNDED", label: "Dự án gây quỹ" },
+  { value: "VOLUNTEER_ONLY", label: "Chỉ tình nguyện viên" },
 ];
 
 export const STATUS_LABELS = {
@@ -33,7 +33,7 @@ export const STATUS_LABELS = {
 };
 
 export const getWorkspaceTypeLabel = (projectType) =>
-  projectType === "VOLUNTEER_ONLY" ? "Volunteer Only" : "Funded";
+  projectType === "VOLUNTEER_ONLY" ? "Chỉ tình nguyện viên" : "Dự án gây quỹ";
 
 export const getVisiblePages = (currentPage, totalPages, windowSize = 5) => {
   const pages = [];

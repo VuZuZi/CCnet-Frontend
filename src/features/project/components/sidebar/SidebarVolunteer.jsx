@@ -42,7 +42,7 @@ function getVolunteerStatusMeta(status) {
         iconClass: "bg-white text-amber-700",
         label: "Đang chờ duyệt rút",
         description:
-          "Bạn đã gửi yêu cầu xin rút khỏi dự án. Hãy chờ organizer phản hồi.",
+          "Bạn đã gửi yêu cầu xin rút khỏi dự án. Hãy chờ người tổ chức phản hồi.",
       };
 
     case "APPROVED":
@@ -90,7 +90,7 @@ export function SidebarVolunteer({
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700">
             <Sparkles size={11} />
-            Volunteer Mode
+            Chế độ tình nguyện viên
           </div>
 
           <h2 className="text-lg font-extrabold text-slate-900">
@@ -98,7 +98,7 @@ export function SidebarVolunteer({
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Theo dõi tiến độ dự án và mở nhanh các hành động dành cho tình nguyện
+            Theo dõi tiến độ dự án và mở nhanh các thao tác dành cho tình nguyện
             viên.
           </p>
         </div>
@@ -106,7 +106,7 @@ export function SidebarVolunteer({
         <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-white shadow-sm">
           <ShieldCheck className="h-4 w-4" />
           <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
-            Member
+            Thành viên
           </span>
         </div>
       </div>
@@ -156,7 +156,7 @@ export function SidebarVolunteer({
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
             <CalendarDays className="h-4 w-4" />
-            Timeline
+            Thời gian
           </div>
           <p className="text-sm font-bold text-slate-900">
             {formatDateRange(project?.startDate, project?.endDate)}
@@ -166,7 +166,7 @@ export function SidebarVolunteer({
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
             <Users className="h-4 w-4" />
-            Volunteers
+            Tình nguyện viên
           </div>
           <p className="text-sm font-bold text-slate-900">
             {currentVolunteers}
@@ -194,7 +194,7 @@ export function SidebarVolunteer({
       {isFunded ? (
         <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
-            Funds in Escrow
+            Quỹ đang được giữ
           </p>
 
           <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
@@ -202,7 +202,7 @@ export function SidebarVolunteer({
           </div>
 
           <p className="mt-1 text-sm text-slate-500">
-            Goal: {formatCurrency(targetAmount)}đ
+            Mục tiêu: {formatCurrency(targetAmount)}đ
           </p>
 
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-amber-100">
@@ -229,7 +229,8 @@ export function SidebarVolunteer({
         <div className="mb-3">
           <p className="text-sm font-bold text-slate-900">Nhóm dự án</p>
           <p className="mt-1 text-xs text-slate-500">
-            Trao đổi với organizer và các tình nguyện viên khác trong group chat.
+            Trao đổi với người tổ chức và các tình nguyện viên khác trong nhóm
+            chat.
           </p>
         </div>
 
@@ -252,7 +253,7 @@ export function SidebarVolunteer({
         <div className="mb-3">
           <p className="text-sm font-bold text-slate-900">Cộng đồng dự án</p>
           <p className="mt-1 text-xs text-slate-500">
-            Theo dõi cập nhật mới, bài đăng và tương tác của cộng đồng dự án.
+            Theo dõi cập nhật mới, bài đăng và tương tác trong cộng đồng dự án.
           </p>
         </div>
 

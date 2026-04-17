@@ -4,7 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { DonateModal } from "@/features/transaction/components/DonateModal";
 import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
-import { useFollowMutations } from "@/features/community/hooks/useFollow";
+import { useFollowMutations } from "@/features/Community/hooks/useFollow";
 import { useReportProject } from "@/features/project/hooks/useProjectMutations.js";
 import { PROJECT_QUERY_KEYS } from "@/features/project/hooks/useProjectQueries";
 import { useToast } from "@/shared/contexts/ToastContext";

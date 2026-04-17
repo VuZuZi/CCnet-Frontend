@@ -24,7 +24,7 @@ export function WorkspaceDraftSection({
         <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-bold text-slate-600">
           {isDraftLoading || isDraftFetching
             ? "Đang tải..."
-            : `${filteredDraftProjects.length} draft`}
+            : `${filteredDraftProjects.length} bản nháp`}
         </span>
       </div>
 
@@ -45,7 +45,7 @@ export function WorkspaceDraftSection({
             <input
               value={draftKeyword}
               onChange={onDraftKeywordChange}
-              placeholder="Tìm draft theo tên, category, địa chỉ..."
+              placeholder="Tìm bản nháp theo tên, danh mục, địa chỉ..."
               className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
             />
           </label>

@@ -16,7 +16,7 @@ export function SidebarOrganizerCard({
       <div className="flex min-w-0 items-center gap-3">
         <img
           src={organizer?.avatar || "https://ui-avatars.com/api/?name=Org"}
-          alt="Organizer"
+          alt="Người tổ chức"
           className="h-12 w-12 rounded-full border border-gray-200 object-cover"
         />
 

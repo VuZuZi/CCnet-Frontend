@@ -209,7 +209,7 @@ export function ProjectCard({ project }) {
                   <span className="text-slate-900">
                     {currentAmount.toLocaleString("vi-VN")} đ{" "}
                     <span className="text-xs font-normal text-slate-500">
-                      đã góp
+                      đã đóng góp
                     </span>
                   </span>
                   <span className={fundingCompleted ? "text-emerald-600" : "text-amber-500"}>

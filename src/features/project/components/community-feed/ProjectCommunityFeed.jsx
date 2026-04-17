@@ -92,7 +92,7 @@ export function ProjectCommunityFeed({
   const handleCreatePost = async () => {
     if (!canPost) {
       toast.error(
-        "Chỉ project owner hoặc volunteer đã được duyệt mới có thể đăng feed."
+        "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể đăng bài."
       );
       return;
     }
@@ -152,7 +152,7 @@ export function ProjectCommunityFeed({
   const handleCreateComment = async (postId) => {
     if (!canEngage) {
       toast.error(
-        "Chỉ project owner hoặc volunteer đã được duyệt mới có thể bình luận."
+        "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể bình luận."
       );
       return;
     }
@@ -176,23 +176,22 @@ export function ProjectCommunityFeed({
   };
 
   const handleDonateClick = () => {
-    toast.success("Tính năng Donate đang được phát triển.");
+    toast.success("Tính năng ủng hộ đang được phát triển.");
   };
 
   const postLockedPlaceholder =
-    "Chỉ project owner và volunteer đã được duyệt mới có thể đăng feed trong dự án này.";
+    "Chỉ chủ dự án và tình nguyện viên đã được duyệt mới có thể đăng bài trong dự án này.";
   const engageLockedPlaceholder =
-    "Chỉ project owner và volunteer đã được duyệt mới có thể tương tác...";
+    "Chỉ chủ dự án và tình nguyện viên đã được duyệt mới có thể tương tác...";
 
   return (
     <section className="space-y-5">
-      {/* HEADER */}
       <div className="rounded-[28px] border border-amber-200/70 bg-gradient-to-r from-[#FFF8E6] via-[#FFFFFF] to-[#EFF6FF] p-5 shadow-sm">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="inline-flex items-center gap-2 rounded-full border border-amber-300/70 bg-white/80 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-amber-700">
               <Sparkles size={13} />
-              Community Feed
+              Bảng tin cộng đồng
             </p>
 
             <h3 className="mt-2 text-xl font-black tracking-tight text-slate-900">
@@ -200,12 +199,11 @@ export function ProjectCommunityFeed({
             </h3>
 
             <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-600">
-              Chỉ project owner hoặc volunteer đã được duyệt mới được đăng bài,
-              bình luận và thả tim trong feed dự án.
+              Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới được đăng bài,
+              bình luận và thả tim trong bảng tin.
             </p>
           </div>
 
-          {/* FIXED STAT BOX */}
           <div className="shrink-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
@@ -242,17 +240,17 @@ export function ProjectCommunityFeed({
 
       {postsQuery.isLoading && (
         <div className="rounded-[24px] border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-500 shadow-sm">
-          Đang tải feed dự án...
+          Đang tải bảng tin...
         </div>
       )}
 
       {!postsQuery.isLoading && posts.length === 0 && (
         <div className="rounded-[24px] border border-dashed border-slate-300 bg-white/80 p-10 text-center shadow-sm">
           <p className="text-base font-bold text-slate-700">
-            Chưa có bài viết nào trong dự án này
+            Chưa có bài viết nào
           </p>
           <p className="mt-2 text-sm text-slate-500">
-            Hãy là người đầu tiên đăng cập nhật để cộng đồng theo dõi tiến độ.
+            Hãy là người đầu tiên đăng cập nhật
           </p>
         </div>
       )}
@@ -282,19 +280,19 @@ export function ProjectCommunityFeed({
           type="button"
           onClick={() => postsQuery.fetchNextPage()}
           disabled={postsQuery.isFetchingNextPage}
-          className="w-full rounded-2xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50"
+          className="w-full rounded-2xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-700 hover:bg-slate-50"
         >
-          {postsQuery.isFetchingNextPage ? "Loading..." : "Load more"}
+          {postsQuery.isFetchingNextPage ? "Đang tải..." : "Tải thêm"}
         </button>
       )}
 
       {(!canPost || !canEngage) && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-800">
           <div className="flex items-start gap-2">
-            <Lock size={16} className="mt-0.5 flex-shrink-0" />
+            <Lock size={16} className="mt-0.5" />
             <p>
-              Bạn cần là chủ dự án hoặc volunteer đã được duyệt để đăng bài và
-              tương tác trong Community Feed.
+              Bạn cần là chủ dự án hoặc tình nguyện viên đã được duyệt để đăng bài và
+              tương tác.
             </p>
           </div>
         </div>

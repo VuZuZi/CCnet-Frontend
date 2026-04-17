@@ -50,7 +50,7 @@ export const getPreviewValidationItems = (formData) => {
     }
 
     if (!normalizePreviewArray(formData?.milestones).length) {
-      items.push("Thiếu milestones ngân sách");
+      items.push("Thiếu các mốc ngân sách");
     }
   }
 
@@ -58,7 +58,7 @@ export const getPreviewValidationItems = (formData) => {
     formData?.needsVolunteers &&
     !normalizePreviewArray(formData?.volunteerRoles).length
   ) {
-    items.push("Đã bật tuyển TNV nhưng chưa có vị trí tuyển");
+    items.push("Đã bật tuyển tình nguyện viên nhưng chưa có vị trí tuyển");
   }
 
   return items;
@@ -68,17 +68,17 @@ export const isPreviewReadyToSubmit = (formData) =>
   getPreviewValidationItems(formData).length === 0;
 
 export const getPreviewProjectTypeLabel = (projectType) =>
-  projectType === "VOLUNTEER_ONLY" ? "Volunteer Only" : "Funded";
+  projectType === "VOLUNTEER_ONLY" ? "Chỉ tuyển tình nguyện viên" : "Dự án gây quỹ";
 
 export const getPreviewCategoryLabel = (category) => {
   const categoryMap = {
-    Y_TE: "Healthcare",
-    GIAO_DUC: "Education",
-    THIEN_TAI: "Disaster Relief",
-    XAY_DUNG: "Infrastructure",
-    MOI_TRUONG: "Environmental Protection",
-    KHAC: "Other",
+    Y_TE: "Y tế",
+    GIAO_DUC: "Giáo dục",
+    THIEN_TAI: "Cứu trợ thiên tai",
+    XAY_DUNG: "Xây dựng hạ tầng",
+    MOI_TRUONG: "Bảo vệ môi trường",
+    KHAC: "Khác",
   };
 
-  return categoryMap[category] || "Not selected";
+  return categoryMap[category] || "Chưa chọn";
 };

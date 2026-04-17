@@ -27,14 +27,14 @@ export function FeedCommentList({
             <div className="mb-1 flex items-center justify-between gap-3">
               <div className="flex min-w-0 items-center gap-2">
                 <span className="truncate text-sm font-bold text-slate-900">
-                  {comment.author?.fullName || "User"}
+                  {comment.author?.fullName || "Người dùng"}
                 </span>
 
                 {comment.author?.isVerified ? (
                   <BadgeCheck
                     size={14}
                     className="flex-shrink-0 text-blue-500"
-                    title="Verified"
+                    title="Đã xác minh"
                   />
                 ) : null}
 
@@ -48,7 +48,7 @@ export function FeedCommentList({
                 onClick={() => {
                   if (!canEngage) {
                     toast.error(
-                      "Chỉ project owner hoặc volunteer đã được duyệt mới có thể thả tim.",
+                      "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể thả tim.",
                     );
                     return;
                   }

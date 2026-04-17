@@ -24,51 +24,51 @@ export function PreviewProjectCard({ formData }) {
         </PreviewStatusPill>
 
         {formData?.needsVolunteers ? (
-          <PreviewStatusPill tone="emerald">Needs Volunteers</PreviewStatusPill>
+          <PreviewStatusPill tone="emerald">Cần tình nguyện viên</PreviewStatusPill>
         ) : null}
       </div>
 
       <div>
         <h2 className="text-2xl font-black tracking-tight text-slate-900">
-          {formData?.title || "Untitled project"}
+          {formData?.title || "Dự án chưa có tiêu đề"}
         </h2>
 
         <p className="mt-2 text-sm text-slate-500">
-          {formData?.location?.address || "No location yet"}
+          {formData?.location?.address || "Chưa có địa điểm"}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
-            Beneficiaries
+            Đối tượng thụ hưởng
           </p>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-            {formData?.beneficiaryInfo?.details || "No beneficiary details"}
+            {formData?.beneficiaryInfo?.details || "Chưa có thông tin đối tượng thụ hưởng"}
           </p>
         </div>
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
-            Timeline
+            Thời gian thực hiện
           </p>
           <p className="mt-2 text-sm leading-6 text-slate-700">
-            Start: {formData?.startDate || "N/A"}
+            Bắt đầu: {formData?.startDate || "Chưa cập nhật"}
           </p>
           <p className="text-sm leading-6 text-slate-700">
-            End: {formData?.endDate || "N/A"}
+            Kết thúc: {formData?.endDate || "Chưa cập nhật"}
           </p>
         </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
-          Story
+          Câu chuyện dự án
         </p>
         <div
           className="prose prose-slate mt-3 max-w-none text-sm"
           dangerouslySetInnerHTML={{
-            __html: formData?.description || "<p>No project story yet.</p>",
+            __html: formData?.description || "<p>Chưa có câu chuyện dự án.</p>",
           }}
         />
       </div>
@@ -76,7 +76,7 @@ export function PreviewProjectCard({ formData }) {
       {formData?.projectType === "FUNDED" ? (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-amber-700">
-            Fundraising
+            Gây quỹ
           </p>
           <p className="mt-2 text-lg font-black text-slate-900">
             {formatMoney(formData?.targetAmount)}đ
@@ -90,7 +90,7 @@ export function PreviewProjectCard({ formData }) {
                   className="rounded-xl border border-amber-200 bg-white p-3"
                 >
                   <p className="font-bold text-slate-900">
-                    {milestone?.title || `Milestone ${index + 1}`}
+                    {milestone?.title || `Mốc ${index + 1}`}
                   </p>
                   <p className="mt-1 text-sm text-slate-600">
                     {formatMoney(milestone?.targetAmount)}đ
@@ -105,12 +105,12 @@ export function PreviewProjectCard({ formData }) {
       {formData?.needsVolunteers ? (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-emerald-700">
-            Volunteer Roles
+            Vị trí tình nguyện viên
           </p>
 
           {volunteerRoles.length === 0 ? (
             <p className="mt-2 text-sm text-emerald-700">
-              No volunteer roles added yet.
+              Chưa có vị trí tình nguyện viên nào.
             </p>
           ) : (
             <div className="mt-4 space-y-3">
@@ -121,7 +121,7 @@ export function PreviewProjectCard({ formData }) {
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <p className="font-bold text-slate-900">
-                      {role?.title || `Role ${index + 1}`}
+                      {role?.title || `Vị trí ${index + 1}`}
                     </p>
                     <p className="text-sm font-semibold text-emerald-700">
                       {Number(role?.quantity || 0)} người
@@ -130,13 +130,13 @@ export function PreviewProjectCard({ formData }) {
 
                   {role?.skills ? (
                     <p className="mt-1 text-sm text-slate-600">
-                      Skills: {role.skills}
+                      Kỹ năng: {role.skills}
                     </p>
                   ) : null}
 
                   {role?.location ? (
                     <p className="mt-1 text-sm text-slate-600">
-                      Location/Time: {role.location}
+                      Địa điểm/Thời gian: {role.location}
                     </p>
                   ) : null}
                 </div>

@@ -12,9 +12,9 @@ import Step2Budget from "../components/Step2Budget";
 import Step3Preview from "../components/create-project/step3/Step3Preview";
 
 const STEPS = [
-  { id: 1, title: "Story & Evidence" },
-  { id: 2, title: "Budget & Volunteers" },
-  { id: 3, title: "Preview & Submit" },
+  { id: 1, title: "Câu chuyện & minh chứng" },
+  { id: 2, title: "Ngân sách & tình nguyện viên" },
+  { id: 3, title: "Xem trước & gửi duyệt" },
 ];
 
 const parseDateLocal = (isoString) => {
@@ -208,7 +208,7 @@ export function CreateProjectPage() {
 
           <div className="hidden md:flex items-center text-sm text-slate-500 gap-1.5 ml-8 mt-2">
             <CheckCircle2 size={18} className="text-slate-400" />
-            Draft saved just now
+            Vừa lưu bản nháp
 
             <span className="mx-2 text-slate-300">|</span>
             <button
@@ -253,7 +253,7 @@ export function CreateProjectPage() {
                   onClick={handleDiscardDraft}
                   className="flex-1 px-4 py-2.5 font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
                 >
-                  Xác nhận Hủy
+                  Xác nhận hủy
                 </button>
               </div>
             </div>

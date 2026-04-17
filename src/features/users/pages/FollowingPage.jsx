@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useMyFollowing } from "../hooks/useMyFollowing";
 import { useMyFollowers } from "../hooks/useMyFollowers";
-import { useFollowMutations } from "../../community/hooks/useFollow";
+import { useFollowMutations } from "../../Community/hooks/useFollow";
 
 import { useToast } from "@/shared/contexts/ToastContext";
 import { UserCard } from "../../Community/components/user/UserCard";

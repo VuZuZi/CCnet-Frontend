@@ -8,7 +8,7 @@ import {
   useVolunteerNeededProjects,
   useProjectCategoryCounts,
 } from "../hooks/useProjectQueries";
-import { useMyFollowing } from "@/features/community/hooks/useFollow";
+import { useMyFollowing } from "@/features/Community/hooks/useFollow";
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import { useDebounce } from "@/shared/hooks/useDebounce";
 

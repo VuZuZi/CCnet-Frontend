@@ -191,7 +191,7 @@ export default function Step2Budget() {
                 disabled={isPending}
                 className="hidden md:flex items-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm disabled:opacity-50"
               >
-                <Save size={18} /> Lưu Nháp
+                <Save size={18} /> Lưu bản nháp
               </button>
 
               <button

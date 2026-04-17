@@ -12,12 +12,12 @@ export function TabStory({ project }) {
         <div className="mb-5 flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-amber-700">
             <BookOpenText size={14} />
-            Project Story
+            Câu chuyện dự án
           </div>
         </div>
 
         <div
-          className={`relative rounded-2xl bg-slate-50/70 p-4 sm:p-6 transition-all duration-300 ${
+          className={`relative rounded-2xl bg-slate-50/70 p-4 transition-all duration-300 sm:p-6 ${
             !isExpanded ? "max-h-[540px] overflow-hidden" : ""
           }`}
         >

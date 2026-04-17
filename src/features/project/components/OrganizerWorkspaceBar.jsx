@@ -62,7 +62,7 @@ export function OrganizerWorkspaceBar() {
             to="/workspace"
             className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-600 sm:flex-none"
           >
-            Vào Workspace
+            Vào không gian làm việc
             <ArrowRight size={16} />
           </Link>
         </div>
@@ -88,7 +88,7 @@ export function OrganizerWorkspaceBar() {
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-600 sm:w-auto"
         >
           <FolderHeart size={16} />
-          Xem dự án đã tham gia
+          Xem các dự án đã tham gia
           <ArrowRight size={16} />
         </Link>
       </div>

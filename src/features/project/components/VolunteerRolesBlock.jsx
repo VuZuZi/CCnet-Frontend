@@ -41,7 +41,7 @@ export function VolunteerRolesBlock({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-bold text-slate-900">
-            Tuyển Tình Nguyện Viên
+            Tuyển tình nguyện viên
           </h2>
           <p className="text-sm text-slate-500 mt-1">
             Kêu gọi nguồn lực con người hỗ trợ dự án.
@@ -54,7 +54,7 @@ export function VolunteerRolesBlock({
             !isFunded ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
           )}
           title={
-            !isFunded ? "Dự án Volunteer-only bắt buộc phải tuyển TNV" : ""
+            !isFunded ? "Dự án chỉ tình nguyện viên bắt buộc phải tuyển TNV" : ""
           }
         >
           <input
@@ -85,11 +85,11 @@ export function VolunteerRolesBlock({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pr-8">
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Vai trò / Vị trí
+                    Vai trò / vị trí
                   </label>
                   <input
                     {...register(`volunteerRoles.${idx}.title`)}
-                    placeholder="VD: Thợ xây, Bác sĩ, Dạy học..."
+                    placeholder="VD: Thợ xây, bác sĩ, dạy học..."
                     className={cn(
                       "w-full p-2.5 border rounded-xl outline-none transition-colors",
                       errors.volunteerRoles?.[idx]?.title
@@ -141,7 +141,7 @@ export function VolunteerRolesBlock({
                         { shouldValidate: true, shouldDirty: true },
                       )
                     }
-                    placeholder="VD: Biết trộn hồ, Y tá cấp cứu..."
+                    placeholder="VD: Biết trộn hồ, y tá cấp cứu..."
                     className={cn(
                       "w-full p-2.5 border rounded-xl outline-none transition-colors",
                       errors.volunteerRoles?.[idx]?.skillsRequired
@@ -158,7 +158,7 @@ export function VolunteerRolesBlock({
 
                 <div>
                   <label className="text-xs font-bold text-slate-600 block mb-1">
-                    Địa điểm & Thời gian
+                    Địa điểm & thời gian
                   </label>
                   <input
                     {...register(`volunteerRoles.${idx}.location`)}

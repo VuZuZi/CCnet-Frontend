@@ -39,7 +39,7 @@ export function FeedComposer({
               className="min-h-[96px] w-full resize-y rounded-xl border border-transparent bg-white px-3 py-2 text-sm text-slate-700 outline-none transition focus:border-amber-300 focus:ring-2 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-slate-100"
               placeholder={
                 canPost
-                  ? "Chia sẻ cập nhật mới về tiến độ, hoạt động, hoặc lời cảm ơn..."
+                  ? "Chia sẻ cập nhật mới về tiến độ, hoạt động hoặc lời cảm ơn..."
                   : postLockedPlaceholder
               }
               disabled={!canPost || createPost.isPending}
@@ -52,7 +52,7 @@ export function FeedComposer({
             <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
               {postMedia.type === "image" ? (
                 <img
-                  alt="preview"
+                  alt="Xem trước"
                   className="max-h-80 w-full object-cover"
                   src={postMedia.preview}
                 />
@@ -85,7 +85,7 @@ export function FeedComposer({
                     ? "bg-slate-200 text-slate-500 cursor-not-allowed"
                     : "bg-sky-100 text-sky-700 hover:bg-sky-200"
                 }`}
-                title="Upload ảnh hoặc video"
+                title="Tải ảnh hoặc video lên"
               >
                 <ImagePlus size={16} />
                 Ảnh/Video
@@ -106,7 +106,7 @@ export function FeedComposer({
                 onClick={onDonateClick}
                 className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-black shadow-sm transition-colors hover:bg-primary-hover"
               >
-                Donate
+                Ủng hộ
               </button>
 
               <button
@@ -126,7 +126,7 @@ export function FeedComposer({
                 }`}
               >
                 <SendHorizontal size={14} />
-                Post
+                Đăng bài
               </button>
             </div>
           </div>

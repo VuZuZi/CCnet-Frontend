@@ -142,7 +142,7 @@ export function OrganizerWorkspacePage() {
     return (
       <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl rounded-3xl border border-red-100 bg-white p-10 text-center text-red-500">
-          Không thể tải dữ liệu workspace.
+          Không thể tải dữ liệu khu vực làm việc.
         </div>
       </main>
     );
@@ -160,13 +160,13 @@ export function OrganizerWorkspacePage() {
 
               <div>
                 <p className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">
-                  Không gian làm việc của bạn
+                  Khu vực làm việc của bạn
                 </p>
                 <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
-                  Organizer Workspace
+                  Khu vực làm việc của ban tổ chức
                 </h1>
                 <p className="mt-2 text-sm text-slate-600">
-                  Quản lý toàn bộ dự án của bạn tại một nơi: tạo mới, theo dõi trạng thái, và điều phối các hoạt động.
+                  Quản lý toàn bộ dự án của bạn tại một nơi: tạo mới, theo dõi trạng thái và điều phối các hoạt động.
                 </p>
               </div>
             </div>
@@ -219,7 +219,7 @@ export function OrganizerWorkspacePage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="inline-flex items-center gap-2 text-emerald-800">
               <HeartHandshake size={18} />
-              <span className="font-semibold">Bạn có NeedHelp được gán từ admin?</span>
+              <span className="font-semibold">Bạn có NeedHelp được admin gán?</span>
             </div>
 
             <Link
