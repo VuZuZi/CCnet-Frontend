@@ -16,7 +16,7 @@ export function ProjectHeader({ project, isOrganizer }) {
       <div className="flex items-start justify-between gap-4 min-w-0">
         <div className="min-w-0 space-y-3">
           <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-slate-600">
-            Project Overview
+            Tổng quan dự án
           </div>
           <h1 className="min-w-0 text-3xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-4xl lg:text-5xl break-words [overflow-wrap:anywhere]">
             {project?.title || "Đang cập nhật tên dự án..."}
@@ -27,7 +27,7 @@ export function ProjectHeader({ project, isOrganizer }) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-            Timeline
+            Thời gian
           </p>
           <p className="mt-1 text-sm font-bold text-slate-800">
             {formatDate(project?.startDate)} - {formatDate(project?.endDate)}
@@ -36,7 +36,7 @@ export function ProjectHeader({ project, isOrganizer }) {
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
-            Volunteers
+            Tình nguyện viên
           </p>
           <p className="mt-1 inline-flex items-center gap-2 text-sm font-bold text-slate-800">
             <Users className="h-4 w-4 text-emerald-600" />
@@ -52,7 +52,7 @@ export function ProjectHeader({ project, isOrganizer }) {
               {project?.organizerId?.avatar ? (
                 <img
                   src={project.organizerId.avatar}
-                  alt="Organizer"
+                  alt="Ban tổ chức"
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -76,7 +76,7 @@ export function ProjectHeader({ project, isOrganizer }) {
                 </span>
                 <span className="inline-flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
-                  {volunteerCount.toLocaleString("vi-VN")} volunteer
+                  {volunteerCount.toLocaleString("vi-VN")} tình nguyện viên
                 </span>
               </div>
             </div>

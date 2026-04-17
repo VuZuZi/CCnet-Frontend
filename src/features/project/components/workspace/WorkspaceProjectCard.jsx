@@ -103,7 +103,7 @@ export function WorkspaceProjectCard({ project }) {
       <div className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
         <div className="rounded-xl border border-amber-200 bg-amber-50/80 p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-amber-700">
-            Donate / Raise
+            Gây quỹ
           </p>
           <p className="mt-1 text-sm font-bold text-slate-900">
             {formatWorkspaceMoney(currentAmount)} / {formatWorkspaceMoney(targetAmount)}
@@ -121,14 +121,14 @@ export function WorkspaceProjectCard({ project }) {
 
         <div className="rounded-xl border border-sky-200 bg-sky-50/80 p-3">
           <p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-700">
-            Volunteer
+            Tình nguyện viên
           </p>
           <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-slate-900">
             <HandHeart size={14} className="text-sky-700" />
             {currentVolunteers}/{targetVolunteers}
           </p>
           <p className="mt-1 text-xs text-sky-700">
-            {needsVolunteers ? "Đang tuyển volunteer" : "Không tuyển volunteer"}
+            {needsVolunteers ? "Đang tuyển tình nguyện viên" : "Không tuyển tình nguyện viên"}
           </p>
         </div>
 
@@ -139,8 +139,8 @@ export function WorkspaceProjectCard({ project }) {
           <p className="mt-1 inline-flex items-center gap-1.5 text-sm font-bold text-slate-900">
             <Target size={14} className="text-emerald-700" />
             {project?.projectType === "VOLUNTEER_ONLY"
-              ? "Volunteer Impact"
-              : "Fundraising Impact"}
+              ? "Tác động từ tình nguyện viên"
+              : "Tác động từ gây quỹ"}
           </p>
           <p className="mt-1 text-xs text-emerald-700">
             Tạo ngày {formatProjectDate(project?.createdAt)}

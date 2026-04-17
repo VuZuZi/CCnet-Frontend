@@ -52,7 +52,7 @@ export function WorkspaceProjectSection({
             <input
               value={keyword}
               onChange={onKeywordChange}
-              placeholder="Tìm theo tên, category, địa chỉ..."
+              placeholder="Tìm theo tên, danh mục, địa chỉ..."
               className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
             />
           </label>
@@ -86,9 +86,9 @@ export function WorkspaceProjectSection({
             onChange={onVolunteerModeChange}
             className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
           >
-            <option value="ALL">Tất cả nhu cầu volunteer</option>
-            <option value="NEEDS">Cần volunteer</option>
-            <option value="NO_NEEDS">Không cần volunteer</option>
+            <option value="ALL">Tất cả nhu cầu tình nguyện viên</option>
+            <option value="NEEDS">Cần tình nguyện viên</option>
+            <option value="NO_NEEDS">Không cần tình nguyện viên</option>
           </select>
         </div>
       </div>

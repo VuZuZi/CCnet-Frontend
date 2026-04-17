@@ -24,19 +24,22 @@ export function MilestonesBlock({ control, errors, isFunded, projectStartDate, p
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div className="w-full sm:flex-1">
-                    <h2 className="text-xl font-bold text-slate-900 mb-1">Tiến Độ Thực Thi (Milestones)</h2>
-                    <p className="text-sm text-slate-500 mb-4">Chia nhỏ dự án thành các giai đoạn để dễ quản lý và giải ngân.</p>
+                    <h2 className="text-xl font-bold text-slate-900 mb-1">Tiến độ thực thi (các mốc)</h2>
+                    <p className="text-sm text-slate-500 mb-4">
+                        Chia dự án thành các giai đoạn để dễ quản lý và giải ngân.
+                    </p>
 
                     {isFunded && (
                         <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100">
                             <div className="flex justify-between items-end mb-2 text-sm font-bold">
-                                <span className="text-slate-600">Phân bổ ngân sách mốc:</span>
+                                <span className="text-slate-600">Phân bổ ngân sách:</span>
                                 <span className={cn(
                                     isPerfectlyAllocated ? "text-emerald-600" : isOverAllocated ? "text-red-500" : "text-amber-500"
                                 )}>
-                                    {allocatedAmount.toLocaleString()} / {targetAmount.toLocaleString()} VND
+                                    {allocatedAmount.toLocaleString()} / {targetAmount.toLocaleString()} đ
                                 </span>
                             </div>
+
                             <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
                                 <div
                                     className={cn(
@@ -46,16 +49,18 @@ export function MilestonesBlock({ control, errors, isFunded, projectStartDate, p
                                     style={{ width: `${allocationPercent}%` }}
                                 />
                             </div>
+
                             <div className="mt-2 flex justify-between items-center text-xs">
                                 <span className="text-slate-500">
                                     {isOverAllocated ? "Vượt mức:" : "Chưa phân bổ:"}
                                     <span className={cn("ml-1 font-bold", isOverAllocated ? "text-red-500" : "text-amber-500")}>
-                                        {Math.abs(unallocatedAmount).toLocaleString()} VND
+                                        {Math.abs(unallocatedAmount).toLocaleString()} đ
                                     </span>
                                 </span>
+
                                 {isPerfectlyAllocated && (
                                     <span className="text-emerald-600 font-bold flex items-center gap-1">
-                                        <CheckCircle2 size={14} /> Khớp mục tiêu
+                                        <CheckCircle2 size={14} /> Đã khớp mục tiêu
                                     </span>
                                 )}
                             </div>
@@ -66,9 +71,9 @@ export function MilestonesBlock({ control, errors, isFunded, projectStartDate, p
                 <button
                     type="button"
                     onClick={() => append({ title: '', description: '', targetAmount: 0, startDate: null, endDate: null, deliverables: '' })}
-                    className="px-4 py-2.5 bg-[#fbbf24] text-white font-bold rounded-xl text-sm hover:bg-[#f59e0b] transition-colors flex items-center gap-1.5 whitespace-nowrap shadow-sm shadow-[#fbbf24]/20 w-full sm:w-auto justify-center"
+                    className="px-4 py-2.5 bg-[#fbbf24] text-white font-bold rounded-xl text-sm hover:bg-[#f59e0b] transition-colors flex items-center gap-1.5 shadow-sm"
                 >
-                    <Plus size={18} /> Thêm Mốc Mới
+                    <Plus size={18} /> Thêm mốc mới
                 </button>
             </div>
 
@@ -80,7 +85,7 @@ export function MilestonesBlock({ control, errors, isFunded, projectStartDate, p
 
             <div className="space-y-6">
                 {fields.map((field, idx) => (
-                    <MilestoneItem 
+                    <MilestoneItem
                         key={field.id}
                         idx={idx}
                         field={field}
@@ -90,10 +95,12 @@ export function MilestonesBlock({ control, errors, isFunded, projectStartDate, p
                         projectEndDate={projectEndDate}
                     />
                 ))}
-                
+
                 {fields.length === 0 && (
                     <div className="text-center py-10 border-2 border-dashed border-slate-200 rounded-2xl bg-white">
-                        <p className="text-slate-500">Chưa có mốc thực thi nào. Bắt buộc phải có ít nhất 1 mốc.</p>
+                        <p className="text-slate-500">
+                            Chưa có mốc nào. Bắt buộc phải có ít nhất 1 mốc.
+                        </p>
                     </div>
                 )}
             </div>

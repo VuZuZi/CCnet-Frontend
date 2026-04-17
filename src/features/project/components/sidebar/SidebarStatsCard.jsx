@@ -77,10 +77,10 @@ export function SidebarStatsCard({
         <div className="min-w-0">
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/25 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">
             <Sparkles size={11} />
-            Public Support
+            Hỗ trợ cộng đồng
           </div>
           <h3 className="text-2xl font-black tracking-tight text-slate-900">
-            Support this project
+            Ủng hộ dự án này
           </h3>
         </div>
       </div>
@@ -88,10 +88,13 @@ export function SidebarStatsCard({
       {showFundingBlock ? (
         <div className="rounded-[26px] border border-slate-100 bg-slate-50 p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-            Funds raised
+            Số tiền đã gây quỹ
           </p>
 
-          <LargeCurrencyBlock value={availableBalance} className="mt-2 text-slate-900" />
+          <LargeCurrencyBlock
+            value={availableBalance}
+            className="mt-2 text-slate-900"
+          />
 
           {pendingRefunds > 0 ? (
             <p className="mt-1 truncate text-xs font-medium text-amber-600">
@@ -100,7 +103,7 @@ export function SidebarStatsCard({
           ) : null}
 
           <p className="mt-2 truncate text-sm text-slate-500">
-            Goal: {formatSidebarCurrency(targetAmount)}đ
+            Mục tiêu: {formatSidebarCurrency(targetAmount)}đ
           </p>
 
           <div className="mt-5 h-3 w-full overflow-hidden rounded-full bg-slate-200">
@@ -142,7 +145,7 @@ export function SidebarStatsCard({
       ) : (
         <div className="rounded-[26px] border border-slate-100 bg-slate-50 p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-            Volunteers Recruited
+            Số tình nguyện viên đã tuyển
           </p>
 
           <div className="mt-2 flex items-end gap-2">
@@ -169,7 +172,9 @@ export function SidebarStatsCard({
               <p className="truncate text-2xl font-black leading-tight text-emerald-700">
                 {currentVolunteers.toLocaleString("vi-VN")}
               </p>
-              <p className="mt-1 text-sm font-medium text-emerald-600">Đã tham gia</p>
+              <p className="mt-1 text-sm font-medium text-emerald-600">
+                Đã tham gia
+              </p>
             </div>
 
             <div className="min-w-0 rounded-2xl border border-slate-100 bg-white p-4">

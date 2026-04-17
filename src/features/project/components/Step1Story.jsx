@@ -151,7 +151,7 @@ export default function Step1Story() {
       }
 
       if (isExit) {
-        toast.success('Draft saved securely!');
+        toast.success('Đã lưu bản nháp an toàn!');
         navigate('/projects');
       }
     } catch (error) {
@@ -226,7 +226,7 @@ export default function Step1Story() {
         <div className="lg:col-span-7 space-y-6">
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">Project Type</h2>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">Loại dự án</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${projectTypeValue === 'FUNDED' ? 'border-primary bg-primary/5' : 'border-slate-200 hover:border-slate-300'}`}>
                   <input
@@ -237,8 +237,8 @@ export default function Step1Story() {
                     onChange={handleTypeChange}
                     className="sr-only"
                   />
-                  <div className="font-bold text-slate-900">Funded Project</div>
-                  <p className="text-sm text-slate-500 mt-1">Raise funds and recruit volunteers.</p>
+                  <div className="font-bold text-slate-900">Dự án gây quỹ</div>
+                  <p className="text-sm text-slate-500 mt-1">Gây quỹ và tuyển tình nguyện viên.</p>
                 </label>
 
                 <label className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${projectTypeValue === 'VOLUNTEER_ONLY' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}>
@@ -250,8 +250,8 @@ export default function Step1Story() {
                     onChange={handleTypeChange}
                     className="sr-only"
                   />
-                  <div className="font-bold text-slate-900">Volunteer Only</div>
-                  <p className="text-sm text-slate-500 mt-1">No fundraising, human resources only.</p>
+                  <div className="font-bold text-slate-900">Chỉ tình nguyện viên</div>
+                  <p className="text-sm text-slate-500 mt-1">Không gây quỹ, chỉ cần nguồn lực con người.</p>
                 </label>
               </div>
               {errors.projectType && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.projectType.message}</p>}
@@ -259,11 +259,11 @@ export default function Step1Story() {
 
             <hr className="border-slate-100" />
 
-            <h2 className="text-xl font-bold text-slate-900">Basic Information</h2>
+            <h2 className="text-xl font-bold text-slate-900">Thông tin cơ bản</h2>
 
             <div>
               <div className="flex justify-between mb-2">
-                <label className="block text-sm font-bold text-slate-700">Project Name</label>
+                <label className="block text-sm font-bold text-slate-700">Tên dự án</label>
                 <span className={`text-xs font-medium ${titleValue.length > 100 ? 'text-red-500' : 'text-slate-500'}`}>
                   {titleValue.length}/100
                 </span>
@@ -272,32 +272,32 @@ export default function Step1Story() {
                 {...register('title')}
                 className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900 placeholder-slate-400
                     ${errors.title ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
-                placeholder="e.g., Building a flood-proof bridge in Pa Tan village"
+                placeholder="Ví dụ: Xây cầu chống lũ tại bản Pa Tần"
               />
               {errors.title && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.title.message}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Category</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Danh mục</label>
                 <select
                   {...register('category')}
                   className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900
                       ${errors.category ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
                 >
-                  <option value="">Select category</option>
-                  <option value="Y_TE">Healthcare</option>
-                  <option value="GIAO_DUC">Education</option>
-                  <option value="THIEN_TAI">Disaster Relief</option>
-                  <option value="XAY_DUNG">Infrastructure</option>
-                  <option value="MOI_TRUONG">Environmental Protection</option>
-                  <option value="KHAC">Other</option>
+                  <option value="">Chọn danh mục</option>
+                  <option value="Y_TE">Y tế</option>
+                  <option value="GIAO_DUC">Giáo dục</option>
+                  <option value="THIEN_TAI">Cứu trợ thiên tai</option>
+                  <option value="XAY_DUNG">Xây dựng hạ tầng</option>
+                  <option value="MOI_TRUONG">Bảo vệ môi trường</option>
+                  <option value="KHAC">Khác</option>
                 </select>
                 {errors.category && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.category.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Location</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Địa điểm</label>
                 <Controller
                   name="location"
                   control={control}
@@ -321,7 +321,7 @@ export default function Step1Story() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Expected Start Date</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Ngày bắt đầu dự kiến</label>
                 <input
                   type="date"
                   {...register('startDate')}
@@ -332,7 +332,7 @@ export default function Step1Story() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Expected End Date</label>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Ngày kết thúc dự kiến</label>
                 <input
                   type="date"
                   {...register('endDate')}
@@ -345,21 +345,21 @@ export default function Step1Story() {
           </div>
 
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Story & Beneficiaries</h2>
+            <h2 className="text-xl font-bold text-slate-900">Câu chuyện & đối tượng thụ hưởng</h2>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Beneficiary Description</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Mô tả đối tượng thụ hưởng</label>
               <textarea
                 {...register('beneficiaryInfo.details')}
                 className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900 placeholder-slate-400 min-h-[100px] resize-y
                     ${errors.beneficiaryInfo?.details ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
-                placeholder="Who will receive help from this project? Approximate number of people?"
+                placeholder="Ai sẽ nhận được hỗ trợ từ dự án này? Khoảng bao nhiêu người?"
               />
               {errors.beneficiaryInfo?.details && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.beneficiaryInfo.details.message}</p>}
             </div>
 
             <div className="pt-2">
-              <label className="block text-sm font-bold text-slate-700 mb-2">Detailed Story</label>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Câu chuyện chi tiết</label>
               <div className={errors.description ? 'ring-2 ring-red-200 rounded-xl' : ''}>
                 <Controller
                   name="description"
@@ -380,13 +380,13 @@ export default function Step1Story() {
               <Shield size={20} />
             </div>
             <div>
-              <h4 className="font-bold text-amber-800 text-sm">Transparency Check</h4>
-              <p className="text-sm text-amber-700 mt-1">Our AI system will automatically scan for image originality. Please use actual photos.</p>
+              <h4 className="font-bold text-amber-800 text-sm">Kiểm tra minh bạch</h4>
+              <p className="text-sm text-amber-700 mt-1">Hệ thống AI sẽ tự động quét tính nguyên bản của hình ảnh. Vui lòng sử dụng ảnh thật.</p>
             </div>
           </div>
 
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Project Cover Media</h2>
+            <h2 className="text-xl font-bold text-slate-900">Ảnh / video đại diện dự án</h2>
             <Controller
               name="coverMedia"
               control={control}
@@ -406,8 +406,8 @@ export default function Step1Story() {
           </div>
 
           <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
-            <h2 className="text-xl font-bold text-slate-900">Documents & Paperwork</h2>
-            <p className="text-sm text-slate-500">Upload quotes, permits, or local confirmation documents to increase credibility.</p>
+            <h2 className="text-xl font-bold text-slate-900">Tài liệu & giấy tờ</h2>
+            <p className="text-sm text-slate-500">Tải lên báo giá, giấy phép hoặc giấy xác nhận địa phương để tăng độ tin cậy.</p>
             <Controller
               name="documents"
               control={control}
@@ -440,7 +440,7 @@ export default function Step1Story() {
             disabled={isSubmitDisabled}
             className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
           >
-            <Save size={18} /> {isMediaUploading ? 'Đang tải tệp...' : 'Save Draft & Exit'}
+            <Save size={18} /> {isMediaUploading ? 'Đang tải tệp...' : 'Lưu bản nháp và thoát'}
           </button>
 
           <button
@@ -450,7 +450,7 @@ export default function Step1Story() {
               ${isSubmitDisabled ? 'bg-slate-400 text-white cursor-not-allowed' : 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-yellow-500/20'}`}
           >
             {isPending && <Loader2 className="animate-spin" size={20} />}
-            {isMediaUploading ? 'Vui lòng đợi ảnh tải lên...' : (isPending ? 'Processing...' : 'Next: Budget & Personnel')}
+            {isMediaUploading ? 'Vui lòng đợi ảnh tải lên...' : (isPending ? 'Đang xử lý...' : 'Tiếp theo: Ngân sách & nhân sự')}
             {!isSubmitDisabled && !isMediaUploading && <ArrowRight size={20} />}
           </button>
         </div>
@@ -459,18 +459,18 @@ export default function Step1Story() {
       {isSaveModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
           <div className="w-full max-w-lg rounded-3xl border border-slate-200 bg-white p-6 shadow-xl sm:p-7">
-            <h3 className="text-lg font-black text-slate-900">Lưu bản draft</h3>
+            <h3 className="text-lg font-black text-slate-900">Lưu bản nháp</h3>
             <p className="mt-1 text-sm text-slate-500">
-              Đặt tên draft và chọn loại dự án trước khi lưu. Bạn có thể tiếp tục chỉnh sửa sau.
+              Đặt tên bản nháp và chọn loại dự án trước khi lưu. Bạn có thể tiếp tục chỉnh sửa sau.
             </p>
 
             <div className="mt-5 space-y-4">
               <div>
-                <label className="mb-2 block text-sm font-bold text-slate-700">Tên draft</label>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Tên bản nháp</label>
                 <input
                   value={draftMeta.title}
                   onChange={(e) => setDraftMeta((prev) => ({ ...prev, title: e.target.value }))}
-                  placeholder="Nhập tên draft..."
+                  placeholder="Nhập tên bản nháp..."
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
                 />
               </div>
@@ -482,8 +482,8 @@ export default function Step1Story() {
                   onChange={(e) => setDraftMeta((prev) => ({ ...prev, projectType: e.target.value }))}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-sm text-slate-700 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
                 >
-                  <option value="FUNDED">Funded Project</option>
-                  <option value="VOLUNTEER_ONLY">Volunteer Only</option>
+                  <option value="FUNDED">Dự án gây quỹ</option>
+                  <option value="VOLUNTEER_ONLY">Chỉ tình nguyện viên</option>
                 </select>
               </div>
             </div>
@@ -494,7 +494,7 @@ export default function Step1Story() {
                 onClick={() => setIsSaveModalOpen(false)}
                 className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
               >
-                Cancel
+                Hủy
               </button>
               <button
                 type="button"
@@ -504,7 +504,7 @@ export default function Step1Story() {
               >
                 {isPending && <Loader2 className="animate-spin" size={14} />}
                 {!isPending && <Save size={14} />}
-                Lưu draft
+                Lưu bản nháp
               </button>
             </div>
           </div>

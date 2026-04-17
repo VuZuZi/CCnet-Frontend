@@ -30,10 +30,10 @@ export function SidebarActionButtons({
           ) : (
             <button
               disabled
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-4 text-base font-bold text-slate-400 cursor-not-allowed"
+              className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-slate-100 px-5 py-4 text-base font-bold text-slate-400"
             >
               <Lock className="h-5 w-5" />
-              Đã đóng gọi vốn
+              Đã đóng gây quỹ
             </button>
           )
         ) : null}
@@ -63,7 +63,7 @@ export function SidebarActionButtons({
             disabled={isReporting}
             className={`group flex flex-col items-center gap-2 rounded-2xl border border-slate-200 bg-white py-3 text-slate-500 transition ${
               isReporting
-                ? "opacity-60 cursor-not-allowed"
+                ? "cursor-not-allowed opacity-60"
                 : "hover:border-amber-200 hover:bg-amber-50 hover:text-amber-600"
             }`}
           >

@@ -72,7 +72,7 @@ function CategoryCard({
       onClick={onSelect}
       className={[
         category.bgClass,
-        "relative p-6 rounded-2xl flex flex-col items-center justify-center text-center cursor-pointer transition-all border group",
+        "relative flex cursor-pointer flex-col items-center justify-center rounded-2xl border p-6 text-center transition-all group",
         isActive
           ? "ring-2 ring-amber-400 shadow-md -translate-y-0.5"
           : "hover:shadow-md",
@@ -84,14 +84,14 @@ function CategoryCard({
         </span>
       ) : null}
 
-      <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm group-hover:scale-110 transition-transform">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:scale-110">
         <Icon className={category.iconClass} size={32} />
       </div>
 
       <h3 className={`font-bold ${category.textClass}`}>{category.title}</h3>
 
       <p
-        className={`text-xs mt-1 font-medium ${category.subTextClass} flex items-center gap-1.5`}
+        className={`mt-1 flex items-center gap-1.5 text-xs font-medium ${category.subTextClass}`}
       >
         {isCountsLoading ? (
           <>
@@ -99,7 +99,7 @@ function CategoryCard({
             Đang cập nhật...
           </>
         ) : (
-          <>{visibleCount} Dự án</>
+          <>{visibleCount} dự án</>
         )}
       </p>
     </button>
@@ -120,7 +120,7 @@ export function CategoryExplore({
   return (
     <section className="mb-12 mt-12">
       <div className="mb-6 flex items-center justify-between gap-4">
-        <h2 className="text-2xl font-bold text-slate-900 flex items-center gap-2">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
           <LayoutGrid className="text-amber-500" size={24} />
           Khám phá theo danh mục
         </h2>
@@ -131,12 +131,12 @@ export function CategoryExplore({
             onClick={() => onCategorySelect?.("")}
             className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
           >
-            Xóa lọc danh mục
+            Xóa bộ lọc danh mục
           </button>
         ) : null}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-5">
         {CATEGORY_CONFIG.map((category) => {
           const isActive = activeCategory === category.value;
           const visibleCount = Number(countsByCategory?.[category.value] || 0);

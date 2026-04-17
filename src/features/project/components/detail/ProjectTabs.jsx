@@ -31,7 +31,7 @@ function getProjectTabs({ isOrganizer, projectType }) {
   if (isOrganizer) {
     tabs.push({
       key: 'volunteer',
-      label: 'Quản lý volunteer',
+      label: 'Quản lý tình nguyện viên',
       icon: BriefcaseBusiness,
     });
   }

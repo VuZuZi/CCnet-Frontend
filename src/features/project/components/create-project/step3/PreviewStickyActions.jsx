@@ -30,7 +30,7 @@ export function PreviewStickyActions({
           }`}
         >
           {isPending ? <Loader2 className="animate-spin" size={20} /> : null}
-          {isPending ? "Submitting..." : "Gửi dự án để duyệt"}
+          {isPending ? "Đang gửi..." : "Gửi dự án để duyệt"}
           {!isPending ? <Send size={18} /> : null}
         </button>
       </div>

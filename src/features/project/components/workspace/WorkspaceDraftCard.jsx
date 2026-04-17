@@ -18,7 +18,7 @@ export function WorkspaceDraftCard({ draft }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-base font-bold text-slate-900">
-            {draft.title || "Draft chưa có tiêu đề"}
+            {draft.title || "Bản nháp chưa có tiêu đề"}
           </p>
           <p className="mt-1 text-xs text-slate-600">
             Cập nhật: {formatProjectDate(draft.updatedAt || draft.createdAt)}
@@ -26,7 +26,7 @@ export function WorkspaceDraftCard({ draft }) {
         </div>
 
         <span className="rounded-full border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-bold text-amber-700">
-          DRAFT
+          BẢN NHÁP
         </span>
       </div>
 

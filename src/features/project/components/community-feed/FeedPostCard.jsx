@@ -45,16 +45,16 @@ export function FeedPostCard({
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2">
               <h4 className="truncate font-bold text-slate-900">
-                {post.author?.fullName || "User"}
+                {post.author?.fullName || "Người dùng"}
               </h4>
 
               {post.author?.isVerified ? (
-                <BadgeCheck size={16} className="text-blue-500" title="Verified" />
+                <BadgeCheck size={16} className="text-blue-500" title="Đã xác minh" />
               ) : null}
 
               {organizerBadge ? (
                 <span className="rounded-full border border-blue-200 bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800">
-                  Organizer
+                  Ban tổ chức
                 </span>
               ) : null}
             </div>
@@ -82,7 +82,7 @@ export function FeedPostCard({
           onClick={() => {
             if (!canEngage) {
               toast.error(
-                "Chỉ project owner hoặc volunteer đã được duyệt mới có thể thả tim.",
+                "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể thả tim.",
               );
               return;
             }

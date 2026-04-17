@@ -45,7 +45,7 @@ export function WorkspaceSummaryStats({ summary }) {
 
       <div className="rounded-2xl border border-sky-200 bg-sky-50/70 p-4 shadow-sm">
         <p className="text-xs font-semibold uppercase tracking-[0.08em] text-sky-700">
-          Volunteer
+          Tình nguyện viên
         </p>
         <p className="mt-1 text-lg font-black text-sky-900">
           {summary.volunteerCurrent}/{summary.volunteerTarget}

@@ -33,7 +33,7 @@ export function FeedCommentComposer({
               : "bg-primary text-black hover:bg-primary-hover"
           }`}
         >
-          Send
+          Gửi
         </button>
       </div>
     </div>

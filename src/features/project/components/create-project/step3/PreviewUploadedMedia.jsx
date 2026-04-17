@@ -23,7 +23,7 @@ export function PreviewUploadedMedia({ formData }) {
   return (
     <div className="space-y-6">
       <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
-        <h3 className="text-lg font-bold text-slate-900">Project Cover</h3>
+        <h3 className="text-lg font-bold text-slate-900">Ảnh/video đại diện</h3>
 
         <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
           {coverMedia ? (
@@ -36,20 +36,20 @@ export function PreviewUploadedMedia({ formData }) {
             ) : (
               <img
                 src={coverMedia.url}
-                alt="Project cover"
+                alt="Ảnh đại diện dự án"
                 className="max-h-[420px] w-full object-cover"
               />
             )
           ) : (
             <div className="flex min-h-[220px] items-center justify-center text-sm font-medium text-slate-400">
-              Chưa có cover media
+              Chưa có ảnh/video đại diện
             </div>
           )}
         </div>
       </div>
 
       <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
-        <h3 className="text-lg font-bold text-slate-900">Documents</h3>
+        <h3 className="text-lg font-bold text-slate-900">Tài liệu đính kèm</h3>
 
         {documents.length === 0 ? (
           <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
@@ -71,10 +71,10 @@ export function PreviewUploadedMedia({ formData }) {
 
                 <div className="min-w-0">
                   <p className="truncate text-sm font-bold text-slate-900">
-                    {doc?.originalName || `Document ${index + 1}`}
+                    {doc?.originalName || `Tài liệu ${index + 1}`}
                   </p>
                   <p className="truncate text-xs text-slate-500">
-                    {doc?.mimetype || "Attached file"}
+                    {doc?.mimetype || "Tệp đính kèm"}
                   </p>
                 </div>
               </a>
