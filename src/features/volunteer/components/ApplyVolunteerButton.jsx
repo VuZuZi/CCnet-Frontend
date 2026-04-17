@@ -72,7 +72,9 @@ function getApplicationStatusConfig(applicationStatus, isVolunteerFull) {
 
     default:
       return {
-        text: isVolunteerFull ? "Đã tuyển đủ volunteer" : "Đăng ký tình nguyện",
+        text: isVolunteerFull
+          ? "Đã tuyển đủ tình nguyện viên"
+          : "Đăng ký tình nguyện",
         icon: Users,
         className: isVolunteerFull
           ? "cursor-not-allowed bg-slate-100 text-slate-400"
@@ -93,7 +95,7 @@ function getActionBlockedMessage(applicationStatus) {
     case "APPROVED":
       return "Bạn đã được chấp nhận tham gia dự án này";
     case "WITHDRAW_REQUESTED":
-      return "Yêu cầu xin rút của bạn đang chờ organizer xử lý";
+      return "Yêu cầu xin rút của bạn đang chờ ban tổ chức xử lý";
     case "REJECTED":
       return "Đơn đăng ký của bạn đã bị từ chối";
     default:
@@ -120,7 +122,7 @@ function getVolunteerTarget(project) {
   if (Array.isArray(project?.volunteerRoles)) {
     return project.volunteerRoles.reduce(
       (sum, role) => sum + Number(role?.quantity || 0),
-      0
+      0,
     );
   }
 
@@ -178,7 +180,7 @@ export const ApplyVolunteerButton = ({
 
   const statusConfig = getApplicationStatusConfig(
     applicationStatus,
-    isVolunteerFull
+    isVolunteerFull,
   );
 
   const handlePrimaryClick = () => {
@@ -252,7 +254,7 @@ export const ApplyVolunteerButton = ({
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Hủy đơn thất bại. Vui lòng thử lại."
+          "Hủy đơn thất bại. Vui lòng thử lại.",
       );
     }
   };
@@ -271,7 +273,7 @@ export const ApplyVolunteerButton = ({
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Gửi yêu cầu xin rút thất bại. Vui lòng thử lại."
+          "Gửi yêu cầu xin rút thất bại. Vui lòng thử lại.",
       );
     }
   };
@@ -290,7 +292,7 @@ export const ApplyVolunteerButton = ({
       toast.error(
         error?.response?.data?.message ||
           error?.message ||
-          "Cập nhật thất bại. Vui lòng thử lại."
+          "Cập nhật thất bại. Vui lòng thử lại.",
       );
     }
   };
@@ -314,7 +316,8 @@ export const ApplyVolunteerButton = ({
             <p className="text-xs text-slate-500">Đang đồng bộ trạng thái...</p>
           ) : null}
 
-          {applicationStatus === "WITHDRAW_REQUESTED" && application?.withdrawReason ? (
+          {applicationStatus === "WITHDRAW_REQUESTED" &&
+          application?.withdrawReason ? (
             <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
               <div className="font-semibold">Lý do xin rút</div>
               <div className="mt-1 whitespace-pre-wrap">
@@ -326,7 +329,7 @@ export const ApplyVolunteerButton = ({
           {applicationStatus === "APPROVED" ? (
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
               Nếu muốn rời dự án, bạn cần gửi yêu cầu xin rút và nêu rõ lý do để
-              organizer xét duyệt.
+              ban tổ chức xét duyệt.
             </div>
           ) : null}
 
@@ -518,7 +521,7 @@ const WithdrawRequestModal = ({ isOpen, onClose, onSubmit, isPending }) => {
       <ModalHeader title="Gửi yêu cầu xin rút" onClose={handleClose} />
 
       <p className="mb-4 text-gray-600">
-        Vui lòng nêu rõ lý do xin rút. Organizer sẽ đọc và quyết định đồng ý
+        Vui lòng nêu rõ lý do xin rút. Ban tổ chức sẽ đọc và quyết định đồng ý
         hoặc từ chối.
       </p>
 

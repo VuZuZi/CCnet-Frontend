@@ -1,5 +1,10 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  Link,
+  useSearchParams,
+} from "react-router-dom";
 import { FiArrowLeft } from "react-icons/fi";
 import { usePostDetail } from "../hooks/usePosts";
 import { usePostMutations } from "../hooks/usePostMutations";
@@ -8,21 +13,21 @@ import TextOnlyPostView from "../components/post/TextOnlyPostView";
 
 const formatTimeAgo = (d) => {
   const s = Math.floor((new Date() - new Date(d)) / 1000);
-  if (s < 60) return "just now";
+  if (s < 60) return "vừa xong";
   const m = Math.floor(s / 60);
-  if (m < 60) return `${m}m ago`;
+  if (m < 60) return `${m} phút trước`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `${h}h ago`;
+  if (h < 24) return `${h} giờ trước`;
   const days = Math.floor(h / 24);
-  if (days < 7) return `${days}d ago`;
-  return `${Math.floor(days / 7)}w ago`;
+  if (days < 7) return `${days} ngày trước`;
+  return `${Math.floor(days / 7)} tuần trước`;
 };
 
 const LoadingState = () => (
   <div className="fixed inset-0 bg-black flex flex-col items-center justify-center z-[100]">
     <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4" />
     <p className="text-white font-medium animate-pulse">
-      Loading post detail...
+      Đang tải chi tiết bài viết...
     </p>
   </div>
 );
@@ -31,15 +36,17 @@ const ErrorState = () => (
   <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6 text-center">
     <div className="bg-white p-8 rounded-2xl shadow-sm max-w-sm">
       <div className="text-red-500 text-5xl mb-4">⚠️</div>
-      <h2 className="text-xl font-bold text-black mb-2">Post Not Found</h2>
+      <h2 className="text-xl font-bold text-black mb-2">
+        Không tìm thấy bài viết
+      </h2>
       <p className="text-gray-500 mb-6">
-        The post might have been deleted or is unavailable.
+        Bài viết có thể đã bị xóa hoặc không còn tồn tại.
       </p>
       <Link
         to="/community"
         className="inline-flex items-center gap-2 bg-yellow-500 text-black px-6 py-2 rounded-full font-bold hover:bg-yellow-400"
       >
-        <FiArrowLeft /> Back to Community
+        <FiArrowLeft /> Quay lại Cộng đồng
       </Link>
     </div>
   </div>
@@ -68,9 +75,19 @@ function highlightAndScrollToComment(commentId) {
       block: "center",
     });
 
-    element.classList.add("ring-2", "ring-yellow-400", "ring-offset-2", "rounded-2xl");
+    element.classList.add(
+      "ring-2",
+      "ring-yellow-400",
+      "ring-offset-2",
+      "rounded-2xl",
+    );
     window.setTimeout(() => {
-      element.classList.remove("ring-2", "ring-yellow-400", "ring-offset-2", "rounded-2xl");
+      element.classList.remove(
+        "ring-2",
+        "ring-yellow-400",
+        "ring-offset-2",
+        "rounded-2xl",
+      );
     }, 2500);
   };
 
@@ -110,7 +127,7 @@ export function PostDetailPage() {
       authorName:
         currentPost.author?.fullName ||
         currentPost.author?.username ||
-        "Anonymous",
+        "Người ẩn danh",
       timeAgo: formatTimeAgo(currentPost.createdAt),
       comments: currentPost.latestComments || currentPost.comments || [],
       userReaction: currentPost.userReaction,
@@ -135,7 +152,7 @@ export function PostDetailPage() {
           to="/community"
           className="inline-flex items-center gap-2 text-white/70 hover:text-white transition-colors"
         >
-          <FiArrowLeft /> Back
+          <FiArrowLeft /> Quay lại
         </Link>
       </div>
 

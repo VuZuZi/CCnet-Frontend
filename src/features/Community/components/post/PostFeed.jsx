@@ -12,7 +12,7 @@ const PostFeed = ({ currentUserId, onReport, feedType }) => {
   if (isError)
     return (
       <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-100 text-sm font-medium">
-        ⚠️ Error: {error.message}
+        ⚠️ Lỗi: {error.message}
       </div>
     );
 
@@ -25,7 +25,7 @@ const PostFeed = ({ currentUserId, onReport, feedType }) => {
           post_add
         </span>
         <p className="text-slate-500 font-medium">
-          No posts yet. Be the first to share something!
+          Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ nhé!
         </p>
       </div>
     );
@@ -39,20 +39,20 @@ const PostFeed = ({ currentUserId, onReport, feedType }) => {
       loader={
         <div className="space-y-4 py-6">
           <p className="text-center text-primary font-bold animate-pulse text-sm">
-            Loading older posts...
+            Đang tải thêm bài viết...
           </p>
         </div>
       }
       endMessage={
         <div className="text-center py-10">
           <p className="text-slate-400 font-bold text-sm">
-            ✨ You've reached the end of the feed
+            ✨ Bạn đã lướt đến cuối trang
           </p>
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="mt-2 text-primary text-xs font-bold hover:underline"
           >
-            Back to top
+            Quay lại đầu trang
           </button>
         </div>
       }

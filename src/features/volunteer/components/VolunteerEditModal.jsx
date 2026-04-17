@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   Briefcase,
   ChevronDown,
@@ -9,20 +9,20 @@ import {
   Save,
   Sparkles,
   X,
-} from 'lucide-react';
+} from "lucide-react";
 
-function toTitleCase(value = '') {
+function toTitleCase(value = "") {
   return String(value)
-    .replace(/[_-]+/g, ' ')
+    .replace(/[_-]+/g, " ")
     .trim()
-    .replace(/\s+/g, ' ')
+    .replace(/\s+/g, " ")
     .replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
 function normalizeRoleOption(role, index) {
   if (!role) return null;
 
-  if (typeof role === 'string') {
+  if (typeof role === "string") {
     const raw = role.trim();
     if (!raw) return null;
 
@@ -32,7 +32,7 @@ function normalizeRoleOption(role, index) {
     };
   }
 
-  if (typeof role === 'object') {
+  if (typeof role === "object") {
     const value =
       role.value ||
       role.code ||
@@ -43,7 +43,7 @@ function normalizeRoleOption(role, index) {
       role.title ||
       role.roleName ||
       role.role ||
-      '';
+      "";
 
     const label =
       role.label ||
@@ -52,10 +52,10 @@ function normalizeRoleOption(role, index) {
       role.roleName ||
       role.role ||
       value ||
-      '';
+      "";
 
-    const safeValue = String(value || '').trim();
-    const safeLabel = String(label || '').trim();
+    const safeValue = String(value || "").trim();
+    const safeLabel = String(label || "").trim();
 
     if (!safeValue && !safeLabel) return null;
 
@@ -100,12 +100,12 @@ function getProjectRoleOptions(project, application) {
 }
 
 function normalizeAvailabilityValue(value) {
-  if (!Array.isArray(value)) return '';
+  if (!Array.isArray(value)) return "";
   return [...value]
-    .map((item) => String(item || '').trim())
+    .map((item) => String(item || "").trim())
     .filter(Boolean)
     .sort()
-    .join('|');
+    .join("|");
 }
 
 export const VolunteerEditModal = ({
@@ -119,26 +119,27 @@ export const VolunteerEditModal = ({
 }) => {
   const roleOptions = useMemo(
     () => getProjectRoleOptions(project, application),
-    [project, application]
+    [project, application],
   );
 
   const initialAvailability = useMemo(() => {
     if (!application?.availability) return [];
-    if (Array.isArray(application.availability)) return application.availability;
+    if (Array.isArray(application.availability))
+      return application.availability;
 
     return String(application.availability)
-      .split(',')
+      .split(",")
       .map((item) => item.trim())
       .filter(Boolean);
   }, [application]);
 
   const initialFormData = useMemo(
     () => ({
-      skills: application?.skills || '',
+      skills: application?.skills || "",
       availability: initialAvailability,
-      motivation: application?.motivation || '',
+      motivation: application?.motivation || "",
     }),
-    [application, initialAvailability]
+    [application, initialAvailability],
   );
 
   const [formData, setFormData] = useState(initialFormData);
@@ -147,10 +148,10 @@ export const VolunteerEditModal = ({
 
   const hasChanges = useMemo(() => {
     return !(
-      String(formData.skills || '').trim() ===
-        String(initialFormData.skills || '').trim() &&
-      String(formData.motivation || '').trim() ===
-        String(initialFormData.motivation || '').trim() &&
+      String(formData.skills || "").trim() ===
+        String(initialFormData.skills || "").trim() &&
+      String(formData.motivation || "").trim() ===
+        String(initialFormData.motivation || "").trim() &&
       normalizeAvailabilityValue(formData.availability) ===
         normalizeAvailabilityValue(initialFormData.availability)
     );
@@ -176,7 +177,7 @@ export const VolunteerEditModal = ({
     const scrollbarWidth =
       window.innerWidth - document.documentElement.clientWidth;
 
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     if (scrollbarWidth > 0) {
       document.body.style.paddingRight = `${scrollbarWidth}px`;
     }
@@ -191,20 +192,20 @@ export const VolunteerEditModal = ({
     if (!isOpen) return;
 
     const handleEscape = (event) => {
-      if (event.key === 'Escape' && !isUpdating) {
+      if (event.key === "Escape" && !isUpdating) {
         onClose?.();
       }
     };
 
-    document.addEventListener('keydown', handleEscape);
-    return () => document.removeEventListener('keydown', handleEscape);
+    document.addEventListener("keydown", handleEscape);
+    return () => document.removeEventListener("keydown", handleEscape);
   }, [isOpen, isUpdating, onClose]);
 
   const availabilityOptions = [
-    { value: 'full_time', label: 'Full-time', icon: Briefcase },
-    { value: 'part_time', label: 'Part-time', icon: Clock3 },
-    { value: 'weekends', label: 'Weekends', icon: Clock3 },
-    { value: 'flexible', label: 'Flexible', icon: RotateCcw },
+    { value: "full_time", label: "Toàn thời gian", icon: Briefcase },
+    { value: "part_time", label: "Bán thời gian", icon: Clock3 },
+    { value: "weekends", label: "Cuối tuần", icon: Clock3 },
+    { value: "flexible", label: "Linh hoạt", icon: RotateCcw },
   ];
 
   const handleChange = (event) => {
@@ -217,8 +218,8 @@ export const VolunteerEditModal = ({
 
     setErrors((prev) => ({
       ...prev,
-      [name]: '',
-      form: '',
+      [name]: "",
+      form: "",
     }));
   };
 
@@ -237,8 +238,8 @@ export const VolunteerEditModal = ({
 
     setErrors((prev) => ({
       ...prev,
-      availability: '',
-      form: '',
+      availability: "",
+      form: "",
     }));
   };
 
@@ -246,25 +247,25 @@ export const VolunteerEditModal = ({
     const nextErrors = {};
 
     if (!roleOptions.length) {
-      nextErrors.skills = 'Dự án này chưa cấu hình vai trò tình nguyện.';
+      nextErrors.skills = "Dự án này chưa cấu hình vai trò tình nguyện.";
     } else if (!formData.skills) {
-      nextErrors.skills = 'Vui lòng chọn vai trò ứng tuyển.';
+      nextErrors.skills = "Vui lòng chọn vai trò ứng tuyển.";
     }
 
     if (!formData.availability.length) {
-      nextErrors.availability = 'Vui lòng chọn ít nhất một khung thời gian.';
+      nextErrors.availability = "Vui lòng chọn ít nhất một khung thời gian.";
     }
 
     if (!formData.motivation.trim()) {
-      nextErrors.motivation = 'Vui lòng chia sẻ lý do tham gia.';
+      nextErrors.motivation = "Vui lòng chia sẻ lý do tham gia.";
     } else if (formData.motivation.trim().length < 10) {
-      nextErrors.motivation = 'Nội dung nên có ít nhất 10 ký tự.';
+      nextErrors.motivation = "Nội dung nên có ít nhất 10 ký tự.";
     }
 
     setErrors((prev) => ({
       ...prev,
       ...nextErrors,
-      form: nextErrors.form || '',
+      form: nextErrors.form || "",
     }));
 
     return Object.keys(nextErrors).length === 0;
@@ -276,7 +277,7 @@ export const VolunteerEditModal = ({
     if (!hasChanges) {
       setErrors((prev) => ({
         ...prev,
-        form: 'Bạn chưa thay đổi thông tin nào.',
+        form: "Bạn chưa thay đổi thông tin nào.",
       }));
       return;
     }
@@ -285,7 +286,7 @@ export const VolunteerEditModal = ({
 
     const submitData = {
       ...formData,
-      availability: formData.availability.join(', '),
+      availability: formData.availability.join(", "),
     };
 
     onUpdate?.(submitData);
@@ -313,11 +314,11 @@ export const VolunteerEditModal = ({
             <div className="min-w-0">
               <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#F4DE9A] bg-[#FFF7D6] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-[#A16207]">
                 <Sparkles size={12} />
-                Volunteer Application
+                Đơn đăng ký tình nguyện
               </div>
 
               <p className="truncate text-sm font-medium text-slate-500">
-                {projectName || project?.title || 'Dự án'}
+                {projectName || project?.title || "Dự án"}
               </p>
 
               <h2 className="mt-1 text-2xl font-black tracking-tight text-[#0F2747]">
@@ -325,8 +326,8 @@ export const VolunteerEditModal = ({
               </h2>
 
               <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
-                Cập nhật vai trò, thời gian tham gia và lý do ứng tuyển để organizer
-                xem lại hồ sơ của bạn.
+                Cập nhật vai trò, thời gian tham gia và lý do ứng tuyển để ban
+                tổ chức xem lại hồ sơ của bạn.
               </p>
             </div>
 
@@ -367,14 +368,14 @@ export const VolunteerEditModal = ({
                     disabled={!roleOptions.length}
                     className={`w-full appearance-none rounded-2xl border bg-white px-4 py-3.5 pr-11 text-[15px] text-slate-900 outline-none transition focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400 ${
                       errors.skills
-                        ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100'
-                        : 'border-slate-200 focus:border-[#F4B400] focus:ring-[#FDE68A]/50'
+                        ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
+                        : "border-slate-200 focus:border-[#F4B400] focus:ring-[#FDE68A]/50"
                     }`}
                   >
                     <option value="" disabled>
                       {roleOptions.length
-                        ? 'Chọn vai trò phù hợp'
-                        : 'Project chưa có vai trò tình nguyện'}
+                        ? "Chọn vai trò phù hợp"
+                        : "Dự án chưa có vai trò tình nguyện"}
                     </option>
                     {roleOptions.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -395,11 +396,11 @@ export const VolunteerEditModal = ({
                   </p>
                 ) : roleOptions.length ? (
                   <p className="mt-2 text-xs text-slate-500">
-                    Đang dùng danh sách vai trò từ chính project này.
+                    Đang dùng danh sách vai trò từ chính dự án này.
                   </p>
                 ) : (
                   <p className="mt-2 text-xs font-medium text-amber-600">
-                    Dự án chưa cấu hình volunteer roles nên chưa thể đổi vai trò.
+                    Dự án chưa cấu hình vai trò nên chưa thể đổi vai trò.
                   </p>
                 )}
               </section>
@@ -415,12 +416,14 @@ export const VolunteerEditModal = ({
                 </div>
 
                 <label className="block text-sm font-semibold text-slate-700">
-                  Availability <span className="text-rose-500">*</span>
+                  Thời gian tham gia <span className="text-rose-500">*</span>
                 </label>
 
                 <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {availabilityOptions.map((option) => {
-                    const isSelected = formData.availability.includes(option.value);
+                    const isSelected = formData.availability.includes(
+                      option.value,
+                    );
                     const Icon = option.icon;
 
                     return (
@@ -430,24 +433,26 @@ export const VolunteerEditModal = ({
                         onClick={() => handleAvailabilityToggle(option.value)}
                         className={`flex items-center gap-3 rounded-2xl border px-4 py-3.5 text-left transition-all ${
                           isSelected
-                            ? 'border-[#F4B400] bg-[#FFF8E1] text-[#0F2747] shadow-[0_8px_20px_rgba(244,180,0,0.12)]'
-                            : 'border-slate-200 bg-white text-slate-600 hover:border-[#F4D06F] hover:bg-[#FFFDF6]'
+                            ? "border-[#F4B400] bg-[#FFF8E1] text-[#0F2747] shadow-[0_8px_20px_rgba(244,180,0,0.12)]"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[#F4D06F] hover:bg-[#FFFDF6]"
                         }`}
                       >
                         <div
                           className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
                             isSelected
-                              ? 'bg-[#F4B400] text-slate-900'
-                              : 'bg-slate-100 text-slate-500'
+                              ? "bg-[#F4B400] text-slate-900"
+                              : "bg-slate-100 text-slate-500"
                           }`}
                         >
                           <Icon size={18} />
                         </div>
 
                         <div className="min-w-0">
-                          <p className="text-sm font-semibold">{option.label}</p>
+                          <p className="text-sm font-semibold">
+                            {option.label}
+                          </p>
                           <p className="text-xs text-slate-400">
-                            {isSelected ? 'Đã chọn' : 'Nhấn để chọn'}
+                            {isSelected ? "Đã chọn" : "Nhấn để chọn"}
                           </p>
                         </div>
                       </button>
@@ -468,13 +473,13 @@ export const VolunteerEditModal = ({
                     Động lực tham gia
                   </h3>
                   <p className="mt-1 text-sm text-slate-500">
-                    Hãy nói ngắn gọn vì sao bạn phù hợp với dự án này và bạn có thể
-                    đóng góp điều gì.
+                    Hãy nói ngắn gọn vì sao bạn phù hợp với dự án này và bạn có
+                    thể đóng góp điều gì.
                   </p>
                 </div>
 
                 <label className="block text-sm font-semibold text-slate-700">
-                  Why do you want to join this project?{' '}
+                  Vì sao bạn muốn tham gia dự án này?{" "}
                   <span className="text-rose-500">*</span>
                 </label>
 
@@ -485,8 +490,8 @@ export const VolunteerEditModal = ({
                   rows={6}
                   className={`mt-2 min-h-[160px] w-full resize-y rounded-2xl border bg-white px-4 py-3.5 text-[15px] leading-7 text-slate-900 outline-none transition placeholder:text-slate-400 focus:ring-4 ${
                     errors.motivation
-                      ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100'
-                      : 'border-slate-200 focus:border-[#F4B400] focus:ring-[#FDE68A]/50'
+                      ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
+                      : "border-slate-200 focus:border-[#F4B400] focus:ring-[#FDE68A]/50"
                   }`}
                   placeholder="Chia sẻ lý do tham gia, kinh nghiệm liên quan, hoặc cách bạn có thể hỗ trợ dự án..."
                 />
@@ -498,13 +503,15 @@ export const VolunteerEditModal = ({
                     </p>
                   ) : (
                     <p className="text-xs text-slate-500">
-                      Tối thiểu 10 ký tự để organizer hiểu rõ hơn về bạn.
+                      Tối thiểu 10 ký tự để ban tổ chức hiểu rõ hơn về bạn.
                     </p>
                   )}
 
                   <p
                     className={`shrink-0 text-xs font-semibold ${
-                      motivationLength >= 10 ? 'text-emerald-600' : 'text-slate-400'
+                      motivationLength >= 10
+                        ? "text-emerald-600"
+                        : "text-slate-400"
                     }`}
                   >
                     {motivationLength}/10+

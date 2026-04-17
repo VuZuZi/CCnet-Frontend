@@ -5,7 +5,7 @@ import { useAuthStore } from "../../../auth/stores/useAuthStore";
 const ProfileWidget = () => {
   const { user } = useAuthStore();
 
-  const fullName = user?.fullName || user?.username || "Guest";
+  const fullName = user?.fullName || user?.username || "Khách";
   const userInitial = fullName.charAt(0).toUpperCase();
 
   return (
@@ -28,7 +28,7 @@ const ProfileWidget = () => {
             {fullName}
           </h1>
           <p className="text-slate-500 text-xs font-medium">
-            {user?.role || "USER"}
+            {user?.role || "Người dùng"}
           </p>
         </div>
       </div>
@@ -36,7 +36,7 @@ const ProfileWidget = () => {
         to={`/profile/${user?._id || ""}`}
         className="block w-full mt-4 bg-primary text-white text-center text-sm font-bold py-2.5 rounded-xl hover:bg-yellow-500 transition-all"
       >
-        View Profile
+        Xem hồ sơ
       </Link>
     </div>
   );

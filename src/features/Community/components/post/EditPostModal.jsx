@@ -29,7 +29,8 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files);
-    if (totalMediaCount + files.length > 5) return alert("Tối đa 5 file.");
+    if (totalMediaCount + files.length > 5)
+      return alert("Tối đa 5 tệp đính kèm.");
 
     const newAtts = files.map((file) => ({
       file,
@@ -63,7 +64,9 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
         {/* Header */}
         <div className="px-6 py-4 border-b flex justify-between items-center">
-          <h5 className="font-bold text-xl text-slate-900">Edit Post</h5>
+          <h5 className="font-bold text-xl text-slate-900">
+            Chỉnh sửa bài viết
+          </h5>
           <button
             onClick={onClose}
             className="text-2xl text-slate-400 hover:text-red-500"
@@ -78,7 +81,7 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
             rows="4"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's on your mind?"
+            placeholder="Bạn đang nghĩ gì?"
           />
 
           {/* Media Preview Section */}
@@ -126,7 +129,7 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
             <span className="material-symbols-outlined text-[20px]">
               add_photo_alternate
             </span>
-            Add More Media
+            Thêm ảnh/video
           </button>
 
           {/* Actions */}
@@ -135,14 +138,14 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
               onClick={onClose}
               className="px-5 py-2 text-slate-500 font-bold hover:bg-slate-100 rounded-xl"
             >
-              Cancel
+              Hủy
             </button>
             <button
               onClick={handleSubmit}
               disabled={updatePost?.isPending}
               className="px-6 py-2 rounded-xl bg-primary text-white font-bold hover:opacity-90 disabled:opacity-50 min-w-[120px]"
             >
-              {updatePost?.isPending ? "Saving..." : "Save Changes"}
+              {updatePost?.isPending ? "Đang lưu..." : "Lưu thay đổi"}
             </button>
           </div>
         </div>
@@ -160,7 +163,7 @@ const MediaItem = ({ src, type, onRemove, isOld }) => (
     ) : (
       <img
         src={src}
-        alt="preview"
+        alt="xem trước"
         className={`w-20 h-20 object-cover rounded-lg ${isOld ? "opacity-80" : ""}`}
       />
     )}

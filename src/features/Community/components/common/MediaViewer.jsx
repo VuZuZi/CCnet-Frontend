@@ -52,7 +52,7 @@ const MediaViewer = ({ images, initialIndex = 0 }) => {
         ) : (
           <img
             src={currentMedia.url}
-            alt={`Post media ${currentIndex + 1}`}
+            alt={`Ảnh/Video ${currentIndex + 1}`}
             className="max-w-full max-h-[85vh] object-contain shadow-2xl rounded"
           />
         )}

@@ -5,7 +5,7 @@ export const ShareModal = ({
   isOpen,
   onClose,
   sharedData,
-  initialText = "Mọi người xem dự án mới của mình nhé! 🚀",
+  initialText = "Mọi người xem dự án mới của mình nhé! ",
 }) => {
   if (!isOpen) return null;
 
@@ -18,8 +18,8 @@ export const ShareModal = ({
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
           <h3 className="font-extrabold text-lg text-slate-900 m-0">
             {sharedData?.entityModel === "Project"
-              ? "Share Project"
-              : "Ask for Help"}
+              ? "Chia sẻ dự án"
+              : "Kêu gọi hỗ trợ"}
           </h3>
           <button
             onClick={onClose}

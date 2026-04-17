@@ -18,7 +18,7 @@ const FeedNav = ({ activeFeed, onChangeFeed }) => {
         >
           explore
         </span>
-        Explore
+        Khám phá
       </button>
 
       <button
@@ -34,7 +34,7 @@ const FeedNav = ({ activeFeed, onChangeFeed }) => {
         >
           group
         </span>
-        Following
+        Đang theo dõi
       </button>
 
       <button
@@ -50,7 +50,7 @@ const FeedNav = ({ activeFeed, onChangeFeed }) => {
         >
           bookmark
         </span>
-        Saved
+        Đã lưu
       </button>
     </nav>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // THÊM useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
@@ -21,18 +21,18 @@ const SharedEntityCard = ({ entity }) => {
         {entity.thumbnail ? (
           <img
             src={entity.thumbnail}
-            alt="Thumbnail"
+            alt="Ảnh đại diện"
             className="h-full w-full object-cover"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-sm font-medium text-slate-400">
-            No Image
+            Không có ảnh
           </div>
         )}
         <span
           className={`absolute left-2 top-2 rounded-md px-2 py-1 text-[9px] font-bold uppercase text-white shadow-sm ${badgeClass}`}
         >
-          {isProject ? "PROJECT" : "NEED HELP"}
+          {isProject ? "DỰ ÁN" : "CẦN GIÚP ĐỠ"}
         </span>
       </div>
       <div className="flex flex-1 flex-col bg-white p-4">
@@ -165,7 +165,7 @@ const TextOnlyPostView = ({
         className="fixed left-6 top-6 z-[100] flex items-center gap-2 text-slate-300 hover:text-white font-medium transition-colors"
       >
         <span className="material-symbols-outlined text-xl">arrow_back</span>
-        Back
+        Quay lại
       </button>
 
       {/* 3. KHUNG BÀI VIẾT: Chặn sự kiện lan ra ngoài bằng stopPropagation */}
@@ -208,7 +208,7 @@ const TextOnlyPostView = ({
             >
               favorite
             </span>
-            {post.stats?.likes || 0} Likes
+            {post.stats?.likes || 0} Lượt thích
           </button>
 
           <button
@@ -231,14 +231,14 @@ const TextOnlyPostView = ({
 
           <div className="ml-auto flex items-center gap-2 text-sm font-bold text-slate-500">
             <span className="material-symbols-outlined">chat_bubble</span>{" "}
-            {totalComments} Comments
+            {totalComments} Bình luận
           </div>
         </div>
 
         <div>
           <div className="mb-3 flex items-center justify-between">
             <span className="text-[14px] font-bold text-slate-900">
-              Comments ({totalComments})
+              Bình luận ({totalComments})
             </span>
 
             <div className="relative" ref={dropdownRef}>
@@ -326,7 +326,7 @@ const TextOnlyPostView = ({
                       <span className="mr-2 font-bold text-slate-900">
                         {comment.author?.fullName ||
                           comment.author?.username ||
-                          "Anonymous"}
+                          "Người ẩn danh"}
                       </span>
                       <span className="whitespace-pre-wrap break-words text-slate-700">
                         {comment.content}

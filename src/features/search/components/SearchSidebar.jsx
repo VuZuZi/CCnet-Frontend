@@ -11,11 +11,11 @@ import {
 
 const FILTERS = [
   { key: "all", label: "Tất cả", icon: LayoutGrid },
-  { key: "organizer", label: "Organizer", icon: UserRound },
-  { key: "project", label: "Project", icon: FolderKanban },
-  { key: "needhelp", label: "Need Help", icon: HeartHandshake },
-  { key: "communitypost", label: "Community Post", icon: Newspaper },
-  { key: "user", label: "Users", icon: Users },
+  { key: "organizer", label: "Tổ chức", icon: UserRound },
+  { key: "project", label: "Dự án", icon: FolderKanban },
+  { key: "needhelp", label: "Cần giúp đỡ", icon: HeartHandshake },
+  { key: "communitypost", label: "Bài viết", icon: Newspaper },
+  { key: "user", label: "Người dùng", icon: Users },
 ];
 
 function ToggleRow({ label, checked = false, disabled = false, onChange }) {
@@ -23,7 +23,7 @@ function ToggleRow({ label, checked = false, disabled = false, onChange }) {
     <div
       className={clsx(
         "flex items-center justify-between gap-4 py-2",
-        disabled && "opacity-50"
+        disabled && "opacity-50",
       )}
     >
       <span className="text-[16px] font-medium text-slate-700">{label}</span>
@@ -35,13 +35,13 @@ function ToggleRow({ label, checked = false, disabled = false, onChange }) {
         className={clsx(
           "relative h-8 w-[54px] rounded-full transition-all duration-250",
           checked ? "bg-amber-400" : "bg-slate-300",
-          disabled && "cursor-not-allowed"
+          disabled && "cursor-not-allowed",
         )}
       >
         <span
           className={clsx(
             "absolute top-1 h-6 w-6 rounded-full bg-white shadow transition-all duration-250",
-            checked ? "left-[26px]" : "left-1"
+            checked ? "left-[26px]" : "left-1",
           )}
         />
       </button>
@@ -72,7 +72,7 @@ function SelectRow({
             "w-full appearance-none rounded-2xl border border-slate-200 bg-white px-4 py-3 pr-10 text-[15px] text-slate-700 outline-none transition-all",
             disabled
               ? "cursor-not-allowed bg-slate-100"
-              : "focus:border-amber-300 focus:ring-4 focus:ring-amber-100"
+              : "focus:border-amber-300 focus:ring-4 focus:ring-amber-100",
           )}
         >
           <option value="">{placeholder}</option>
@@ -139,7 +139,7 @@ export default function SearchSidebar({
                 "group flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition-all duration-250",
                 active
                   ? "bg-amber-300 text-slate-900 shadow-sm"
-                  : "text-slate-700 hover:bg-slate-100"
+                  : "text-slate-700 hover:bg-slate-100",
               )}
             >
               <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ export default function SearchSidebar({
                     "flex h-10 w-10 items-center justify-center rounded-full transition-all duration-250",
                     active
                       ? "bg-white/70 text-amber-700"
-                      : "bg-slate-100 text-slate-500 group-hover:bg-white"
+                      : "bg-slate-100 text-slate-500 group-hover:bg-white",
                   )}
                 >
                   <Icon size={18} />
@@ -162,7 +162,7 @@ export default function SearchSidebar({
                   "min-w-[28px] rounded-full px-2 py-1 text-center text-xs font-bold transition-all duration-250",
                   active
                     ? "bg-white/75 text-slate-900"
-                    : "bg-slate-100 text-slate-500"
+                    : "bg-slate-100 text-slate-500",
                 )}
               >
                 {count}
@@ -182,8 +182,8 @@ export default function SearchSidebar({
         {!postFiltersEnabled ? (
           <p className="mb-3 text-sm text-slate-500">
             Chọn <span className="font-semibold">Tất cả</span> hoặc{" "}
-            <span className="font-semibold">Community Post</span> để dùng bộ lọc
-            bài viết.
+            <span className="font-semibold">Bài viết</span> để dùng bộ lọc bài
+            viết.
           </p>
         ) : null}
 

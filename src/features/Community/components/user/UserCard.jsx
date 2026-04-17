@@ -7,7 +7,7 @@ export const UserCard = ({
   onRequestUnfollow,
   onGoUser,
 }) => {
-  const title = user.fullName || user.email || "Unknown";
+  const title = user.fullName || user.email || "Người ẩn danh";
   const letter = String(title).trim().slice(0, 1).toUpperCase();
 
   return (
@@ -49,7 +49,7 @@ export const UserCard = ({
               onRequestUnfollow(user);
             }}
           >
-            Unfollow
+            Bỏ theo dõi
           </Button>
         ) : (
           <Button
@@ -61,7 +61,7 @@ export const UserCard = ({
               onGoUser(user);
             }}
           >
-            View Profile
+            Xem hồ sơ
           </Button>
         )}
       </div>

@@ -3,9 +3,9 @@ import { usePostMutations } from "../../hooks/usePostMutations";
 import { Button } from "@/shared/components/ui/Button/Button";
 
 const REPORT_REASONS = [
-  { value: "spam", label: "Spam / Advertising" },
-  { value: "harassment", label: "Harassment / Bullying" },
-  { value: "inappropriate", label: "Inappropriate / NSFW" },
+  { value: "spam", label: "Spam / Quảng cáo" },
+  { value: "harassment", label: "Quấy rối / Bắt nạt" },
+  { value: "inappropriate", label: "Nội dung không phù hợp / Phản cảm" },
 ];
 
 export default function ReportModal({ isOpen, onClose, postId }) {
@@ -47,7 +47,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
 
     try {
       await reportPost.mutateAsync({ postId, payload });
-      setMessage({ type: "success", text: "Report submitted successfully!" });
+      setMessage({ type: "success", text: "Gửi báo cáo thành công!" });
       setTimeout(resetForm, 2000);
     } catch (err) {
       const status = err.response?.status || err.status;
@@ -60,7 +60,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
       } else {
         setMessage({
           type: "error",
-          text: err.response?.data?.message || "Failed to submit report.",
+          text: err.response?.data?.message || "Gửi báo cáo thất bại.",
         });
       }
     }
@@ -72,7 +72,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
     <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
       <div className="bg-white rounded-[24px] shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-[24px]">
-          <h5 className="font-bold text-xl m-0">Report Post</h5>
+          <h5 className="font-bold text-xl m-0">Báo cáo bài viết</h5>
           <button
             className="text-2xl cursor-pointer"
             onClick={onClose}
@@ -97,7 +97,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-5">
-              <label className="block text-sm font-bold mb-2">Reason *</label>
+              <label className="block text-sm font-bold mb-2">Lý do *</label>
               <select
                 className="w-full rounded-xl border border-slate-200 py-3 px-4 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
                 value={reason}
@@ -108,7 +108,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
                 required
                 disabled={reportPost.isPending}
               >
-                <option value="">Choose a reason</option>
+                <option value="">Chọn một lý do</option>
                 {REPORT_REASONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
@@ -119,7 +119,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
 
             <div className="mb-5">
               <label className="block text-sm font-medium mb-2">
-                Additional details
+                Mô tả chi tiết
               </label>
               <textarea
                 className="w-full rounded-xl border border-slate-200 py-3 px-4 focus:ring-2 focus:ring-yellow-400 focus:outline-none"
@@ -132,7 +132,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
 
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">
-                Evidence (max 5 images)
+                Bằng chứng (tối đa 5 ảnh)
               </label>
               <input
                 type="file"
@@ -144,7 +144,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
               />
               {evidenceFiles.length > 0 && (
                 <p className="text-sm text-gray mt-2">
-                  {evidenceFiles.length} file(s) selected.
+                  Đã chọn {evidenceFiles.length} tệp.
                 </p>
               )}
             </div>
@@ -155,7 +155,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
               disabled={reportPost.isPending || !reason.trim()}
               isLoading={reportPost.isPending}
             >
-              Submit Report
+              Gửi báo cáo
             </Button>
           </form>
         </div>

@@ -4,11 +4,11 @@ import { usePostMutations } from "../../hooks/usePostMutations";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
 import EditPostModal from "./EditPostModal";
-import PostTheaterMode from "./PostTheaterMode"; // Giả sử bạn dùng chung component này để làm overlay
+import PostTheaterMode from "./PostTheaterMode";
 
 const POST_TYPE_LABELS = {
-  share_project: "shared a project",
-  need_help: "is asking for help",
+  share_project: "đã chia sẻ một dự án",
+  need_help: "đang kêu gọi hỗ trợ",
 };
 
 const useClickOutside = (ref, handler) => {
@@ -23,7 +23,7 @@ const useClickOutside = (ref, handler) => {
 };
 
 const getAuthorName = (author) =>
-  author?.fullName || author?.username || "Anonymous";
+  author?.fullName || author?.username || "Người ẩn danh";
 
 const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
   const name = getAuthorName(user);
@@ -88,18 +88,18 @@ const SharedEntityCard = ({ entity }) => {
           {entity.thumbnail ? (
             <img
               src={entity.thumbnail}
-              alt="Thumbnail"
+              alt="Ảnh đại diện"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium bg-slate-100">
-              No Image
+              Không có ảnh
             </div>
           )}
           <span
             className={`absolute top-2 left-2 px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm text-white tracking-wide ${badgeClass}`}
           >
-            {isProject ? "Project" : "Need Help"}
+            {isProject ? "Dự án" : "Cần giúp đỡ"}
           </span>
         </div>
 
@@ -185,7 +185,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   const isDisliked = post?.userReaction === "dislike";
   const stats = post?.stats || { likes: 0, comments: 0 };
   const postDate = post?.createdAt
-    ? new Date(post.createdAt).toLocaleDateString()
+    ? new Date(post.createdAt).toLocaleDateString("vi-VN")
     : "";
 
   const handleCommentSubmit = async (e) => {
@@ -256,7 +256,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                   <>
                     <MenuBtn
                       icon="edit"
-                      label="Edit"
+                      label="Chỉnh sửa"
                       onClick={() => {
                         setIsEditOpen(true);
                         setShowMenu(false);
@@ -264,10 +264,14 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                     />
                     <MenuBtn
                       icon="delete"
-                      label="Delete"
+                      label="Xóa"
                       variant="danger"
                       onClick={() => {
-                        if (window.confirm("Delete?"))
+                        if (
+                          window.confirm(
+                            "Bạn có chắc chắn muốn xóa bài viết này không?",
+                          )
+                        )
                           deletePost.mutate(post._id);
                         setShowMenu(false);
                       }}
@@ -277,7 +281,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                   <>
                     <MenuBtn
                       icon={post.isSaved ? "bookmark_added" : "bookmark"}
-                      label={post.isSaved ? "Unsave" : "Save"}
+                      label={post.isSaved ? "Bỏ lưu" : "Lưu bài"}
                       onClick={() => {
                         toggleSavePost.mutate(post._id);
                         setShowMenu(false);
@@ -286,7 +290,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
 
                     <MenuBtn
                       icon="warning"
-                      label="Report"
+                      label="Báo cáo"
                       variant="warning"
                       onClick={() => {
                         onReport(post._id);
@@ -326,7 +330,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           <ActionBtn
             active={isLiked}
             icon="favorite"
-            label={`${stats.likes} Likes`}
+            label={`${stats.likes} Lượt thích`}
             color="text-yellow-500"
             onClick={() =>
               toggleReaction.mutate({ postId: post._id, type: "like" })
@@ -347,7 +351,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             className="flex items-center gap-2 text-slate-500 font-bold text-sm ml-auto hover:text-slate-800 transition-colors"
           >
             <span className="material-symbols-outlined">chat_bubble</span>
-            {stats.comments} Comments
+            {stats.comments} Bình luận
           </Link>
         </div>
 

@@ -1,7 +1,10 @@
 import clsx from "clsx";
 
 function ItemIcon({ item }) {
-  const letter = String(item?.title || "?").trim().slice(0, 1).toUpperCase();
+  const letter = String(item?.title || "?")
+    .trim()
+    .slice(0, 1)
+    .toUpperCase();
 
   return (
     <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full bg-amber-200 font-bold text-slate-900 shadow-sm">
@@ -19,6 +22,23 @@ function ItemIcon({ item }) {
 }
 
 function StandardCard({ item, onOpen }) {
+  const getKindLabel = (kind) => {
+    switch (kind) {
+      case "communitypost":
+        return "Bài viết";
+      case "needhelp":
+        return "Cần giúp đỡ";
+      case "project":
+        return "Dự án";
+      case "organizer":
+        return "Tổ chức";
+      case "user":
+        return "Người dùng";
+      default:
+        return kind || "Kết quả";
+    }
+  };
+
   return (
     <button
       type="button"
@@ -30,7 +50,7 @@ function StandardCard({ item, onOpen }) {
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center gap-2">
           <h3 className="truncate text-[18px] font-bold text-slate-900">
-            {item.title || "Untitled"}
+            {item.title || "Chưa có tiêu đề"}
           </h3>
 
           <span
@@ -39,15 +59,12 @@ function StandardCard({ item, onOpen }) {
               item.kind === "organizer" && "bg-amber-100 text-amber-800",
               item.kind === "project" && "bg-blue-100 text-blue-800",
               item.kind === "needhelp" && "bg-rose-100 text-rose-800",
-              item.kind === "communitypost" && "bg-emerald-100 text-emerald-800",
-              item.kind === "user" && "bg-slate-100 text-slate-700"
+              item.kind === "communitypost" &&
+                "bg-emerald-100 text-emerald-800",
+              item.kind === "user" && "bg-slate-100 text-slate-700",
             )}
           >
-            {item.kind === "communitypost"
-              ? "Post"
-              : item.kind === "needhelp"
-                ? "Need Help"
-                : item.kind || "Result"}
+            {getKindLabel(item.kind)}
           </span>
         </div>
 
@@ -84,18 +101,21 @@ function CommunityPostPreview({ item, onOpen }) {
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <h3 className="truncate text-[16px] font-bold text-slate-900">
-                {payload.author?.fullName || "Anonymous"}
+                {payload.author?.fullName || "Người ẩn danh"}
               </h3>
 
               <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-emerald-800">
-                Post
+                Bài viết
               </span>
             </div>
 
             <p className="mt-1 text-xs font-medium uppercase text-slate-400">
-              {payload.privacy || "public"} •{" "}
+              {payload.privacy === "public"
+                ? "Công khai"
+                : payload.privacy || "Công khai"}{" "}
+              •{" "}
               {payload.createdAt
-                ? new Date(payload.createdAt).toLocaleDateString()
+                ? new Date(payload.createdAt).toLocaleDateString("vi-VN")
                 : ""}
             </p>
           </div>
@@ -116,7 +136,7 @@ function CommunityPostPreview({ item, onOpen }) {
         <div
           className={clsx(
             "mt-4 grid gap-1 overflow-hidden rounded-2xl bg-slate-100",
-            images.length === 1 ? "grid-cols-1" : "grid-cols-2"
+            images.length === 1 ? "grid-cols-1" : "grid-cols-2",
           )}
         >
           {images.slice(0, 2).map((img, index) => (
@@ -124,7 +144,7 @@ function CommunityPostPreview({ item, onOpen }) {
               key={img.publicId || img.url || index}
               className={clsx(
                 "aspect-video bg-cover bg-center bg-no-repeat",
-                images.length === 1 && "min-h-[260px]"
+                images.length === 1 && "min-h-[260px]",
               )}
               style={{ backgroundImage: `url("${img.url}")` }}
             />
@@ -137,12 +157,12 @@ function CommunityPostPreview({ item, onOpen }) {
           <span className="material-symbols-outlined text-[20px]">
             favorite
           </span>
-          <span>{Number(stats.likes || 0)} Likes</span>
+          <span>{Number(stats.likes || 0)} Lượt thích</span>
         </div>
 
         <div className="flex items-center gap-2">
           <span className="material-symbols-outlined text-[20px]">chat</span>
-          <span>{Number(stats.comments || 0)} Comments</span>
+          <span>{Number(stats.comments || 0)} Bình luận</span>
         </div>
 
         <div className="ml-auto text-xs font-semibold text-amber-700">
@@ -214,7 +234,7 @@ export default function SearchResults({
             item={item}
             onOpen={onOpen}
           />
-        )
+        ),
       )}
     </div>
   );
