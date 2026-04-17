@@ -48,7 +48,7 @@ function AdminActionLogsPage() {
 
       {logsQuery.isError ? (
         <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700 shadow-sm">
-          {getErrorMessage(logsQuery.error, "Failed to load action logs.")}
+          {getErrorMessage(logsQuery.error, "Tải lịch sử hành động thất bại.")}
         </div>
       ) : null}
     </div>

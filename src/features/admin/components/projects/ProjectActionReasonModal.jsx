@@ -3,74 +3,74 @@ import { AlertTriangle, Loader2, X } from "lucide-react";
 
 const ACTION_COPY = {
   SUBMIT_PROJECT_FOR_REVIEW: {
-    title: "Submit project for review",
+    title: "Gửi dự án để kiểm duyệt",
     description:
-      "Please enter a clear reason to record why this project is being moved into the review queue.",
+      "Vui lòng nhập lý do rõ ràng để ghi lại lý do dự án này được chuyển vào hàng đợi kiểm duyệt.",
     placeholder:
-      "Example: Documents were reviewed and the project is ready for formal moderation.",
-    confirmText: "Confirm submission",
+      "Ví dụ: Các tài liệu đã được xem xét và dự án đã sẵn sàng để kiểm duyệt chính thức.",
+    confirmText: "Xác nhận gửi",
   },
   REQUEST_PROJECT_REVISION: {
-    title: "Request revision",
+    title: "Yêu cầu sửa đổi",
     description:
-      "This reason will help other admins track the issue and help the organizer understand what must be fixed.",
+      "Lý do này sẽ giúp các quản trị viên khác theo dõi vấn đề và giúp người tổ chức hiểu những gì cần phải khắc phục.",
     placeholder:
-      "Example: Missing verification documents, unclear budget breakdown...",
-    confirmText: "Confirm revision request",
+      "Ví dụ: Thiếu tài liệu xác minh, phân bổ ngân sách không rõ ràng...",
+    confirmText: "Xác nhận yêu cầu sửa đổi",
   },
   REJECT_PROJECT: {
-    title: "Reject project",
+    title: "Từ chối dự án",
     description:
-      "A reason is required to preserve the administrative history and support internal review.",
+      "Bắt buộc phải có lý do để lưu giữ lịch sử quản trị và hỗ trợ đánh giá nội bộ.",
     placeholder:
-      "Example: Insufficient credibility, inconsistent project information...",
-    confirmText: "Confirm rejection",
+      "Ví dụ: Không đủ độ tin cậy, thông tin dự án không nhất quán...",
+    confirmText: "Xác nhận từ chối",
   },
   PAUSE_PROJECT: {
-    title: "Pause project",
+    title: "Tạm dừng dự án",
     description:
-      "Enter a clear reason so other admins understand why this project was paused.",
+      "Nhập lý do rõ ràng để các quản trị viên khác hiểu tại sao dự án này bị tạm dừng.",
     placeholder:
-      "Example: Need to verify financial flow / potential risk detected...",
-    confirmText: "Confirm pause",
+      "Ví dụ: Cần xác minh dòng tiền / phát hiện rủi ro tiềm ẩn...",
+    confirmText: "Xác nhận tạm dừng",
   },
   RESUME_PROJECT: {
-    title: "Resume project",
+    title: "Tiếp tục dự án",
     description:
-      "Enter a reason to record why this project is allowed to continue.",
+      "Nhập lý do để ghi lại lý do dự án này được phép tiếp tục.",
     placeholder:
-      "Example: Verification completed and project is eligible to continue.",
-    confirmText: "Confirm resume",
+      "Ví dụ: Đã hoàn tất xác minh và dự án đủ điều kiện để tiếp tục.",
+    confirmText: "Xác nhận tiếp tục",
   },
   COMPLETE_PROJECT: {
-    title: "Complete project",
+    title: "Hoàn thành dự án",
     description:
-      "Enter a note or reason to explain why the project is being closed by admin.",
+      "Nhập ghi chú hoặc lý do để giải thích tại sao dự án bị đóng bởi quản trị viên.",
     placeholder:
-      "Example: Project goals were achieved and closure was confirmed.",
-    confirmText: "Confirm completion",
+      "Ví dụ: Các mục tiêu của dự án đã đạt được và việc đóng dự án đã được xác nhận.",
+    confirmText: "Xác nhận hoàn thành",
   },
   CANCEL_PROJECT: {
-    title: "Cancel project",
+    title: "Hủy dự án",
     description:
-      "Enter a detailed reason to preserve the admin log and support future audits.",
+      "Nhập lý do chi tiết để bảo lưu nhật ký quản trị và hỗ trợ các cuộc kiểm toán trong tương lai.",
     placeholder:
-      "Example: Platform policy violation / evidence of fraud found...",
-    confirmText: "Confirm cancellation",
+      "Ví dụ: Vi phạm chính sách nền tảng / tìm thấy bằng chứng gian lận...",
+    confirmText: "Xác nhận hủy",
   },
   DELETE_PROJECT: {
-    title: "Delete project",
+    title: "Xóa dự án",
     description:
-      "This is a sensitive action. A clear reason is required for internal management.",
+      "Đây là một hành động nhạy cảm. Cần có lý do rõ ràng để quản lý nội bộ.",
     placeholder:
-      "Example: Delete corrupted record / remove based on admin decision...",
-    confirmText: "Confirm deletion",
+      "Ví dụ: Xóa bản ghi bị lỗi / xóa dựa trên quyết định của quản trị viên...",
+    confirmText: "Xác nhận xóa",
   },
   UPDATE_PROJECT_STATUS: {
-    title: "Update status",
-    description: "Please enter a reason to preserve the admin history.",
-    placeholder: "Enter reason...",
-    confirmText: "Confirm update",
+    title: "Cập nhật trạng thái",
+    description: "Vui lòng nhập lý do để bảo lưu lịch sử quản trị.",
+    placeholder: "Nhập lý do...",
+    confirmText: "Xác nhận cập nhật",
   },
 };
 
@@ -110,10 +110,10 @@ export default function ProjectActionReasonModal({
   const content = useMemo(() => {
     return (
       ACTION_COPY[actionKey] || {
-        title: "Confirm action",
-        description: "Please enter a reason to continue.",
-        placeholder: "Enter reason...",
-        confirmText: "Confirm",
+        title: "Xác nhận hành động",
+        description: "Vui lòng nhập lý do để tiếp tục.",
+        placeholder: "Nhập lý do...",
+        confirmText: "Xác nhận",
       }
     );
   }, [actionKey]);
@@ -124,7 +124,7 @@ export default function ProjectActionReasonModal({
     <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4">
       <button
         type="button"
-        aria-label="Close reason modal"
+        aria-label="Đóng hộp thoại lý do"
         onClick={() => {
           if (!loading) onClose?.();
         }}
@@ -147,7 +147,7 @@ export default function ProjectActionReasonModal({
                   {content.title}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  {project?.title || "Project"}
+                  {project?.title || "Dự án"}
                 </p>
               </div>
             </div>
@@ -174,7 +174,7 @@ export default function ProjectActionReasonModal({
 
           <div className="mt-5">
             <label className="mb-2 block text-sm font-black text-slate-800">
-              Reason <span className="text-rose-500">*</span>
+              Lý do <span className="text-rose-500">*</span>
             </label>
 
             <textarea
@@ -197,7 +197,7 @@ export default function ProjectActionReasonModal({
               disabled={loading}
               className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Cancel
+              Hủy
             </button>
 
             <button

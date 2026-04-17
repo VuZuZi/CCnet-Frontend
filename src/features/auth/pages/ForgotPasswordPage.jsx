@@ -29,12 +29,12 @@ export function ForgotPasswordPage() {
   const handleSendOTP = async (e) => {
     e.preventDefault();
     setError('');
-    if (!email.trim()) return setError('Please enter your email.');
+    if (!email.trim()) return setError('Vui lòng nhập email của bạn.');
     try {
       await forgotMutation.mutateAsync(email.trim().toLowerCase());
       setStep(STEPS.OTP);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Something went wrong.');
+      setError(err?.response?.data?.message || 'Đã có lỗi xảy ra.');
     }
   };
 
@@ -42,13 +42,13 @@ export function ForgotPasswordPage() {
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     setError('');
-    if (!otp.trim()) return setError('Please enter the OTP code.');
+    if (!otp.trim()) return setError('Vui lòng nhập mã OTP.');
     try {
       const result = await verifyMutation.mutateAsync({ email: email.trim().toLowerCase(), otp: otp.trim() });
       setResetToken(result.data?.resetToken);
       setStep(STEPS.NEW_PASSWORD);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Invalid OTP. Please try again.');
+      setError(err?.response?.data?.message || 'Mã OTP không hợp lệ. Vui lòng thử lại.');
     }
   };
 
@@ -56,13 +56,13 @@ export function ForgotPasswordPage() {
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError('');
-    if (newPassword.length < 6) return setError('Password must be at least 6 characters.');
-    if (newPassword !== confirmPassword) return setError('Passwords do not match.');
+    if (newPassword.length < 6) return setError('Mật khẩu phải có ít nhất 6 ký tự.');
+    if (newPassword !== confirmPassword) return setError('Mật khẩu không khớp.');
     try {
       await resetMutation.mutateAsync({ token: resetToken, newPassword });
       setStep(STEPS.SUCCESS);
     } catch (err) {
-      setError(err?.response?.data?.message || 'Failed to reset password. Please start again.');
+      setError(err?.response?.data?.message || 'Đặt lại mật khẩu thất bại. Vui lòng thử lại từ đầu.');
     }
   };
 
@@ -81,7 +81,7 @@ export function ForgotPasswordPage() {
               className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
             >
               <ArrowLeft size={16} />
-              Back to Login
+              Quay lại Đăng nhập
             </Link>
           )}
 
@@ -111,19 +111,19 @@ export function ForgotPasswordPage() {
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50">
                 <Mail size={22} className="text-amber-500" />
               </div>
-              <h1 className="mt-3 text-2xl font-black text-slate-900">Forgot Password?</h1>
+              <h1 className="mt-3 text-2xl font-black text-slate-900">Quên Mật Khẩu?</h1>
               <p className="mt-1 text-sm text-slate-500">
-                Enter your email and we'll send you a 6-digit reset code.
+                Nhập email của bạn và chúng tôi sẽ gửi mã gồm 6 chữ số để đặt lại mật khẩu.
               </p>
 
               <form onSubmit={handleSendOTP} className="mt-6 space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Email address</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Địa chỉ Email</label>
                   <input
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
+                    placeholder="ban@example.com"
                     className={inputClass}
                     autoFocus
                   />
@@ -136,7 +136,7 @@ export function ForgotPasswordPage() {
                   className="w-full rounded-2xl font-bold"
                   isLoading={forgotMutation.isPending}
                 >
-                  Send Reset Code
+                  Gửi Mã Đặt Lại
                 </Button>
               </form>
             </>
@@ -148,14 +148,14 @@ export function ForgotPasswordPage() {
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50">
                 <KeyRound size={22} className="text-amber-500" />
               </div>
-              <h1 className="mt-3 text-2xl font-black text-slate-900">Enter Reset Code</h1>
+              <h1 className="mt-3 text-2xl font-black text-slate-900">Nhập Mã Đặt Lại</h1>
               <p className="mt-1 text-sm text-slate-500">
-                We sent a 6-digit code to <strong>{email}</strong>. Check your inbox (and spam folder).
+                Chúng tôi đã gửi mã 6 chữ số đến <strong>{email}</strong>. Kiểm tra hộp thư đến (và hộp thư rác).
               </p>
 
               <form onSubmit={handleVerifyOTP} className="mt-6 space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">6-digit OTP code</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Mã OTP 6 chữ số</label>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -175,14 +175,14 @@ export function ForgotPasswordPage() {
                   className="w-full rounded-2xl font-bold"
                   isLoading={verifyMutation.isPending}
                 >
-                  Verify Code
+                  Xác minh Mã
                 </Button>
                 <button
                   type="button"
                   onClick={() => { setStep(STEPS.EMAIL); setError(''); setOtp(''); }}
                   className="w-full text-center text-sm text-slate-400 hover:text-slate-700"
                 >
-                  Wrong email? Go back
+                  Sai email? Quay lại
                 </button>
               </form>
             </>
@@ -194,20 +194,20 @@ export function ForgotPasswordPage() {
               <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-50">
                 <Lock size={22} className="text-amber-500" />
               </div>
-              <h1 className="mt-3 text-2xl font-black text-slate-900">Set New Password</h1>
+              <h1 className="mt-3 text-2xl font-black text-slate-900">Đặt Mật Khẩu Mới</h1>
               <p className="mt-1 text-sm text-slate-500">
-                Choose a strong password for your account.
+                Chọn một mật khẩu mạnh cho tài khoản của bạn.
               </p>
 
               <form onSubmit={handleResetPassword} className="mt-6 space-y-4">
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">New Password</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Mật khẩu Mới</label>
                   <div className="relative">
                     <input
                       type={showPassword ? 'text' : 'password'}
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="At least 6 characters"
+                      placeholder="Ít nhất 6 ký tự"
                       className={`${inputClass} pr-11`}
                       autoFocus
                     />
@@ -221,12 +221,12 @@ export function ForgotPasswordPage() {
                   </div>
                 </div>
                 <div>
-                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Confirm Password</label>
+                  <label className="mb-1.5 block text-sm font-medium text-slate-700">Xác nhận Mật khẩu</label>
                   <input
                     type={showPassword ? 'text' : 'password'}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat your password"
+                    placeholder="Nhập lại mật khẩu"
                     className={inputClass}
                   />
                 </div>
@@ -238,7 +238,7 @@ export function ForgotPasswordPage() {
                   className="w-full rounded-2xl font-bold"
                   isLoading={resetMutation.isPending}
                 >
-                  Reset Password
+                  Đặt lại Mật khẩu
                 </Button>
               </form>
             </>
@@ -250,15 +250,15 @@ export function ForgotPasswordPage() {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
                 <CheckCircle2 size={32} className="text-emerald-500" />
               </div>
-              <h1 className="text-2xl font-black text-slate-900">Password Reset!</h1>
+              <h1 className="text-2xl font-black text-slate-900">Đã Đặt Lại Mật Khẩu!</h1>
               <p className="mt-2 text-sm text-slate-500">
-                Your password has been updated. You can now log in with your new password.
+                Mật khẩu của bạn đã được cập nhật. Bây giờ bạn có thể đăng nhập bằng mật khẩu mới.
               </p>
               <Link
                 to="/login"
                 className="mt-6 inline-flex w-full items-center justify-center rounded-2xl bg-amber-400 px-6 py-3 font-bold text-slate-900 shadow-md shadow-amber-200 transition-colors hover:bg-amber-500"
               >
-                Go to Login
+                Đi đến Đăng nhập
               </Link>
             </div>
           )}

@@ -37,12 +37,10 @@ export default function AdminNotificationComposer() {
 
           <div className="min-w-0">
             <h2 className="text-2xl font-black tracking-tight text-slate-900">
-              Send system notification
+              Gửi thông báo hệ thống
             </h2>
             <p className="mt-1 text-sm leading-6 text-slate-500">
-              Choose recipients by role. For each selected role, leaving the
-              list empty means send to the full role. Selecting users means send
-              only to those users in that role.
+              Chọn người nhận theo vai trò. Đối với mỗi vai trò được chọn, nếu để trống danh sách có nghĩa là gửi cho toàn bộ người dùng có vai trò đó. Nếu chọn người dùng cụ thể thì thông báo chỉ gửi đến những người dùng đó trong vai trò tương ứng.
             </p>
           </div>
         </div>

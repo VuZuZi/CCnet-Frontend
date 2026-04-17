@@ -19,7 +19,7 @@ export function SupportedProjectsHero({ totalSupported, onBack }) {
 
           <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.16em] text-amber-700">
             <FolderHeart size={13} />
-            Volunteer Projects
+            Dự án tình nguyện
           </div>
 
           <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-900 sm:text-5xl">

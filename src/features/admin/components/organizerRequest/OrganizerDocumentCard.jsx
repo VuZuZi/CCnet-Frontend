@@ -8,7 +8,7 @@ import {
 export function OrganizerDocumentCard({
   title,
   file,
-  emptyText = "No document",
+  emptyText = "Chưa cung cấp tài liệu",
   onView,
 }) {
   if (!file) {
@@ -57,7 +57,7 @@ export function OrganizerDocumentCard({
           className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-800 transition hover:bg-amber-200"
         >
           <Eye size={14} />
-          View
+          Xem
         </button>
 
         <a
@@ -68,7 +68,7 @@ export function OrganizerDocumentCard({
           className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:bg-slate-50"
         >
           <Download size={14} />
-          Download
+          Tải xuống
         </a>
       </div>
     </div>

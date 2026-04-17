@@ -22,32 +22,32 @@ function ActionLogsHeader({ stats, onBack }) {
             className="mb-4 inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
           >
             <ArrowLeft size={16} strokeWidth={2.4} />
-            Back to User Management
+            Quay lại Quản lý Người dùng
           </button>
 
           <h1 className="text-[34px] font-black leading-none tracking-tight text-slate-900">
-            User Action Logs
+            Nhật ký hành động người dùng
           </h1>
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[460px]">
           <StatCard
-            label="Total"
+            label="Tổng cộng"
             value={stats.total}
             className="border-slate-200 bg-slate-50 text-slate-700"
           />
           <StatCard
-            label="Ban"
+            label="Cấm"
             value={stats.ban}
             className="border-red-200 bg-red-50 text-red-700"
           />
           <StatCard
-            label="Unban"
+            label="Bỏ cấm"
             value={stats.unban}
             className="border-emerald-200 bg-emerald-50 text-emerald-700"
           />
           <StatCard
-            label="Status"
+            label="Trạng thái"
             value={stats.status}
             className="border-amber-200 bg-amber-50 text-amber-700"
           />

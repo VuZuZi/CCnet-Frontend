@@ -39,7 +39,7 @@ function ActionLogsFilters({
             <input
               value={searchInput}
               onChange={(event) => onSearchChange(event.target.value)}
-              placeholder="Search by admin, target user, email, reason..."
+              placeholder="Tìm kiếm theo quản trị viên, người dùng mục tiêu, email, lý do..."
               className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
             />
           </div>

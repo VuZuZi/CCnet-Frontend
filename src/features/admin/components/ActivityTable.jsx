@@ -90,7 +90,7 @@ const ActivityTable = ({
       <div className="rounded-2xl border border-slate-200 bg-white p-20 text-center">
         <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-500">
           <Loader2 size={18} className="animate-spin text-amber-500" />
-          Loading system logs...
+          Đang tải nhật ký hệ thống...
         </div>
       </div>
     );
@@ -100,9 +100,9 @@ const ActivityTable = ({
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-100 p-6">
         <div>
-          <h3 className="text-lg font-black text-slate-800">Recent Activity</h3>
+          <h3 className="text-lg font-black text-slate-800">Hoạt động gần đây</h3>
           <p className="mt-1 text-sm text-slate-500">
-            Review reports and take moderation actions.
+            Xem xét các báo cáo và thực hiện hành động kiểm duyệt.
           </p>
         </div>
       </div>
@@ -112,16 +112,16 @@ const ActivityTable = ({
           <thead className="bg-slate-50/60">
             <tr>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Event ID
+                Mã sự kiện
               </th>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Target
+                Mục tiêu
               </th>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Details
+                Chi tiết
               </th>
               <th className="px-6 py-4 text-right text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                Actions
+                Hành động
               </th>
             </tr>
           </thead>
@@ -148,7 +148,7 @@ const ActivityTable = ({
                     className="transition-colors hover:bg-slate-50/40"
                   >
                     <td className="px-6 py-4 text-xs font-medium text-slate-400">
-                      #{report._id?.slice(-4).toUpperCase() || "N/A"}
+                      #{report._id?.slice(-4).toUpperCase() || "Không có"}
                     </td>
 
                     <td className="px-6 py-4">
@@ -176,17 +176,17 @@ const ActivityTable = ({
                       <div className="mb-1 flex items-center gap-2">
                         <FileWarning size={14} className="text-amber-500" />
                         <span className="font-semibold">
-                          {report?.reason_code || "Report"}
+                          {report?.reason_code || "Báo cáo"}
                         </span>
                       </div>
 
                       <div className="truncate text-slate-500">
-                        {report?.description || "No description"}
+                        {report?.description || "Không có mô tả"}
                       </div>
 
                       {report?.reporter_ref && (
                         <div className="mt-2 text-xs text-slate-400">
-                          Reporter:{" "}
+                          Người báo cáo:{" "}
                           {report.reporter_ref._id ? (
                             <Link
                               to={`/users/${report.reporter_ref._id}`}
@@ -245,7 +245,7 @@ const ActivityTable = ({
                                 ) : (
                                   <Shield size={12} />
                                 )}
-                                Apply Status
+                                Áp dụng trạng thái
                               </button>
                             </div>
                           ) : null}
@@ -263,8 +263,8 @@ const ActivityTable = ({
                                 <Ban size={12} />
                               )}
                               {target?.isActive === false
-                                ? "Unban user"
-                                : "Ban user"}
+                                ? "Bỏ cấm người dùng"
+                                : "Cấm người dùng"}
                             </button>
                           ) : null}
 
@@ -274,13 +274,13 @@ const ActivityTable = ({
                             className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[10px] font-bold uppercase text-amber-700 hover:bg-amber-100"
                           >
                             <AlertTriangle size={12} />
-                            Resolve report
+                            Giải quyết báo cáo
                           </button>
                         </div>
                       ) : (
                         <span className="inline-flex items-center gap-2 rounded-md bg-emerald-100 px-3 py-1 text-[10px] font-bold uppercase text-emerald-700">
                           <CheckCircle2 size={12} />
-                          Resolved
+                          Đã giải quyết
                         </span>
                       )}
                     </td>
@@ -293,7 +293,7 @@ const ActivityTable = ({
                   colSpan="4"
                   className="px-6 py-12 text-center text-sm italic text-slate-400"
                 >
-                  No recent activity or reports found.
+                  Không tìm thấy hoạt động hoặc báo cáo nào gần đây.
                 </td>
               </tr>
             )}

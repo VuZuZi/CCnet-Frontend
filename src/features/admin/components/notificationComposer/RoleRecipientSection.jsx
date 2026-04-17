@@ -25,24 +25,23 @@ export default function RoleRecipientSection({
 
         <div>
           <h4 className="text-sm font-black text-slate-900">
-            {roleOption.label} recipients
+            Người nhận {roleOption.label}
           </h4>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            Leave this empty to send to all {roleOption.label.toLowerCase()} users.
-            If you choose one or more users here, only those users will receive
-            the notification.
+            Để trống nếu muốn gửi đến tất cả người dùng {roleOption.label.toLowerCase()}.
+            Nếu bạn chọn một hoặc nhiều người dùng ở đây, chỉ những người dùng đó mới nhận được thông báo.
           </p>
         </div>
       </div>
 
       <div className="mt-4">
-        <FieldLabel>{roleOption.label} specific users</FieldLabel>
+        <FieldLabel>Người dùng {roleOption.label} cụ thể</FieldLabel>
         <div className="mt-3">
           <UserMultiSelect
             value={selectedUsers}
             onChange={onChange}
             allowedRoles={[role]}
-            placeholder={`Select ${roleOption.label.toLowerCase()} users... Leave empty for all.`}
+            placeholder={`Chọn người dùng ${roleOption.label.toLowerCase()}... Để trống để chọn tất cả.`}
           />
         </div>
       </div>

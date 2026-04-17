@@ -37,7 +37,7 @@ export default function RecipientsPreviewCard({
         <div className="flex items-center gap-2">
           <Users size={16} className="text-slate-500" />
           <h4 className="text-sm font-black tracking-tight text-slate-900">
-            Recipients Preview
+            Xem trước người nhận
           </h4>
         </div>
 
@@ -47,14 +47,14 @@ export default function RecipientsPreviewCard({
           className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
         >
           <Eye size={12} />
-          View recipients
+          Xem người nhận
         </button>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-            Requested users
+            Người dùng được yêu cầu
           </p>
           <p className="mt-1 text-sm font-bold text-slate-900">
             {requestedUsers.length}
@@ -63,7 +63,7 @@ export default function RecipientsPreviewCard({
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-            Resolved recipients
+            Người nhận thực tế
           </p>
           <p className="mt-1 text-sm font-bold text-slate-900">
             {resolvedRecipientCount}
@@ -72,10 +72,10 @@ export default function RecipientsPreviewCard({
 
         <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
           <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-            Preview
+            Xem trước
           </p>
           <p className="mt-1 text-sm font-bold text-slate-900">
-            {previewUsers.length} user(s)
+            {previewUsers.length} người dùng
           </p>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default function RecipientsPreviewCard({
         </div>
       ) : (
         <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center text-sm text-slate-400">
-          No recipient preview available.
+          Không có bản xem trước người nhận nào.
         </div>
       )}
     </div>

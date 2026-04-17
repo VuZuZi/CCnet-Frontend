@@ -27,12 +27,12 @@ export default function AdminProjectCardMetrics({
               <Wallet size={15} />
             </div>
             <span className="text-sm font-semibold text-slate-800">
-              Funding
+              Gây quỹ
             </span>
           </div>
 
           <span className="text-xs font-semibold text-amber-700">
-            {isFundraising ? `${fundsPercent}%` : "Volunteer only"}
+            {isFundraising ? `${fundsPercent}%` : "Chỉ tình nguyện"}
           </span>
         </div>
 
@@ -45,10 +45,10 @@ export default function AdminProjectCardMetrics({
 
         <div className="mt-3 flex items-end justify-between gap-3">
           <p className="text-sm font-semibold text-slate-800">
-            {formatVnd(currentAmount)} VND
+            {formatVnd(currentAmount)} VNĐ
           </p>
           <p className="text-xs text-slate-500">
-            Target: {formatVnd(targetAmount)} VND
+            Mục tiêu: {formatVnd(targetAmount)} VNĐ
           </p>
         </div>
       </div>
@@ -62,12 +62,12 @@ export default function AdminProjectCardMetrics({
               <Users size={15} />
             </div>
             <span className="text-sm font-semibold text-slate-800">
-              Volunteers
+              Tình nguyện viên
             </span>
           </div>
 
           <span className="text-xs font-semibold text-emerald-700">
-            {hasVolunteerTarget ? `${volunteerPercent}%` : "N/A"}
+            {hasVolunteerTarget ? `${volunteerPercent}%` : "Không có"}
           </span>
         </div>
 
@@ -80,16 +80,16 @@ export default function AdminProjectCardMetrics({
 
         <div className="mt-3 flex items-end justify-between gap-3">
           <p className="text-sm font-semibold text-slate-800">
-            {currentVolunteers.toLocaleString()} volunteers
+            {currentVolunteers.toLocaleString()} tình nguyện viên
           </p>
           <p className="text-xs text-slate-500">
-            Target: {targetVolunteers.toLocaleString()}
+            Mục tiêu: {targetVolunteers.toLocaleString()}
           </p>
         </div>
 
         {rolesCount > 0 ? (
           <div className="mt-2 text-xs text-slate-500">
-            Roles: {rolesCount}
+            Vai trò: {rolesCount}
           </div>
         ) : null}
       </div>

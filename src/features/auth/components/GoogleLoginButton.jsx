@@ -25,7 +25,7 @@ export function GoogleLoginButton() {
         theme="outline"
         size="large"
         text="continue_with"
-        shape="pill" 
+        shape="pill"
       />
     </div>
   );

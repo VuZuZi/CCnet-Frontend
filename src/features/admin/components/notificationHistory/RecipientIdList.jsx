@@ -3,13 +3,13 @@ import { Copy } from "lucide-react";
 export default function RecipientIdList({
   title,
   ids = [],
-  emptyText = "No IDs available.",
+  emptyText = "Không có ID nào.",
 }) {
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(ids.join("\n"));
     } catch {
-      console.error("Failed to copy recipient IDs.");
+      console.error("Sao chép ID người nhận thất bại.");
     }
   };
 
@@ -20,7 +20,7 @@ export default function RecipientIdList({
           <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
             {title}
           </p>
-          <p className="mt-1 text-sm text-slate-500">{ids.length} ID(s)</p>
+          <p className="mt-1 text-sm text-slate-500">{ids.length} ID</p>
         </div>
 
         {ids.length ? (
@@ -30,7 +30,7 @@ export default function RecipientIdList({
             className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700 transition hover:bg-amber-100"
           >
             <Copy size={12} />
-            Copy IDs
+            Sao chép ID
           </button>
         ) : null}
       </div>

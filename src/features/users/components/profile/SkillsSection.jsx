@@ -10,7 +10,7 @@ export function SkillsSection({ skills = [] }) {
   if (!skills || skills.length === 0) return null; 
   return (
     <article className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100" data-purpose="skills-section">
-      <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Skills</h2>
+      <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Kỹ năng</h2>
       <div className="flex flex-wrap gap-2">
         {skills.map((skill, index) => {
           const colorClass = COLOR_VARIANTS[index % COLOR_VARIANTS.length];

@@ -28,15 +28,15 @@ function ActionLogsTable({
         <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-[20px] font-black text-slate-900">
-              Activity Timeline
+              Dòng thời gian hoạt động
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Page {page} / {totalPages}
+              Trang {page} / {totalPages}
             </p>
           </div>
 
           <div className="rounded-2xl bg-slate-50 px-4 py-2 text-sm font-medium text-slate-500">
-            Showing {items.length} log(s) on this page
+            Đang hiển thị {items.length} nhật ký trên trang này
           </div>
         </div>
       </div>
@@ -45,11 +45,11 @@ function ActionLogsTable({
         <table className="w-full table-fixed text-sm">
           <thead className="bg-slate-50/90">
             <tr className="text-left text-slate-500">
-              <th className="w-[18%] px-6 py-4 font-bold">Action</th>
-              <th className="w-[20%] px-6 py-4 font-bold">Admin</th>
-              <th className="w-[20%] px-6 py-4 font-bold">Target User</th>
-              <th className="w-[22%] px-6 py-4 font-bold">Reason</th>
-              <th className="w-[20%] px-6 py-4 font-bold">Time</th>
+              <th className="w-[18%] px-6 py-4 font-bold">Hành động</th>
+              <th className="w-[20%] px-6 py-4 font-bold">Quản trị viên</th>
+              <th className="w-[20%] px-6 py-4 font-bold">Người dùng mục tiêu</th>
+              <th className="w-[22%] px-6 py-4 font-bold">Lý do</th>
+              <th className="w-[20%] px-6 py-4 font-bold">Thời gian</th>
             </tr>
           </thead>
 
@@ -59,7 +59,7 @@ function ActionLogsTable({
                 <td colSpan="5" className="px-6 py-16 text-center">
                   <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-500 shadow-sm">
                     <Loader2 size={18} className="animate-spin text-amber-500" />
-                    Loading action logs...
+                    Đang tải nhật ký hành động...
                   </div>
                 </td>
               </tr>
@@ -72,12 +72,11 @@ function ActionLogsTable({
                     </div>
 
                     <p className="mt-5 text-base font-bold text-slate-700">
-                      No action logs found
+                      Không tìm thấy nhật ký hành động
                     </p>
 
                     <p className="mt-2 text-sm leading-6 text-slate-400">
-                      No matching moderation history is available for the current
-                      filter and search conditions.
+                      Không có lịch sử kiểm duyệt nào khớp với điều kiện lọc và tìm kiếm hiện tại.
                     </p>
                   </div>
                 </td>
@@ -85,7 +84,7 @@ function ActionLogsTable({
             ) : (
               items.map((log) => {
                 const actionLabel =
-                  ACTION_LABELS[log.action] || log.action || "Unknown action";
+                  ACTION_LABELS[log.action] || log.action || "Hành động không xác định";
 
                 const actionStyle =
                   ACTION_STYLES[log.action] ||
@@ -135,7 +134,7 @@ function ActionLogsTable({
 
                     <td className="px-6 py-5 align-top">
                       <div className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                        {log.reason || "No reason provided."}
+                        {log.reason || "Không có lý do nào được cung cấp."}
                       </div>
                     </td>
 

@@ -49,16 +49,16 @@ const AdminDashboard = () => {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900">
-              Admin Dashboard
+              Bảng điều khiển Quản trị
             </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Overview of users, projects, reports, and recent moderation activity.
+              Tổng quan về người dùng, dự án, báo cáo và hoạt động kiểm duyệt gần đây.
             </p>
           </div>
 
           {isRefreshing ? (
             <div className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
-              Refreshing...
+              Đang làm mới...
             </div>
           ) : null}
         </div>
@@ -66,25 +66,25 @@ const AdminDashboard = () => {
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
         <StatCard
-          title="Total Users"
+          title="Tổng người dùng"
           value={stats?.users?.total || 0}
           icon="group"
         />
 
         <StatCard
-          title="Banned Users"
+          title="Người dùng bị khóa"
           value={stats?.users?.banned || 0}
           icon="block"
         />
 
         <StatCard
-          title="Total Projects"
+          title="Tổng số dự án"
           value={stats?.projects?.total || 0}
           icon="rocket"
         />
 
         <StatCard
-          title="Total Reports"
+          title="Tổng số báo cáo"
           value={stats?.reports?.total || 0}
           icon="flag"
         />
@@ -92,9 +92,9 @@ const AdminDashboard = () => {
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         <div className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-black text-slate-900">Recent Reports</h2>
+          <h2 className="text-lg font-black text-slate-900">Báo cáo gần đây</h2>
           <p className="text-sm text-slate-500">
-            Pending reports that still need moderation action.
+            Các báo cáo đang chờ xử lý cần được kiểm duyệt.
           </p>
         </div>
 

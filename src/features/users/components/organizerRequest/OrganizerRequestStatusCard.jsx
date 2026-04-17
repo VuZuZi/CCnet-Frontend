@@ -9,27 +9,27 @@ const STATUS_STYLES = {
 };
 
 const STATUS_LABELS = {
-  SYSTEM_CHECKING: "System Checking",
-  PENDING: "Pending",
-  APPROVED: "Approved",
-  DECLINED: "Declined",
+  SYSTEM_CHECKING: "Hệ thống đang kiểm tra",
+  PENDING: "Chờ xử lý",
+  APPROVED: "Đã phê duyệt",
+  DECLINED: "Đã từ chối",
 };
 
 const STATUS_MESSAGE = {
   SYSTEM_CHECKING:
-    "The system is running automated checks. This process may take a few minutes, please check back later.",
+    "Hệ thống đang chạy kiểm tra tự động. Quá trình này có thể mất vài phút, vui lòng kiểm tra lại sau.",
   PENDING:
-    "Your application is being reviewed by the admin. Please wait for a response.",
+    "Đơn đăng ký của bạn đang được quản trị viên xem xét. Vui lòng chờ phản hồi.",
   APPROVED:
-    "Your application has been approved. If the Organizer role hasn't updated on the interface, please log out and log in again.",
+    "Đơn đăng ký của bạn đã được phê duyệt. Nếu vai trò Ban tổ chức chưa được cập nhật trên giao diện, vui lòng đăng xuất và đăng nhập lại.",
   DECLINED:
-    "Your application was not approved. You can edit your information and resubmit the application.",
+    "Đơn đăng ký của bạn không được phê duyệt. Bạn có thể chỉnh sửa thông tin và gửi lại đơn.",
 };
 
 const formatDate = (value) => {
   if (!value) return "--";
   try {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("vi-VN", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(value));
@@ -74,10 +74,10 @@ export function OrganizerRequestStatusCard({
             </div>
 
             <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-              Organizer Application Status
+              Trạng thái Đơn đăng ký Ban tổ chức
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-500">
-              Track the review status of your account upgrade application.
+              Theo dõi trạng thái xét duyệt đơn xin nâng cấp tài khoản của bạn.
             </p>
           </div>
 
@@ -93,15 +93,15 @@ export function OrganizerRequestStatusCard({
         {/* [FIX]: Removed reviewer, kept necessary information */}
         <div className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           <InfoBox
-            label="Organization"
-            value={request?.organizationName || "Organizer account"}
+            label="Tổ chức"
+            value={request?.organizationName || "Tài khoản Ban tổ chức"}
           />
           <InfoBox
-            label="Submitted Date"
+            label="Ngày gửi"
             value={formatDate(request?.submittedAt || request?.createdAt)}
           />
           <InfoBox
-            label="Response Date"
+            label="Ngày phản hồi"
             value={formatDate(request?.reviewedAt)}
           />
         </div>
@@ -126,16 +126,16 @@ export function OrganizerRequestStatusCard({
                 <FileWarning size={18} />
               </div>
               <div>
-                <p className="text-sm font-bold text-rose-700">Reason for denial</p>
+                <p className="text-sm font-bold text-rose-700">Lý do từ chối</p>
                 <p className="mt-2 text-sm leading-6 text-rose-600">
-                  {request?.reviewReason || "The admin has not provided a specific reason."}
+                  {request?.reviewReason || "Quản trị viên chưa cung cấp lý do cụ thể."}
                 </p>
 
                 <Link
                   to="/organizer/apply"
                   className="mt-5 inline-flex items-center justify-center rounded-2xl bg-amber-400 px-5 py-3 text-sm font-bold text-slate-900 transition hover:bg-amber-300"
                 >
-                  Resubmit Application
+                  Gửi lại Đơn đăng ký
                 </Link>
               </div>
             </div>

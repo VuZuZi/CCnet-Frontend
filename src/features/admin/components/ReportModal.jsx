@@ -35,7 +35,7 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
       await onSubmit(
         reportId,
         actionsToSend,
-        resolutionNote?.trim() || "No note provided"
+        resolutionNote?.trim() || "Không có ghi chú nào được cung cấp"
       );
       onClose();
     } finally {
@@ -49,10 +49,10 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
         <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
           <div>
             <h4 className="text-xl font-black tracking-tight text-slate-900">
-              Resolve Report
+              Giải quyết báo cáo
             </h4>
             <p className="mt-1 text-sm text-slate-500">
-              Choose moderation actions and leave an internal note.
+              Chọn các hành động kiểm duyệt và để lại ghi chú nội bộ.
             </p>
           </div>
 
@@ -73,11 +73,10 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
               </div>
               <div>
                 <p className="text-sm font-bold text-amber-900">
-                  Administrative actions
+                  Các hành động quản trị
                 </p>
                 <p className="mt-1 text-sm text-amber-700">
-                  Select one or more actions. If you do not choose any action, the
-                  report will only be marked as resolved.
+                  Chọn một hoặc nhiều hành động. Nếu bạn không chọn hành động nào, báo cáo sẽ chỉ được đánh dấu là đã giải quyết.
                 </p>
               </div>
             </div>
@@ -105,10 +104,10 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
                 </div>
                 <div>
                   <p className="text-sm font-bold text-slate-900">
-                    Delete Content
+                    Xóa nội dung
                   </p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Remove the reported content permanently from the platform.
+                    Xóa vĩnh viễn nội dung bị báo cáo khỏi nền tảng.
                   </p>
                 </div>
               </div>
@@ -134,9 +133,9 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
                   <ShieldBan size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-900">Ban User</p>
+                  <p className="text-sm font-bold text-slate-900">Cấm người dùng</p>
                   <p className="mt-1 text-xs text-slate-500">
-                    Suspend the author account immediately.
+                    Đình chỉ tài khoản của tác giả ngay lập tức.
                   </p>
                 </div>
               </div>
@@ -145,11 +144,11 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
 
           <div>
             <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">
-              Decision Note
+              Ghi chú quyết định
             </label>
             <textarea
               rows="4"
-              placeholder="Explain why this action was taken..."
+              placeholder="Giải thích lý do thực hiện hành động này..."
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
               value={resolutionNote}
               onChange={(e) => setResolutionNote(e.target.value)}
@@ -164,7 +163,7 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
             disabled={isSubmitting}
             className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
           >
-            Cancel
+            Hủy
           </button>
 
           <button
@@ -175,10 +174,10 @@ const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
             {isSubmitting ? (
               <>
                 <Loader2 size={16} className="animate-spin" />
-                Processing...
+                Đang xử lý...
               </>
             ) : (
-              "Confirm Action"
+              "Xác nhận hành động"
             )}
           </button>
         </div>

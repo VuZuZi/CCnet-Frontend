@@ -34,8 +34,8 @@ function TargetBadge({ targetType }) {
   const normalized = String(targetType || "all").toLowerCase();
 
   const labels = {
-    all: "All users",
-    custom: "Custom recipients",
+    all: "Tất cả người dùng",
+    custom: "Người nhận tùy chỉnh",
   };
 
   return (
@@ -70,12 +70,12 @@ function NotificationContentBlock({ title, message, severity, createdAt }) {
       </div>
 
       <h3 className="mt-4 text-2xl font-black tracking-tight text-slate-900">
-        {title || "Untitled"}
+        {title || "Không có tiêu đề"}
       </h3>
 
       <div className="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
         <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
-          Message content
+          Nội dung tin nhắn
         </p>
         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7 text-slate-700">
           {message || "--"}
@@ -91,14 +91,14 @@ function SenderBlock({ actorName, actorEmail, actorRole }) {
       <div className="flex items-center gap-2">
         <User size={16} className="text-slate-500" />
         <h4 className="text-sm font-black tracking-tight text-slate-900">
-          Sender Information
+          Thông tin người gửi
         </h4>
       </div>
 
       <div className="mt-4 grid gap-3 sm:grid-cols-3">
-        <InfoRow label="Admin name" value={actorName || "Admin"} />
+        <InfoRow label="Tên quản trị viên" value={actorName || "Quản trị viên"} />
         <InfoRow label="Email" value={actorEmail || "--"} />
-        <InfoRow label="Role" value={actorRole || "--"} />
+        <InfoRow label="Vai trò" value={actorRole || "--"} />
       </div>
     </div>
   );
@@ -135,7 +135,7 @@ export default function HistoryCard({ item }) {
           <TargetBadge targetType={targetType} />
           <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-600">
             <History size={12} />
-            Log record
+            Bản ghi nhật ký
           </span>
         </div>
 

@@ -9,7 +9,7 @@ export function BankAutocomplete({
   banks,
   isLoading,
   error,
-  placeholder = "Enter bank name",
+  placeholder = "Nhập tên ngân hàng",
 }) {
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
@@ -129,7 +129,7 @@ export function BankAutocomplete({
 
   return (
     <div className="relative" ref={wrapperRef}>
-      <label className={labelClass}>Bank Name</label>
+      <label className={labelClass}>Tên ngân hàng</label>
 
       <div className="relative">
         <div className="pointer-events-none absolute left-4 top-1/2 z-10 -translate-y-1/2 text-slate-400">
@@ -167,7 +167,7 @@ export function BankAutocomplete({
           <div className="max-h-72 overflow-y-auto py-2">
             {isLoading ? (
               <div className="px-4 py-3 text-sm text-slate-500">
-                Loading bank list...
+                Đang tải danh sách ngân hàng...
               </div>
             ) : filteredBanks.length > 0 ? (
               filteredBanks.map((bank, index) => {
@@ -197,7 +197,7 @@ export function BankAutocomplete({
               })
             ) : (
               <div className="px-4 py-3 text-sm text-slate-500">
-                No matching banks found.
+                Không tìm thấy ngân hàng phù hợp.
               </div>
             )}
           </div>

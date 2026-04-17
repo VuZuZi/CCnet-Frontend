@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
@@ -36,7 +35,7 @@ export function ProfilePage() {
     if (validateAll()) {
       // TODO: Call API to update profile
       updateUser({ fullName: values.fullName });
-      toast.success('Profile updated successfully');
+      toast.success('Cập nhật hồ sơ thành công');
       setIsEditing(false);
     }
   };
@@ -52,24 +51,24 @@ export function ProfilePage() {
       <div className="w-full max-w-4xl mx-auto">
         
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2 text-black">My Profile</h1>
-          <p className="text-gray text-base">Manage your account information</p>
+          <h1 className="text-3xl font-bold mb-2 text-black">Hồ sơ của tôi</h1>
+          <p className="text-gray text-base">Quản lý thông tin tài khoản của bạn</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-light-gray p-6 md:p-8 mb-8">
           <div className="flex justify-between items-center mb-6">
-            <h5 className="font-bold text-lg text-black mb-0">Personal Information</h5>
+            <h5 className="font-bold text-lg text-black mb-0">Thông tin Cá nhân</h5>
             {!isEditing ? (
               <Button variant="outlineDark" className="!py-1.5 !px-4 !text-sm" onClick={handleEdit}>
-                ✏️ Edit
+                ✏️ Chỉnh sửa
               </Button>
             ) : (
               <div className="flex gap-2">
                 <Button variant="secondary" className="!py-1.5 !px-4 !text-sm" onClick={handleCancel}>
-                  Cancel
+                  Hủy
                 </Button>
                 <Button variant="yellow" className="!py-1.5 !px-4 !text-sm" onClick={handleSave}>
-                  💾 Save
+                  💾 Lưu
                 </Button>
               </div>
             )}
@@ -78,7 +77,7 @@ export function ProfilePage() {
           <form>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Full Name</label>
+                <label className="block text-sm font-medium text-black mb-1.5">Họ và Tên</label>
                 <input
                   type="text"
                   value={values.fullName}
@@ -93,7 +92,7 @@ export function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Email Address</label>
+                <label className="block text-sm font-medium text-black mb-1.5">Địa chỉ Email</label>
                 <input
                   type="email"
                   value={values.email}
@@ -102,14 +101,14 @@ export function ProfilePage() {
                   className="block w-full rounded-md border border-light-gray bg-light-gray cursor-not-allowed opacity-70 py-2 px-3 text-black focus:outline-none"
                 />
                 <p className="text-gray text-xs mt-1.5 mb-0">
-                  Email cannot be changed
+                  Không thể thay đổi email
                 </p>
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-black mb-1.5">Role</label>
+                <label className="block text-sm font-medium text-black mb-1.5">Vai trò</label>
                 <input
                   type="text"
                   value={user.role}
@@ -120,7 +119,7 @@ export function ProfilePage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-black mb-1.5">User ID</label>
+                <label className="block text-sm font-medium text-black mb-1.5">ID Người dùng</label>
                 <input
                   type="text"
                   value={user.userId}
@@ -134,19 +133,19 @@ export function ProfilePage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-light-gray p-6 md:p-8">
-          <h5 className="font-bold text-lg text-black mb-6">Security</h5>
+          <h5 className="font-bold text-lg text-black mb-6">Bảo mật</h5>
           
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
-                <strong className="block text-black mb-1">Password</strong>
-                <p className="text-gray text-sm mb-0">Last changed 30 days ago</p>
+                <strong className="block text-black mb-1">Mật khẩu</strong>
+                <p className="text-gray text-sm mb-0">Thay đổi lần cuối 30 ngày trước</p>
               </div>
               <Link
                 to={ROUTES.CHANGE_PASSWORD}
                 className="inline-flex items-center justify-center whitespace-nowrap rounded-xl border border-slate-300 bg-white px-4 py-1.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
-                Change Password
+                Đổi Mật Khẩu
               </Link>
             </div>
           </div>
@@ -156,11 +155,11 @@ export function ProfilePage() {
           <div>
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
               <div>
-                <strong className="block text-black mb-1">Two-Factor Authentication</strong>
-                <p className="text-gray text-sm mb-0">Add an extra layer of security</p>
+                <strong className="block text-black mb-1">Xác thực Hai Yếu Tố</strong>
+                <p className="text-gray text-sm mb-0">Thêm một lớp bảo mật</p>
               </div>
               <Button variant="outlineDark" className="!py-1.5 !px-4 !text-sm whitespace-nowrap">
-                Enable 2FA
+                Bật 2FA
               </Button>
             </div>
           </div>

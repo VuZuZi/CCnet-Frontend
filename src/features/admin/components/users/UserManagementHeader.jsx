@@ -30,11 +30,11 @@ export function UserManagementHeader({
         <div className="flex-1">
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">
             <Users size={11} strokeWidth={2.3} />
-            Admin User Control
+            Quản trị viên điều khiển
           </div>
 
           <h1 className="text-[28px] font-black leading-none tracking-tight text-slate-900">
-            User Management
+            Quản lý Người dùng
           </h1>
         </div>
 
@@ -43,21 +43,21 @@ export function UserManagementHeader({
 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:min-w-[320px]">
             <SmallStat
-              label="Total"
+              label="Tổng"
               value={pageStats.total}
               className="border-slate-200 bg-slate-50 text-slate-700"
               active={activeFilter === "ALL"}
               onClick={() => onFilterChange("ALL")}
             />
             <SmallStat
-              label="Active"
+              label="Hoạt động"
               value={pageStats.active}
               className="border-emerald-200 bg-emerald-50 text-emerald-700"
               active={activeFilter === "ACTIVE"}
               onClick={() => onFilterChange("ACTIVE")}
             />
             <SmallStat
-              label="Banned"
+              label="Đã khóa"
               value={pageStats.banned}
               className="border-red-200 bg-red-50 text-red-700"
               active={activeFilter === "BANNED"}

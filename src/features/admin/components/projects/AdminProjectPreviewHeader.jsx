@@ -32,10 +32,10 @@ export default function AdminProjectPreviewHeader({
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/30 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">
             <ShieldCheck size={11} />
-            Admin Review Panel
+            Bảng kiểm duyệt của Quản trị viên
           </div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900">
-            Review Project Submission
+            Kiểm duyệt hồ sơ dự án
           </h1>
         </div>
       </div>

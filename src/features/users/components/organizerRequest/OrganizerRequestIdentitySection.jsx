@@ -10,13 +10,13 @@ export function OrganizerRequestIdentitySection({
   return (
     <OrganizerSectionCard
       icon={<ShieldCheck size={18} />}
-      title="Identity Verification"
+      title="Xác minh danh tính"
       iconClassName="bg-emerald-100 text-emerald-600"
     >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4">
         <OrganizerDocumentField
-          label="Front of ID Card"
-          description="JPG, PNG or PDF"
+          label="Mặt trước CMND/CCCD"
+          description="JPG, PNG hoặc PDF"
           accept="image/*,.pdf"
           value={values.idCardFront}
           onSelect={(file) => onDocumentChange("idCardFront", file)}
@@ -24,8 +24,8 @@ export function OrganizerRequestIdentitySection({
         />
 
         <OrganizerDocumentField
-          label="Back of ID Card"
-          description="JPG, PNG or PDF"
+          label="Mặt sau CMND/CCCD"
+          description="JPG, PNG hoặc PDF"
           accept="image/*,.pdf"
           value={values.idCardBack}
           onSelect={(file) => onDocumentChange("idCardBack", file)}
@@ -33,8 +33,8 @@ export function OrganizerRequestIdentitySection({
         />
 
         <OrganizerDocumentField
-          label="Portrait Selfie"
-          description="JPG or PNG"
+          label="Ảnh chân dung (Selfie)"
+          description="JPG hoặc PNG"
           accept="image/*"
           value={values.selfie}
           onSelect={(file) => onDocumentChange("selfie", file)}
@@ -42,8 +42,8 @@ export function OrganizerRequestIdentitySection({
         />
 
         <OrganizerDocumentField
-          label="Organization License"
-          description="PDF Document (Optional)"
+          label="Giấy phép tổ chức"
+          description="Tài liệu PDF (Tùy chọn)"
           accept=".pdf"
           value={values.businessLicense}
           onSelect={(file) => onDocumentChange("businessLicense", file)}

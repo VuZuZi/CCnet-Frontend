@@ -13,49 +13,49 @@ import {
 const MENU_ITEMS = [
   {
     path: "/admin",
-    label: "Dashboard",
+    label: "Bảng điều khiển",
     icon: LayoutDashboard,
     end: true,
     matchPaths: ["/admin"],
   },
   {
     path: "/admin/notifications",
-    label: "Notifications",
+    label: "Thông báo",
     icon: Bell,
     end: false,
     matchPaths: ["/admin/notifications", "/admin/notifications/history"],
   },
   {
     path: "/admin/users",
-    label: "User Management",
+    label: "Quản lý người dùng",
     icon: Users,
     end: false,
     matchPaths: ["/admin/users", "/admin/user-action-logs"],
   },
   {
     path: "/admin/organizers",
-    label: "Organizer Requests",
+    label: "Yêu cầu ban tổ chức",
     icon: ShieldCheck,
     end: false,
     matchPaths: ["/admin/organizers", "/admin/organizer-action-logs"],
   },
   {
     path: "/admin/need-help",
-    label: "NeedHelp Requests",
+    label: "Yêu cầu hỗ trợ",
     icon: HeartHandshake,
     end: false,
     matchPaths: ["/admin/need-help", "/admin/need-help-action-logs"],
   },
   {
     path: "/admin/projects",
-    label: "Projects",
+    label: "Dự án",
     icon: Rocket,
     end: false,
     matchPaths: ["/admin/projects"],
   },
   {
     path: "/admin/reports",
-    label: "Reports & Logs",
+    label: "Báo cáo & Nhật ký",
     icon: Flag,
     end: false,
     matchPaths: ["/admin/reports"],
@@ -65,7 +65,7 @@ const MENU_ITEMS = [
 export function Sidebar({
   isOpen = true,
   onLogout,
-  logoutLabel = "Logout",
+  logoutLabel = "Đăng xuất",
 }) {
   const location = useLocation();
 
@@ -96,7 +96,7 @@ export function Sidebar({
                 CCNet Admin
               </h1>
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400">
-                Control Center
+                Trung tâm điều khiển
               </p>
             </div>
           ) : null}

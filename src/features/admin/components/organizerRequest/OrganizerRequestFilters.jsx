@@ -21,10 +21,10 @@ export function OrganizerRequestFilters({ filters, setFilters }) {
               }
               className="w-full appearance-none rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
             >
-              <option value="">All statuses</option>
-              <option value="PENDING">Pending</option>
-              <option value="APPROVED">Approved</option>
-              <option value="DECLINED">Declined</option>
+              <option value="">Tất cả trạng thái</option>
+              <option value="PENDING">Chờ xử lý</option>
+              <option value="APPROVED">Đã duyệt</option>
+              <option value="DECLINED">Từ chối</option>
             </select>
           </div>
 
@@ -42,7 +42,7 @@ export function OrganizerRequestFilters({ filters, setFilters }) {
                   page: 1,
                 }))
               }
-              placeholder="Search by name, email, or organization..."
+              placeholder="Tìm kiếm theo tên, email hoặc tổ chức..."
               className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
             />
           </div>

@@ -71,15 +71,15 @@ export function MediaDropzone({
 
         } catch (error) {
             const cloudErrorMsg = error.response?.data?.error?.message || error.message;
-            console.error(`[Direct Upload Error - ${file.name}]:`, error.response?.data || error);
-            throw new Error(`Error: ${cloudErrorMsg}`);
+            console.error(`[Lỗi tải lên trực tiếp - ${file.name}]:`, error.response?.data || error);
+            throw new Error(`Lỗi: ${cloudErrorMsg}`);
         }
     };
 
     const onDrop = useCallback(async (acceptedFiles) => {
         const totalFiles = value.length + acceptedFiles.length;
         if (totalFiles > maxFiles) {
-            toast.error(`Maximum ${maxFiles} files allowed`);
+            toast.error(`Tối đa ${maxFiles} tệp được phép`);
             return;
         }
 
@@ -151,11 +151,11 @@ export function MediaDropzone({
                         <CloudUpload className="text-slate-500 w-8 h-8" />
                     </div>
                     <h3 className="font-bold text-slate-900 mb-1">
-                        {isUploadingAny ? 'Uploading...' : 'Drag & Drop Cover Media'}
+                        {isUploadingAny ? 'Đang tải lên...' : 'Kéo & Thả ảnh/video bìa'}
                     </h3>
-                    <p className="text-sm text-slate-500 mb-4">High-quality JPG, PNG, or MP4 up to 50MB</p>
+                    <p className="text-sm text-slate-500 mb-4">JPG, PNG hoặc MP4 chất lượng cao tối đa 50MB</p>
                     <button type="button" className="px-4 py-2 bg-white text-slate-700 font-bold rounded-xl text-sm border-2 border-slate-200 hover:border-slate-300 transition-colors shadow-sm pointer-events-none">
-                        Browse Files
+                        Duyệt tệp
                     </button>
                 </div>
             );
@@ -173,7 +173,7 @@ export function MediaDropzone({
                     <input {...getInputProps()} />
                     <UploadCloud className="text-slate-400 w-6 h-6 mb-2 group-hover:-translate-y-1 transition-transform" />
                     <span className="text-sm font-medium text-slate-600">
-                        {isUploadingAny ? 'Processing...' : 'Upload PDFs or Images'}
+                        {isUploadingAny ? 'Đang xử lý...' : 'Tải lên PDF hoặc Hình ảnh'}
                     </span>
                 </div>
             );
@@ -183,7 +183,7 @@ export function MediaDropzone({
             <div {...getRootProps()} className="border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-slate-400">
                 <input {...getInputProps()} />
                 <UploadCloud className="mx-auto h-8 w-8 text-slate-400 mb-2" />
-                <p className="text-sm font-medium text-slate-600">Drag & drop files here</p>
+                <p className="text-sm font-medium text-slate-600">Kéo & thả tệp vào đây</p>
             </div>
         );
     };
@@ -195,7 +195,7 @@ export function MediaDropzone({
             {Object.values(uploadingFiles).map((uploadItem) => (
                 <div key={uploadItem.file.name} className={`flex items-center gap-3 p-3 border rounded-lg ${uploadItem.error ? 'bg-red-50 border-red-100' : 'bg-blue-50 border-blue-100'}`}>
                     {uploadItem.error ? (
-                        <button type="button" onClick={() => dismissError(uploadItem.file._trackingId)} className="p-1 hover:bg-red-100 rounded-full transition-colors" title="Dismiss">
+                        <button type="button" onClick={() => dismissError(uploadItem.file._trackingId)} className="p-1 hover:bg-red-100 rounded-full transition-colors" title="Đóng">
                             <X className="text-red-500 shrink-0 cursor-pointer" size={16} />
                         </button>
                     ) : (
@@ -215,14 +215,14 @@ export function MediaDropzone({
                 <div className={appearance === 'cover' ? "grid grid-cols-2 gap-4" : "flex flex-wrap gap-2 pt-2"}>
                     {value.map((mediaObj, idx) => {
                         const url = typeof mediaObj === 'string' ? mediaObj : mediaObj.url;
-                        const originalName = typeof mediaObj === 'string' ? 'media_file' : mediaObj.originalName;
+                        const originalName = typeof mediaObj === 'string' ? 'tập_tin_media' : mediaObj.originalName;
                         const isImage = url?.match(/\.(jpeg|jpg|gif|png|webp)$/i) || url?.includes('image/upload');
 
                         if (appearance === 'cover') {
                             return (
                                 <div key={idx} className="relative group rounded-xl overflow-hidden border border-slate-200 bg-slate-50 flex items-center justify-center h-32">
                                     {isImage ? (
-                                        <img src={url} alt="cover preview" className="w-full h-full object-cover" />
+                                        <img src={url} alt="xem trước ảnh bìa" className="w-full h-full object-cover" />
                                     ) : (
                                         <video src={url} className="w-full h-full object-cover" muted />
                                     )}

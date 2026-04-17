@@ -93,7 +93,7 @@ export default function ProjectActionHistoryModal({
 
   const title = useMemo(() => {
     if (project?.title) return project.title;
-    return "All Project Action Logs";
+    return "Tất cả nhật ký hành động dự án";
   }, [project?.title]);
 
   if (!open) return null;
@@ -102,7 +102,7 @@ export default function ProjectActionHistoryModal({
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4">
       <button
         type="button"
-        aria-label="Close history"
+        aria-label="Đóng lịch sử"
         onClick={onClose}
         className="absolute inset-0 bg-slate-950/75 backdrop-blur-md"
       />
@@ -116,11 +116,11 @@ export default function ProjectActionHistoryModal({
             <div className="min-w-0">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-xs font-black uppercase tracking-[0.14em] text-amber-700 shadow-sm">
                 <History size={14} />
-                View History
+                Xem lịch sử
               </div>
 
               <h3 className="mt-4 text-2xl font-black tracking-tight text-slate-900">
-                {project?._id ? "Project Action History" : "Project Action Logs"}
+                {project?._id ? "Lịch sử hành động dự án" : "Nhật ký hành động dự án"}
               </h3>
 
               <p className="mt-2 truncate text-sm text-slate-500">{title}</p>
@@ -130,12 +130,12 @@ export default function ProjectActionHistoryModal({
               {isFetching ? (
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-bold text-amber-700">
                   <Loader2 size={14} className="animate-spin" />
-                  Refreshing...
+                  Đang làm mới...
                 </div>
               ) : (
                 <div className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-500 md:inline-flex">
                   <Sparkles size={13} className="text-amber-500" />
-                  Audit trail
+                  Nhật ký kiểm duyệt
                 </div>
               )}
 
@@ -161,7 +161,7 @@ export default function ProjectActionHistoryModal({
                   setSearch(e.target.value);
                   setPage(1);
                 }}
-                placeholder="Search by admin, reason, project..."
+                placeholder="Tìm kiếm theo quản trị viên, lý do, dự án..."
                 className="h-14 w-full rounded-2xl border border-slate-200 bg-white pl-12 pr-4 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
               />
             </div>
@@ -188,19 +188,19 @@ export default function ProjectActionHistoryModal({
             <div className="rounded-[28px] border border-slate-200 bg-white p-16 text-center shadow-sm">
               <div className="inline-flex items-center gap-3 rounded-2xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-500">
                 <Loader2 size={18} className="animate-spin text-amber-500" />
-                Loading history...
+                Đang tải lịch sử...
               </div>
             </div>
           ) : items.length === 0 ? (
             <div className="rounded-[28px] border border-slate-200 bg-white py-20 text-center shadow-sm">
               <div className="mb-3 text-4xl">🕘</div>
               <h4 className="text-lg font-bold text-slate-900">
-                No history found
+                Không tìm thấy lịch sử
               </h4>
               <p className="mt-2 text-sm text-slate-500">
                 {project?._id
-                  ? "No action logs are available for this project yet."
-                  : "No project logs are available right now."}
+                  ? "Chưa có nhật ký hành động nào cho dự án này."
+                  : "Hiện không có nhật ký dự án nào."}
               </p>
             </div>
           ) : (
@@ -235,7 +235,7 @@ export default function ProjectActionHistoryModal({
 
                           <div className="min-w-0 flex-1">
                             <p className="text-base font-black text-slate-900">
-                              {log.actorName || "Admin"}
+                              {log.actorName || "Quản trị viên"}
                             </p>
 
                             <p className="mt-1 text-sm text-slate-500">
@@ -245,7 +245,7 @@ export default function ProjectActionHistoryModal({
                             <div className="mt-4 rounded-[24px] border border-slate-200 bg-slate-50/90 p-4 md:p-5">
                               <div className="flex flex-wrap items-center gap-2 text-sm">
                                 <span className="font-semibold text-slate-500">
-                                  Status change:
+                                  Thay đổi trạng thái:
                                 </span>
 
                                 <span className="rounded-full border border-slate-200 bg-white px-3 py-1 font-bold text-slate-700 shadow-sm">
@@ -264,7 +264,7 @@ export default function ProjectActionHistoryModal({
 
                               <div className="mt-4">
                                 <p className="text-xs font-black uppercase tracking-[0.16em] text-slate-400">
-                                  Reason
+                                  Lý do
                                 </p>
 
                                 <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
@@ -283,14 +283,14 @@ export default function ProjectActionHistoryModal({
                               <FileClock size={16} />
                             </div>
                             <p className="text-base font-black text-slate-900">
-                              Metadata
+                              Siêu dữ liệu
                             </p>
                           </div>
 
                           <div className="space-y-4 text-sm">
                             <div>
                               <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-                                Project
+                                Dự án
                               </p>
                               <p className="mt-1 font-semibold text-slate-800">
                                 {log.projectTitle || "--"}
@@ -299,7 +299,7 @@ export default function ProjectActionHistoryModal({
 
                             <div>
                               <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-                                Project Type
+                                Loại dự án
                               </p>
                               <p className="mt-1 font-semibold text-slate-700">
                                 {getProjectHistoryProjectTypeLabel(log.projectType)}
@@ -308,7 +308,7 @@ export default function ProjectActionHistoryModal({
 
                             <div>
                               <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-                                Target ID
+                                Mã mục tiêu
                               </p>
                               <p className="mt-1 break-all rounded-xl bg-slate-50 px-3 py-2 font-mono text-xs text-slate-500">
                                 {log.targetIdString || "--"}
@@ -328,7 +328,7 @@ export default function ProjectActionHistoryModal({
         <div className="border-t border-slate-200 bg-white px-5 py-4 md:px-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-500">
-              Total logs:{" "}
+              Tổng số nhật ký:{" "}
               <span className="font-bold text-slate-800">
                 {pagination.total || 0}
               </span>
@@ -342,7 +342,7 @@ export default function ProjectActionHistoryModal({
                 className="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <ChevronLeft size={16} />
-                Previous
+                Trước
               </button>
 
               <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-black text-amber-700">
@@ -359,7 +359,7 @@ export default function ProjectActionHistoryModal({
                 disabled={page >= (pagination.totalPages || 1)}
                 className="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Next
+                Tiếp
                 <ChevronRight size={16} />
               </button>
             </div>

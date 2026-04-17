@@ -26,7 +26,7 @@ export default function ProjectDetailHeader({
     <div className="flex flex-col gap-4 border-b border-slate-200 bg-white px-5 py-4 md:flex-row md:items-center md:justify-between md:px-6">
       <div className="min-w-0">
         <h3 className="truncate text-lg font-black tracking-tight text-slate-900 md:text-xl">
-          {project?.title || "Project"}
+          {project?.title || "Dự án"}
         </h3>
         <p className="mt-1 text-xs text-slate-500 md:text-sm">
           {project?._id || "--"}
@@ -50,7 +50,7 @@ export default function ProjectDetailHeader({
             className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2.5 text-sm font-black text-white transition hover:bg-emerald-600"
           >
             <CheckCircle size={15} />
-            Approve
+            Phê duyệt
           </button>
         ) : null}
 
@@ -61,7 +61,7 @@ export default function ProjectDetailHeader({
             className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-black text-amber-700 transition hover:bg-amber-100"
           >
             <History size={15} />
-            View History
+            Xem Lịch sử
           </button>
         ) : null}
 

@@ -16,7 +16,7 @@ function LoadingState() {
           <Loader2 size={26} className="animate-spin" />
         </div>
         <p className="mt-4 text-sm font-medium text-slate-500">
-          Loading notification history...
+          Đang tải lịch sử thông báo...
         </p>
       </div>
     </div>
@@ -31,12 +31,12 @@ function ErrorState({ message }) {
       </div>
 
       <h2 className="mt-4 text-xl font-bold text-slate-900">
-        Could not load notification history
+        Không thể tải lịch sử thông báo
       </h2>
 
       <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-500">
         {message ||
-          "An unexpected error occurred while loading notification history."}
+          "Đã xảy ra lỗi không mong muốn khi tải lịch sử thông báo."}
       </p>
     </div>
   );
@@ -50,12 +50,11 @@ function EmptyState() {
       </div>
 
       <h3 className="mt-4 text-lg font-bold text-slate-900">
-        No notification history found
+        Không tìm thấy lịch sử thông báo
       </h3>
 
       <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-        Sent system notifications will appear here once an admin starts sending
-        them.
+        Các thông báo hệ thống đã gửi sẽ xuất hiện ở đây khi quản trị viên bắt đầu gửi.
       </p>
     </div>
   );
@@ -95,23 +94,21 @@ export function AdminNotificationHistoryPage() {
                   className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-700 transition-colors hover:bg-amber-100"
                 >
                   <ArrowLeft size={16} />
-                  Back to Notifications
+                  Quay lại Thông báo
                 </Link>
 
                 <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                   <History size={14} />
-                  Notification History
+                  Lịch sử Thông báo
                 </div>
               </div>
 
               <h1 className="mt-4 text-[28px] font-black leading-none tracking-tight text-slate-900 sm:text-[46px]">
-                Notification History
+                Lịch sử Thông báo
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Review previously sent system notifications with recipient
-                scope, sender details, message content, delivery context, and
-                audit metadata.
+                Xem lại các thông báo hệ thống đã gửi với phạm vi người nhận, chi tiết người gửi, nội dung tin nhắn, bối cảnh gửi và siêu dữ liệu kiểm tra.
               </p>
             </div>
 
@@ -124,11 +121,10 @@ export function AdminNotificationHistoryPage() {
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-black tracking-tight text-slate-900">
-              Search notification logs
+              Tìm kiếm lịch sử thông báo
             </p>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              Search by title, message, severity, audience, sender, or delivery
-              metadata.
+              Tìm kiếm theo tiêu đề, tin nhắn, mức độ nghiêm trọng, đối tượng, người gửi hoặc siêu dữ liệu.
             </p>
           </div>
 
@@ -140,7 +136,7 @@ export function AdminNotificationHistoryPage() {
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search notification history..."
+              placeholder="Tìm kiếm lịch sử thông báo..."
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
             />
           </label>
@@ -153,7 +149,7 @@ export function AdminNotificationHistoryPage() {
         <ErrorState
           message={
             error?.message ||
-            "An unexpected error occurred while loading notification history."
+            "Đã xảy ra lỗi không mong muốn khi tải lịch sử thông báo."
           }
         />
       ) : items.length === 0 ? (

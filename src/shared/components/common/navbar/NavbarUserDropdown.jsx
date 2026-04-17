@@ -17,7 +17,7 @@ function Avatar({ user, size = 'sm' }) {
     return (
       <img
         src={user.avatar}
-        alt="Avatar"
+        alt="Ảnh đại diện"
         className={cn(
           sizeClass,
           'rounded-full border-2 border-white bg-slate-100 object-cover shadow-sm'
@@ -67,7 +67,7 @@ export function NavbarUserDropdown({ user, onLogout }) {
             {user?.fullName || 'Alex Doe'}
           </span>
           <span className="block text-xs capitalize text-slate-500">
-            {user?.role || 'Impact Donor'}
+            {user?.role || 'Nhà tài trợ'}
           </span>
         </div>
         <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
@@ -80,7 +80,7 @@ export function NavbarUserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <UserIcon size={16} /> Profile
+            <UserIcon size={16} /> Hồ sơ
           </Link>
 
           <Link
@@ -88,7 +88,7 @@ export function NavbarUserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Dashboard'}
+            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Bảng điều khiển'}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-slate-100" />
@@ -101,7 +101,7 @@ export function NavbarUserDropdown({ user, onLogout }) {
             className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
             type="button"
           >
-            <LogOut size={16} /> Sign out
+            <LogOut size={16} /> Đăng xuất
           </button>
         </div>
       )}

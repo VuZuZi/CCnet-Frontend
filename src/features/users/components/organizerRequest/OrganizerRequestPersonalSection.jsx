@@ -10,22 +10,22 @@ export function OrganizerRequestPersonalSection({ register, errors }) {
   return (
     <OrganizerSectionCard
       icon={<UserRound size={18} />}
-      title="Personal Information"
+      title="Thông tin cá nhân"
       iconClassName="bg-blue-100 text-blue-600"
     >
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         <div>
-          <label className={labelClass}>Full Name</label>
+          <label className={labelClass}>Họ và tên</label>
           <input
             {...register("fullNameSnapshot")}
-            placeholder="John Doe"
+            placeholder="Nguyễn Văn A"
             className={inputClass}
           />
           <FormErrorText>{errors.fullNameSnapshot?.message}</FormErrorText>
         </div>
 
         <div>
-          <label className={labelClass}>Phone Number</label>
+          <label className={labelClass}>Số điện thoại</label>
           <input
             {...register("phoneSnapshot")}
             placeholder="+84..."
@@ -35,20 +35,20 @@ export function OrganizerRequestPersonalSection({ register, errors }) {
         </div>
 
         <div>
-          <label className={labelClass}>Email Address</label>
+          <label className={labelClass}>Địa chỉ Email</label>
           <input
             {...register("emailSnapshot")}
-            placeholder="john@example.com"
+            placeholder="nguyenvana@example.com"
             className={inputClass}
           />
           <FormErrorText>{errors.emailSnapshot?.message}</FormErrorText>
         </div>
 
         <div>
-          <label className={labelClass}>Location</label>
+          <label className={labelClass}>Địa chỉ</label>
           <input
             {...register("locationSnapshot")}
-            placeholder="City, Country"
+            placeholder="Tỉnh/Thành phố, Quốc gia"
             className={inputClass}
           />
           <FormErrorText>{errors.locationSnapshot?.message}</FormErrorText>

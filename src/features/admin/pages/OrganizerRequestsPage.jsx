@@ -56,16 +56,15 @@ export function OrganizerRequestsPage() {
           <div className="flex-1">
             <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">
               <FileClock size={11} />
-              Admin Organizer Review
+              Quản trị viên duyệt Ban tổ chức
             </div>
 
             <h1 className="text-[28px] font-black leading-none tracking-tight text-slate-900">
-              Organizer Requests
+              Yêu cầu Ban tổ chức
             </h1>
 
             <p className="mt-3 max-w-2xl text-sm leading-6 text-slate-500">
-              Review and manage organizer upgrade applications with a clean and
-              traceable moderation flow.
+              Xem xét và quản lý các đơn xin nâng cấp ban tổ chức với quy trình kiểm duyệt rõ ràng và có thể truy vết.
             </p>
           </div>
 
@@ -76,22 +75,22 @@ export function OrganizerRequestsPage() {
 
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[460px]">
               <StatCard
-                label="Total"
+                label="Tổng cộng"
                 value={stats.total}
                 className="border-slate-200 bg-slate-50 text-slate-700"
               />
               <StatCard
-                label="Pending"
+                label="Chờ xử lý"
                 value={stats.pending}
                 className="border-amber-200 bg-amber-50 text-amber-700"
               />
               <StatCard
-                label="Approved"
+                label="Đã phê duyệt"
                 value={stats.approved}
                 className="border-emerald-200 bg-emerald-50 text-emerald-700"
               />
               <StatCard
-                label="Declined"
+                label="Đã từ chối"
                 value={stats.declined}
                 className="border-rose-200 bg-rose-50 text-rose-700"
               />
@@ -108,10 +107,10 @@ export function OrganizerRequestsPage() {
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="text-sm text-slate-500">
             <span>
-              Page {pagination.page} / {totalPages}
+              Trang {pagination.page} / {totalPages}
             </span>
             <span className="mx-2">•</span>
-            <span>Total requests: {pagination.total}</span>
+            <span>Tổng số yêu cầu: {pagination.total}</span>
           </div>
 
           {totalPages > 1 ? (

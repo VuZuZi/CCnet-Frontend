@@ -47,7 +47,7 @@ export function RegisterPage() {
 
   return (
     <AuthLayout 
-      title="Create an account" 
+      title="Tạo tài khoản" 
       subtitle="Đăng ký tài khoản để tham gia mạng lưới tình nguyện và lan tỏa yêu thương."
     >
       {isError && errorMessage && (
@@ -60,7 +60,7 @@ export function RegisterPage() {
         <fieldset disabled={isLoading} className="space-y-4">
           
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Full Name</label>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Họ và Tên</label>
             <input
               type="text"
               placeholder="Nhập họ và tên của bạn"
@@ -94,7 +94,7 @@ export function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Password</label>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Mật khẩu</label>
             <input
               type="password"
               placeholder="Tạo mật khẩu an toàn"
@@ -114,7 +114,7 @@ export function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Confirm Password</label>
+            <label className="block text-xs font-semibold text-slate-500 mb-1.5 ml-4">Xác nhận Mật khẩu</label>
             <input
               type="password"
               placeholder="Nhập lại mật khẩu"
@@ -149,7 +149,7 @@ export function RegisterPage() {
             </Link>
           </p>
           <Link to="#" className="hover:text-slate-900 underline underline-offset-2 transition-colors">
-            Terms & Conditions
+            Điều khoản & Điều kiện
           </Link>
         </div>
       </form>

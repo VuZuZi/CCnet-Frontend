@@ -36,7 +36,7 @@ export default function RecipientsDetailsModal({
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-3 sm:p-4">
       <button
         type="button"
-        aria-label="Close recipients modal"
+        aria-label="Đóng hộp thoại người nhận"
         onClick={onClose}
         className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm"
       />
@@ -53,11 +53,10 @@ export default function RecipientsDetailsModal({
 
             <div>
               <h3 className="text-lg font-black tracking-tight text-slate-900">
-                Recipient Details
+                Chi tiết người nhận
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Full requested and resolved recipient information for this
-                notification.
+                Đầy đủ thông tin người nhận được yêu cầu và thực tế cho thông báo này.
               </p>
             </div>
           </div>
@@ -74,27 +73,27 @@ export default function RecipientsDetailsModal({
         <div className="flex-1 overflow-auto bg-slate-50 p-4 md:p-6">
           <div className="grid gap-5 xl:grid-cols-2">
             <RecipientUserList
-              title="Specific users from request"
+              title="Người dùng cụ thể từ yêu cầu"
               users={requestedUsers}
-              emptyText="No requested user snapshots."
+              emptyText="Không có dữ liệu người dùng được yêu cầu."
             />
 
             <RecipientUserList
-              title="Actual resolved recipients"
+              title="Người nhận thực tế"
               users={resolvedRecipients}
-              emptyText="No resolved recipient snapshots."
+              emptyText="Không có dữ liệu người nhận thực tế."
             />
 
             <RecipientIdList
-              title="Specific user IDs from request"
+              title="ID người dùng cụ thể từ yêu cầu"
               ids={userIds}
-              emptyText="No requested user IDs."
+              emptyText="Không có ID người dùng được yêu cầu."
             />
 
             <RecipientIdList
-              title="Actual resolved recipient IDs"
+              title="ID người nhận thực tế"
               ids={resolvedRecipientIds}
-              emptyText="No resolved recipient IDs."
+              emptyText="Không có ID người nhận thực tế."
             />
           </div>
         </div>

@@ -66,7 +66,7 @@ export function AdminProjectDetailModal({
     <div className="fixed inset-0 z-[999] flex items-center justify-center p-3 sm:p-4">
       <button
         type="button"
-        aria-label="Close"
+        aria-label="Đóng"
         onClick={onClose}
         className="absolute inset-0 bg-slate-950/70 backdrop-blur-sm"
       />

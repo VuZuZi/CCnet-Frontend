@@ -21,9 +21,9 @@ import NavbarUserDropdown from './navbar/NavbarUserDropdown';
 import NavbarNotificationAction from '@/features/notification/components/NavbarNotificationAction';
 
 const NAV_LINKS = [
-  { label: 'Project', to: ROUTES.PROJECTS },
-  { label: 'Community', to: ROUTES.COMMUNITY || '/community' },
-  { label: 'NeedHelp', to: '/need-help' },
+  { label: 'Dự án', to: ROUTES.PROJECTS },
+  { label: 'Cộng đồng', to: ROUTES.COMMUNITY || '/community' },
+  { label: 'Cần giúp đỡ', to: '/need-help' },
 ];
 
 function Avatar({ user, size = 'sm' }) {
@@ -34,7 +34,7 @@ function Avatar({ user, size = 'sm' }) {
     return (
       <img
         src={user.avatar}
-        alt="Avatar"
+        alt="Ảnh đại diện"
         className={cn(
           sizeClass,
           'rounded-full border-2 border-white bg-slate-100 object-cover shadow-sm'
@@ -63,7 +63,7 @@ export function Navbar() {
   const normalizedRole = String(user?.role || '').toLowerCase();
   const isOrganizer = normalizedRole === 'organizer';
   const userMainRoute = isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD;
-  const userMainLabel = isOrganizer ? 'Không gian làm việc của bạn' : 'Dashboard';
+  const userMainLabel = isOrganizer ? 'Không gian làm việc của bạn' : 'Bảng điều khiển';
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -143,11 +143,11 @@ export function Navbar() {
                   to={ROUTES.LOGIN}
                   className="hidden font-medium text-slate-600 hover:text-slate-900 sm:block"
                 >
-                  Log in
+                  Đăng nhập
                 </Link>
                 <Link to={ROUTES.REGISTER}>
                   <Button variant="primary" size="sm" className="!rounded-xl">
-                    Get Started
+                    Bắt đầu
                   </Button>
                 </Link>
               </div>
@@ -175,7 +175,7 @@ export function Navbar() {
               <input
                 type="text"
                 className="w-full rounded-lg bg-slate-100 py-2 pl-10 pr-4 outline-none focus:ring-2 focus:ring-amber-500/50"
-                placeholder="Search..."
+                placeholder="Tìm kiếm..."
               />
             </div>
           </div>
@@ -207,7 +207,7 @@ export function Navbar() {
                 <Avatar user={user} size="md" />
                 <div>
                   <p className="text-sm font-bold text-slate-900">{user?.fullName}</p>
-                  <p className="text-xs capitalize text-slate-500">{user?.role || 'User'}</p>
+                  <p className="text-xs capitalize text-slate-500">{user?.role || 'Người dùng'}</p>
                 </div>
               </div>
 
@@ -215,7 +215,7 @@ export function Navbar() {
                 to={ROUTES.PROFILE}
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-slate-700 hover:bg-slate-50"
               >
-                <UserIcon size={18} /> Profile
+                <UserIcon size={18} /> Hồ sơ
               </Link>
 
               <Link
@@ -230,7 +230,7 @@ export function Navbar() {
                 className="flex items-center gap-3 rounded-lg px-2 py-2 text-left text-red-600 hover:bg-red-50"
                 type="button"
               >
-                <LogOut size={18} /> Log out
+                <LogOut size={18} /> Đăng xuất
               </button>
             </div>
           ) : (
@@ -239,7 +239,7 @@ export function Navbar() {
                 to={ROUTES.LOGIN}
                 className="w-full rounded-lg bg-slate-100 py-2 text-center font-medium text-slate-700"
               >
-                Log in
+                Đăng nhập
               </Link>
             </div>
           )}
@@ -296,7 +296,7 @@ function OrganizerNeedHelpAction({ user }) {
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-        title="Suggested NeedHelp requests"
+        title="Gợi ý yêu cầu Cần giúp đỡ"
       >
         <HeartHandshake size={24} />
         {suggestedItems.length > 0 ? (
@@ -307,9 +307,9 @@ function OrganizerNeedHelpAction({ user }) {
       {isOpen ? (
         <div className="absolute right-0 z-50 mt-3 w-80 rounded-xl border border-slate-100 bg-white p-3 shadow-lg">
           <div className="mb-2 px-1">
-            <p className="text-sm font-semibold text-slate-900">Admin Suggestions</p>
+            <p className="text-sm font-semibold text-slate-900">Gợi ý từ hệ thống</p>
             <p className="text-xs text-slate-500">
-              Open and respond to assigned NeedHelp requests.
+              Mở và phản hồi các yêu cầu Cần giúp đỡ được giao.
             </p>
           </div>
 
@@ -326,13 +326,13 @@ function OrganizerNeedHelpAction({ user }) {
                     {item.title}
                   </p>
                   <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                    {item.location?.address || 'No location'}
+                    {item.location?.address || 'Không có địa chỉ'}
                   </p>
                 </Link>
               ))
             ) : (
               <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
-                No suggested request right now.
+                Không có yêu cầu nào được gợi ý lúc này.
               </div>
             )}
           </div>
@@ -342,7 +342,7 @@ function OrganizerNeedHelpAction({ user }) {
             onClick={() => setIsOpen(false)}
             className="mt-3 block rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
           >
-            View all assignments
+            Xem tất cả công việc được giao
           </Link>
         </div>
       ) : null}
@@ -379,7 +379,7 @@ function UserDropdown({ user, onLogout }) {
             {user?.fullName || 'Alex Doe'}
           </span>
           <span className="block text-xs capitalize text-slate-500">
-            {user?.role || 'Impact Donor'}
+            {user?.role || 'Nhà tài trợ'}
           </span>
         </div>
         <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
@@ -392,7 +392,7 @@ function UserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <UserIcon size={16} /> Profile
+            <UserIcon size={16} /> Hồ sơ
           </Link>
 
           <Link
@@ -400,7 +400,7 @@ function UserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Dashboard'}
+            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Bảng điều khiển'}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-slate-100" />
@@ -412,7 +412,7 @@ function UserDropdown({ user, onLogout }) {
             }}
             className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
           >
-            <LogOut size={16} /> Sign out
+            <LogOut size={16} /> Đăng xuất
           </button>
         </div>
       )}

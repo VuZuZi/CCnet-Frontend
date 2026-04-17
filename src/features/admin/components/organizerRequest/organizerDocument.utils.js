@@ -1,6 +1,6 @@
 export const getDocumentHref = (file) => file?.url || file?.dataUrl || "";
 
-export const getDocumentFileName = (file, fallback = "document") =>
+export const getDocumentFileName = (file, fallback = "tài_liệu") =>
   file?.fileName || fallback;
 
 export const isImageDocument = (file) => {
@@ -22,7 +22,7 @@ export const isPdfDocument = (file) => {
   return mime.includes("pdf") || name.endsWith(".pdf");
 };
 
-export const downloadDocumentFile = (file, fallbackName = "document") => {
+export const downloadDocumentFile = (file, fallbackName = "tài_liệu") => {
   const href = getDocumentHref(file);
   if (!href) return;
 

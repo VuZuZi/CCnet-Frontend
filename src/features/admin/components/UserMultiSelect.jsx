@@ -14,11 +14,11 @@ function SelectedChip({ user, onRemove }) {
     <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700">
       <img
         src={user?.avatar || "https://www.gravatar.com/avatar/?d=identicon"}
-        alt={user?.fullName || "User avatar"}
+        alt={user?.fullName || "Ảnh đại diện"}
         className="h-5 w-5 rounded-full object-cover"
       />
       <span className="max-w-[120px] truncate">
-        {user?.fullName || user?.email || "Unknown user"}
+        {user?.fullName || user?.email || "Người dùng không xác định"}
       </span>
       <button
         type="button"
@@ -48,16 +48,16 @@ function UserRow({ user, isSelected, onToggle }) {
       <div className="flex min-w-0 items-center gap-3">
         <img
           src={user?.avatar || "https://www.gravatar.com/avatar/?d=identicon"}
-          alt={user?.fullName || "User avatar"}
+          alt={user?.fullName || "Ảnh đại diện"}
           className="h-11 w-11 rounded-full object-cover ring-1 ring-slate-200"
         />
 
         <div className="min-w-0">
           <div className="truncate text-sm font-bold text-slate-900">
-            {user?.fullName || "Unnamed user"}
+            {user?.fullName || "Người dùng chưa đặt tên"}
           </div>
           <div className="truncate text-xs text-slate-500">
-            {user?.email || "No email"}
+            {user?.email || "Không có email"}
           </div>
         </div>
       </div>
@@ -131,7 +131,7 @@ function PickerModal({
     <div className="fixed inset-0 z-[1200] overflow-y-auto">
       <button
         type="button"
-        aria-label="Close user picker"
+        aria-label="Đóng bộ chọn người dùng"
         onClick={onClose}
         className="fixed inset-0 bg-slate-950/55 backdrop-blur-sm"
       />
@@ -149,10 +149,10 @@ function PickerModal({
 
               <div>
                 <h3 className="text-lg font-black tracking-tight text-slate-900">
-                  Select users
+                  Chọn người dùng
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Search and choose recipients for this role.
+                  Tìm kiếm và chọn người nhận cho vai trò này.
                 </p>
               </div>
             </div>
@@ -175,7 +175,7 @@ function PickerModal({
               <input
                 value={keyword}
                 onChange={(event) => setKeyword(event.target.value)}
-                placeholder="Search by name or email..."
+                placeholder="Tìm kiếm theo tên hoặc email..."
                 className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
               />
             </div>
@@ -192,7 +192,7 @@ function PickerModal({
                   ))}
                 </div>
               ) : (
-                <p className="text-xs text-slate-400">No users selected yet.</p>
+                <p className="text-xs text-slate-400">Chưa có người dùng nào được chọn.</p>
               )}
             </div>
           </div>
@@ -204,7 +204,7 @@ function PickerModal({
           >
             {showEmpty ? (
               <div className="flex h-full min-h-[220px] items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-white px-4 text-center text-sm text-slate-400">
-                No users found.
+                Không tìm thấy người dùng nào.
               </div>
             ) : (
               <div className="grid gap-3">
@@ -227,7 +227,7 @@ function PickerModal({
 
           <div className="flex shrink-0 items-center justify-between gap-3 border-t border-slate-200 bg-white px-5 py-4 md:px-6">
             <p className="text-sm text-slate-500">
-              Selected:{" "}
+              Đã chọn:{" "}
               <span className="font-bold text-slate-900">{value.length}</span>
             </p>
 
@@ -240,7 +240,7 @@ function PickerModal({
                   }}
                   className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
                 >
-                  Clear
+                  Xóa
                 </button>
               ) : null}
 
@@ -249,7 +249,7 @@ function PickerModal({
                 onClick={onClose}
                 className="inline-flex items-center justify-center rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-amber-600"
               >
-                Done
+                Xong
               </button>
             </div>
           </div>
@@ -262,7 +262,7 @@ function PickerModal({
 export default function UserMultiSelect({
   value = [],
   onChange,
-  placeholder = "Search and select users...",
+  placeholder = "Tìm kiếm và chọn người dùng...",
   allowedRoles = [],
 }) {
   const {

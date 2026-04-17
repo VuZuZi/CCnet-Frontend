@@ -130,11 +130,11 @@ export function FollowingPage() {
 
     unfollow.mutate(pendingUser.id, {
       onSuccess: () => {
-        toast.success("Unfollowed successfully");
+        toast.success("Bỏ theo dõi thành công");
         setConfirmOpen(false);
         setPendingUser(null);
       },
-      onError: () => toast.error("Failed to unfollow"),
+      onError: () => toast.error("Bỏ theo dõi thất bại"),
     });
   };
 
@@ -143,7 +143,7 @@ export function FollowingPage() {
       <div className="mx-auto w-full max-w-4xl">
         <div className="mb-2 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <h1 className="mb-1 text-[28px] font-extrabold tracking-tight text-[#111827]">
-            Connections
+            Kết nối
           </h1>
 
           <div className="relative w-full md:w-[360px]">
@@ -152,8 +152,8 @@ export function FollowingPage() {
               className="w-full rounded-full py-2.5 pl-4 pr-10 border border-[#e5e7eb] focus:ring-1 focus:border-yellow-400 focus:ring-yellow-400"
               placeholder={
                 activeTab === "projects"
-                  ? "Search projects..."
-                  : "Search name or email..."
+                  ? "Tìm kiếm dự án..."
+                  : "Tìm kiếm tên hoặc email..."
               }
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
@@ -169,7 +169,7 @@ export function FollowingPage() {
             onClick={() => setActiveTab("following")}
             className={`pb-3 font-bold text-[15px] border-b-2 transition-all ${activeTab === "following" ? "border-yellow-400 text-[#111827]" : "border-transparent text-[#6b7280]"}`}
           >
-            Following{" "}
+            Đang theo dõi{" "}
             <span className="ml-1.5 rounded-full bg-slate-100 px-2 py-0.5 text-xs">
               {followingItems?.length || 0}
             </span>
@@ -179,7 +179,7 @@ export function FollowingPage() {
             onClick={() => setActiveTab("followers")}
             className={`pb-3 font-bold text-[15px] border-b-2 transition-all ${activeTab === "followers" ? "border-yellow-400 text-[#111827]" : "border-transparent text-[#6b7280]"}`}
           >
-            Followers{" "}
+            Người theo dõi{" "}
             <span className="ml-1.5 text-xs bg-slate-100 px-2 py-0.5 rounded-full">
               {followerItems?.length || 0}
             </span>
@@ -189,7 +189,7 @@ export function FollowingPage() {
             onClick={() => setActiveTab("projects")}
             className={`pb-3 font-bold text-[15px] border-b-2 transition-all ${activeTab === "projects" ? "border-yellow-400 text-[#111827]" : "border-transparent text-[#6b7280]"}`}
           >
-            Projects{" "}
+            Dự án{" "}
             <span className="ml-1.5 text-xs bg-slate-100 px-2 py-0.5 rounded-full">
               {projectItems?.length || 0}
             </span>
@@ -198,7 +198,7 @@ export function FollowingPage() {
 
         {isLoading && (
           <div className="text-center py-10 font-bold text-yellow-500 animate-pulse">
-            Loading {activeTab}...
+            Đang tải danh sách...
           </div>
         )}
 
@@ -214,14 +214,14 @@ export function FollowingPage() {
           >
             {filtered.length === 0 ? (
               <div className="bg-white rounded-[14px] p-7 text-center border col-span-full">
-                <div className="font-extrabold">No results</div>
+                <div className="font-extrabold">Không có kết quả</div>
                 <div className="text-[#6b7280] text-sm mt-1">
                   {activeTab === "following" &&
-                    "You are not following anyone yet."}
+                    "Bạn chưa theo dõi ai."}
                   {activeTab === "followers" &&
-                    "You don't have any followers yet."}
+                    "Bạn chưa có người theo dõi nào."}
                   {activeTab === "projects" &&
-                    "You haven't followed any projects yet."}
+                    "Bạn chưa theo dõi dự án nào."}
                 </div>
               </div>
             ) : activeTab === "projects" ? (
