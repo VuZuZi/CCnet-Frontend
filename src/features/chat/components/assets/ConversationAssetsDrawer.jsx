@@ -198,7 +198,7 @@ export function ConversationAssetsDrawer({
         type="button"
         className="absolute inset-0"
         onClick={onClose}
-        aria-label="Close assets drawer"
+        aria-label="Đóng ngăn tệp đính kèm"
       />
 
       <div className="relative z-[2401] flex h-full w-full max-w-4xl flex-col bg-white shadow-2xl">
@@ -214,6 +214,8 @@ export function ConversationAssetsDrawer({
             type="button"
             onClick={onClose}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 hover:bg-slate-50"
+            aria-label="Đóng"
+            title="Đóng"
           >
             <X className="h-5 w-5" />
           </button>
@@ -284,10 +286,10 @@ export function ConversationAssetsDrawer({
 
                             <div className="min-w-0">
                               <div className="truncate text-sm font-semibold text-slate-900">
-                                {item?.originalName || item?.filename || 'File'}
+                                {item?.originalName || item?.filename || 'Tệp'}
                               </div>
                               <div className="truncate text-xs text-slate-500">
-                                {item?.mimetype || 'attachment'}
+                                {item?.mimetype || 'Tệp đính kèm'}
                               </div>
                             </div>
                           </div>

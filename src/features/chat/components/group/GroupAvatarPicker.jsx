@@ -11,7 +11,7 @@ export default function GroupAvatarPicker({
         {previewUrl ? (
           <img
             src={previewUrl}
-            alt="group avatar"
+            alt="Ảnh đại diện nhóm"
             className="h-full w-full object-cover"
           />
         ) : (

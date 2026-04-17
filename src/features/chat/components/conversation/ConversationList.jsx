@@ -67,7 +67,7 @@ export function ConversationList({
     return (
       <div className="p-3">
         <div className="rounded-lg bg-red-50 p-3 text-sm font-medium text-red-600">
-          {errorMessage || 'Failed to load conversations'}
+          {errorMessage || 'Không thể tải danh sách cuộc trò chuyện'}
         </div>
       </div>
     );
@@ -77,7 +77,7 @@ export function ConversationList({
     return (
       <div className="p-3">
         <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-500">
-          No matching conversations found.
+          Không tìm thấy cuộc trò chuyện phù hợp.
         </div>
       </div>
     );

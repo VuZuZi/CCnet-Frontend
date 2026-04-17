@@ -84,7 +84,7 @@ export default function ChatHeader({
         {avatar ? (
           <img
             src={avatar}
-            alt={title || "conversation avatar"}
+            alt={title || "Ảnh cuộc trò chuyện"}
             className={`rounded-full object-cover ring-1 ring-slate-200 ${
               compact ? "h-10 w-10" : "h-12 w-12"
             }`}
@@ -146,6 +146,7 @@ export default function ChatHeader({
                 compact ? "h-10 w-10" : "h-11 w-11"
               }`}
               title="Tùy chọn"
+              aria-label="Tùy chọn"
             >
               <ChevronDown
                 className={`transition-transform duration-200 ${
@@ -234,6 +235,7 @@ export default function ChatHeader({
               compact ? "h-10 w-10" : "h-11 w-11"
             }`}
             title="Đóng cuộc trò chuyện"
+            aria-label="Đóng cuộc trò chuyện"
           >
             <X className={compact ? "h-5 w-5" : "h-[22px] w-[22px]"} />
           </button>

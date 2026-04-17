@@ -51,6 +51,8 @@ export function MessageComposer({ conversationId, onSent, onComposerFocus }) {
           disabled={disabled}
           onClick={handleOpenFilePicker}
           className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-gray-200 bg-white text-slate-700 transition-colors hover:bg-[#fff6d6] disabled:cursor-not-allowed disabled:opacity-50"
+          aria-label="Chọn tệp đính kèm"
+          title="Chọn tệp đính kèm"
         >
           <ImagePlus className="h-5 w-5" />
         </button>
@@ -60,8 +62,8 @@ export function MessageComposer({ conversationId, onSent, onComposerFocus }) {
           rows={1}
           placeholder={
             conversationId
-              ? "Type a message..."
-              : "Choose a conversation to start chatting"
+              ? "Nhập tin nhắn..."
+              : "Chọn một cuộc trò chuyện để bắt đầu nhắn tin"
           }
           value={text}
           onChange={handleTextChange}
@@ -76,6 +78,8 @@ export function MessageComposer({ conversationId, onSent, onComposerFocus }) {
           disabled={disabled}
           onMouseDown={(event) => event.preventDefault()}
           className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#f6c343] font-black text-gray-900 transition-transform hover:scale-105 hover:bg-[#ffd54d] disabled:cursor-not-allowed disabled:opacity-55 disabled:hover:scale-100"
+          aria-label="Gửi tin nhắn"
+          title="Gửi tin nhắn"
         >
           {isLoading ? "…" : <SendHorizontal className="h-4.5 w-4.5" />}
         </button>

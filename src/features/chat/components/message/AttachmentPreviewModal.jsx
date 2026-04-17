@@ -150,7 +150,7 @@ export default function AttachmentPreviewModal({ attachment, onClose }) {
         type="button"
         className="absolute inset-0 bg-black/65 backdrop-blur-[3px]"
         onClick={onClose}
-        aria-label="Đóng preview"
+        aria-label="Đóng xem trước"
       />
 
       <div
@@ -163,7 +163,7 @@ export default function AttachmentPreviewModal({ attachment, onClose }) {
               {fileName}
             </div>
             <div className="text-xs text-slate-500">
-              {attachment?.mimetype || "attachment"}
+              {attachment?.mimetype || "Tệp đính kèm"}
             </div>
           </div>
 
@@ -184,6 +184,8 @@ export default function AttachmentPreviewModal({ attachment, onClose }) {
               type="button"
               onClick={onClose}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:bg-slate-50"
+              aria-label="Đóng"
+              title="Đóng"
             >
               <X className="h-5 w-5" />
             </button>
@@ -247,6 +249,7 @@ export default function AttachmentPreviewModal({ attachment, onClose }) {
                         type="button"
                         onClick={handleTogglePlay}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/15"
+                        title={isPlaying ? "Tạm dừng" : "Phát"}
                       >
                         {isPlaying ? (
                           <Pause className="h-5 w-5" />
@@ -259,6 +262,7 @@ export default function AttachmentPreviewModal({ attachment, onClose }) {
                         type="button"
                         onClick={handleToggleMute}
                         className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-white/10 transition hover:bg-white/15"
+                        title={isMuted ? "Bật tiếng" : "Tắt tiếng"}
                       >
                         {isMuted ? (
                           <VolumeX className="h-5 w-5" />

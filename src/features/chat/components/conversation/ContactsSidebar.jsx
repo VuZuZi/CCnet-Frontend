@@ -42,7 +42,7 @@ export function ContactsSidebar({
               type="button"
               onClick={() => setShowMenu((prev) => !prev)}
               className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
-              aria-label="More chat options"
+              aria-label="Tùy chọn đoạn chat"
             >
               <MoreHorizontal className="h-5 w-5" />
             </button>

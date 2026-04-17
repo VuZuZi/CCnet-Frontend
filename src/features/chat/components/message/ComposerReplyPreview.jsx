@@ -16,7 +16,7 @@ export default function ComposerReplyPreview({
         <div className="min-w-0">
           <div className="mb-0.5 flex items-center gap-1 text-xs font-semibold text-amber-700">
             <CornerUpLeft className="h-3.5 w-3.5" />
-            Replying to {getSenderName(replyingTo?.senderId)}
+            Đang trả lời {getSenderName(replyingTo?.senderId)}
           </div>
 
           <div className="truncate text-sm text-slate-700">
@@ -28,6 +28,8 @@ export default function ComposerReplyPreview({
           type="button"
           onClick={onClear}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-slate-500 hover:bg-white hover:text-slate-800"
+          aria-label="Huỷ trả lời"
+          title="Huỷ trả lời"
         >
           <X className="h-4 w-4" />
         </button>
