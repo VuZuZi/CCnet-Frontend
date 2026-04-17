@@ -5,6 +5,22 @@ import { HELP_REQUEST_KEYS } from './useHelpRequestQueries';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { getErrorMessage } from '@/shared/lib/httpClient';
 
+function invalidateAllHelpRequestQueries(queryClient) {
+  queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+  queryClient.invalidateQueries({
+    queryKey: HELP_REQUEST_KEYS.details(),
+    exact: false,
+  });
+  queryClient.invalidateQueries({
+    queryKey: HELP_REQUEST_KEYS.organizerAssignedRoot(),
+    exact: false,
+  });
+  queryClient.invalidateQueries({
+    queryKey: HELP_REQUEST_KEYS.urgent(),
+    exact: false,
+  });
+}
+
 export const useCreateHelpRequest = () => {
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -14,7 +30,7 @@ export const useCreateHelpRequest = () => {
     mutationFn: helpRequestAPI.create,
     onSuccess: () => {
       toast.success('Help request created successfully!');
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      invalidateAllHelpRequestQueries(queryClient);
       navigate('/need-help');
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -29,7 +45,7 @@ export const useUpdateHelpRequest = () => {
     mutationFn: helpRequestAPI.update,
     onSuccess: (data) => {
       toast.success('Help request updated successfully!');
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -45,7 +61,7 @@ export const useDeleteHelpRequest = () => {
     mutationFn: helpRequestAPI.delete,
     onSuccess: () => {
       toast.success('Help request deleted successfully!');
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      invalidateAllHelpRequestQueries(queryClient);
       navigate('/need-help');
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -60,7 +76,7 @@ export const useCancelHelpRequest = () => {
     mutationFn: helpRequestAPI.cancel,
     onSuccess: (data) => {
       toast.success('Help request cancelled successfully!');
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -75,8 +91,32 @@ export const useCompleteHelpRequest = () => {
     mutationFn: helpRequestAPI.complete,
     onSuccess: (data) => {
       toast.success('Help request marked as completed!');
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
+      invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
+    },
+    onError: (error) => toast.error(getErrorMessage(error)),
+  });
+};
+
+export const useVerifyHelpRequest = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: helpRequestAPI.verify,
+    onSuccess: (data, variables) => {
+      toast.success(
+        variables?.approved
+          ? 'Help request verified successfully!'
+          : 'Help request rejected successfully!'
+      );
+
+      invalidateAllHelpRequestQueries(queryClient);
+      queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
+      queryClient.invalidateQueries({
+        queryKey: HELP_REQUEST_KEYS.asProject(data._id),
+        exact: true,
+      });
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });
@@ -88,27 +128,16 @@ export const useAssignOrganizer = () => {
 
   return useMutation({
     mutationFn: helpRequestAPI.assignOrganizer,
-    onSuccess: (data, variables) => {
+    onSuccess: (data) => {
       toast.success('Organizer assigned. Notification sent with request link.');
-      
-      // Clear all related caches
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
-      
-      // Specifically invalidate all organizer assigned queries regardless of filters
-      // This ensures organizer sees the new assignment immediately
-      queryClient.removeQueries({ 
-        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
-        exact: false, // Match organizer-assigned queries with any filter combination
-      });
-      
-      // Set the updated help request in cache
+
+      invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
-      
-      // Refetch all active organizer assigned queries to ensure fresh data
+
       queryClient.refetchQueries({
-        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
+        queryKey: HELP_REQUEST_KEYS.organizerAssignedRoot(),
         exact: false,
-        type: 'active', // Only refetch queries that are currently in use
+        type: 'active',
       });
     },
     onError: (error) => toast.error(getErrorMessage(error)),
@@ -124,22 +153,15 @@ export const useRespondHelpRequestAssignment = () => {
     onSuccess: (data, variables) => {
       const verb = variables?.action === 'accept' ? 'accepted' : 'rejected';
       toast.success(`Assignment ${verb}. Notification sent with request link.`);
-      
-      // Invalidate all lists
-      queryClient.invalidateQueries({ queryKey: HELP_REQUEST_KEYS.all });
-      
-      // Clear and refetch organizer assigned queries
-      queryClient.removeQueries({ 
-        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
-        exact: false,
-      });
+
+      invalidateAllHelpRequestQueries(queryClient);
+      queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
+
       queryClient.refetchQueries({
-        queryKey: HELP_REQUEST_KEYS.organizerAssigned({}),
+        queryKey: HELP_REQUEST_KEYS.organizerAssignedRoot(),
         exact: false,
         type: 'active',
       });
-      
-      queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
     },
     onError: (error) => toast.error(getErrorMessage(error)),
   });

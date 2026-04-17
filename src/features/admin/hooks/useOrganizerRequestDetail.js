@@ -1,86 +1,162 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '@/shared/contexts/ToastContext';
-import { organizerRequestAdminAPI, getErrorMessage } from '../api/organizerRequestAdminAPI';
-import { queryKeys } from '@/shared/constants/queryKeys';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/shared/contexts/ToastContext";
+import {
+  organizerRequestAdminAPI,
+  getErrorMessage,
+} from "../api/organizerRequestAdminAPI";
+import { ADMIN_QUERY_KEYS } from "../constants/admin.queryKeys";
 
 export function useOrganizerRequestDetail(id) {
   const toast = useToast();
   const queryClient = useQueryClient();
 
   const detailQuery = useQuery({
-    queryKey: queryKeys.adminOrganizerRequests.detail(id),
+    queryKey: ADMIN_QUERY_KEYS.organizerRequests.detail(id),
     queryFn: () => organizerRequestAdminAPI.getRequestDetail(id),
-    enabled: !!id,
+    enabled: Boolean(id),
   });
 
   const approveMutation = useMutation({
-    mutationFn: () => organizerRequestAdminAPI.approveRequest(id),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.adminOrganizerRequests.detail(id) });
-      const previousRequest = queryClient.getQueryData(queryKeys.adminOrganizerRequests.detail(id));
-      
+    mutationFn: (payload) => organizerRequestAdminAPI.approveRequest(id, payload),
+    onMutate: async (payload) => {
+      await queryClient.cancelQueries({
+        queryKey: ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+      });
+
+      const previousRequest = queryClient.getQueryData(
+        ADMIN_QUERY_KEYS.organizerRequests.detail(id)
+      );
+
       if (previousRequest) {
-        queryClient.setQueryData(queryKeys.adminOrganizerRequests.detail(id), {
-          ...previousRequest,
-          status: 'APPROVED'
-        });
+        queryClient.setQueryData(
+          ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+          {
+            ...previousRequest,
+            status: "APPROVED",
+            reviewReason: payload?.reviewReason || "",
+          }
+        );
       }
+
       return { previousRequest };
     },
     onSuccess: async (updatedRequest) => {
       if (updatedRequest) {
-        queryClient.setQueryData(queryKeys.adminOrganizerRequests.detail(id), updatedRequest);
+        queryClient.setQueryData(
+          ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+          updatedRequest
+        );
       }
-      
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminOrganizerRequests.lists() });
-      toast.success('Đã duyệt hồ sơ Organizer');
+
+      await queryClient.invalidateQueries({
+        queryKey: ADMIN_QUERY_KEYS.organizerRequests.all(),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ADMIN_QUERY_KEYS.organizerActionLogs?.all?.() || [
+          "admin",
+          "organizer-action-logs",
+        ],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["organizer-request", "me"],
+      });
+
+      toast.success("Đã duyệt hồ sơ Organizer");
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       if (context?.previousRequest) {
-        queryClient.setQueryData(queryKeys.adminOrganizerRequests.detail(id), context.previousRequest);
+        queryClient.setQueryData(
+          ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+          context.previousRequest
+        );
       }
+
       toast.error(getErrorMessage(error));
-      if (error.response?.status === 400) detailQuery.refetch();
+
+      if (error?.response?.status === 400) {
+        detailQuery.refetch();
+      }
     },
   });
 
   const declineMutation = useMutation({
     mutationFn: (payload) => organizerRequestAdminAPI.declineRequest(id, payload),
     onMutate: async (payload) => {
-      await queryClient.cancelQueries({ queryKey: queryKeys.adminOrganizerRequests.detail(id) });
-      const previousRequest = queryClient.getQueryData(queryKeys.adminOrganizerRequests.detail(id));
-      
+      await queryClient.cancelQueries({
+        queryKey: ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+      });
+
+      const previousRequest = queryClient.getQueryData(
+        ADMIN_QUERY_KEYS.organizerRequests.detail(id)
+      );
+
       if (previousRequest) {
-        queryClient.setQueryData(queryKeys.adminOrganizerRequests.detail(id), {
-          ...previousRequest,
-          status: 'DECLINED',
-          reviewReason: payload.reviewReason
-        });
+        queryClient.setQueryData(
+          ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+          {
+            ...previousRequest,
+            status: "DECLINED",
+            reviewReason: payload?.reviewReason || "",
+          }
+        );
       }
+
       return { previousRequest };
     },
     onSuccess: async (updatedRequest) => {
       if (updatedRequest) {
-        queryClient.setQueryData(queryKeys.adminOrganizerRequests.detail(id), updatedRequest);
+        queryClient.setQueryData(
+          ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+          updatedRequest
+        );
       }
-      await queryClient.invalidateQueries({ queryKey: queryKeys.adminOrganizerRequests.lists() });
-      toast.success('Đã từ chối hồ sơ Organizer');
+
+      await queryClient.invalidateQueries({
+        queryKey: ADMIN_QUERY_KEYS.organizerRequests.all(),
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ADMIN_QUERY_KEYS.organizerActionLogs?.all?.() || [
+          "admin",
+          "organizer-action-logs",
+        ],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: ["organizer-request", "me"],
+      });
+
+      toast.success("Đã từ chối hồ sơ Organizer");
     },
-    onError: (error, variables, context) => {
+    onError: (error, _variables, context) => {
       if (context?.previousRequest) {
-        queryClient.setQueryData(queryKeys.adminOrganizerRequests.detail(id), context.previousRequest);
+        queryClient.setQueryData(
+          ADMIN_QUERY_KEYS.organizerRequests.detail(id),
+          context.previousRequest
+        );
       }
+
       toast.error(getErrorMessage(error));
-      if (error.response?.status === 400) detailQuery.refetch();
+
+      if (error?.response?.status === 400) {
+        detailQuery.refetch();
+      }
     },
   });
 
   return {
     request: detailQuery.data || null,
     isLoading: detailQuery.isLoading,
+    isFetching: detailQuery.isFetching,
+    isError: detailQuery.isError,
+    error: detailQuery.error,
     approve: approveMutation.mutateAsync,
     decline: declineMutation.mutateAsync,
     isApproving: approveMutation.isPending,
     isDeclining: declineMutation.isPending,
   };
 }
+
+export default useOrganizerRequestDetail;

@@ -1,6 +1,13 @@
 import React, { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  AlertTriangle,
+  BadgeCheck,
+  Heart,
+  Sparkles,
+} from "lucide-react";
 import { useFeaturedProject } from "@/features/project/hooks/useProjectQueries";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
 function normalizeId(value) {
   if (!value) return "";
@@ -24,13 +31,13 @@ function getProjectImage(project) {
 
 function getCategoryLabel(category) {
   const map = {
-    Y_TE: "Health",
-    GIAO_DUC: "Education",
-    MOI_TRUONG: "Environment",
-    THIEN_TAI: "Urgent",
-    XAY_DUNG: "Construction",
+    Y_TE: "Y tế",
+    GIAO_DUC: "Giáo dục",
+    MOI_TRUONG: "Môi trường",
+    THIEN_TAI: "Khẩn cấp",
+    XAY_DUNG: "Xây dựng",
   };
-  return map[category] || "Project";
+  return map[category] || "Dự án";
 }
 
 function getFundingStats(project) {
@@ -57,30 +64,53 @@ function getFundingStats(project) {
   };
 }
 
-function formatCompactCurrency(value) {
+function formatCompactCurrencyVND(value) {
   const amount = safeNumber(value);
 
   if (amount >= 1_000_000_000) {
-    return `$${(amount / 1_000_000_000).toFixed(
+    return `${(amount / 1_000_000_000).toFixed(
       amount % 1_000_000_000 === 0 ? 0 : 1
-    )}B`;
+    )}Bđ`;
   }
 
   if (amount >= 1_000_000) {
-    return `$${(amount / 1_000_000).toFixed(
+    return `${(amount / 1_000_000).toFixed(
       amount % 1_000_000 === 0 ? 0 : 1
-    )}M`;
+    )}Mđ`;
   }
 
   if (amount >= 1_000) {
-    return `$${(amount / 1_000).toFixed(amount % 1_000 === 0 ? 0 : 1)}K`;
+    return `${(amount / 1_000).toFixed(amount % 1_000 === 0 ? 0 : 1)}Kđ`;
   }
 
-  return `$${amount}`;
+  return `${amount}đ`;
+}
+
+function extractCurrentUserApplicationStatus(project) {
+  const candidates = [
+    project?.currentUserParticipation?.volunteerStatus,
+    project?.currentUserParticipation?.status,
+    project?.currentUserVolunteer?.status,
+    project?.myVolunteerApplication?.status,
+    project?.myApplication?.status,
+    project?.applicationStatus,
+    project?.volunteerStatus,
+  ];
+
+  const matched = candidates.find(
+    (value) => value !== null && value !== undefined
+  );
+
+  return String(matched || "").trim().toUpperCase();
 }
 
 const SpotlightWidget = () => {
   const navigate = useNavigate();
+  const currentUser = useAuthStore((state) => state.user);
+  const currentUserId = normalizeId(
+    currentUser?._id || currentUser?.id || currentUser?.userId
+  );
+
   const { data: featuredProject, isLoading } = useFeaturedProject();
 
   const project = useMemo(() => {
@@ -100,9 +130,7 @@ const SpotlightWidget = () => {
     return (
       <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
         <div className="flex items-center gap-2 bg-red-50 p-4">
-          <span className="material-symbols-outlined text-[20px] text-red-600">
-            campaign
-          </span>
+          <AlertTriangle size={18} className="text-red-600" />
           <span className="text-xs font-bold uppercase text-red-700">
             Urgent Need
           </span>
@@ -128,27 +156,53 @@ const SpotlightWidget = () => {
   const categoryLabel = getCategoryLabel(project?.category);
   const { raisedAmount, fundingProgress } = getFundingStats(project);
 
+  const currentUserApplicationStatus =
+    extractCurrentUserApplicationStatus(project);
+
+  const hasJoinedProject =
+    currentUserId &&
+    (currentUserApplicationStatus === "APPROVED" ||
+      currentUserApplicationStatus === "WITHDRAW_REQUESTED");
+
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
       <div className="flex items-center gap-2 bg-red-50 p-4">
-        <span className="material-symbols-outlined text-[20px] text-red-600">
-          campaign
-        </span>
+        <AlertTriangle size={18} className="text-red-600" />
         <span className="text-xs font-bold uppercase text-red-700">
           Urgent Need
         </span>
       </div>
 
       <div className="p-5">
-        <button type="button" onClick={handleOpenProject} className="w-full text-left">
+        <button
+          type="button"
+          onClick={handleOpenProject}
+          className="w-full text-left"
+        >
           <div
-            className="mb-4 aspect-video w-full rounded-xl bg-center bg-no-repeat bg-cover"
+            className="mb-4 aspect-video w-full rounded-xl bg-cover bg-center bg-no-repeat"
             style={{ backgroundImage: `url("${imageUrl}")` }}
           />
 
-          <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[10px] font-bold uppercase text-blue-600">
-            {categoryLabel}
-          </span>
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[10px] font-bold uppercase text-amber-700">
+              {categoryLabel}
+            </span>
+
+            {project?.isUrgent ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-red-50 px-2 py-0.5 text-[10px] font-bold uppercase text-red-600">
+                <Sparkles size={10} />
+                Nổi bật
+              </span>
+            ) : null}
+
+            {hasJoinedProject ? (
+              <span className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase text-emerald-700">
+                <BadgeCheck size={10} />
+                Đã tham gia
+              </span>
+            ) : null}
+          </div>
 
           <h4 className="mt-2 line-clamp-2 text-sm font-bold text-slate-900">
             {project?.title}
@@ -156,15 +210,16 @@ const SpotlightWidget = () => {
 
           <div className="mt-4">
             <div className="mb-1 flex justify-between text-[11px] font-bold">
-              <span className="text-slate-500">
-                Raised: {formatCompactCurrency(raisedAmount)}
+              <span className="flex items-center gap-1 text-slate-500">
+                <Heart size={12} className="text-amber-500" />
+                Đã góp: {formatCompactCurrencyVND(raisedAmount)}
               </span>
-              <span className="text-primary">{fundingProgress}%</span>
+              <span className="text-amber-500">{fundingProgress}%</span>
             </div>
 
             <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
-                className="h-full rounded-full bg-primary transition-all duration-500"
+                className="h-full rounded-full bg-amber-400 transition-all duration-500"
                 style={{ width: `${Math.min(fundingProgress, 100)}%` }}
               />
             </div>
@@ -174,9 +229,9 @@ const SpotlightWidget = () => {
         <button
           type="button"
           onClick={handleOpenProject}
-          className="mt-4 w-full rounded-xl bg-primary py-2 text-xs font-bold text-white transition-colors hover:bg-yellow-500"
+          className="mt-4 w-full rounded-xl bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] py-2.5 text-xs font-bold text-slate-900 transition hover:brightness-105"
         >
-          Donate Now
+          {hasJoinedProject ? "Xem dự án" : "Đóng góp ngay"}
         </button>
       </div>
     </div>

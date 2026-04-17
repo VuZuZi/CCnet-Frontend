@@ -1,147 +1,240 @@
-import httpClient from '@/shared/lib/httpClient';
+import httpClient from "@/shared/lib/httpClient";
+
+const toNumberOrUndefined = (value) => {
+  if (value === "" || value === null || value === undefined) return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+};
+
+const toIsoOrUndefined = (value) => {
+  if (!value) return undefined;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString();
+};
+
+const removeUndefinedDeep = (value) => {
+  if (Array.isArray(value)) {
+    return value
+      .map(removeUndefinedDeep)
+      .filter((item) => item !== undefined);
+  }
+
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value)
+        .map(([key, itemValue]) => [key, removeUndefinedDeep(itemValue)])
+        .filter(([, itemValue]) => itemValue !== undefined),
+    );
+  }
+
+  return value === undefined ? undefined : value;
+};
 
 const sanitizeMediaPayload = (mediaArray) => {
   if (!Array.isArray(mediaArray)) return [];
 
   return mediaArray
     .map((media) => {
-      const cleanMedia = {
-        _id: media._id || undefined,
-        url: media.url || undefined,
-        publicId: media.publicId || undefined,
-        originalName: media.originalName || undefined,
-        mimetype: media.mimetype || undefined,
-        size: media.size ? Number(media.size) : undefined,
+      const normalized = {
+        _id: media?._id || undefined,
+        url: media?.url || undefined,
+        publicId: media?.publicId || undefined,
+        originalName: media?.originalName || undefined,
+        mimetype: media?.mimetype || media?.mimeType || undefined,
+        size: toNumberOrUndefined(media?.size),
       };
 
-      Object.keys(cleanMedia).forEach((key) => {
-        if (cleanMedia[key] === undefined) {
-          delete cleanMedia[key];
-        }
-      });
-
-      return cleanMedia;
+      return Object.fromEntries(
+        Object.entries(normalized).filter(([, value]) => value !== undefined),
+      );
     })
     .filter((media) => media._id || (media.url && media.publicId));
 };
 
-const cleanEmptyStrings = (obj) => {
-  if (Array.isArray(obj)) return obj.map(cleanEmptyStrings);
-  if (obj !== null && typeof obj === 'object') {
-    return Object.fromEntries(
-      Object.entries(obj)
-        .map(([k, v]) => [k, cleanEmptyStrings(v)])
-        .filter(([_, v]) => v !== "")
+const sanitizeBudgetBreakdown = (items) => {
+  if (!Array.isArray(items)) return undefined;
+
+  return items
+    .map((item) => ({
+      item: String(item?.item || "").trim(),
+      amount: Number(item?.amount || 0),
+      note: item?.note ? String(item.note).trim() : undefined,
+    }))
+    .filter((item) => item.item || item.amount > 0 || item.note);
+};
+
+const sanitizeVolunteerRoles = (roles) => {
+  if (!Array.isArray(roles)) return undefined;
+
+  return roles
+    .map((role) => ({
+      title: String(role?.title || "").trim(),
+      quantity: Number(role?.quantity || 0),
+      skillsRequired: Array.isArray(role?.skillsRequired)
+        ? role.skillsRequired
+            .map((skill) => String(skill || "").trim())
+            .filter(Boolean)
+        : undefined,
+      location: role?.location ? String(role.location).trim() : undefined,
+      duration: role?.duration ? String(role.duration).trim() : undefined,
+    }))
+    .filter((role) => role.title || role.quantity > 0);
+};
+
+const sanitizeMilestones = (milestones) => {
+  if (!Array.isArray(milestones)) return undefined;
+
+  return milestones
+    .map((milestone) => ({
+      title: String(milestone?.title || "").trim(),
+      description: String(milestone?.description || "").trim(),
+      targetAmount: Number(milestone?.targetAmount || 0),
+      startDate: toIsoOrUndefined(milestone?.startDate),
+      endDate: toIsoOrUndefined(milestone?.endDate),
+      deliverables: milestone?.deliverables
+        ? String(milestone.deliverables).trim()
+        : undefined,
+    }))
+    .filter(
+      (milestone) =>
+        milestone.title ||
+        milestone.description ||
+        milestone.targetAmount > 0 ||
+        milestone.startDate ||
+        milestone.endDate ||
+        milestone.deliverables,
     );
-  }
-  return obj;
 };
 
-const prepareProjectPayload = (data) => {
-  let payload = { ...data };
+const prepareProjectPayload = (data = {}) => {
+  const payload = {
+    ...data,
+    coverMedia: sanitizeMediaPayload(data.coverMedia),
+    documents: sanitizeMediaPayload(data.documents),
+    startDate: toIsoOrUndefined(data.startDate),
+    endDate: toIsoOrUndefined(data.endDate),
+    milestones: sanitizeMilestones(data.milestones),
+    budgetBreakdown: sanitizeBudgetBreakdown(data.budgetBreakdown),
+    volunteerRoles: sanitizeVolunteerRoles(data.volunteerRoles),
+    deletedDocumentIds:
+      Array.isArray(data.deletedDocumentIds) && data.deletedDocumentIds.length
+        ? data.deletedDocumentIds
+        : undefined,
+  };
 
-  payload.coverMedia = sanitizeMediaPayload(data.coverMedia);
-  payload.documents = sanitizeMediaPayload(data.documents);
-
-  if (!payload.deletedDocumentIds || payload.deletedDocumentIds.length === 0) {
-    delete payload.deletedDocumentIds;
-  }
-
-  if (payload.startDate) payload.startDate = new Date(payload.startDate).toISOString();
-  if (payload.endDate) payload.endDate = new Date(payload.endDate).toISOString();
-
-  if (payload.milestones && Array.isArray(payload.milestones)) {
-    payload.milestones = payload.milestones.map((m) => ({
-      ...m,
-      startDate: m.startDate ? new Date(m.startDate).toISOString() : undefined,
-      endDate: m.endDate ? new Date(m.endDate).toISOString() : undefined,
-      targetAmount: m.targetAmount ? Number(m.targetAmount) : 0,
-    }));
-  }
-
-  payload = cleanEmptyStrings(payload);
-
-  return payload;
+  return removeUndefinedDeep(payload);
 };
+
+const getData = (response) => response.data?.data;
 
 export const projectAPI = {
-  createDraft: async (data) => {
-    const payload = prepareProjectPayload(data);
-    const response = await httpClient.post('/project', payload);
-    return response.data?.data;
+  async createDraft(data) {
+    const response = await httpClient.post(
+      "/project",
+      prepareProjectPayload(data),
+    );
+    return getData(response);
   },
 
-  updateDraft: async ({ id, data }) => {
-    const payload = prepareProjectPayload(data);
-    const response = await httpClient.put(`/project/${id}/draft`, payload);
-    return response.data?.data;
+  async updateDraft({ id, data }) {
+    const response = await httpClient.put(
+      `/project/${id}/draft`,
+      prepareProjectPayload(data),
+    );
+    return getData(response);
   },
 
-  submitForApproval: async (id) => {
+  async submitForApproval(id) {
     const response = await httpClient.post(`/project/${id}/submit`);
-    return response.data?.data;
+    return getData(response);
   },
 
-  getFeatured: async () => {
-    const response = await httpClient.get('/project/featured');
-    return response.data?.data;
+  async getFeatured() {
+    const response = await httpClient.get("/project/featured");
+    return getData(response);
   },
 
-  getVolunteerNeeded: async () => {
-    const response = await httpClient.get('/project/volunteers-needed');
-    return response.data?.data;
+  async getVolunteerNeeded() {
+    const response = await httpClient.get("/project/volunteers-needed");
+    return getData(response);
   },
 
-  getExplore: async (params) => {
-    const response = await httpClient.get('/project/explore', { params });
-    return response.data?.data;
+  async getExplore(params) {
+    const response = await httpClient.get("/project/explore", { params });
+    return getData(response);
   },
 
-  getDetail: async (id) => {
+  async getDetail(id) {
     const response = await httpClient.get(`/project/${id}`);
-    return response.data?.data;
+    return getData(response);
   },
 
-  getWorkspaceProjects: async (params = {}) => {
-    const response = await httpClient.get('/project/organizer/my-projects', {
+  async getDraftDetail(id) {
+    const response = await httpClient.get(`/project/${id}/draft`);
+    return getData(response);
+  },
+
+  async getWorkspaceProjects(params = {}) {
+    const response = await httpClient.get("/project/organizer/my-projects", {
       params: {
         page: params.page ?? 1,
-        limit: params.limit ?? 10,
-        status: params.status ?? 'ALL',
+        limit: params.limit ?? 12,
+        status: params.status ?? "ALL",
       },
     });
-    return response.data?.data;
+
+    return getData(response);
   },
 
-  getFeedPosts: async (projectId, { limit = 10, cursor = null } = {}) => {
+  async getFeedPosts(projectId, { limit = 10, cursor = null } = {}) {
     const params = { limit };
-    if (cursor) params.cursor = cursor;
-    const response = await httpClient.get(`/project/${projectId}/feed/posts`, { params });
-    return response.data?.data;
+
+    if (cursor) {
+      params.cursor = cursor;
+    }
+
+    const response = await httpClient.get(`/project/${projectId}/feed/posts`, {
+      params,
+    });
+
+    return getData(response);
   },
 
-  createFeedPost: async (projectId, data) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/posts`, data);
-    return response.data?.data;
+  async createFeedPost(projectId, data) {
+    const response = await httpClient.post(
+      `/project/${projectId}/feed/posts`,
+      data,
+    );
+    return getData(response);
   },
 
-  createFeedComment: async (projectId, postId, data) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/comments`, data);
-    return response.data?.data;
+  async createFeedComment(projectId, postId, data) {
+    const response = await httpClient.post(
+      `/project/${projectId}/feed/posts/${postId}/comments`,
+      data,
+    );
+    return getData(response);
   },
 
-  reportProject: async (projectId, payload) => {
-    const response = await httpClient.post(`/project/${projectId}/report`, payload);
-    return response.data?.data;
+  async reportProject(projectId, payload) {
+    const response = await httpClient.post(
+      `/project/${projectId}/report`,
+      payload,
+    );
+    return getData(response);
   },
 
-  toggleFeedPostLike: async (projectId, postId) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/posts/${postId}/like`);
-    return response.data?.data;
+  async toggleFeedPostLike(projectId, postId) {
+    const response = await httpClient.post(
+      `/project/${projectId}/feed/posts/${postId}/like`,
+    );
+    return getData(response);
   },
 
-  toggleFeedCommentLike: async (projectId, commentId) => {
-    const response = await httpClient.post(`/project/${projectId}/feed/comments/${commentId}/like`);
-    return response.data?.data;
+  async toggleFeedCommentLike(projectId, commentId) {
+    const response = await httpClient.post(
+      `/project/${projectId}/feed/comments/${commentId}/like`,
+    );
+    return getData(response);
   },
 };

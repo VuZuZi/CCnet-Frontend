@@ -15,10 +15,14 @@ import ProjectManagement from "@/features/admin/pages/ProjectManagement";
 import ReportManagement from "@/features/admin/pages/ReportManagement";
 import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage";
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
+import OrganizerActionLogsPage from "@/features/admin/pages/OrganizerActionLogsPage";
 import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
 import AdminNotificationsPage from "@/features/admin/pages/AdminNotificationsPage";
+import AdminNotificationHistoryPage from "@/features/admin/pages/AdminNotificationHistoryPage";
+import AdminActionLogsPage from "@/features/admin/pages/AdminActionLogsPage";
 import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
 import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
+import AdminNeedHelpActionLogsPage from "@/features/needHelp/pages/AdminNeedHelpActionLogsPage";
 import { PaymentResultPage } from "@/features/transaction/pages/PaymentResultPage";
 
 const LoginPage = lazy(() =>
@@ -360,10 +364,17 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <AdminDashboard /> },
       { path: "notifications", element: <AdminNotificationsPage /> },
+      {
+        path: "notifications/history",
+        element: <AdminNotificationHistoryPage />,
+      },
       { path: "users", element: <UserManagement /> },
+      { path: "user-action-logs", element: <AdminActionLogsPage /> },
       { path: "organizers", element: <OrganizerRequestsPage /> },
+      { path: "organizer-action-logs", element: <OrganizerActionLogsPage /> },
       { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },
       { path: "need-help", element: <AdminNeedHelpRequestsPage /> },
+      { path: "need-help-action-logs", element: <AdminNeedHelpActionLogsPage /> },
       { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
       { path: "projects/:id", element: <AdminProjectPreviewPage /> },

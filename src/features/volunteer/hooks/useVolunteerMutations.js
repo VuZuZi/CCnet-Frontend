@@ -1,137 +1,115 @@
-// src/features/volunteer/hooks/useVolunteerMutations.js
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { volunteerAPI } from '../api/volunteerAPI';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { volunteerAPI } from "../api/volunteerAPI";
+import { volunteerQueryKeys } from "./useVolunteerQueries";
+import { PROJECT_QUERY_KEYS } from "@/features/project/hooks/useProjectQueries";
 
 export const useVolunteerMutations = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    // Tạo mới application
-    const createApplication = useMutation({
-        mutationFn: (data) => volunteerAPI.createApplication(data),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['volunteer-application'] });
-            queryClient.invalidateQueries({ queryKey: ['project-applications'] });
-        },
-        onError: (error) => {
-            console.error('Error creating application:', error);
-        }
-    });
+  const invalidateVolunteerQueries = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({
+        queryKey: volunteerQueryKeys.applicationRoot,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: volunteerQueryKeys.projectApplicationsRoot,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: volunteerQueryKeys.pendingApplicationsRoot,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: volunteerQueryKeys.supportedProjectsRoot,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEYS.all,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEYS.featured,
+      }),
+      queryClient.invalidateQueries({
+        queryKey: PROJECT_QUERY_KEYS.volunteerNeeded,
+      }),
+    ]);
+  };
 
-    //  UPDATE application
-    const updateApplication = useMutation({
-        mutationFn: ({ id, data }) => volunteerAPI.updateApplication(id, data),
-        onSuccess: (data, variables) => {
-            console.log(' Update success:', data);
-            queryClient.invalidateQueries({ queryKey: ['volunteer-application'] });
-            queryClient.invalidateQueries({ queryKey: ['project-applications'] });
-            queryClient.setQueryData(['volunteer-application', variables.id], data);
-            queryClient.invalidateQueries({ queryKey: ['pending-applications'] });
-        },
-        onError: (error) => {
-            console.error('❌ Error updating application:', error);
-        }
-    });
+  const createApplicationMutation = useMutation({
+    mutationFn: (data) => volunteerAPI.createApplication(data),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-    //  HỦY application
-    const cancelApplication = useMutation({
-        mutationFn: (id) => volunteerAPI.cancelApplication(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['volunteer-application'] });
-            queryClient.invalidateQueries({ queryKey: ['project-applications'] });
-        },
-        onError: (error) => {
-            console.error('❌ Error cancelling application:', error);
-        }
-    });
+  const updateApplicationMutation = useMutation({
+    mutationFn: ({ id, data }) => volunteerAPI.updateApplication(id, data),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-    //  APPROVE application (thêm mới)
-    const approveApplication = useMutation({
-        mutationFn: async (payload) => {
-            const id =
-                typeof payload === 'object' && payload !== null
-                    ? payload.id
-                    : payload;
-            try {
-                const result = await volunteerAPI.approveApplication(id);
-                return result;
-            } catch (error) {
-                console.error('❌ [Mutation] API error:', error);
-                console.error('❌ Error details:', {
-                    message: error.message,
-                    status: error.response?.status,
-                    data: error.response?.data,
-                    config: error.config
-                });
-                throw error;
-            }
-        },
-        onSuccess: (data) => {
-            console.log(' Approve success:', data);
-            queryClient.invalidateQueries({ queryKey: ['volunteer-application'] });
-            queryClient.invalidateQueries({ queryKey: ['project-applications'] });
-            queryClient.invalidateQueries({ queryKey: ['pending-applications'] });
+  const cancelApplicationMutation = useMutation({
+    mutationFn: (id) => volunteerAPI.cancelApplication(id),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-        },
-        onError: (error) => {
-            console.error('❌ Error approving application:', error);
-            console.error('❌ Error response:', error.response);
-            console.error('❌ Error message:', error.message);
-            console.error('❌ Error status:', error.response?.status);
-            console.error('❌ Error data:', error.response?.data);
-        }
-    });
+  const requestWithdrawMutation = useMutation({
+    mutationFn: ({ id, reason }) => volunteerAPI.requestWithdraw(id, reason),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-    //  REJECT application (thêm mới)
-    const rejectApplication = useMutation({
-        mutationFn: ({ id, reason }) => volunteerAPI.rejectApplication(id, reason),
-        onSuccess: () => {
-            console.log(' Reject success');
-            queryClient.invalidateQueries({ queryKey: ['volunteer-application'] });
-            queryClient.invalidateQueries({ queryKey: ['project-applications'] });
-            queryClient.invalidateQueries({ queryKey: ['pending-applications'] });
-        },
-        onError: (error) => {
-            console.error('❌ Error rejecting application:', error);
-        }
-    });
+  const approveApplicationMutation = useMutation({
+    mutationFn: (payload) => {
+      const id =
+        typeof payload === "object" && payload !== null ? payload.id : payload;
+      return volunteerAPI.approveApplication(id);
+    },
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-    //  RESTORE application (thêm mới)
-    const restoreApplication = useMutation({
-        mutationFn: ({ id }) => volunteerAPI.restoreApplication(id),
-        onSuccess: () => {
-            console.log(' Restore success');
-            queryClient.invalidateQueries({ queryKey: ['volunteer-application'] });
-            queryClient.invalidateQueries({ queryKey: ['project-applications'] });
-            queryClient.invalidateQueries({ queryKey: ['pending-applications'] });
-        },
-        onError: (error) => {
-            console.error('❌ Error restoring application:', error);
-        }
-    });
+  const rejectApplicationMutation = useMutation({
+    mutationFn: ({ id, reason }) => volunteerAPI.rejectApplication(id, reason),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-    return {
-        // Tạo mới
-        createApplication: createApplication.mutateAsync,
-        isCreating: createApplication.isPending,
+  const restoreApplicationMutation = useMutation({
+    mutationFn: ({ id }) => volunteerAPI.restoreApplication(id),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-        // Cập nhật
-        updateApplication: updateApplication.mutateAsync,
-        isUpdating: updateApplication.isPending,
+  const approveWithdrawMutation = useMutation({
+    mutationFn: ({ id }) => volunteerAPI.approveWithdraw(id),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-        // Hủy
-        cancelApplication: cancelApplication.mutateAsync,
-        isCancelling: cancelApplication.isPending,
+  const rejectWithdrawMutation = useMutation({
+    mutationFn: ({ id, reviewNote }) =>
+      volunteerAPI.rejectWithdraw(id, reviewNote),
+    onSuccess: invalidateVolunteerQueries,
+  });
 
-        // Duyệt
-        approveApplication: approveApplication.mutate,
-        isApproving: approveApplication.isPending,
+  return {
+    createApplication: createApplicationMutation.mutateAsync,
+    isCreating: createApplicationMutation.isPending,
 
-        // Từ chối
-        rejectApplication: rejectApplication.mutate,
-        isRejecting: rejectApplication.isPending,
+    updateApplication: updateApplicationMutation.mutateAsync,
+    isUpdating: updateApplicationMutation.isPending,
 
-        // Khôi phục
-        restoreApplication: restoreApplication.mutate,
-        isRestoring: restoreApplication.isPending,
-    };
+    cancelApplication: cancelApplicationMutation.mutateAsync,
+    isCancelling: cancelApplicationMutation.isPending,
+
+    requestWithdraw: requestWithdrawMutation.mutateAsync,
+    isRequestingWithdraw: requestWithdrawMutation.isPending,
+
+    approveApplication: approveApplicationMutation.mutateAsync,
+    isApproving: approveApplicationMutation.isPending,
+
+    rejectApplication: rejectApplicationMutation.mutateAsync,
+    isRejecting: rejectApplicationMutation.isPending,
+
+    restoreApplication: restoreApplicationMutation.mutateAsync,
+    isRestoring: restoreApplicationMutation.isPending,
+
+    approveWithdraw: approveWithdrawMutation.mutateAsync,
+    isApprovingWithdraw: approveWithdrawMutation.isPending,
+
+    rejectWithdraw: rejectWithdrawMutation.mutateAsync,
+    isRejectingWithdraw: rejectWithdrawMutation.isPending,
+  };
 };
+
+export default useVolunteerMutations;

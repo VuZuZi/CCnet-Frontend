@@ -1,122 +1,185 @@
-// src/components/ReportModal.jsx
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AlertTriangle, ShieldBan, Trash2, X, Loader2 } from "lucide-react";
 
 const ReportModal = ({ isOpen, onClose, reportId, onSubmit }) => {
   const [selectedActions, setSelectedActions] = useState([]);
   const [resolutionNote, setResolutionNote] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSelectedActions([]);
+      setResolutionNote("");
+      setIsSubmitting(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
   const handleCheckboxChange = (actionValue) => {
+    if (isSubmitting) return;
+
     setSelectedActions((prev) =>
       prev.includes(actionValue)
         ? prev.filter((a) => a !== actionValue)
-        : [...prev, actionValue],
+        : [...prev, actionValue]
     );
   };
 
-  const handleConfirm = () => {
-    // If no specific action selected, default to mark_resolved
+  const handleConfirm = async () => {
     const actionsToSend =
       selectedActions.length > 0 ? selectedActions : ["mark_resolved"];
-    onSubmit(reportId, actionsToSend, resolutionNote || "No note provided");
-    onClose();
+
+    try {
+      setIsSubmitting(true);
+      await onSubmit(
+        reportId,
+        actionsToSend,
+        resolutionNote?.trim() || "No note provided"
+      );
+      onClose();
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4">
-      <div className="w-full max-w-md rounded-2xl bg-white dark:bg-slate-900 p-8 shadow-2xl border border-slate-200 dark:border-slate-800">
-        <div className="flex justify-between items-center mb-6">
-          <h4 className="text-xl font-bold text-slate-900 dark:text-white">
-            Resolve Report
-          </h4>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm">
+      <div className="w-full max-w-xl overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+          <div>
+            <h4 className="text-xl font-black tracking-tight text-slate-900">
+              Resolve Report
+            </h4>
+            <p className="mt-1 text-sm text-slate-500">
+              Choose moderation actions and leave an internal note.
+            </p>
+          </div>
+
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600"
+            disabled={isSubmitting}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 disabled:opacity-50"
           >
-            <span className="material-symbols-outlined">close</span>
+            <X size={18} />
           </button>
         </div>
 
-        <p className="mb-6 text-sm text-slate-500 font-medium">
-          Select administrative actions:
-        </p>
-
-        <div className="space-y-3 mb-8">
-          {/* Action: Delete Content */}
-          <label
-            className={`flex cursor-pointer items-start rounded-xl border p-4 transition-all ${
-              selectedActions.includes("delete_content")
-                ? "border-red-500 bg-red-50/30"
-                : "border-slate-100 bg-slate-50/50"
-            }`}
-          >
-            <input
-              type="checkbox"
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
-              checked={selectedActions.includes("delete_content")}
-              onChange={() => handleCheckboxChange("delete_content")}
-            />
-            <div className="ml-4">
-              <span className="font-bold text-red-600 block text-sm">
-                Delete Content
-              </span>
-              <span className="text-xs text-slate-500">
-                Remove post permanently from the platform.
-              </span>
+        <div className="space-y-6 px-6 py-6">
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-full bg-white p-2 text-amber-600 shadow-sm">
+                <AlertTriangle size={18} />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-amber-900">
+                  Administrative actions
+                </p>
+                <p className="mt-1 text-sm text-amber-700">
+                  Select one or more actions. If you do not choose any action, the
+                  report will only be marked as resolved.
+                </p>
+              </div>
             </div>
-          </label>
+          </div>
 
-          {/* Action: Ban User */}
-          <label
-            className={`flex cursor-pointer items-start rounded-xl border p-4 transition-all ${
-              selectedActions.includes("ban_user")
-                ? "border-primary bg-primary/5"
-                : "border-slate-100 bg-slate-50/50"
-            }`}
-          >
-            <input
-              type="checkbox"
-              className="mt-1 h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary"
-              checked={selectedActions.includes("ban_user")}
-              onChange={() => handleCheckboxChange("ban_user")}
+          <div className="space-y-3">
+            <label
+              className={`flex cursor-pointer items-start gap-4 rounded-2xl border p-4 transition ${
+                selectedActions.includes("delete_content")
+                  ? "border-red-300 bg-red-50"
+                  : "border-slate-200 bg-white hover:border-red-200 hover:bg-red-50/40"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 rounded border-slate-300"
+                checked={selectedActions.includes("delete_content")}
+                onChange={() => handleCheckboxChange("delete_content")}
+                disabled={isSubmitting}
+              />
+
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="rounded-xl bg-red-100 p-2 text-red-600">
+                  <Trash2 size={16} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">
+                    Delete Content
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Remove the reported content permanently from the platform.
+                  </p>
+                </div>
+              </div>
+            </label>
+
+            <label
+              className={`flex cursor-pointer items-start gap-4 rounded-2xl border p-4 transition ${
+                selectedActions.includes("ban_user")
+                  ? "border-rose-300 bg-rose-50"
+                  : "border-slate-200 bg-white hover:border-rose-200 hover:bg-rose-50/40"
+              }`}
+            >
+              <input
+                type="checkbox"
+                className="mt-1 h-4 w-4 rounded border-slate-300"
+                checked={selectedActions.includes("ban_user")}
+                onChange={() => handleCheckboxChange("ban_user")}
+                disabled={isSubmitting}
+              />
+
+              <div className="flex min-w-0 items-start gap-3">
+                <div className="rounded-xl bg-rose-100 p-2 text-rose-600">
+                  <ShieldBan size={16} />
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-900">Ban User</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Suspend the author account immediately.
+                  </p>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div>
+            <label className="mb-2 block text-xs font-bold uppercase tracking-wide text-slate-400">
+              Decision Note
+            </label>
+            <textarea
+              rows="4"
+              placeholder="Explain why this action was taken..."
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
+              value={resolutionNote}
+              onChange={(e) => setResolutionNote(e.target.value)}
+              disabled={isSubmitting}
             />
-            <div className="ml-4">
-              <span className="font-bold text-slate-900 dark:text-white block text-sm">
-                Ban User
-              </span>
-              <span className="text-xs text-slate-500">
-                Suspend the author's account immediately.
-              </span>
-            </div>
-          </label>
+          </div>
         </div>
 
-        <div className="mb-8">
-          <label className="mb-2 block text-xs font-bold text-slate-500 uppercase">
-            Decision Note
-          </label>
-          <textarea
-            rows="3"
-            placeholder="Why was this action taken?"
-            className="w-full rounded-xl border-slate-200 bg-slate-50 p-4 text-sm focus:border-primary focus:ring-0"
-            value={resolutionNote}
-            onChange={(e) => setResolutionNote(e.target.value)}
-          />
-        </div>
-
-        <div className="flex gap-3">
-          <button
-            onClick={handleConfirm}
-            className="flex-1 rounded-xl bg-primary py-3 font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary-dark transition-all"
-          >
-            Confirm Action
-          </button>
+        <div className="flex flex-col-reverse gap-3 border-t border-slate-100 bg-slate-50 px-6 py-5 sm:flex-row sm:justify-end">
           <button
             onClick={onClose}
-            className="flex-1 rounded-xl border border-slate-200 py-3 font-bold text-slate-600 hover:bg-slate-50 transition-all"
+            disabled={isSubmitting}
+            className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
           >
             Cancel
+          </button>
+
+          <button
+            onClick={handleConfirm}
+            disabled={isSubmitting}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Processing...
+              </>
+            ) : (
+              "Confirm Action"
+            )}
           </button>
         </div>
       </div>

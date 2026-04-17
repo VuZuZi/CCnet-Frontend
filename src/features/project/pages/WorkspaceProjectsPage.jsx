@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   FolderKanban,
   PlusCircle,
@@ -10,29 +10,33 @@ import {
   FileText,
   Eye,
   MessageCircle,
-} from 'lucide-react';
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
 
-import { useWorkspaceProjects } from '../hooks/useProjectQueries';
-import { PageLoader } from '@/shared/components/ui/PageLoader';
-import { useConversations } from '@/features/chat/hooks/conversations/useConversations';
+import { useWorkspaceProjects } from "../hooks/useProjectQueries";
+import { PageLoader } from "@/shared/components/ui/PageLoader";
+import { useConversations } from "@/features/chat/hooks/conversations/useConversations";
+
+const DEFAULT_PAGE_SIZE = 12;
 
 const STATUS_OPTIONS = [
-  { value: 'ALL', label: 'Tất cả' },
-  { value: 'PENDING_APPROVAL', label: 'Chờ duyệt' },
-  { value: 'ACTIVE', label: 'Đang hoạt động' },
-  { value: 'PAUSED', label: 'Tạm dừng' },
-  { value: 'COMPLETED', label: 'Hoàn thành' },
-  { value: 'CANCELLED', label: 'Đã từ chối' },
-  { value: 'DRAFT', label: 'Bản nháp' },
+  { value: "ALL", label: "Tất cả" },
+  { value: "PENDING_APPROVAL", label: "Chờ duyệt" },
+  { value: "ACTIVE", label: "Đang hoạt động" },
+  { value: "PAUSED", label: "Tạm dừng" },
+  { value: "COMPLETED", label: "Hoàn thành" },
+  { value: "CANCELLED", label: "Đã hủy" },
+  { value: "DRAFT", label: "Bản nháp" },
 ];
 
 const STATUS_STYLES = {
-  DRAFT: 'bg-slate-100 text-slate-700 border-slate-200',
-  PENDING_APPROVAL: 'bg-amber-100 text-amber-700 border-amber-200',
-  ACTIVE: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  PAUSED: 'bg-orange-100 text-orange-700 border-orange-200',
-  COMPLETED: 'bg-blue-100 text-blue-700 border-blue-200',
-  CANCELLED: 'bg-red-100 text-red-700 border-red-200',
+  DRAFT: "bg-slate-100 text-slate-700 border-slate-200",
+  PENDING_APPROVAL: "bg-amber-100 text-amber-700 border-amber-200",
+  ACTIVE: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  PAUSED: "bg-orange-100 text-orange-700 border-orange-200",
+  COMPLETED: "bg-blue-100 text-blue-700 border-blue-200",
+  CANCELLED: "bg-red-100 text-red-700 border-red-200",
 };
 
 const STATUS_ICONS = {
@@ -44,34 +48,68 @@ const STATUS_ICONS = {
   CANCELLED: XCircle,
 };
 
-function formatCurrency(value) {
-  return Number(value || 0).toLocaleString('vi-VN');
-}
+const formatCurrency = (value) => Number(value || 0).toLocaleString("vi-VN");
 
-function StatusBadge({ status }) {
+const StatusBadge = ({ status }) => {
   const Icon = STATUS_ICONS[status] || FileText;
 
   return (
     <span
       className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${
-        STATUS_STYLES[status] || 'bg-slate-100 text-slate-700 border-slate-200'
+        STATUS_STYLES[status] || "bg-slate-100 text-slate-700 border-slate-200"
       }`}
     >
       <Icon size={14} />
       {status}
     </span>
   );
-}
+};
+
+const Pagination = ({ pagination, onPageChange, isFetching }) => {
+  if (!pagination || pagination.totalPages <= 1) return null;
+
+  const currentPage = Number(pagination.currentPage || 1);
+  const totalPages = Number(pagination.totalPages || 1);
+
+  return (
+    <div className="flex flex-col items-center justify-between gap-4 pt-2 sm:flex-row">
+      <p className="text-sm text-slate-500">
+        Tổng {pagination.totalItems} dự án • Trang {currentPage}/{totalPages}
+      </p>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage <= 1 || isFetching}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          <ChevronLeft size={16} />
+          Trước
+        </button>
+
+        <button
+          type="button"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages || isFetching}
+          className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Sau
+          <ChevronRight size={16} />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export function WorkspaceProjectsPage() {
   const navigate = useNavigate();
-
-  const [status, setStatus] = useState('ALL');
-  const [page] = useState(1);
+  const [status, setStatus] = useState("ALL");
+  const [page, setPage] = useState(1);
 
   const { data, isLoading, isError, refetch, isFetching } = useWorkspaceProjects({
     page,
-    limit: 12,
+    limit: DEFAULT_PAGE_SIZE,
     status,
   });
 
@@ -83,14 +121,25 @@ export function WorkspaceProjectsPage() {
   const projectConversationMap = useMemo(() => {
     const map = new Map();
 
-    (conversations || []).forEach((conversation) => {
-      const projectId = String(conversation?.projectId || '');
-      if (!projectId) return;
+    for (const conversation of conversations || []) {
+      const projectId = String(conversation?.projectId || "");
+      if (!projectId) continue;
       map.set(projectId, conversation);
-    });
+    }
 
     return map;
   }, [conversations]);
+
+  const handleChangeStatus = (nextStatus) => {
+    setStatus(nextStatus);
+    setPage(1);
+  };
+
+  const handlePageChange = (nextPage) => {
+    if (!pagination) return;
+    if (nextPage < 1 || nextPage > pagination.totalPages) return;
+    setPage(nextPage);
+  };
 
   const handleOpenProjectGroup = (projectId) => {
     const conversation = projectConversationMap.get(String(projectId));
@@ -137,7 +186,7 @@ export function WorkspaceProjectsPage() {
                 onClick={() => refetch()}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
-                {isFetching ? 'Đang cập nhật...' : 'Làm mới'}
+                {isFetching ? "Đang cập nhật..." : "Làm mới"}
               </button>
 
               <Link
@@ -155,11 +204,11 @@ export function WorkspaceProjectsPage() {
               <button
                 key={option.value}
                 type="button"
-                onClick={() => setStatus(option.value)}
+                onClick={() => handleChangeStatus(option.value)}
                 className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
                   status === option.value
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
                 }`}
               >
                 {option.label}
@@ -181,9 +230,9 @@ export function WorkspaceProjectsPage() {
           <>
             <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
               {projects.map((project) => {
-                const projectConversation = projectConversationMap.get(String(project._id));
+                const conversation = projectConversationMap.get(String(project._id));
                 const canOpenProjectGroup =
-                  project.status === 'ACTIVE' && Boolean(projectConversation?._id);
+                  project.status === "ACTIVE" && Boolean(conversation?._id);
 
                 return (
                   <div
@@ -196,7 +245,7 @@ export function WorkspaceProjectsPage() {
                           {project.title}
                         </h2>
                         <p className="mt-2 text-sm text-slate-500">
-                          {project.category || 'Chưa phân loại'}
+                          {project.category || "Chưa phân loại"}
                         </p>
                       </div>
 
@@ -232,8 +281,7 @@ export function WorkspaceProjectsPage() {
                           {project.currentMilestone.title}
                         </p>
                         <p className="mt-1 text-sm text-slate-600">
-                          Mốc {project.currentMilestone.index} •{' '}
-                          {formatCurrency(project.currentMilestone.targetAmount)} VND
+                          Mốc {project.currentMilestone.index} • {formatCurrency(project.currentMilestone.targetAmount)} VND
                         </p>
                       </div>
                     ) : null}
@@ -247,7 +295,7 @@ export function WorkspaceProjectsPage() {
                         Xem chi tiết
                       </Link>
 
-                      {project.status === 'DRAFT' && (
+                      {project.status === "DRAFT" ? (
                         <Link
                           to={`/projects/create/${project._id}/edit`}
                           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 font-medium text-white transition-colors hover:bg-slate-800"
@@ -255,9 +303,9 @@ export function WorkspaceProjectsPage() {
                           <FileText size={16} />
                           Tiếp tục chỉnh sửa
                         </Link>
-                      )}
+                      ) : null}
 
-                      {canOpenProjectGroup && (
+                      {canOpenProjectGroup ? (
                         <button
                           type="button"
                           onClick={() => handleOpenProjectGroup(project._id)}
@@ -266,19 +314,18 @@ export function WorkspaceProjectsPage() {
                           <MessageCircle size={16} />
                           Mở nhóm chat
                         </button>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 );
               })}
             </div>
 
-            {pagination ? (
-              <div className="py-2 text-center text-sm text-slate-500">
-                Tổng {pagination.totalItems} dự án • Trang {pagination.currentPage}/
-                {pagination.totalPages}
-              </div>
-            ) : null}
+            <Pagination
+              pagination={pagination}
+              onPageChange={handlePageChange}
+              isFetching={isFetching}
+            />
           </>
         )}
       </div>

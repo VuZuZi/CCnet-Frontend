@@ -9,122 +9,31 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
-const colorByCategory = {
-  Y_TE: {
-    bg: "bg-card-blue-bg",
-    border: "border-blue-100",
-    text: "text-blue-900",
-    barBg: "bg-blue-200",
-    barFill: "bg-blue-500",
-    icon: "text-blue-600",
-  },
-  GIAO_DUC: {
-    bg: "bg-card-purple-bg",
-    border: "border-purple-100",
-    text: "text-purple-900",
-    barBg: "bg-purple-200",
-    barFill: "bg-purple-500",
-    icon: "text-purple-600",
-  },
-  MOI_TRUONG: {
-    bg: "bg-card-green-bg",
-    border: "border-green-100",
-    text: "text-green-900",
-    barBg: "bg-green-200",
-    barFill: "bg-green-500",
-    icon: "text-green-600",
-  },
-  THIEN_TAI: {
-    bg: "bg-red-50",
-    border: "border-red-100",
-    text: "text-red-900",
-    barBg: "bg-red-200",
-    barFill: "bg-red-500",
-    icon: "text-red-600",
-  },
-  XAY_DUNG: {
-    bg: "bg-card-yellow-bg",
-    border: "border-amber-100",
-    text: "text-amber-900",
-    barBg: "bg-amber-200",
-    barFill: "bg-amber-500",
-    icon: "text-amber-600",
-  },
-};
-
-function getProjectColors(project) {
-  return colorByCategory[project?.category] || colorByCategory.MOI_TRUONG;
-}
-
-function getVolunteerStats(project) {
-  const current = Number(
-    project?.stats?.currentVolunteers ??
-      project?.stats?.volunteerJoined ??
-      0
-  );
-
-  const target =
-    Number(
-      project?.stats?.targetVolunteers ?? project?.stats?.volunteerNeeded ?? 0
-    ) ||
-    Number(
-      Array.isArray(project?.volunteerRoles)
-        ? project.volunteerRoles.reduce(
-            (sum, role) => sum + Number(role?.quantity || 0),
-            0
-          )
-        : 0
-    );
-
-  const percent =
-    target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
-
-  return { current, target, percent, isFull: target > 0 && current >= target };
-}
-
-function getFundingStats(project) {
-  const current = Number(
-    project?.financialDetail?.availableBalance ??
-      project?.currentAmount ??
-      project?.stats?.raisedAmount ??
-      0
-  );
-
-  const target = Number(
-    project?.targetAmount ?? project?.stats?.targetAmount ?? 0
-  );
-
-  const percent =
-    target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
-
-  return { current, target, percent, isComplete: target > 0 && current >= target };
-}
-
-function stripHtmlTags(value) {
-  return String(value || "")
-    .replace(/<[^>]*>/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-}
+import {
+  formatProjectCurrency,
+  getProjectCardColors,
+  getProjectFundingStats,
+  getProjectMode,
+  getProjectVolunteerStats,
+  stripProjectHtml,
+} from "../utils/projectDisplay.utils";
 
 export function VolunteerCall({ projects = [] }) {
   const scrollerRef = useRef(null);
   const intervalRef = useRef(null);
-  const isHoveredRef = useRef(false);
   const manualPauseTimeoutRef = useRef(null);
+  const isHoveredRef = useRef(false);
   const isManualPausedRef = useRef(false);
 
   const items = useMemo(
     () =>
-      (Array.isArray(projects) ? projects : []).filter(
-        (project) => project?._id
-      ),
-    [projects]
+      (Array.isArray(projects) ? projects : []).filter((project) => project?._id),
+    [projects],
   );
 
   const loopItems = useMemo(() => {
     if (!items.length) return [];
-    return [...items, ...items];
+    return items.length > 1 ? [...items, ...items] : items;
   }, [items]);
 
   const pauseAutoScrollTemporarily = (duration = 900) => {
@@ -141,7 +50,7 @@ export function VolunteerCall({ projects = [] }) {
 
   const normalizeLoopPosition = () => {
     const scroller = scrollerRef.current;
-    if (!scroller) return;
+    if (!scroller || items.length <= 1) return;
 
     const resetPoint = scroller.scrollWidth / 2;
 
@@ -170,7 +79,8 @@ export function VolunteerCall({ projects = [] }) {
 
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller || items.length <= 1) return;
+
+    if (!scroller || items.length <= 1) return undefined;
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -256,20 +166,24 @@ export function VolunteerCall({ projects = [] }) {
             project?.coverMedia?.url ||
             "https://images.unsplash.com/photo-1593113598332-cd59a93c6132?q=80&w=1200&auto=format&fit=crop";
 
-          const colors = getProjectColors(project);
-          const { current, target, percent, isFull } = getVolunteerStats(project);
-          const { current: raisedAmount, target: targetAmount, percent: fundingPercent } =
-            getFundingStats(project);
+          const colors = getProjectCardColors(project?.category);
+          const { current, target, percent, isFull } =
+            getProjectVolunteerStats(project);
+          const {
+            raisedAmount,
+            targetAmount,
+            fundingPercent,
+          } = getProjectFundingStats(project);
 
           const isOnline = /trực tuyến|online/i.test(
-            project?.location?.address || ""
+            project?.location?.address || "",
           );
-          const isFunded = project?.projectType === "FUNDED";
+          const { isFunded } = getProjectMode(project);
 
           return (
             <div
               key={`${project._id}-${index}`}
-              className="flex min-w-[320px] w-[320px] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
+              className="flex w-[320px] min-w-[320px] flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm"
             >
               <Link
                 to={`/projects/${project._id}`}
@@ -296,7 +210,7 @@ export function VolunteerCall({ projects = [] }) {
                 </Link>
 
                 <p className="mb-4 line-clamp-2 text-sm text-slate-500">
-                  {stripHtmlTags(project?.summary || project?.description) ||
+                  {stripProjectHtml(project?.summary || project?.description) ||
                     "Dự án đang cần thêm tình nguyện viên tham gia hỗ trợ."}
                 </p>
 
@@ -330,8 +244,8 @@ export function VolunteerCall({ projects = [] }) {
                     <div className="mb-4 flex items-center gap-2 text-sm font-semibold text-slate-700">
                       <Heart size={16} className="text-amber-500" />
                       <span>
-                        {raisedAmount.toLocaleString("vi-VN")}đ /{" "}
-                        {targetAmount.toLocaleString("vi-VN")}đ
+                        {formatProjectCurrency(raisedAmount)}đ /{" "}
+                        {formatProjectCurrency(targetAmount)}đ
                       </span>
                       <span className="ml-auto text-amber-600">
                         {fundingPercent}%

@@ -1,5 +1,42 @@
 import { LayoutGrid, Search, Loader2, ChevronDown } from "lucide-react";
 
+const CATEGORY_OPTIONS = [
+  { value: "", label: "Tất cả danh mục" },
+  { value: "Y_TE", label: "Y tế & Sức khỏe" },
+  { value: "GIAO_DUC", label: "Giáo dục" },
+  { value: "MOI_TRUONG", label: "Môi trường" },
+  { value: "THIEN_TAI", label: "Cứu trợ khẩn cấp" },
+  { value: "XAY_DUNG", label: "Xây dựng" },
+];
+
+const ORGANIZER_SCOPE_OPTIONS = [
+  { value: "ALL", label: "Tất cả organizer" },
+  { value: "FOLLOWED", label: "Organizer đã follow" },
+];
+
+function FilterSelect({ value, onChange, options }) {
+  return (
+    <div className="relative w-full sm:min-w-[220px] xl:w-[220px]">
+      <select
+        value={value}
+        onChange={onChange}
+        className="h-12 w-full cursor-pointer appearance-none rounded-2xl border border-slate-200 bg-white py-2 pl-4 pr-10 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
+      >
+        {options.map((option) => (
+          <option key={option.value || "empty"} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+
+      <ChevronDown
+        className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
+        size={18}
+      />
+    </div>
+  );
+}
+
 export default function ProjectFilterBar({
   localLocation,
   setLocalLocation,
@@ -9,9 +46,9 @@ export default function ProjectFilterBar({
   onApplyLocation,
   isFetching,
 }) {
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
       onApplyLocation?.();
     }
   };
@@ -41,7 +78,7 @@ export default function ProjectFilterBar({
             <input
               type="text"
               value={localLocation}
-              onChange={(e) => setLocalLocation(e.target.value)}
+              onChange={(event) => setLocalLocation(event.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Tìm theo địa điểm..."
               className="h-12 w-full rounded-2xl border border-slate-200 bg-white pl-10 pr-4 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
@@ -58,41 +95,17 @@ export default function ProjectFilterBar({
         </div>
 
         <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
-          <div className="relative w-full sm:min-w-[220px] xl:w-[220px]">
-            <select
-              value={filters.category}
-              onChange={onCategoryChange}
-              className="h-12 w-full cursor-pointer appearance-none rounded-2xl border border-slate-200 bg-white py-2 pl-4 pr-10 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
-            >
-              <option value="">Tất cả danh mục</option>
-              <option value="Y_TE">Y tế & Sức khỏe</option>
-              <option value="GIAO_DUC">Giáo dục</option>
-              <option value="MOI_TRUONG">Môi trường</option>
-              <option value="THIEN_TAI">Cứu trợ khẩn cấp</option>
-              <option value="XAY_DUNG">Xây dựng</option>
-            </select>
+          <FilterSelect
+            value={filters.category}
+            onChange={onCategoryChange}
+            options={CATEGORY_OPTIONS}
+          />
 
-            <ChevronDown
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-          </div>
-
-          <div className="relative w-full sm:min-w-[220px] xl:w-[220px]">
-            <select
-              value={filters.organizerScope}
-              onChange={onOrganizerScopeChange}
-              className="h-12 w-full cursor-pointer appearance-none rounded-2xl border border-slate-200 bg-white py-2 pl-4 pr-10 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20"
-            >
-              <option value="ALL">Tất cả organizer</option>
-              <option value="FOLLOWED">Organizer đã follow</option>
-            </select>
-
-            <ChevronDown
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-          </div>
+          <FilterSelect
+            value={filters.organizerScope}
+            onChange={onOrganizerScopeChange}
+            options={ORGANIZER_SCOPE_OPTIONS}
+          />
         </div>
       </div>
     </div>

@@ -1,167 +1,153 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  CalendarDays,
-  ChevronRight,
-  CircleDollarSign,
-  MapPin,
-  UserRound,
-  Share2,
-} from "lucide-react";
-import { ShareModal } from "../../Community/components/common/ShareModal";
+import { Link } from 'react-router-dom';
+import { CalendarDays, CircleDollarSign, MapPin } from 'lucide-react';
 
-import { formatVND, formatDate } from "@/shared/lib/formatters";
+import { formatDate, formatVND } from '@/shared/lib/formatters';
+import { StatusBadge } from './detail/StatusBadge';
+import { HELP_REQUEST_CATEGORIES, URGENCY_LEVELS } from '../validations/helpRequestSchema';
 
-const CATEGORY_LABELS = {
-  Y_TE: "Medical Aid",
-  GIAO_DUC: "Education",
-  THIEN_TAI: "Disaster Relief",
-  XAY_DUNG: "Construction",
-  MOI_TRUONG: "Environment",
-  KHAC: "Other",
-};
+const CATEGORY_LABELS = Object.fromEntries(
+  HELP_REQUEST_CATEGORIES.map((item) => [item.value, item.label])
+);
 
-const URGENCY_STYLES = {
-  CRITICAL: "bg-rose-50 text-rose-700",
-  HIGH: "bg-orange-50 text-orange-700",
-  MEDIUM: "bg-amber-50 text-amber-700",
-  LOW: "bg-emerald-50 text-emerald-700",
-};
+const URGENCY_MAP = Object.fromEntries(
+  URGENCY_LEVELS.map((item) => [item.value, item])
+);
 
-export function HelpRequestCard({ helpRequest }) {
-  const [isShareOpen, setIsShareOpen] = useState(false);
+function getCoverImage(evidences = []) {
+  return evidences.find((item) => item?.mediaType === 'image' || !item?.mediaType)?.url || null;
+}
 
-  const coverImage = helpRequest.evidences?.[0]?.url;
-  const categoryLabel = CATEGORY_LABELS[helpRequest.category] || "Other";
-  const urgencyStyle = URGENCY_STYLES[helpRequest.urgencyLevel] || URGENCY_STYLES.MEDIUM;
+function formatCompactAmount(amountNeeded = 0) {
+  const amount = Number(amountNeeded || 0);
 
-  const requesterName = helpRequest.requesterId?.fullName || "Anonymous";
-  const locationAddress = helpRequest.location?.address || "Location not specified";
+  if (!Number.isFinite(amount) || amount <= 0) {
+    return 'Flexible Support';
+  }
 
-  const getInitials = (name) => {
-    return (
-      name
-        .split(" ")
-        .filter(Boolean)
-        .slice(0, 2)
-        .map((part) => part.charAt(0).toUpperCase())
-        .join("") || "A"
-    );
-  };
+  if (amount >= 1_000_000_000_000) {
+    return `${(amount / 1_000_000_000_000).toLocaleString('vi-VN', {
+      maximumFractionDigits: 1,
+    })} nghìn tỷ đ`;
+  }
 
-  const shareData = {
-    entityId: helpRequest._id,
-    entityModel: "NeedHelp",
-    title: helpRequest.title,
-    thumbnail: coverImage || "",
-    description: helpRequest.story || "Xin hãy chung tay giúp đỡ hoàn cảnh này.",
-  };
+  if (amount >= 1_000_000_000) {
+    return `${(amount / 1_000_000_000).toLocaleString('vi-VN', {
+      maximumFractionDigits: 1,
+    })} tỷ đ`;
+  }
+
+  if (amount >= 1_000_000) {
+    return `${(amount / 1_000_000).toLocaleString('vi-VN', {
+      maximumFractionDigits: 1,
+    })} triệu đ`;
+  }
+
+  return formatVND(amount);
+}
+
+function getRequesterName(requesterId) {
+  if (!requesterId) return 'Community requester';
+  if (typeof requesterId === 'object') {
+    return requesterId.fullName || requesterId.username || 'Community requester';
+  }
+  return 'Community requester';
+}
+
+function HelpRequestCard({ helpRequest }) {
+  const {
+    _id,
+    title,
+    story,
+    category,
+    urgencyLevel,
+    location,
+    amountNeeded,
+    createdAt,
+    status,
+    evidences = [],
+    requesterId,
+  } = helpRequest || {};
+
+  const coverImage = getCoverImage(evidences);
+  const requesterName = getRequesterName(requesterId);
+  const categoryLabel = CATEGORY_LABELS[category] || 'Other';
+  const urgency = URGENCY_MAP[urgencyLevel];
+  const compactAmount = formatCompactAmount(amountNeeded);
 
   return (
-    <>
-      <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_2px_10px_-6px_rgba(15,23,42,0.22)] transition-all duration-200 hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_16px_32px_-20px_rgba(15,23,42,0.45),0_10px_20px_-18px_rgba(245,158,11,0.45)]">
-        {/* Banner Image */}
-        <div className="relative h-36 w-full overflow-hidden bg-slate-100">
-          <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5">
-            <span className="rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-700 shadow-sm backdrop-blur-sm">
-              {categoryLabel}
-            </span>
-            <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm ${urgencyStyle}`}>
-              {helpRequest.urgencyLevel}
-            </span>
+    <Link
+      to={`/need-help/${_id}`}
+      className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-amber-200 hover:shadow-[0_18px_36px_-24px_rgba(15,23,42,0.22)]"
+    >
+      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+        {coverImage ? (
+          <img
+            src={coverImage}
+            alt={title || 'Help request'}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-50 via-slate-100 to-sky-50 px-6 text-center text-sm font-semibold text-slate-400">
+            No cover image
           </div>
+        )}
 
-          <div className="h-full w-full">
-            {coverImage ? (
-              <img
-                src={coverImage}
-                alt={helpRequest.title}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                loading="lazy"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-slate-100 to-slate-200 text-lg font-bold text-slate-400">
-                {getInitials(requesterName)}
-              </div>
-            )}
-          </div>
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
+          <span
+            className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${
+              urgency?.color || 'bg-slate-100 text-slate-700'
+            }`}
+          >
+            {urgency?.label || urgencyLevel || 'Medium'}
+          </span>
+
+          <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-700 backdrop-blur">
+            {categoryLabel}
+          </span>
         </div>
 
-        {/* Content Area */}
-        <div className="flex flex-1 flex-col p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <h3 className="line-clamp-2 break-words text-base font-extrabold leading-tight text-slate-900 transition-colors group-hover:text-amber-600">
-                <Link
-                  to={`/need-help/${helpRequest._id}`}
-                  className="focus:outline-none before:absolute before:inset-0 before:z-0"
-                >
-                  {helpRequest.title}
-                </Link>
-              </h3>
-              <p className="mt-2 line-clamp-2 break-words text-sm leading-relaxed text-slate-500">
-                {helpRequest.story}
-              </p>
-            </div>
-
-            <div className="hidden flex-shrink-0 items-center text-slate-300 transition-colors group-hover:text-amber-500 2xl:flex">
-              <ChevronRight size={20} />
-            </div>
-          </div>
-
-          {/* Bottom Info */}
-          <div className="mt-auto pt-4">
-            <div className="space-y-2 border-t border-slate-50 pt-3">
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <UserRound size={13} className="text-slate-400" />
-                <span className="truncate">{requesterName}</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs text-slate-500">
-                <MapPin size={13} className="text-slate-400" />
-                <span className="truncate">{locationAddress}</span>
-              </div>
-
-              <div className="mt-1 flex items-center justify-between gap-2 pt-1">
-                <div className="inline-flex items-center gap-1.5 font-bold text-slate-900">
-                  <CircleDollarSign size={14} className="text-amber-500" />
-                  <span className="text-sm">
-                    {helpRequest.amountNeeded
-                      ? formatVND(helpRequest.amountNeeded)
-                      : "Flexible"}
-                  </span>
-                </div>
-
-                <div className="relative z-10 flex items-center gap-3">
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400">
-                    <CalendarDays size={12} />
-                    {formatDate(helpRequest.createdAt) || "Recently"}
-                  </span>
-
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      setIsShareOpen(true);
-                    }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-all hover:bg-amber-50 hover:text-amber-600"
-                    title="Share this request"
-                  >
-                    <Share2 size={14} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/45 via-slate-950/10 to-transparent p-3">
+          <StatusBadge status={status} size="sm" className="bg-white/95" />
         </div>
       </div>
 
-      <ShareModal
-        isOpen={isShareOpen}
-        onClose={() => setIsShareOpen(false)}
-        sharedData={shareData}
-        initialText={`Trường hợp khẩn cấp: "${helpRequest.title}". Mong mọi người lan toả thông điệp này! 🙏`}
-      />
-    </>
+      <div className="space-y-4 p-4">
+        <div>
+          <h3 className="line-clamp-2 text-lg font-extrabold leading-tight tracking-tight text-slate-900 transition-colors group-hover:text-amber-700">
+            {title || 'Untitled request'}
+          </h3>
+
+          <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-500">
+            {story || 'No story provided for this request.'}
+          </p>
+        </div>
+
+        <div className="grid gap-3">
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <MapPin size={15} className="text-slate-400" />
+            <span className="line-clamp-1">
+              {location?.address || 'Location not specified'}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <CircleDollarSign size={15} className="text-slate-400" />
+            <span className="line-clamp-1">{compactAmount}</span>
+          </div>
+
+          <div className="flex items-center gap-2 text-sm text-slate-600">
+            <CalendarDays size={15} className="text-slate-400" />
+            <span>{formatDate(createdAt) || 'Recently'}</span>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-100 pt-3">
+          <p className="text-sm font-medium text-slate-700">
+            Requested by <span className="font-bold text-slate-900">{requesterName}</span>
+          </p>
+        </div>
+      </div>
+    </Link>
   );
 }
 

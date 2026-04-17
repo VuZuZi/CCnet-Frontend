@@ -1,49 +1,168 @@
-// src/components/Sidebar.jsx
-const Sidebar = () => {
-  const menuItems = [
-    { name: "Dashboard", icon: "dashboard", active: true },
-    { name: "Users", icon: "group", active: false },
-    { name: "Notifications", icon: "notifications", active: false },
-    { name: "Reports", icon: "bar_chart", active: false },
-    { name: "Settings", icon: "settings", active: false },
-  ];
+import { NavLink, useLocation } from "react-router-dom";
+import {
+  LayoutDashboard,
+  Users,
+  Rocket,
+  Flag,
+  LogOut,
+  ShieldCheck,
+  HeartHandshake,
+  Bell,
+} from "lucide-react";
+
+const MENU_ITEMS = [
+  {
+    path: "/admin",
+    label: "Dashboard",
+    icon: LayoutDashboard,
+    end: true,
+    matchPaths: ["/admin"],
+  },
+  {
+    path: "/admin/notifications",
+    label: "Notifications",
+    icon: Bell,
+    end: false,
+    matchPaths: ["/admin/notifications", "/admin/notifications/history"],
+  },
+  {
+    path: "/admin/users",
+    label: "User Management",
+    icon: Users,
+    end: false,
+    matchPaths: ["/admin/users", "/admin/user-action-logs"],
+  },
+  {
+    path: "/admin/organizers",
+    label: "Organizer Requests",
+    icon: ShieldCheck,
+    end: false,
+    matchPaths: ["/admin/organizers", "/admin/organizer-action-logs"],
+  },
+  {
+    path: "/admin/need-help",
+    label: "NeedHelp Requests",
+    icon: HeartHandshake,
+    end: false,
+    matchPaths: ["/admin/need-help", "/admin/need-help-action-logs"],
+  },
+  {
+    path: "/admin/projects",
+    label: "Projects",
+    icon: Rocket,
+    end: false,
+    matchPaths: ["/admin/projects"],
+  },
+  {
+    path: "/admin/reports",
+    label: "Reports & Logs",
+    icon: Flag,
+    end: false,
+    matchPaths: ["/admin/reports"],
+  },
+];
+
+export function Sidebar({
+  isOpen = true,
+  onLogout,
+  logoutLabel = "Logout",
+}) {
+  const location = useLocation();
+
+  const isItemActive = (item) => {
+    return item.matchPaths.some((prefix) => {
+      if (prefix === "/admin") {
+        return location.pathname === "/admin";
+      }
+      return location.pathname.startsWith(prefix);
+    });
+  };
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 z-50">
-      <div className="flex flex-col h-full p-4">
-        <div className="flex items-center gap-3 px-2 py-6 mb-4">
-          <div className="bg-primary rounded-lg p-2 text-white flex items-center justify-center">
-            <span className="material-symbols-outlined">payments</span>
+    <aside
+      className={`z-30 flex h-screen shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white transition-all duration-300 ${
+        isOpen ? "w-[260px]" : "w-[88px]"
+      }`}
+    >
+      <div className="flex h-20 items-center border-b border-slate-200 px-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-slate-900 shadow-sm">
+            <Rocket size={20} strokeWidth={2.4} />
           </div>
-          <div className="flex flex-col">
-            <h1 className="text-xl font-bold leading-none tracking-tight">
-              CCNet
-            </h1>
-            <p className="text-xs text-slate-500 font-medium">
-              Admin Oversight
-            </p>
-          </div>
-        </div>
 
-        <nav className="flex-1 space-y-1">
-          {menuItems.map((item) => (
-            <a
-              key={item.name}
-              href="#"
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${
-                item.active
-                  ? "bg-yellow-200 text-yellow-800 font-semibold"
-                  : "text-slate-600 dark:text-slate-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/10"
-              }`}
+          {isOpen ? (
+            <div className="min-w-0">
+              <h1 className="truncate text-lg font-semibold text-slate-900">
+                CCNet Admin
+              </h1>
+              <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400">
+                Control Center
+              </p>
+            </div>
+          ) : null}
+        </div>
+      </div>
+
+      <div className="h-3" />
+
+      <nav className="flex-1 space-y-2 px-3 pb-4">
+        {MENU_ITEMS.map((item) => {
+          const Icon = item.icon;
+          const active = isItemActive(item);
+
+          return (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.end}
+              className={`group relative flex items-center gap-3 rounded-xl px-3 py-3 transition-all duration-200 ${
+                active
+                  ? "bg-amber-400 text-slate-900 shadow-sm"
+                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+              } ${isOpen ? "justify-start" : "justify-center"}`}
+              title={!isOpen ? item.label : undefined}
             >
-              <span className="material-symbols-outlined">{item.icon}</span>
-              <span>{item.name}</span>
-            </a>
-          ))}
-        </nav>
+              {!isOpen && active ? (
+                <span className="absolute left-1 top-1/2 h-7 w-1 -translate-y-1/2 rounded-full bg-slate-900/80" />
+              ) : null}
+
+              <Icon
+                size={19}
+                strokeWidth={2.2}
+                className={`shrink-0 transition-transform duration-200 ${
+                  active ? "scale-105" : "group-hover:scale-105"
+                }`}
+              />
+
+              {isOpen ? (
+                <span className="truncate text-sm font-semibold">
+                  {item.label}
+                </span>
+              ) : null}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      <div className="border-t border-slate-200 p-3">
+        <button
+          type="button"
+          onClick={onLogout}
+          className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold text-rose-600 transition-all duration-200 hover:bg-rose-50 ${
+            isOpen ? "justify-start" : "justify-center"
+          }`}
+          title={!isOpen ? logoutLabel : undefined}
+        >
+          <LogOut
+            size={18}
+            strokeWidth={2.2}
+            className="shrink-0 transition-transform duration-200 group-hover:-translate-x-0.5"
+          />
+          {isOpen ? <span>{logoutLabel}</span> : null}
+        </button>
       </div>
     </aside>
   );
-};
+}
 
 export default Sidebar;

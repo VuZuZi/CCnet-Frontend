@@ -1,35 +1,53 @@
+import { Filter, Search } from "lucide-react";
+
 export function OrganizerRequestFilters({ filters, setFilters }) {
   return (
-    <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:grid-cols-[1fr_180px]">
-      <input
-        value={filters.search}
-        onChange={(e) =>
-          setFilters((prev) => ({
-            ...prev,
-            search: e.target.value,
-            page: 1,
-          }))
-        }
-        placeholder="Search by name, email, or organization..."
-        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-amber-400"
-      />
+    <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex w-full flex-col gap-3 md:flex-row xl:w-auto">
+          <div className="relative w-full xl:w-[320px]">
+            <Filter
+              size={15}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <select
+              value={filters.status}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  status: e.target.value,
+                  page: 1,
+                }))
+              }
+              className="w-full appearance-none rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
+            >
+              <option value="">All statuses</option>
+              <option value="PENDING">Pending</option>
+              <option value="APPROVED">Approved</option>
+              <option value="DECLINED">Declined</option>
+            </select>
+          </div>
 
-      <select
-        value={filters.status}
-        onChange={(e) =>
-          setFilters((prev) => ({
-            ...prev,
-            status: e.target.value,
-            page: 1,
-          }))
-        }
-        className="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm outline-none focus:border-amber-400"
-      >
-        <option value="">All statuses</option>
-        <option value="PENDING">Pending</option>
-        <option value="APPROVED">Approved</option>
-        <option value="DECLINED">Declined</option>
-      </select>
+          <div className="relative w-full xl:w-[420px]">
+            <Search
+              size={15}
+              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
+            />
+            <input
+              value={filters.search}
+              onChange={(e) =>
+                setFilters((prev) => ({
+                  ...prev,
+                  search: e.target.value,
+                  page: 1,
+                }))
+              }
+              placeholder="Search by name, email, or organization..."
+              className="w-full rounded-2xl border border-slate-200 bg-white py-3 pl-11 pr-4 text-sm font-medium outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

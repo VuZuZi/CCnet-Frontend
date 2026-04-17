@@ -13,8 +13,11 @@ export const organizerRequestAdminAPI = {
     return unwrap(res)?.request ?? null;
   },
 
-  async approveRequest(id) {
-    const res = await httpClient.patch(`/admin/organizer-requests/${id}/approve`);
+  async approveRequest(id, payload) {
+    const res = await httpClient.patch(
+      `/admin/organizer-requests/${id}/approve`,
+      payload
+    );
     return unwrap(res)?.request ?? null;
   },
 
@@ -24,6 +27,13 @@ export const organizerRequestAdminAPI = {
       payload
     );
     return unwrap(res)?.request ?? null;
+  },
+
+  async getActionLogs(params = {}) {
+    const res = await httpClient.get("/admin/organizer-requests/logs", {
+      params,
+    });
+    return unwrap(res);
   },
 };
 

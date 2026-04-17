@@ -24,7 +24,6 @@ export const useAuthStore = create(
         );
       },
 
-      // TÁCH LOGIC API RA KHỎI STORE. CHỈ DÙNG ĐỂ RESET STATE.
       clearAuth: () => {
         tokenManager.removeAccessToken();
         set(
@@ -67,7 +66,7 @@ export const useAuthStore = create(
       updateUser: (updatedData) => {
         set(
           (state) => ({
-            user: { ...state.user, ...updatedData }
+            user: { ...state.user, ...updatedData },
           }),
           false,
           "auth/updateUser"
@@ -78,7 +77,6 @@ export const useAuthStore = create(
   )
 );
 
-// Lắng nghe event "logout" từ httpClient Interceptor (khi Token hết hạn)
 authEvents.addEventListener("logout", () => {
   useAuthStore.getState().clearAuth();
 });
@@ -89,5 +87,5 @@ export const authSelectors = {
   isLoading: (state) => state.isLoading,
   userRole: (state) => state.user?.role,
   userEmail: (state) => state.user?.email,
-  userId: (state) => state.user?.id || state.user?.userId,
+  userId: (state) => state.user?._id || state.user?.id || state.user?.userId || null,
 };

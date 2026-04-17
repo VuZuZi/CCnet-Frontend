@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, FileSearch, Loader2, Plus } from 'lucide-react';
-import { HelpRequestCard } from './HelpRequestCard';
+import HelpRequestCard from './HelpRequestCard';
 
 export function HelpRequestList({
   data,
@@ -26,7 +26,10 @@ export function HelpRequestList({
     const end = Math.min(totalPages, start + 4);
     const adjustedStart = Math.max(1, end - 4);
 
-    return Array.from({ length: end - adjustedStart + 1 }, (_, index) => adjustedStart + index);
+    return Array.from(
+      { length: end - adjustedStart + 1 },
+      (_, index) => adjustedStart + index
+    );
   }, [currentPage, totalPages]);
 
   if (isLoading) {
@@ -43,12 +46,15 @@ export function HelpRequestList({
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 text-slate-500">
           <FileSearch size={28} />
         </div>
+
         <p className="mb-2 text-lg font-medium text-slate-500">No help requests found</p>
+
         <p className="mb-4 text-sm text-slate-400">
           {hasActiveFilters
             ? 'Try adjusting your filters to see more results.'
             : 'Be the first to create a help request!'}
         </p>
+
         {hasActiveFilters ? (
           <button
             type="button"
@@ -121,3 +127,5 @@ export function HelpRequestList({
     </div>
   );
 }
+
+export default HelpRequestList;

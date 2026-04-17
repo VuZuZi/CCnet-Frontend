@@ -1,6 +1,9 @@
 import {
   formatNotificationDateTime,
   getNotificationLabel,
+  getNotificationPrimaryActionLabel,
+  shouldAllowNotificationDetail,
+  shouldPreferRelatedNavigation,
 } from './notification.helpers.js';
 
 function normalizeFollowActionUrl(raw) {
@@ -33,19 +36,26 @@ function normalizeFollowActionUrl(raw) {
 }
 
 export function transformNotification(raw) {
+  const actionUrl = normalizeFollowActionUrl(raw);
+
   return {
     id: raw?._id || raw?.id,
+    _id: raw?._id || raw?.id,
     type: raw?.type || '',
     label: getNotificationLabel(raw?.type),
     title: raw?.title || '',
     message: raw?.message || '',
-    actionUrl: normalizeFollowActionUrl(raw),
+    actionUrl,
     isRead: Boolean(raw?.isRead),
     readAt: raw?.readAt || null,
     createdAt: raw?.createdAt || null,
     createdAtLabel: formatNotificationDateTime(raw?.createdAt),
     metadata: raw?.metadata || {},
     actorId: raw?.actorId || raw?.metadata?.actorId || null,
+    severity: raw?.severity || raw?.metadata?.severity || 'info',
+    primaryActionLabel: getNotificationPrimaryActionLabel(raw?.type, actionUrl),
+    prefersRelatedNavigation: shouldPreferRelatedNavigation(raw?.type, actionUrl),
+    canOpenDetail: shouldAllowNotificationDetail(raw?.type, actionUrl),
   };
 }
 

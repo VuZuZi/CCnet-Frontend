@@ -3,6 +3,23 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { notificationApi } from '../api/notification.api';
 
+function hasExplicitNavigationTarget(location) {
+  const pathname = String(location?.pathname || '');
+  const search = String(location?.search || '');
+
+  if (pathname.startsWith('/projects/')) return true;
+  if (pathname.startsWith('/messages/')) return true;
+  if (pathname.startsWith('/admin/notifications')) return true;
+
+  const params = new URLSearchParams(search);
+  return (
+    params.has('tab') ||
+    params.has('subTab') ||
+    params.has('applicationId') ||
+    params.has('notificationId')
+  );
+}
+
 export default function AdminNotificationRedirectGate() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,6 +43,11 @@ export default function AdminNotificationRedirectGate() {
         return;
       }
 
+      if (hasExplicitNavigationTarget(location)) {
+        hasHandledRef.current = true;
+        return;
+      }
+
       try {
         const result = await notificationApi.getUnreadCount();
         const unreadCount = Number(result?.unreadCount || 0);
@@ -41,7 +63,7 @@ export default function AdminNotificationRedirectGate() {
     };
 
     run();
-  }, [isLoading, isAuthenticated, user, location.pathname, navigate]);
+  }, [isLoading, isAuthenticated, user, location, navigate]);
 
   return null;
 }

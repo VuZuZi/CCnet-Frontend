@@ -1,12 +1,9 @@
-import { useRef } from 'react';
 import {
   ShieldCheck,
   Users,
-  Lock,
-  Edit,
-  MessageSquare,
   Sparkles,
   Wallet,
+  MessageSquare,
 } from 'lucide-react';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
 
@@ -14,46 +11,47 @@ function formatCurrency(value) {
   return Number(value || 0).toLocaleString('vi-VN');
 }
 
-export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
+export function SidebarOrganizer({
+  project,
+  projectConversation,
+  onOpenProjectGroup,
+}) {
   const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
   const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
 
-  const availableBalance = project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
+  const availableBalance =
+    project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
   const targetAmount = project?.targetAmount ?? 1;
   const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
-  const progressPercent = Math.min(Math.round((availableBalance / targetAmount) * 100), 100);
+  const progressPercent = Math.min(
+    Math.round((availableBalance / targetAmount) * 100),
+    100
+  );
 
   const projectId = project?._id;
-  const pendingCountRef = useRef(null);
 
   const { useProjectPendingApplications } = useVolunteerQueries();
   const { data: pendingData, isLoading } = useProjectPendingApplications(projectId);
 
   const getPendingCount = () => {
     if (!pendingData) return 0;
-    if (pendingData?.data?.data && Array.isArray(pendingData.data.data)) return pendingData.data.data.length;
-    if (pendingData?.data && Array.isArray(pendingData.data)) return pendingData.data.length;
-    if (Array.isArray(pendingData)) return pendingData.length;
-    if (pendingData?.data?.total) return pendingData.data.total;
+    if (pendingData?.data?.data && Array.isArray(pendingData.data.data)) {
+      return pendingData.data.data.length;
+    }
+    if (pendingData?.data && Array.isArray(pendingData.data)) {
+      return pendingData.data.length;
+    }
+    if (Array.isArray(pendingData)) {
+      return pendingData.length;
+    }
+    if (pendingData?.data?.total) {
+      return pendingData.data.total;
+    }
     return 0;
   };
 
   const pendingAppsCount = getPendingCount();
-
-  const handlePendingVolunteersClick = () => {
-    if (pendingCountRef.current) {
-      pendingCountRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      pendingCountRef.current.classList.add('ring-4', 'ring-[#FBBF24]/30', 'scale-110');
-      setTimeout(() => {
-        if (pendingCountRef.current) {
-          pendingCountRef.current.classList.remove('ring-4', 'ring-[#FBBF24]/30', 'scale-110');
-        }
-      }, 1000);
-    }
-    if (onNavigateToVolunteerTab) {
-      onNavigateToVolunteerTab('volunteer', 'pending');
-    }
-  };
+  const hasProjectGroup = Boolean(projectConversation?._id);
 
   return (
     <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
@@ -63,102 +61,115 @@ export function SidebarOrganizer({ project, onNavigateToVolunteerTab }) {
             <Sparkles size={11} />
             Organizer Mode
           </div>
-          <h2 className="text-lg font-bold text-slate-900">Command Center</h2>
+          <h2 className="text-lg font-extrabold text-slate-900">Quản lý dự án</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Theo dõi volunteer và thao tác nhanh theo vai trò organizer.
+          </p>
         </div>
+
         <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-white shadow-sm">
           <ShieldCheck className="h-4 w-4" />
-          <span className="text-[11px] font-bold uppercase tracking-[0.14em]">Admin View</span>
+          <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
+            Organizer
+          </span>
         </div>
       </div>
 
-      <div className="space-y-4">
-        {isFunded && (
-          <>
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-400">
-                Funds in Escrow
-              </p>
-              <div className="mt-2 flex items-end gap-3">
-                <div className="text-4xl font-extrabold tracking-tight text-slate-900">
-                  {formatCurrency(availableBalance)}đ
-                </div>
-              </div>
-              {pendingRefunds > 0 && (
-                <p className="mt-1 text-xs font-medium text-amber-600">
-                  ({formatCurrency(pendingRefunds)}đ đang chờ Kế toán hoàn trả)
-                </p>
-              )}
-              <p className="mt-1 text-sm text-slate-500">Goal: {formatCurrency(targetAmount)}đ</p>
-            </div>
-            <div className="h-3 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className="relative h-full rounded-full bg-[linear-gradient(90deg,#C084FC_0%,#A855F7_100%)] transition-all duration-1000"
-                style={{ width: `${progressPercent}%` }}
-              />
-            </div>
-          </>
-        )}
+      {isFunded ? (
+        <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
+          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
+            Funds in Escrow
+          </p>
 
-        <div className={`grid ${isFunded ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-          {isFunded && (
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-slate-700 shadow-sm">
+          <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
+            {formatCurrency(availableBalance)}đ
+          </div>
+
+          {pendingRefunds > 0 ? (
+            <p className="mt-1 text-xs font-medium text-amber-700">
+              {formatCurrency(pendingRefunds)}đ đang chờ hoàn trả
+            </p>
+          ) : null}
+
+          <p className="mt-1 text-sm text-slate-500">
+            Goal: {formatCurrency(targetAmount)}đ
+          </p>
+
+          <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-amber-100">
+            <div
+              className="h-full rounded-full bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] transition-all duration-1000"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-2xl border border-slate-100 bg-white p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-[#FFFBEB] text-amber-700 shadow-sm">
                 <Wallet size={18} />
               </div>
-              <p className="text-2xl font-bold text-slate-900">{progressPercent}%</p>
-              <p className="mt-1 text-sm font-medium text-slate-500">Funded</p>
+              <p className="text-2xl font-extrabold text-slate-900">
+                {progressPercent}%
+              </p>
+              <p className="mt-1 text-sm font-medium text-slate-500">Đã gọi vốn</p>
             </div>
-          )}
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4">
-            <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-emerald-700 shadow-sm">
-              <Users size={18} />
+
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-white text-amber-700 shadow-sm">
+                <Users size={18} />
+              </div>
+              <p className="text-2xl font-extrabold text-amber-700">
+                {isLoading ? '...' : pendingAppsCount}
+              </p>
+              <p className="mt-1 text-sm font-medium text-amber-700">
+                Đơn chờ duyệt
+              </p>
             </div>
-            <p className="text-2xl font-bold text-emerald-700">{pendingAppsCount}</p>
-            <p className="mt-1 text-sm font-medium text-emerald-600">Pending</p>
           </div>
         </div>
-      </div>
+      ) : null}
 
-      <div className="flex items-center justify-between rounded-[24px] border border-emerald-100 bg-emerald-50/80 p-4 transition hover:border-emerald-200 hover:bg-emerald-50">
-        <div className="group flex cursor-pointer items-center gap-3" onClick={handlePendingVolunteersClick}>
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-emerald-700 shadow-sm transition group-hover:scale-105">
-            <Users className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-emerald-900">Pending Volunteers</p>
-            <p className="text-xs text-emerald-700">Review applications</p>
+      {!isFunded ? (
+        <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
+                Volunteer Overview
+              </p>
+              <h3 className="mt-2 text-2xl font-extrabold text-slate-900">
+                {isLoading ? '...' : pendingAppsCount}
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                Đơn tình nguyện đang chờ organizer xử lý
+              </p>
+            </div>
+
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-amber-700 shadow-sm">
+              <Users className="h-6 w-6" />
+            </div>
           </div>
         </div>
-        <div ref={pendingCountRef} className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500 text-sm font-bold text-white shadow-md transition-all duration-300">
-          {isLoading ? (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-          ) : (
-            pendingAppsCount
-          )}
+      ) : null}
+
+      <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+        <div className="mb-3">
+          <p className="text-sm font-bold text-slate-900">Nhóm dự án</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Mở nhanh group chat của dự án để trao đổi với volunteer.
+          </p>
         </div>
-      </div>
 
-      <div className="flex flex-col gap-3 pt-2">
-        {isFunded && (
-          <>
-            <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-100 px-5 py-4 text-sm font-bold text-slate-500">
-              <Lock className="h-5 w-5" />
-              Request Disbursement
-            </button>
-            <p className="text-center text-xs text-slate-500">
-              Submit Phase 1 evidence to unlock.
-            </p>
-            <div className="my-1 border-t border-slate-100" />
-          </>
-        )}
-
-        <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
-          <Edit className="h-4 w-4" />
-          Edit Project Details
-        </button>
-        <button className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-sm">
+        <button
+          type="button"
+          onClick={onOpenProjectGroup}
+          disabled={!hasProjectGroup}
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-bold transition ${
+            hasProjectGroup
+              ? 'border border-amber-200 bg-[#FFFBEB] text-amber-900 hover:border-amber-300 hover:bg-amber-100'
+              : 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400'
+          }`}
+        >
           <MessageSquare className="h-4 w-4" />
-          Open Project Group Chat
+          {hasProjectGroup ? 'Mở nhóm dự án' : 'Chưa có nhóm dự án'}
         </button>
       </div>
     </div>

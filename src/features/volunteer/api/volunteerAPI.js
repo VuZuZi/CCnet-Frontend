@@ -1,146 +1,129 @@
-// src/features/volunteer/api/volunteerAPI.js
-import httpClient from '@/shared/lib/httpClient';
+import httpClient from "@/shared/lib/httpClient";
+
+function unwrapData(response) {
+  return response?.data?.data;
+}
+
+function buildProjectApplicationsUrl(projectId, status = null) {
+  if (!projectId) return null;
+  return status
+    ? `/volunteer/projects/${projectId}/${status}`
+    : `/volunteer/projects/${projectId}`;
+}
+
+function ensureApplicationId(applicationId) {
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+}
+
+async function get(url, config = {}) {
+  const response = await httpClient.get(url, config);
+  return unwrapData(response);
+}
+
+async function post(url, data = {}, config = {}) {
+  const response = await httpClient.post(url, data, config);
+  return unwrapData(response);
+}
+
+async function patch(url, data = {}, config = {}) {
+  const response = await httpClient.patch(url, data, config);
+  return unwrapData(response);
+}
 
 export const volunteerAPI = {
-    //  THÊM METHOD MỚI: Lấy danh sách đơn theo project và status
-    getProjectApplications: async (projectId, status) => {
-        if (!projectId) {
-            console.error(' [API] projectId is required');
-            return { data: [] };
-        }
-        try {
-            const url = `/volunteer/projects/${projectId}/${status}`;
-            const params = {};
-            if (status) params.status = status;
-            const response = await httpClient.get(url, { params });
-            return response.data;
-        } catch (error) {
-            console.error(' [API] Error:', {
-                status: error.response?.status,
-                data: error.response?.data,
-                message: error.message
-            });
-            if (error.response?.status === 404) {
-                return { data: [] };
-            }
-            throw error;
-        }
-    },
+  async getProjectApplications(projectId, status = null) {
+    const url = buildProjectApplicationsUrl(projectId, status);
 
-    //  SỬA: API để lấy danh sách đơn đang chờ của project (dùng method trên)
-    getProjectPendingApplications: async (projectId) => {
-        return volunteerAPI.getProjectApplications(projectId, 'PENDING');
-    },
-
-    getMySupportedProjects: async (params = {}) => {
-        const response = await httpClient.get('/volunteer/me/projects', {
-            params,
-        });
-        return response.data?.data;
-    },
-
-    // API để lấy application của user cho project
-    getApplicationByProject: async (projectId) => {
-        if (!projectId) {
-            console.error(' [API] projectId is undefined or empty!');
-            return null;
-        }
-        try {
-            const url = `/volunteer/application`;
-            const config = {
-                params: { opportunityId: projectId }
-            };
-            const response = await httpClient.get(url, config);
-            return response.data?.data;
-        } catch (error) {
-            console.error(' [API] Error:', {
-                status: error.response?.status,
-                data: error.response?.data,
-                message: error.message
-            });
-            if (error.response?.status === 404) {
-                return null;
-            }
-            throw error;
-        }
-    },
-
-    // API tạo application mới
-    createApplication: async (data) => {
-        try {
-            const response = await httpClient.post(`/volunteer/submit`, data);
-            return response.data?.data;
-        } catch (error) {
-            console.error(' API Error:', error);
-            throw error;
-        }
-    },
-    // METHOD APPROVE
-    approveApplication: async (applicationId) => {
-        if (!applicationId) {
-            console.error(' [API] applicationId is required');
-            throw new Error('Application ID is required');
-        }
-        try {
-            const response = await httpClient.patch(`/volunteer/${applicationId}/approve`);
-            return response.data?.data;
-        } catch (error) {
-            console.error(' [API] Approve error:', error);
-            throw error;
-        }
-    },
-
-    //  THÊM METHOD REJECT
-    rejectApplication: async (applicationId, reason) => {
-        if (!applicationId) {
-            console.error(' [API] applicationId is required');
-            throw new Error('Application ID is required');
-        }
-        try {
-            const response =
-                await httpClient.patch(`/volunteer/applications/${applicationId}/reject`, {
-                    rejectReason: reason
-                });
-            return response.data?.data;
-        } catch (error) {
-            console.error(' [API] Reject error:', error);
-            throw error;
-        }
-    },
-
-    // Cập nhật application
-    updateApplication: async (applicationId, data) => {
-        if (!applicationId) {
-            console.error(' [API] applicationId is required');
-            throw new Error('Application ID is required');
-        }
-        try {
-            const response = await httpClient.patch(`/volunteer/applications/${applicationId}`, data);
-            return response.data?.data;
-        } catch (error) {
-            console.error(' [API] Update error:', error);
-            throw error;
-        }
-    },
-
-    restoreApplication: async (applicationId) => {
-        try {
-            const response = await httpClient.patch(`/volunteer/applications/${applicationId}/restore`);
-            return response.data?.data;
-        } catch (error) {
-            console.error(' [API] Update error:', error);
-            throw error;
-        }
-    },
-
-    // Hủy đơn
-    cancelApplication: async (applicationId) => {
-        try {
-            const response = await httpClient.patch(`/volunteer/applications/${applicationId}/cancel`);
-            return response.data?.data;
-        } catch (error) {
-            console.error(' [API] Cancel error:', error);
-            throw error;
-        }
+    if (!url) {
+      return { data: [] };
     }
+
+    try {
+      return await get(url);
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        return { data: [] };
+      }
+      throw error;
+    }
+  },
+
+  async getProjectPendingApplications(projectId) {
+    return this.getProjectApplications(projectId, "PENDING");
+  },
+
+  async getMySupportedProjects(params = {}) {
+    return get("/volunteer/me/projects", { params });
+  },
+
+  async getApplicationByProject(projectId) {
+    if (!projectId) {
+      return null;
+    }
+
+    try {
+      return await get("/volunteer/application", {
+        params: { opportunityId: projectId },
+      });
+    } catch (error) {
+      if (error?.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
+  },
+
+  async createApplication(data) {
+    return post("/volunteer/submit", data);
+  },
+
+  async approveApplication(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/${applicationId}/approve`);
+  },
+
+  async rejectApplication(applicationId, reason) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/reject`, {
+      rejectReason: reason,
+    });
+  },
+
+  async updateApplication(applicationId, data) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}`, data);
+  },
+
+  async restoreApplication(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/restore`);
+  },
+
+  async cancelApplication(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/cancel`);
+  },
+
+  async requestWithdraw(applicationId, withdrawReason) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/request-withdraw`, {
+      withdrawReason,
+    });
+  },
+
+  async approveWithdraw(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/approve-withdraw`);
+  },
+
+  async rejectWithdraw(applicationId, reviewNote) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/reject-withdraw`, {
+      reviewNote,
+    });
+  },
 };
+
+export default volunteerAPI;

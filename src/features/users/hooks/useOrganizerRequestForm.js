@@ -47,7 +47,9 @@ const readFileAsDataUrl = (file) =>
       });
     };
 
-    reader.onerror = () => reject(reader.error || new Error("Read file failed"));
+    reader.onerror = () =>
+      reject(reader.error || new Error("Read file failed"));
+
     reader.readAsDataURL(file);
   });
 
@@ -79,14 +81,15 @@ const sanitizePayload = (values) => {
 };
 
 const getFirstErrorMessage = (errors) => {
-  const visit = (obj) => {
-    if (!obj || typeof obj !== "object") return null;
+  const visit = (value) => {
+    if (!value || typeof value !== "object") return null;
 
-    for (const key of Object.keys(obj)) {
-      const value = obj[key];
-      if (value?.message) return value.message;
-      const nested = visit(value);
-      if (nested) return nested;
+    for (const key of Object.keys(value)) {
+      const nestedValue = value[key];
+      if (nestedValue?.message) return nestedValue.message;
+
+      const nestedMessage = visit(nestedValue);
+      if (nestedMessage) return nestedMessage;
     }
 
     return null;
@@ -145,19 +148,25 @@ export function useOrganizerRequestForm(existingRequest = null) {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.organizerRequests.me(),
       });
+
       toast.success("Đã gửi hồ sơ Organizer thành công");
       navigate("/organizer/request");
     },
     onError: async (error) => {
       if (error.response?.status === 409) {
-        toast.info("You already have a pending application. Updating your view...");
+        toast.info(
+          "You already have a pending application. Updating your view..."
+        );
+
         await queryClient.invalidateQueries({
           queryKey: queryKeys.organizerRequests.me(),
         });
+
         navigate("/organizer/request");
-      } else {
-        toast.error(getErrorMessage(error));
+        return;
       }
+
+      toast.error(getErrorMessage(error));
     },
   });
 
@@ -170,12 +179,10 @@ export function useOrganizerRequestForm(existingRequest = null) {
       return;
     }
 
-    if (
-      typeof File !== "undefined" &&
-      file instanceof File
-    ) {
+    if (typeof File !== "undefined" && file instanceof File) {
       try {
         const payload = await readFileAsDataUrl(file);
+
         form.setValue(fieldName, payload, {
           shouldDirty: true,
           shouldValidate: true,
@@ -183,6 +190,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
       } catch {
         toast.error("Không thể đọc file. Vui lòng thử lại.");
       }
+
       return;
     }
 
