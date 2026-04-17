@@ -16,40 +16,40 @@ export function formatNotificationDateTime(dateLike) {
 export function getNotificationLabel(type) {
   switch (type) {
     case 'follow_created':
-      return 'Follow';
+      return 'Theo dõi';
     case 'project_updated':
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
-      return 'Project';
+      return 'Dự án';
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
-      return 'Volunteer';
+      return 'Tình nguyện viên';
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':
     case 'help_request_rejected':
     case 'help_request_completed':
     case 'help_request_assignment_responded':
-      return 'NeedHelp';
+      return 'Yêu cầu trợ giúp';
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
-      return 'Organizer request';
+      return 'Yêu cầu nhà tổ chức';
     case 'system_announcement':
-      return 'System';
+      return 'Hệ thống';
     case 'donation_successful':
     case 'transaction_failed':
     case 'transaction_refunded':
-      return 'Transaction';
+      return 'Giao dịch';
     case 'post_reacted':
-      return 'Post reaction';
+      return 'Phản ứng bài viết';
     case 'post_commented':
-      return 'Post comment';
+      return 'Bình luận bài viết';
     default:
-      return 'Notification';
+      return 'Thông báo';
   }
 }
 
@@ -64,17 +64,17 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
   switch (type) {
     case 'help_request_verified':
     case 'help_request_completed':
-      return 'Open request';
+      return 'Mở yêu cầu';
 
     case 'help_request_rejected':
-      return 'Edit request';
+      return 'Chỉnh sửa yêu cầu';
 
     case 'help_request_assigned':
     case 'help_request_reassigned':
-      return 'Open assignment';
+      return 'Mở giao việc';
 
     case 'help_request_assignment_responded':
-      return 'Open request';
+      return 'Mở yêu cầu';
 
     case 'project_updated':
     case 'project_approved':
@@ -83,23 +83,23 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
-      return 'Open project';
+      return 'Mở dự án';
 
     case 'follow_created':
-      return 'Open followers';
+      return 'Mở những người theo dõi';
 
     case 'post_reacted':
     case 'post_commented':
-      return 'Open post';
+      return 'Mở bài viết';
 
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
-      return 'Open request';
+      return 'Mở yêu cầu';
 
     default:
-      return 'Open related';
+      return 'Mở liên quan';
   }
 }
 

@@ -96,13 +96,13 @@ function getTypeAccent(isRead) {
 function getTypeLabel(type) {
   switch (String(type || '').toLowerCase()) {
     case 'follow_created':
-      return 'Follow';
+      return 'Theo dõi';
 
     case 'project_updated':
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
-      return 'Project';
+      return 'Dự án';
 
     case 'help_request_assigned':
     case 'help_request_reassigned':
@@ -110,20 +110,20 @@ function getTypeLabel(type) {
     case 'help_request_rejected':
     case 'help_request_completed':
     case 'help_request_assignment_responded':
-      return 'NeedHelp';
+      return 'Yêu cầu trợ giúp';
 
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
-      return 'Organizer';
+      return 'Nhà tổ chức';
 
     case 'system_announcement':
-      return 'System';
+      return 'Hệ thống';
 
     case 'post_reacted':
     case 'post_commented':
-      return 'Post';
+      return 'Bài viết';
 
     case 'volunteer_applied':
     case 'volunteer_application_approved':
@@ -131,10 +131,10 @@ function getTypeLabel(type) {
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
-      return 'Volunteer';
+      return 'Tình nguyện viên';
 
     default:
-      return 'Notification';
+      return 'Thông báo';
   }
 }
 
@@ -333,7 +333,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
                 className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
               >
                 <CheckCheck size={14} />
-                Mark read
+                Đánh dấu đã đọc
               </button>
             )}
 
@@ -344,7 +344,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
                 className="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 bg-[#FFFBEB] px-3 py-1.5 text-[12px] font-semibold text-[#B45309] transition hover:border-amber-300 hover:bg-amber-50"
               >
                 <ArrowUpRight size={14} />
-                {primaryActionLabel || 'Open related'}
+                {primaryActionLabel || 'Mở liên quan'}
               </button>
             ) : null}
 
@@ -371,7 +371,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
               className="inline-flex items-center gap-1.5 rounded-xl border border-red-100 bg-red-50 px-3 py-1.5 text-[12px] font-semibold text-red-600 transition hover:border-red-200 hover:bg-red-100"
             >
               <Trash2 size={14} />
-              Delete
+              Xóa
             </button>
           </div>
         </div>

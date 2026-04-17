@@ -46,16 +46,16 @@ export function NeedHelpPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-rose-700">
             <CircleAlert size={28} />
           </div>
-          <h2 className="mb-2 text-xl font-bold text-slate-900">Something went wrong</h2>
+          <h2 className="mb-2 text-xl font-bold text-slate-900">Đã xảy ra sự cố</h2>
           <p className="mb-4 text-slate-500">
-            {error?.message || 'Failed to load help requests. Please try again.'}
+            {error?.message || 'Không thể tải yêu cầu trợ giúp. Vui lòng thử lại.'}
           </p>
           <button
             type="button"
             onClick={() => window.location.reload()}
             className="rounded-2xl bg-amber-400 px-6 py-3 font-bold text-slate-900 transition-colors hover:bg-amber-500"
           >
-            Retry
+            Thử lại
           </button>
         </div>
       </main>

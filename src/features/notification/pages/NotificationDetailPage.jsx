@@ -60,39 +60,39 @@ function getTypeIcon(type) {
 function getTypeLabel(type) {
   switch (String(type || '').toLowerCase()) {
     case 'follow_created':
-      return 'Follow';
+      return 'Theo dõi';
     case 'project_updated':
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
-      return 'Project';
+      return 'Dự án';
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
-      return 'Organizer request';
+      return 'Yêu cầu nhà tổ chức';
     case 'system_announcement':
-      return 'System announcement';
+      return 'Thông báo hệ thống';
     case 'post_reacted':
-      return 'Post reaction';
+      return 'Phản ứng bài viết';
     case 'post_commented':
-      return 'Post comment';
+      return 'Bình luận bài viết';
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':
     case 'help_request_rejected':
     case 'help_request_completed':
     case 'help_request_assignment_responded':
-      return 'NeedHelp';
+      return 'Yêu cầu trợ giúp';
     case 'volunteer_applied':
     case 'volunteer_application_approved':
     case 'volunteer_application_rejected':
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
-      return 'Volunteer';
+      return 'Tình nguyện viên';
     default:
-      return 'Notification';
+      return 'Thông báo';
   }
 }
 
@@ -101,13 +101,13 @@ function getSeverityLabel(severity) {
 
   switch (value) {
     case 'success':
-      return 'Success';
+      return 'Thành công';
     case 'warning':
-      return 'Warning';
+      return 'Cảnh báo';
     case 'error':
-      return 'Error';
+      return 'Lỗi';
     default:
-      return 'Info';
+      return 'Thông tin';
   }
 }
 
@@ -329,7 +329,7 @@ export default function NotificationDetailPage() {
                   className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3 text-sm font-bold text-[#B45309] transition hover:bg-amber-50"
                 >
                   <ArrowUpRight size={16} />
-                  {primaryActionLabel || 'Open related'}
+                  {primaryActionLabel || 'Mở liên quan'}
                 </button>
 
                 <button
@@ -397,7 +397,7 @@ export default function NotificationDetailPage() {
                 </div>
 
                 <h1 className="text-3xl font-black leading-tight tracking-tight text-[#0F2747] lg:text-[40px]">
-                  {item.title || 'Untitled notification'}
+                  {item.title || 'Notification chưa có tiêu đề'}
                 </h1>
 
                 <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-500">
@@ -418,7 +418,7 @@ export default function NotificationDetailPage() {
 
             <div className="mt-8 rounded-[28px] border border-[#F4E8C9] bg-[linear-gradient(180deg,#FFFDF8_0%,#FFF8E8_100%)] p-6 lg:p-7">
               <p className="whitespace-pre-wrap text-[15px] leading-8 text-slate-700 lg:text-base">
-                {item.message || 'No message content.'}
+                {item.message || 'Không có nội dung tin nhắn.'}
               </p>
             </div>
 
@@ -441,7 +441,7 @@ export default function NotificationDetailPage() {
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div className="rounded-[24px] border border-slate-200 bg-[#FCFCFD] p-5">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                  Notification ID
+                  ID Notification
                 </p>
                 <p className="mt-3 break-all text-sm font-semibold text-slate-700">
                   {item._id || item.id || id}
@@ -450,7 +450,7 @@ export default function NotificationDetailPage() {
 
               <div className="rounded-[24px] border border-slate-200 bg-[#FCFCFD] p-5">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
-                  Category
+                  Danh mục
                 </p>
                 <p className="mt-3 text-sm font-semibold text-slate-700">
                   {getTypeLabel(item.type)}
@@ -466,7 +466,7 @@ export default function NotificationDetailPage() {
                   className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3 text-sm font-bold text-[#B45309] transition hover:bg-amber-50"
                 >
                   <ArrowUpRight size={16} />
-                  {primaryActionLabel || 'Open related'}
+                  {primaryActionLabel || 'Mở liên quan'}
                 </button>
               </div>
             ) : null}

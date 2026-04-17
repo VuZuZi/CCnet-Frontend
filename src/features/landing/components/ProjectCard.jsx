@@ -24,8 +24,8 @@ export function ProjectCard({ project }) {
         
         <div className="mt-auto">
           <div className="flex justify-between text-sm mb-2">
-            <span className="font-bold text-slate-900">{project.progress}% funded</span>
-            <span className="text-slate-500">Target: {project.target}</span>
+            <span className="font-bold text-slate-900">{project.progress}% được tài trợ</span>
+            <span className="text-slate-500">Mục tiêu: {project.target}</span>
           </div>
           <div className="w-full bg-slate-100 h-2 rounded-full mb-6 overflow-hidden">
             <div 
@@ -34,7 +34,7 @@ export function ProjectCard({ project }) {
             />
           </div>
           <Button variant="primary" className="w-full !rounded-xl !py-3">
-            View Details
+            Xem chi tiết
           </Button>
         </div>
       </div>

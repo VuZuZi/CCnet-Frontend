@@ -3,32 +3,32 @@ import { cn } from '@/shared/components/ui/Button/Button';
 
 const STATUS_CONFIG = {
   PENDING: {
-    label: 'Pending Review',
+    label: 'Chờ kiểm duyệt',
     icon: Clock,
     className: 'border border-amber-200 bg-amber-100 text-amber-800',
   },
   VERIFIED: {
-    label: 'Verified',
+    label: 'Đã xác minh',
     icon: CheckCircle,
     className: 'border border-emerald-200 bg-emerald-100 text-emerald-800',
   },
   IN_PROGRESS: {
-    label: 'In Progress',
+    label: 'Đang xử lý',
     icon: Loader2,
     className: 'border border-sky-200 bg-sky-100 text-sky-800',
   },
   COMPLETED: {
-    label: 'Completed',
+    label: 'Hoàn thành',
     icon: CheckCircle,
     className: 'border border-slate-200 bg-slate-100 text-slate-700',
   },
   REJECTED: {
-    label: 'Rejected',
+    label: 'Bị từ chối',
     icon: XCircle,
     className: 'border border-rose-200 bg-rose-100 text-rose-800',
   },
   CANCELLED: {
-    label: 'Cancelled',
+    label: 'Đã hủy',
     icon: AlertCircle,
     className: 'border border-slate-200 bg-slate-100 text-slate-500',
   },

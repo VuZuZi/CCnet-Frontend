@@ -24,20 +24,20 @@ function HeroSection() {
     <section className="relative pt-20 pb-24 px-6 overflow-hidden">
       <div className="max-w-4xl mx-auto text-center relative z-10 animate-in fade-in slide-in-from-bottom-8 duration-700">
         <h1 className="text-5xl lg:text-7xl font-extrabold text-slate-900 tracking-tight leading-[1.1] mb-8">
-          Where Compassion Meets <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Transparency</span>
+          Nơi Lòng trắc ẩn gặp <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">Sự minh bạch</span>
         </h1>
         <p className="text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed">
-          Join the first social network dedicated to transparent crowdfunding, volunteer matching, and real community impact.
+          Tham gia mạng xã hội đầu tiên dành riêng cho gây quỹ minh bạch, kết nối tình nguyện viên và tạo tác động cộng đồng thực sự.
         </p>
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link to={ROUTES.REGISTER}>
             <Button variant="primary" size="lg" className="w-full sm:w-auto shadow-xl shadow-yellow-500/20">
-              Join the Network
+              Tham gia mạng lưới
             </Button>
           </Link>
           <Link to={ROUTES.PROJECTS}>
             <Button variant="outline" size="lg" className="w-full sm:w-auto bg-white hover:bg-slate-50">
-              Explore Projects
+              Khám phá dự án
             </Button>
           </Link>
         </div>
@@ -55,7 +55,7 @@ function ImpactJourneySection() {
   return (
     <section className="py-24 px-6 bg-slate-50/50">
       <div className="max-w-6xl mx-auto">
-        <h2 className="text-3xl font-bold text-slate-900 mb-16 text-center">Your Impact Journey</h2>
+        <h2 className="text-3xl font-bold text-slate-900 mb-16 text-center">Hành trình tạo tác động của bạn</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {impactJourneys.map((item) => (
             <div key={item.id} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md transition-shadow">
@@ -78,11 +78,11 @@ function FeaturedProjectsSection() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
           <div>
-            <h2 className="text-3xl font-bold text-slate-900">Projects Needing You Now</h2>
-            <p className="text-slate-600 mt-2 text-lg">Vetted projects waiting for community support.</p>
+            <h2 className="text-3xl font-bold text-slate-900">Các dự án đang cần bạn ngay lúc này</h2>
+            <p className="text-slate-600 mt-2 text-lg">Những dự án đã được kiểm duyệt đang chờ cộng đồng chung tay.</p>
           </div>
           <Link to={ROUTES.PROJECTS} className="text-primary font-bold flex items-center gap-2 hover:text-primary-hover group transition-colors">
-            View All Projects <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+            Xem tất cả dự án <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -101,7 +101,7 @@ function TransparencySection() {
       <div className="max-w-6xl mx-auto">
         <div className="bg-slate-900 text-white rounded-[2.5rem] p-10 md:p-16 flex flex-col md:flex-row items-center gap-12 overflow-hidden relative shadow-2xl">
           <div className="flex-1 z-10">
-            <h2 className="text-4xl md:text-5xl font-extrabold mb-10 leading-tight">100% Transparent.<br />Zero Guesswork.</h2>
+            <h2 className="text-4xl md:text-5xl font-extrabold mb-10 leading-tight">100% Minh bạch.<br />Không còn mơ hồ.</h2>
             <ul className="space-y-6">
               {transparencyPromises.map((promise) => (
                 <li key={promise.id} className="flex items-start gap-4 text-lg text-slate-300">
@@ -129,14 +129,14 @@ function CTASection() {
   return (
     <section className="py-32 px-6 text-center">
       <div className="max-w-3xl mx-auto animate-in fade-in duration-1000">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-10">Ready to make a difference?</h2>
+        <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 mb-10">Bạn đã sẵn sàng tạo khác biệt?</h2>
         <Link to={ROUTES.REGISTER}>
           <Button variant="primary" size="lg" className="!px-12 !py-5 !text-xl shadow-xl shadow-yellow-500/20">
-            Create Your Free Account
+            Tạo tài khoản miễn phí
           </Button>
         </Link>
         <p className="mt-8 text-slate-500 font-medium">
-          Join 50,000+ impact makers already changing the world.
+          Tham gia cùng hơn 50.000 người đang tạo tác động tích cực mỗi ngày.
         </p>
       </div>
     </section>

@@ -13,8 +13,8 @@ export function UseCasesSection({ useCases }) {
       <div className="w-full max-w-[1200px] mx-auto px-4">
         
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">Built for Every Team</h2>
-          <p className="text-gray text-lg">From startups to enterprises, we've got you covered</p>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Được xây dựng cho mọi nhóm</h2>
+          <p className="text-gray text-lg">Từ startup đến doanh nghiệp lớn, chúng tôi có giải pháp cho bạn</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

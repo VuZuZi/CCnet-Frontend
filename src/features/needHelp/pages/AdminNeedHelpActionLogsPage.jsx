@@ -21,36 +21,36 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const ACTION_META = {
   HELP_REQUEST_ASSIGNED: {
-    label: "Assigned",
+    label: "Đã giao",
     className: "border-amber-200 bg-amber-50 text-amber-700",
   },
   HELP_REQUEST_REASSIGNED: {
-    label: "Reassigned",
+    label: "Giao lại",
     className: "border-orange-200 bg-orange-50 text-orange-700",
   },
   HELP_REQUEST_VERIFIED: {
-    label: "Verified",
+    label: "Đã xác minh",
     className: "border-emerald-200 bg-emerald-50 text-emerald-700",
   },
   HELP_REQUEST_REJECTED: {
-    label: "Rejected",
+    label: "Bị từ chối",
     className: "border-rose-200 bg-rose-50 text-rose-700",
   },
   HELP_REQUEST_STATUS_UPDATED: {
-    label: "Status Updated",
+    label: "Cập nhật trạng thái",
     className: "border-sky-200 bg-sky-50 text-sky-700",
   },
   HELP_REQUEST_LINKED_PROJECT: {
-    label: "Linked Project",
+    label: "Dự án liên kết",
     className: "border-violet-200 bg-violet-50 text-violet-700",
   },
 };
 
 function formatLogDate(value) {
-  if (!value) return "Unknown time";
+  if (!value) return "Không rõ thời gian";
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("vi-VN", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -126,7 +126,7 @@ function StatusDiff({ previousState, nextState }) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-        Status
+        Trạng thái
       </span>
 
       <span className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-600">
@@ -144,7 +144,7 @@ function StatusDiff({ previousState, nextState }) {
 
 function LogCard({ log, isLast }) {
   const actionMeta = ACTION_META[log?.action] || {
-    label: log?.action || "Unknown",
+    label: log?.action || "Không rõ",
     className: "border-slate-200 bg-slate-50 text-slate-700",
   };
 
@@ -153,7 +153,7 @@ function LogCard({ log, isLast }) {
     log?.actorId?.fullName ||
     log?.metadata?.actorName ||
     log?.metadata?.adminName ||
-    "Admin";
+    "Quản trị viên";
 
   const actorEmail =
     log?.actorEmail ||
@@ -165,7 +165,7 @@ function LogCard({ log, isLast }) {
     log?.metadata?.helpRequestTitle ||
     log?.metadata?.title ||
     log?.metadata?.requestTitle ||
-    "NeedHelp request";
+    "Yêu cầu NeedHelp";
 
   const organizerName = log?.metadata?.organizerName || "";
   const organizerEmail = log?.metadata?.organizerEmail || "";
@@ -209,12 +209,12 @@ function LogCard({ log, isLast }) {
 
                 {organizerName ? (
                   <InfoPill icon={UserCircle2} tone="amber">
-                    Organizer: {organizerName}
+                    Nhà tổ chức: {organizerName}
                   </InfoPill>
                 ) : null}
 
                 {requesterId ? (
-                  <InfoPill icon={FileText}>Requester ID: {requesterId}</InfoPill>
+                  <InfoPill icon={FileText}>ID người gửi: {requesterId}</InfoPill>
                 ) : null}
               </div>
             </div>
@@ -224,7 +224,7 @@ function LogCard({ log, isLast }) {
                 to={`/admin/need-help/${log.targetId}`}
                 className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
               >
-                Open Request
+                Mở yêu cầu
                 <ExternalLink size={16} />
               </Link>
             ) : null}
@@ -249,7 +249,7 @@ function LogCard({ log, isLast }) {
               {organizerName || organizerEmail ? (
                 <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                    Assigned Organizer
+                      Organizer được giao
                   </p>
                   <p className="mt-2 text-sm font-bold text-slate-900">
                     {organizerName || "--"}
@@ -263,7 +263,7 @@ function LogCard({ log, isLast }) {
               {reason ? (
                 <div className="rounded-[22px] border border-amber-200 bg-amber-50 px-4 py-4">
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
-                    Reason / Note
+                    Lý do / Ghi chú
                   </p>
                   <p className="mt-2 text-sm leading-7 text-slate-700">
                     {reason}
@@ -275,7 +275,7 @@ function LogCard({ log, isLast }) {
             <div className="space-y-4">
               <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                  Change Summary
+                  Tóm tắt thay đổi
                 </p>
 
                 <div className="mt-3">
@@ -289,21 +289,21 @@ function LogCard({ log, isLast }) {
                 log?.nextState?.assignedOrganizerId ? (
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Assignment
+                      Giao việc
                     </span>
 
                     <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-semibold text-slate-600">
                       {log?.previousState?.assignedOrganizerId
-                        ? "Had organizer"
-                        : "No organizer"}
+                        ? "Đã có organizer"
+                        : "Chưa có organizer"}
                     </span>
 
                     <span className="text-slate-400">→</span>
 
                     <span className="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-sm font-semibold text-amber-700">
                       {log?.nextState?.assignedOrganizerId
-                        ? "Assigned"
-                        : "Unassigned"}
+                        ? "Đã giao"
+                        : "Bỏ giao"}
                     </span>
                   </div>
                 ) : null}
@@ -313,7 +313,7 @@ function LogCard({ log, isLast }) {
                 <details className="group rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3">
                     <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Technical Details
+                      Chi tiết kỹ thuật
                     </span>
                     <ChevronDown className="h-4 w-4 text-slate-400 transition group-open:rotate-180" />
                   </summary>
@@ -322,7 +322,7 @@ function LogCard({ log, isLast }) {
                     {log?.previousState ? (
                       <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-4">
                         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                          Previous State
+                          Trạng thái trước
                         </p>
                         <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words text-xs leading-6 text-slate-700">
                           {JSON.stringify(log.previousState || {}, null, 2)}
@@ -333,7 +333,7 @@ function LogCard({ log, isLast }) {
                     {log?.nextState ? (
                       <div className="rounded-[18px] border border-slate-200 bg-white px-4 py-4">
                         <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                          Next State
+                          Trạng thái sau
                         </p>
                         <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words text-xs leading-6 text-slate-700">
                           {JSON.stringify(log.nextState || {}, null, 2)}
@@ -399,40 +399,40 @@ export function AdminNeedHelpActionLogsPage() {
                 className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-700 transition-colors hover:bg-amber-100"
               >
                 <ArrowLeft size={16} />
-                Back to NeedHelp
+                Quay lại NeedHelp
               </Link>
 
               <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <History size={14} />
-                NeedHelp Action Logs
+                Nhật ký thao tác NeedHelp
               </div>
 
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-[46px]">
-                NeedHelp History
+                Lịch sử NeedHelp
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Review moderation activity, organizer assignment flow, and key
-                request updates in one clean timeline.
+                Theo dõi hoạt động kiểm duyệt, luồng giao việc cho organizer và
+                các cập nhật quan trọng trong một dòng thời gian rõ ràng.
               </p>
             </div>
 
             <div className="grid auto-rows-fr gap-3 sm:grid-cols-3 xl:w-[520px]">
               <SummaryCard
                 icon={ClipboardList}
-                label="Loaded Logs"
+                label="Nhật ký đã tải"
                 value={stats.total}
                 tone="amber"
               />
               <SummaryCard
                 icon={History}
-                label="Assignments"
+                label="Lượt giao việc"
                 value={stats.assigned}
                 tone="slate"
               />
               <SummaryCard
                 icon={ShieldCheck}
-                label="Verified"
+                label="Đã xác minh"
                 value={stats.verified}
                 tone="emerald"
               />
@@ -450,7 +450,7 @@ export function AdminNeedHelpActionLogsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Search by request title, admin, organizer, or reason..."
+            placeholder="Tìm theo tiêu đề yêu cầu, admin, organizer hoặc lý do..."
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
           />
         </label>
@@ -461,18 +461,18 @@ export function AdminNeedHelpActionLogsPage() {
           <div className="text-center">
             <Loader2 className="mx-auto animate-spin text-amber-500" size={34} />
             <p className="mt-4 text-sm font-medium text-slate-500">
-              Loading need help action logs...
+              Đang tải nhật ký thao tác need help...
             </p>
           </div>
         </div>
       ) : isError ? (
         <div className="rounded-[28px] border border-rose-200 bg-white px-6 py-14 text-center shadow-sm">
           <h2 className="text-xl font-bold text-slate-900">
-            Could not load logs
+            Không thể tải nhật ký
           </h2>
           <p className="mt-2 text-sm text-slate-500">
             {error?.message ||
-              "An unexpected error occurred while loading action logs."}
+              "Đã xảy ra lỗi ngoài dự kiến khi tải nhật ký thao tác."}
           </p>
         </div>
       ) : logs.length === 0 ? (
@@ -481,11 +481,11 @@ export function AdminNeedHelpActionLogsPage() {
             <History size={24} />
           </div>
           <h3 className="mt-4 text-lg font-bold text-slate-900">
-            No NeedHelp logs found
+            Không tìm thấy nhật ký NeedHelp
           </h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            When admin actions are recorded for NeedHelp moderation, they will
-            appear here.
+            Khi thao tác kiểm duyệt NeedHelp của admin được ghi nhận, chúng sẽ
+            xuất hiện tại đây.
           </p>
         </div>
       ) : (

@@ -26,7 +26,7 @@ const getInitials = (name = '') =>
 const formatJoinDate = (dateStr) => {
   if (!dateStr) return null;
   try {
-    return new Intl.DateTimeFormat('en-US', {
+    return new Intl.DateTimeFormat('vi-VN', {
       month: 'short',
       year: 'numeric',
     }).format(new Date(dateStr));
@@ -58,9 +58,9 @@ function OrganizerPreviewCard({ organizer }) {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
           <UserRound size={28} className="text-slate-300" />
         </div>
-        <p className="text-sm font-semibold text-slate-500">Hover over an organizer</p>
+        <p className="text-sm font-semibold text-slate-500">Di chuột lên một organizer</p>
         <p className="mt-1 text-xs leading-6 text-slate-400">
-          Preview profile details and match quality before assigning.
+          Xem trước chi tiết hồ sơ và độ phù hợp trước khi giao.
         </p>
       </div>
     );
@@ -104,7 +104,7 @@ function OrganizerPreviewCard({ organizer }) {
               {organizer.followersCount ?? 0}
             </p>
             <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-              Followers
+              Người theo dõi
             </p>
           </div>
 
@@ -113,7 +113,7 @@ function OrganizerPreviewCard({ organizer }) {
               {organizer.followingCount ?? 0}
             </p>
             <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-              Following
+              Đang theo dõi
             </p>
           </div>
 
@@ -122,7 +122,7 @@ function OrganizerPreviewCard({ organizer }) {
               {organizer.level ?? 1}
             </p>
             <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-              Level
+              Cấp độ
             </p>
           </div>
         </div>
@@ -133,7 +133,7 @@ function OrganizerPreviewCard({ organizer }) {
           {organizer.headline ? (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                Headline
+                Tiêu đề
               </p>
               <p className="mt-1 text-sm leading-6 text-slate-700">
                 {organizer.headline}
@@ -143,17 +143,17 @@ function OrganizerPreviewCard({ organizer }) {
 
           <InfoRow
             icon={MapPin}
-            label="Location"
-            value={organizer.location || 'Not specified'}
+            label="Địa điểm"
+            value={organizer.location || 'Chưa xác định'}
           />
-          <InfoRow icon={Phone} label="Phone" value={organizer.phone} />
+          <InfoRow icon={Phone} label="Điện thoại" value={organizer.phone} />
           <InfoRow icon={Mail} label="Email" value={organizer.email} />
-          <InfoRow icon={CalendarDays} label="Joined" value={joinDate} />
+          <InfoRow icon={CalendarDays} label="Tham gia" value={joinDate} />
 
           {organizer.about ? (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                About
+                Giới thiệu
               </p>
               <p className="mt-1 text-sm leading-6 text-slate-600">
                 {organizer.about}
@@ -164,7 +164,7 @@ function OrganizerPreviewCard({ organizer }) {
           {skills.length > 0 ? (
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                Skills
+                Kỹ năng
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {skills.slice(0, 8).map((skill, index) => (
@@ -190,7 +190,7 @@ function OrganizerPreviewCard({ organizer }) {
         <div className="mt-4 rounded-[22px] border border-amber-200 bg-amber-50/70 p-4">
           <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
             <Sparkles size={13} />
-            Match Analysis
+            Phân tích phù hợp
           </div>
 
           <div className="mt-3 grid grid-cols-3 gap-2">
@@ -199,7 +199,7 @@ function OrganizerPreviewCard({ organizer }) {
                 {organizer.match.score ?? 0}
               </p>
               <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-                Total
+                Tổng
               </p>
             </div>
 
@@ -208,7 +208,7 @@ function OrganizerPreviewCard({ organizer }) {
                 {organizer.match.relevanceScore ?? 0}
               </p>
               <p className="text-[10px] uppercase tracking-[0.14em] text-slate-400">
-                Relevance
+                Mức liên quan
               </p>
             </div>
 
@@ -231,7 +231,7 @@ function OrganizerPreviewCard({ organizer }) {
 
 function OrganizerRow({ organizer, hoveredOrganizer, setHoveredOrganizer, onAssign, isAssigning }) {
   const isHovered = hoveredOrganizer?._id === organizer._id;
-  const subtitle = organizer.location || organizer.email || 'Organizer profile';
+  const subtitle = organizer.location || organizer.email || 'Hồ sơ organizer';
   const score = organizer.match?.score ?? 0;
 
   return (
@@ -285,7 +285,7 @@ function OrganizerRow({ organizer, hoveredOrganizer, setHoveredOrganizer, onAssi
         disabled={isAssigning}
         className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Assign
+        Giao
       </button>
     </div>
   );
@@ -322,7 +322,7 @@ export function OrganizerSuggestionModal({
           <div className="mb-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
               <Sparkles size={13} />
-              Organizer Preview
+              Xem trước organizer
             </div>
           </div>
 
@@ -333,10 +333,10 @@ export function OrganizerSuggestionModal({
           <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
               <h3 className="text-xl font-bold tracking-tight text-slate-900">
-                Assign Organizer
+                Giao organizer
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Browse suggestions, preview profile details, and assign the best match.
+                Duyệt gợi ý, xem trước hồ sơ và giao cho người phù hợp nhất.
               </p>
             </div>
 
@@ -358,7 +358,7 @@ export function OrganizerSuggestionModal({
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search organizer by name, email, or location..."
+                placeholder="Tìm organizer theo tên, email hoặc địa điểm..."
                 className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
               />
             </label>
@@ -368,13 +368,13 @@ export function OrganizerSuggestionModal({
             {isLoading ? (
               <div className="flex items-center justify-center py-14 text-slate-500">
                 <Loader2 size={18} className="mr-2 animate-spin" />
-                Loading organizers...
+                Đang tải danh sách organizer...
               </div>
             ) : null}
 
             {!isLoading && !organizers.length ? (
               <div className="rounded-[22px] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-                No organizer found for this filter.
+                Không tìm thấy organizer phù hợp với bộ lọc này.
               </div>
             ) : null}
 

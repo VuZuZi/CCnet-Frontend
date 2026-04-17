@@ -24,26 +24,26 @@ const URGENCY_STYLES = {
 };
 
 const CATEGORY_LABELS = {
-  Y_TE: 'Medical Aid',
-  GIAO_DUC: 'Education',
-  THIEN_TAI: 'Disaster Relief',
-  XAY_DUNG: 'Construction',
-  MOI_TRUONG: 'Environment',
-  KHAC: 'Other',
+  Y_TE: 'Hỗ trợ y tế',
+  GIAO_DUC: 'Giáo dục',
+  THIEN_TAI: 'Cứu trợ thảm họa',
+  XAY_DUNG: 'Xây dựng',
+  MOI_TRUONG: 'Môi trường',
+  KHAC: 'Khác',
 };
 
 const TAB_OPTIONS = [
   {
     key: 'pending',
-    label: 'Pending Action',
-    emptyText: 'No pending assignments right now.',
-    helper: 'Requests waiting for your confirmation.',
+    label: 'Đang chờ xử lý',
+    emptyText: 'Hiện tại không có giao việc nào đang chờ xử lý.',
+    helper: 'Các yêu cầu đang chờ xác nhận của bạn.',
   },
   {
     key: 'accepted',
-    label: 'Accepted',
-    emptyText: 'You have not accepted any assignments yet.',
-    helper: 'Requests you are currently handling.',
+    label: 'Đã chấp nhận',
+    emptyText: 'Bạn chưa chấp nhận bất kỳ giao việc nào.',
+    helper: 'Các yêu cầu đang xử lý của bạn.',
   },
 ];
 
@@ -58,13 +58,13 @@ function RejectConfirmModal({ isOpen, requestTitle, onConfirm, onCancel, isPendi
         </div>
 
         <h3 className="text-xl font-black tracking-tight text-slate-900">
-          Decline Assignment
+          Từ chối giao việc
         </h3>
 
         <p className="mt-3 text-sm leading-7 text-slate-500">
-          Are you sure you want to decline the assignment for{' '}
-          <span className="font-semibold text-slate-800">"{requestTitle}"</span>? This request
-          will be returned to admin for reassignment.
+          Bạn có chắc chắn muốn từ chối giao việc cho{' '}
+          <span className="font-semibold text-slate-800">"{requestTitle}"</span>? Yêu cầu này 
+          sẽ được trả lại cho quản trị viên để gán lại.
         </p>
 
         <div className="mt-6 flex items-center justify-end gap-3">
@@ -74,7 +74,7 @@ function RejectConfirmModal({ isOpen, requestTitle, onConfirm, onCancel, isPendi
             disabled={isPending}
             className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Cancel
+            Hủy
           </button>
 
           <button
@@ -84,7 +84,7 @@ function RejectConfirmModal({ isOpen, requestTitle, onConfirm, onCancel, isPendi
             className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isPending ? <Loader2 size={14} className="animate-spin" /> : <XIcon size={14} />}
-            {isPending ? 'Declining...' : 'Decline Request'}
+            {isPending ? 'Đang từ chối...' : 'Từ chối giao việc'}
           </button>
         </div>
       </div>
@@ -133,7 +133,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
             />
           ) : (
             <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-50 via-slate-100 to-sky-50 text-sm font-bold text-slate-400">
-              No cover image
+              Không có ảnh bìa
             </div>
           )}
 
@@ -152,7 +152,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
           {isAccepted ? (
             <div className="absolute bottom-4 left-4">
               <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-700">
-                In Progress
+                Đang xử lý
               </span>
             </div>
           ) : null}
@@ -170,7 +170,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                 </Link>
 
                 <p className="mt-2 line-clamp-2 text-sm leading-7 text-slate-500">
-                  {request.story || 'No story provided for this request.'}
+                  {request.story || 'Yêu cầu này chưa có câu chuyện mô tả.'}
                 </p>
               </div>
             </div>
@@ -179,30 +179,30 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                   <MapPin size={13} />
-                  Location
+                  Địa điểm
                 </div>
                 <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
-                  {request.location?.address || 'No location'}
+                  {request.location?.address || 'Không có địa điểm'}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                   <CircleDollarSign size={13} />
-                  Funding
+                  Kinh phí
                 </div>
                 <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
-                  {request.amountNeeded ? formatVND(request.amountNeeded) : 'Flexible'}
+                  {request.amountNeeded ? formatVND(request.amountNeeded) : 'Linh hoạt'}
                 </p>
               </div>
 
               <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                 <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
                   <CalendarDays size={13} />
-                  Submitted
+                  Ngày gửi
                 </div>
                 <p className="mt-2 text-sm font-semibold text-slate-700">
-                  {formatDate(request.createdAt) || 'Recently'}
+                  {formatDate(request.createdAt) || 'Gần đây'}
                 </p>
               </div>
             </div>
@@ -221,7 +221,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                     ) : (
                       <Check size={16} strokeWidth={3} />
                     )}
-                    Accept Request
+                    Chấp nhận yêu cầu
                   </button>
 
                   <button
@@ -242,7 +242,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                   className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400"
                 >
                   <ExternalLink size={16} strokeWidth={3} />
-                  Create Project
+                  Tạo dự án
                 </Link>
               ) : null}
 
@@ -256,7 +256,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                   className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400"
                 >
                   <ExternalLink size={16} strokeWidth={3} />
-                  View Project
+                  Xem dự án
                 </Link>
               ) : null}
 
@@ -264,7 +264,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                 to={`/need-help/${request._id}`}
                 className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
-                View Details
+                Xem chi tiết
               </Link>
             </div>
           </div>
@@ -334,16 +334,15 @@ export function OrganizerAssignedRequestsPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
-                Organizer Assignment Center
+                Trung tâm giao việc cho nhà tổ chức
               </div>
 
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">
-                Assigned NeedHelp Requests
+                Các yêu cầu trợ giúp đã giao
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Review requests assigned by admin, confirm the ones you can handle, and continue
-                the support flow with a cleaner workspace.
+                Kiểm duyệt các yêu cầu được admin giao, xác nhận những yêu cầu bạn có thể xử lý, và tiếp tục dòng công việc hỗ trợ với không gian làm việc sạch hơn.
               </p>
             </div>
 
@@ -359,7 +358,7 @@ export function OrganizerAssignedRequestsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold text-slate-900">
-              Assignment Queue
+              Hàng chờ giao việc
             </p>
             <p className="mt-1 text-sm text-slate-500">
               {currentTabConfig?.helper}
@@ -417,7 +416,7 @@ export function OrganizerAssignedRequestsPage() {
             </p>
 
             <p className="mt-2 text-sm text-slate-400">
-              Items you participate in will appear here.
+              Các mục bạn tham gia sẽ xuất hiện ở đây.
             </p>
           </div>
         ) : (

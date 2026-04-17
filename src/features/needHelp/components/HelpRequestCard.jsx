@@ -21,7 +21,7 @@ function formatCompactAmount(amountNeeded = 0) {
   const amount = Number(amountNeeded || 0);
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    return 'Flexible Support';
+    return 'Hỗ trợ linh hoạt';
   }
 
   if (amount >= 1_000_000_000_000) {
@@ -46,11 +46,11 @@ function formatCompactAmount(amountNeeded = 0) {
 }
 
 function getRequesterName(requesterId) {
-  if (!requesterId) return 'Community requester';
+  if (!requesterId) return 'Người yêu cầu từ cộng đồng';
   if (typeof requesterId === 'object') {
-    return requesterId.fullName || requesterId.username || 'Community requester';
+    return requesterId.fullName || requesterId.username || 'Người yêu cầu từ cộng đồng';
   }
-  return 'Community requester';
+  return 'Người yêu cầu từ cộng đồng';
 }
 
 function HelpRequestCard({ helpRequest }) {
@@ -70,7 +70,7 @@ function HelpRequestCard({ helpRequest }) {
 
   const coverImage = getCoverImage(evidences);
   const requesterName = getRequesterName(requesterId);
-  const categoryLabel = CATEGORY_LABELS[category] || 'Other';
+  const categoryLabel = CATEGORY_LABELS[category] || 'Khác';
   const urgency = URGENCY_MAP[urgencyLevel];
   const compactAmount = formatCompactAmount(amountNeeded);
 
@@ -83,12 +83,12 @@ function HelpRequestCard({ helpRequest }) {
         {coverImage ? (
           <img
             src={coverImage}
-            alt={title || 'Help request'}
+            alt={title || 'Yêu cầu trợ giúp'}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-amber-50 via-slate-100 to-sky-50 px-6 text-center text-sm font-semibold text-slate-400">
-            No cover image
+            Không có ảnh bìa
           </div>
         )}
 
@@ -98,7 +98,7 @@ function HelpRequestCard({ helpRequest }) {
               urgency?.color || 'bg-slate-100 text-slate-700'
             }`}
           >
-            {urgency?.label || urgencyLevel || 'Medium'}
+            {urgency?.label || urgencyLevel || 'Trung bình'}
           </span>
 
           <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-700 backdrop-blur">
@@ -114,11 +114,11 @@ function HelpRequestCard({ helpRequest }) {
       <div className="space-y-4 p-4">
         <div>
           <h3 className="line-clamp-2 text-lg font-extrabold leading-tight tracking-tight text-slate-900 transition-colors group-hover:text-amber-700">
-            {title || 'Untitled request'}
+            {title || 'Yêu cầu chưa có tiêu đề'}
           </h3>
 
           <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-500">
-            {story || 'No story provided for this request.'}
+            {story || 'Yêu cầu này chưa có câu chuyện mô tả.'}
           </p>
         </div>
 
@@ -126,7 +126,7 @@ function HelpRequestCard({ helpRequest }) {
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <MapPin size={15} className="text-slate-400" />
             <span className="line-clamp-1">
-              {location?.address || 'Location not specified'}
+              {location?.address || 'Chưa có địa điểm cụ thể'}
             </span>
           </div>
 
@@ -137,13 +137,13 @@ function HelpRequestCard({ helpRequest }) {
 
           <div className="flex items-center gap-2 text-sm text-slate-600">
             <CalendarDays size={15} className="text-slate-400" />
-            <span>{formatDate(createdAt) || 'Recently'}</span>
+            <span>{formatDate(createdAt) || 'Gần đây'}</span>
           </div>
         </div>
 
         <div className="border-t border-slate-100 pt-3">
           <p className="text-sm font-medium text-slate-700">
-            Requested by <span className="font-bold text-slate-900">{requesterName}</span>
+            Yêu cầu bởi <span className="font-bold text-slate-900">{requesterName}</span>
           </p>
         </div>
       </div>

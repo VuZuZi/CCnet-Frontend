@@ -74,7 +74,7 @@ export default function NavbarNotificationAction() {
           type="button"
           onClick={handleBellClick}
           className={`group relative inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${buttonClasses}`}
-          aria-label={isDropdownOpen ? 'Close notifications' : 'Open notifications'}
+          aria-label={isDropdownOpen ? 'Đóng thông báo' : 'Mở thông báo'}
           aria-expanded={isDropdownOpen}
         >
           <Bell

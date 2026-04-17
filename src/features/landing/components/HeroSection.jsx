@@ -30,22 +30,22 @@ function HeroContent() {
   return (
     <>
       <h1 className="text-[clamp(3rem,6vw,5rem)] font-extrabold leading-[1.1] mb-6 text-black">
-        Grow Bold.<br />
-        Move Free.<br />
-        <span className="text-orange">Play Hard.</span>
+        Phát triển táo bạo.<br />
+        Tự do di chuyển.<br />
+        <span className="text-orange">Chơi hết mình.</span>
       </h1>
       
       <p className="text-[clamp(1.1rem,2vw,1.5rem)] text-gray mb-10 leading-relaxed max-w-[600px]">
-        A space where teams discover productivity through movement, collaboration, 
-        and innovation.
+        Một không gian nơi các nhóm khám phá năng suất thông qua chuyển động, 
+        hợp tác và cải tiến.
       </p>
 
       <div className="flex gap-3 flex-wrap mb-8">
         <Link to="/register">
-            <Button variant="yellow" className="!px-8 !py-4 !text-lg">Start Free Trial</Button>
+            <Button variant="yellow" className="!px-8 !py-4 !text-lg">Bắt đầu dùng thử miễn phí</Button>
         </Link>
         <Link to="/demo">
-            <Button variant="outlineDark" className="!px-8 !py-4 !text-lg">Watch Demo</Button>
+            <Button variant="outlineDark" className="!px-8 !py-4 !text-lg">Xem bản demo</Button>
         </Link>
       </div>
     </>

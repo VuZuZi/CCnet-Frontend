@@ -1,21 +1,21 @@
 import { Search, SlidersHorizontal, ShieldAlert, RotateCcw } from 'lucide-react';
 
 const STATUS_OPTIONS = [
-  { value: '', label: 'All statuses' },
-  { value: 'PENDING', label: 'Pending' },
-  { value: 'VERIFIED', label: 'Verified' },
-  { value: 'IN_PROGRESS', label: 'In progress' },
-  { value: 'COMPLETED', label: 'Completed' },
-  { value: 'REJECTED', label: 'Rejected' },
-  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: '', label: 'Tất cả trạng thái' },
+  { value: 'PENDING', label: 'Đang chờ' },
+  { value: 'VERIFIED', label: 'Đã xác minh' },
+  { value: 'IN_PROGRESS', label: 'Đang xử lý' },
+  { value: 'COMPLETED', label: 'Hoàn thành' },
+  { value: 'REJECTED', label: 'Bị từ chối' },
+  { value: 'CANCELLED', label: 'Đã hủy' },
 ];
 
 const URGENCY_OPTIONS = [
-  { value: '', label: 'All urgency' },
-  { value: 'LOW', label: 'Low' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'CRITICAL', label: 'Critical' },
+  { value: '', label: 'Tất cả mức độ khẩn cấp' },
+  { value: 'LOW', label: 'Thấp' },
+  { value: 'MEDIUM', label: 'Trung bình' },
+  { value: 'HIGH', label: 'Cao' },
+  { value: 'CRITICAL', label: 'Khẩn cấp' },
 ];
 
 export function AdminNeedHelpFilters({ filters, onChange }) {
@@ -46,10 +46,10 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
               <SlidersHorizontal size={14} />
-              Control Panel
+              Bảng điều khiển
             </div>
             <p className="mt-3 text-sm text-slate-500">
-              Search and narrow down requests before opening assignment flow.
+              Tìm kiếm và thu hẹp yêu cầu trước khi mở quy trình giao việc.
             </p>
           </div>
         </div>
@@ -65,7 +65,7 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
             <input
               value={filters.search}
               onChange={handleChange('search')}
-              placeholder="Search by title, story, requester or location..."
+              placeholder="Tìm theo tiêu đề, câu chuyện, người gửi hoặc địa điểm..."
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
             />
           </label>
@@ -113,7 +113,7 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
             className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 text-sm font-bold text-slate-950 shadow-[0_12px_24px_-12px_rgba(245,158,11,0.55)] transition-all hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <RotateCcw size={16} />
-            Reset
+            Đặt lại
           </button>
         </div>
       </div>

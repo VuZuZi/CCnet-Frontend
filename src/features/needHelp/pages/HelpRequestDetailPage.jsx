@@ -170,7 +170,7 @@ export function HelpRequestDetailPage() {
     if (!helpRequest?._id) return;
 
     const confirmed = window.confirm(
-      'Are you sure you want to delete this help request? This action cannot be undone.'
+      'Bạn có chắc chắn muốn xóa yêu cầu trợ giúp này không? Hành động này không thể hoàn tác.'
     );
 
     if (confirmed) {
@@ -197,7 +197,7 @@ export function HelpRequestDetailPage() {
           <div className="flex min-h-[320px] items-center justify-center rounded-[32px] border border-[#ece7dc] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="animate-spin text-amber-500" size={34} />
-              <p className="text-sm font-medium text-slate-500">Loading help request...</p>
+              <p className="text-sm font-medium text-slate-500">Đang tải yêu cầu trợ giúp...</p>
             </div>
           </div>
         </div>
@@ -214,11 +214,11 @@ export function HelpRequestDetailPage() {
               <CircleAlert size={28} />
             </div>
 
-            <h2 className="text-2xl font-bold text-slate-900">Help request not found</h2>
+            <h2 className="text-2xl font-bold text-slate-900">Không tìm thấy yêu cầu trợ giúp</h2>
 
             <p className="mx-auto mt-3 max-w-xl text-slate-500">
               {error?.message ||
-                'The request you are looking for does not exist or is no longer available.'}
+                'Yêu cầu bạn đang tìm không tồn tại hoặc không còn khả dụng.'}
             </p>
 
             <button
@@ -228,7 +228,7 @@ export function HelpRequestDetailPage() {
               style={{ pointerEvents: 'auto' }}
             >
               <ArrowLeft size={16} />
-              Back
+              Quay lại
             </button>
           </div>
         </div>
@@ -240,31 +240,31 @@ export function HelpRequestDetailPage() {
   const requester =
     typeof helpRequest.requesterId === 'object' ? helpRequest.requesterId : null;
 
-  const title = helpRequest.title || 'Untitled help request';
+  const title = helpRequest.title || 'Yêu cầu trợ giúp không có tiêu đề';
   const description =
     helpRequest.description ||
-    'This request is visible to the community so organizers and supporters can review the case, verify the information, and respond in a responsible way.';
+    'Yêu cầu này được hiển thị cho cộng đồng để các nhà tổ chức và những người muốn hỗ trợ có thể xem xét trường hợp, xác minh thông tin và phản hồi một cách có trách nhiệm.';
 
-  const requesterName = requester?.name || requester?.fullName || 'Anonymous user';
+  const requesterName = requester?.name || requester?.fullName || 'Người dùng ẩn danh';
   const requesterEmail =
-    helpRequest.contactEmail || requester?.email || 'No contact email provided';
-  const requesterPhone = helpRequest.contactPhone || 'No contact phone provided';
+    helpRequest.contactEmail || requester?.email || 'Không cung cấp email liên hệ';
+  const requesterPhone = helpRequest.contactPhone || 'Không cung cấp số điện thoại';
 
   const category =
-    helpRequest.category || helpRequest.requestType || helpRequest.type || 'Need Help';
+    helpRequest.category || helpRequest.requestType || helpRequest.type || 'Cần trợ giúp';
 
   const urgency =
-    helpRequest.urgency || helpRequest.priority || helpRequest.severity || 'Medium';
+    helpRequest.urgency || helpRequest.priority || helpRequest.severity || 'Trung bình';
 
   const locationText =
     helpRequest.locationText ||
     helpRequest.location?.address ||
     helpRequest.address ||
-    'Location TBD';
+    'Vị trí sẽ xác định';
 
   const submittedAt = helpRequest.createdAt
-    ? new Date(helpRequest.createdAt).toLocaleDateString('en-US')
-    : 'Recently submitted';
+    ? new Date(helpRequest.createdAt).toLocaleDateString('vi-VN')
+    : 'Được gửi gần đây';
 
   return (
     <>
@@ -278,7 +278,7 @@ export function HelpRequestDetailPage() {
               style={{ pointerEvents: 'auto' }}
             >
               <ArrowLeft size={16} />
-              Back
+              Quay lại
             </button>
 
             {isOwner && (
@@ -288,7 +288,7 @@ export function HelpRequestDetailPage() {
                   className="inline-flex items-center gap-2 rounded-2xl border border-[#f1d58a] bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#fff8e6]"
                 >
                   <Pencil size={16} />
-                  Edit Request
+                  Chỉnh sửa yêu cầu
                 </Link>
 
                 <button
@@ -298,7 +298,7 @@ export function HelpRequestDetailPage() {
                   className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-2.5 text-sm font-semibold text-rose-700 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
                 >
                   <Trash2 size={16} />
-                  {deleteMutation.isPending ? 'Deleting...' : 'Delete Request'}
+                  {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa yêu cầu'}
                 </button>
               </div>
             )}
@@ -328,12 +328,12 @@ export function HelpRequestDetailPage() {
 
                 <div className="mt-6">
                   <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                    Story
+                    Câu chuyện
                   </div>
 
                   <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
                     <p className="max-w-none whitespace-pre-wrap break-all text-[15px] leading-8 text-slate-700">
-                      {helpRequest.story || 'No story provided yet.'}
+                      {helpRequest.story || 'Chưa có câu chuyện nào được cung cấp.'}
                     </p>
                   </div>
                 </div>
@@ -352,7 +352,7 @@ export function HelpRequestDetailPage() {
                           className="inline-flex items-center gap-2 rounded-full border border-[#e7dfcf] bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-600 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
                         >
                           <Expand className="h-3.5 w-3.5" />
-                          View
+                          Xem
                         </button>
                       </div>
 
@@ -375,7 +375,7 @@ export function HelpRequestDetailPage() {
                   <div className="flex flex-col gap-4">
                     <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
                       <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                        Submitted by
+                        Được gửi bởi
                       </div>
 
                       <div className="min-w-0">
@@ -390,14 +390,14 @@ export function HelpRequestDetailPage() {
 
                     <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
                       <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                        Contact
+                        Liên hệ
                       </div>
 
                       <div className="space-y-3">
                         <ContactRow
                           icon={Phone}
                           href={
-                            requesterPhone !== 'No contact phone provided'
+                            requesterPhone !== 'Không cung cấp số điện thoại'
                               ? `tel:${requesterPhone}`
                               : undefined
                           }
@@ -408,7 +408,7 @@ export function HelpRequestDetailPage() {
                         <ContactRow
                           icon={Mail}
                           href={
-                            requesterEmail !== 'No contact email provided'
+                            requesterEmail !== 'Không cung cấp email liên hệ'
                               ? `mailto:${requesterEmail}`
                               : undefined
                           }

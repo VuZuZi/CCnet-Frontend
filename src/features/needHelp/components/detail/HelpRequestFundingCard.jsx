@@ -5,7 +5,7 @@ function formatCompactVND(value) {
   const amount = Number(value || 0);
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    return 'Flexible Support';
+    return 'Hỗ trợ linh hoạt';
   }
 
   if (amount >= 1_000_000_000_000) {
@@ -42,7 +42,7 @@ export function HelpRequestFundingCard({ amountNeeded = 0 }) {
   const amount = Number(amountNeeded || 0);
   const hasFundingGoal = amount > 0;
   const compactAmount = formatCompactVND(amount);
-  const fullAmount = hasFundingGoal ? formatVND(amount) : 'Not specified';
+  const fullAmount = hasFundingGoal ? formatVND(amount) : 'Chưa xác định';
 
   return (
     <section
@@ -51,29 +51,29 @@ export function HelpRequestFundingCard({ amountNeeded = 0 }) {
     >
       <div className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700 ring-1 ring-emerald-200">
         <CircleDollarSign size={13} />
-        Funding Need
+        Nhu cầu kinh phí
       </div>
 
       <div className="mt-5 rounded-[24px] bg-slate-950 px-5 py-6 text-white">
         <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-          Estimated Goal
+          Mục tiêu ước tính
         </p>
         <div className="mt-3 break-words text-3xl font-black leading-none tracking-tight sm:text-[38px]">
           {compactAmount}
         </div>
         <p className="mt-3 text-sm leading-7 text-slate-300">
           {hasFundingGoal
-            ? 'This amount reflects the requester’s submitted needs and supporting details.'
-            : 'No fixed amount has been set yet, so support remains flexible.'}
+            ? 'Số tiền này phản ánh nhu cầu mà người gửi đã cung cấp kèm thông tin minh chứng.'
+            : 'Chưa có mức cố định, vì vậy hình thức hỗ trợ vẫn linh hoạt.'}
         </p>
       </div>
 
       <div className="mt-5 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
         <StatRow
-          label="Support type"
-          value={hasFundingGoal ? 'Fixed target' : 'Flexible support'}
+          label="Loại hỗ trợ"
+          value={hasFundingGoal ? 'Mục tiêu cố định' : 'Hỗ trợ linh hoạt'}
         />
-        <StatRow label="Full amount" value={fullAmount} />
+        <StatRow label="Số tiền đầy đủ" value={fullAmount} />
       </div>
     </section>
   );

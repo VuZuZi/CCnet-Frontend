@@ -15,7 +15,7 @@ export function HelpRequestFilterBar({
     <div className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-slate-500">
-          Use filters to quickly find the most relevant requests for you.
+          Dùng bộ lọc để nhanh chóng tìm các yêu cầu phù hợp nhất với bạn.
         </p>
 
         <Link
@@ -24,7 +24,7 @@ export function HelpRequestFilterBar({
           className="inline-flex h-10 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-500"
         >
           <Plus size={16} />
-          Create Request
+          Tạo yêu cầu
         </Link>
       </div>
 
@@ -37,7 +37,7 @@ export function HelpRequestFilterBar({
             type="text"
             value={localSearch}
             onChange={(e) => setLocalSearch(e.target.value)}
-            placeholder="Search title, story, location"
+            placeholder="Tìm tiêu đề, câu chuyện, địa điểm"
             className="block h-10 w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 transition-colors focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
           />
         </div>
@@ -83,7 +83,7 @@ export function HelpRequestFilterBar({
             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             <FilterX size={16} />
-            Reset
+            Đặt lại
           </button>
         )}
       </div>
