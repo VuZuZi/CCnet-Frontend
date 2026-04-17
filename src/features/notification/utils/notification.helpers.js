@@ -22,6 +22,10 @@ export function getNotificationLabel(type) {
     case 'project_cancelled':
     case 'project_rejected':
       return 'Project';
+    case 'volunteer_withdraw_requested':
+    case 'volunteer_withdraw_approved':
+    case 'volunteer_withdraw_rejected':
+      return 'Volunteer';
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':
@@ -76,6 +80,9 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
+    case 'volunteer_withdraw_requested':
+    case 'volunteer_withdraw_approved':
+    case 'volunteer_withdraw_rejected':
       return 'Open project';
 
     case 'follow_created':
@@ -113,6 +120,9 @@ export function shouldPreferRelatedNavigation(type, actionUrl) {
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
+    case 'volunteer_withdraw_requested':
+    case 'volunteer_withdraw_approved':
+    case 'volunteer_withdraw_rejected':
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':

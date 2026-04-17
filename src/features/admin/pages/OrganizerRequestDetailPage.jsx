@@ -182,16 +182,16 @@ export function OrganizerRequestDetailPage() {
                 </p>
               </div>
             )}
-          </div>
 
-          <div className="sticky bottom-4 z-20">
-            <OrganizerReviewActions
-              status={request.status}
-              onApprove={approve}
-              onDecline={decline}
-              isApproving={isApproving}
-              isDeclining={isDeclining}
-            />
+            <div className="mt-6">
+              <OrganizerReviewActions
+                status={request.status}
+                onApprove={approve}
+                onDecline={decline}
+                isApproving={isApproving}
+                isDeclining={isDeclining}
+              />
+            </div>
           </div>
         </div>
 

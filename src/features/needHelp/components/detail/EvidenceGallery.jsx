@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ExternalLink,
   FileText,
   PlayCircle,
-  X,
   ZoomIn,
   Images,
 } from 'lucide-react';
@@ -22,6 +21,42 @@ function SectionLabel({ icon: Icon, label, description }) {
   );
 }
 
+function EvidenceImagePreview({ imageUrl, onClose }) {
+  useEffect(() => {
+    if (!imageUrl) return;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') onClose();
+    };
+
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [imageUrl, onClose]);
+
+  if (!imageUrl) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/45 p-3"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-label="Evidence image preview"
+    >
+      <img
+        src={imageUrl}
+        alt="Evidence preview"
+        onClick={(event) => event.stopPropagation()}
+        className="h-[86vh] w-auto max-w-[92vw] object-contain shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
+      />
+    </div>
+  );
+}
 export function EvidenceGallery({ evidences = [] }) {
   const [selectedImage, setSelectedImage] = useState(null);
 
@@ -117,29 +152,12 @@ export function EvidenceGallery({ evidences = [] }) {
         )}
       </section>
 
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <button
-            type="button"
-            onClick={() => setSelectedImage(null)}
-            className="absolute right-4 top-4 rounded-full bg-white/10 p-2 text-white transition-colors hover:bg-white/20"
-          >
-            <X size={22} />
-          </button>
-
-          <img
-            src={selectedImage}
-            alt="Evidence preview"
-            className="max-h-[88vh] max-w-full rounded-[20px] object-contain shadow-2xl"
-            onClick={(event) => event.stopPropagation()}
-          />
-        </div>
-      )}
+      <EvidenceImagePreview
+        imageUrl={selectedImage}
+        onClose={() => setSelectedImage(null)}
+      />
     </>
   );
 }
 
-export default EvidenceGallery;
+export default EvidenceGallery; 

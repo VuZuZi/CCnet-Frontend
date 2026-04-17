@@ -152,7 +152,7 @@ export function SidebarPublic({ project }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
+    <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-7">
       <SidebarStatsCard
         isFunded={isFunded}
         isVolunteerOnly={isVolunteerOnly}
@@ -183,9 +183,7 @@ export function SidebarPublic({ project }) {
         onShare={handleShare}
         onOpenReportModal={handleOpenReportModal}
         isReporting={isReporting}
-        user={user}
-        projectId={projectId}
-        projectName={project?.title || project?.name}
+        project={project}
       />
 
       <ProjectReportModal

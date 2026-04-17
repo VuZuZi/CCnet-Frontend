@@ -8,7 +8,7 @@ export function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-background-light font-sans text-slate-900 selection:bg-primary/30 selection:text-slate-900">
       <GlobalTransactionOverlay />
-      
+
       <NotificationStreamBootstrap />
       <AdminNotificationRedirectGate />
       <Navbar />
@@ -17,7 +17,9 @@ export function RootLayout() {
         <Outlet />
       </main>
 
-      <ScrollRestoration />
+      <ScrollRestoration
+        getKey={(location) => location.pathname}
+      />
     </div>
   );
 }

@@ -10,22 +10,37 @@ import {
   Trash2,
   ArrowUpRight,
   Dot,
-  Eye,
   Heart,
   MessageCircle,
+  BadgeInfo,
+  CircleAlert,
+  CircleCheckBig,
 } from 'lucide-react';
 
 import { getNotificationPrimaryActionLabel } from '../utils/notification.helpers';
 
+function isDeletedProjectNotification(item) {
+  const type = String(item?.type || '').toLowerCase();
+  const metadata = item?.metadata || {};
+  const title = String(item?.title || '').toLowerCase();
+
+  return (
+    (type === 'project_updated' && String(metadata?.status || '').toUpperCase() === 'DELETED') ||
+    title.includes('project deleted by admin')
+  );
+}
+
 function getTypeIcon(type) {
-  switch (type) {
+  switch (String(type || '').toLowerCase()) {
     case 'follow_created':
       return UserPlus;
+
     case 'project_updated':
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
       return FolderKanban;
+
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':
@@ -33,17 +48,30 @@ function getTypeIcon(type) {
     case 'help_request_completed':
     case 'help_request_assignment_responded':
       return HeartHandshake;
+
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
       return ShieldCheck;
+
     case 'system_announcement':
       return Megaphone;
+
     case 'post_reacted':
       return Heart;
+
     case 'post_commented':
       return MessageCircle;
+
+    case 'volunteer_applied':
+    case 'volunteer_application_approved':
+    case 'volunteer_application_rejected':
+    case 'volunteer_withdraw_requested':
+    case 'volunteer_withdraw_approved':
+    case 'volunteer_withdraw_rejected':
+      return Bell;
+
     default:
       return Bell;
   }
@@ -65,16 +93,123 @@ function getTypeAccent(isRead) {
   };
 }
 
+function getTypeLabel(type) {
+  switch (String(type || '').toLowerCase()) {
+    case 'follow_created':
+      return 'Follow';
+
+    case 'project_updated':
+    case 'project_approved':
+    case 'project_cancelled':
+    case 'project_rejected':
+      return 'Project';
+
+    case 'help_request_assigned':
+    case 'help_request_reassigned':
+    case 'help_request_verified':
+    case 'help_request_rejected':
+    case 'help_request_completed':
+    case 'help_request_assignment_responded':
+      return 'NeedHelp';
+
+    case 'organizer_request_submitted':
+    case 'organizer_request_updated':
+    case 'organizer_request_approved':
+    case 'organizer_request_declined':
+      return 'Organizer';
+
+    case 'system_announcement':
+      return 'System';
+
+    case 'post_reacted':
+    case 'post_commented':
+      return 'Post';
+
+    case 'volunteer_applied':
+    case 'volunteer_application_approved':
+    case 'volunteer_application_rejected':
+    case 'volunteer_withdraw_requested':
+    case 'volunteer_withdraw_approved':
+    case 'volunteer_withdraw_rejected':
+      return 'Volunteer';
+
+    default:
+      return 'Notification';
+  }
+}
+
+function getReasonBlock(item) {
+  const metadata = item?.metadata || {};
+
+  const reason =
+    metadata.rejectReason ||
+    metadata.reviewNote ||
+    metadata.withdrawReason ||
+    metadata.rejectionReason ||
+    null;
+
+  if (!reason) return null;
+
+  const type = String(item?.type || '').toLowerCase();
+
+  if (
+    type === 'volunteer_application_rejected' ||
+    type === 'help_request_rejected' ||
+    type === 'project_rejected' ||
+    type === 'organizer_request_declined'
+  ) {
+    return {
+      icon: CircleAlert,
+      label: 'Lý do từ chối',
+      value: reason,
+      tone:
+        'border-rose-200 bg-rose-50/80 text-rose-700',
+    };
+  }
+
+  if (type === 'volunteer_withdraw_rejected') {
+    return {
+      icon: BadgeInfo,
+      label: 'Ghi chú từ organizer',
+      value: reason,
+      tone:
+        'border-amber-200 bg-amber-50/80 text-amber-700',
+    };
+  }
+
+  if (type === 'volunteer_withdraw_requested') {
+    return {
+      icon: BadgeInfo,
+      label: 'Lý do xin rút',
+      value: reason,
+      tone:
+        'border-amber-200 bg-amber-50/80 text-amber-700',
+    };
+  }
+
+  return {
+    icon: CircleCheckBig,
+    label: 'Thông tin bổ sung',
+    value: reason,
+    tone:
+      'border-sky-200 bg-sky-50/80 text-sky-700',
+  };
+}
+
 export default function NotificationItem({ item, onRead, onDelete, onClose }) {
   const navigate = useNavigate();
   const Icon = getTypeIcon(item.type);
   const accent = getTypeAccent(item.isRead);
+  const reasonBlock = getReasonBlock(item);
 
-  const hasRelatedAction = Boolean(item.actionUrl);
-  const prefersRelatedNavigation = Boolean(item.prefersRelatedNavigation && item.actionUrl);
-  const canOpenDetail = Boolean(item.id && item.canOpenDetail);
-  const primaryActionLabel =
-    item.primaryActionLabel || getNotificationPrimaryActionLabel(item.type, item.actionUrl);
+  const isDeletedProject = isDeletedProjectNotification(item);
+  const resolvedActionUrl = isDeletedProject ? '/workspace' : item.actionUrl;
+
+  const hasRelatedAction = Boolean(resolvedActionUrl);
+  const canOpenDetail = Boolean(item.id && !resolvedActionUrl);
+  const primaryActionLabel = isDeletedProject
+    ? 'Xem workspace'
+    : item.primaryActionLabel || getNotificationPrimaryActionLabel(item.type, resolvedActionUrl);
 
   const markReadIfNeeded = () => {
     if (!item.isRead && item.id) {
@@ -93,31 +228,26 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
   const openRelatedContent = (event) => {
     event?.stopPropagation?.();
 
-    if (!item.actionUrl) return;
+    if (!resolvedActionUrl) return;
 
     markReadIfNeeded();
     onClose?.();
-    navigate(item.actionUrl);
+    navigate(resolvedActionUrl);
   };
 
   const handleCardClick = () => {
-    if (prefersRelatedNavigation) {
+    if (hasRelatedAction) {
       openRelatedContent();
       return;
     }
 
     if (canOpenDetail) {
       openNotificationDetail();
-      return;
-    }
-
-    if (hasRelatedAction) {
-      openRelatedContent();
     }
   };
 
   const handleCardKeyDown = (event) => {
-    if (!prefersRelatedNavigation && !canOpenDetail && !hasRelatedAction) return;
+    if (!hasRelatedAction && !canOpenDetail) return;
 
     if (event.key === 'Enter' || event.key === ' ') {
       event.preventDefault();
@@ -125,7 +255,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
     }
   };
 
-  const isInteractive = prefersRelatedNavigation || canOpenDetail || hasRelatedAction;
+  const isInteractive = hasRelatedAction || canOpenDetail;
 
   return (
     <div
@@ -155,7 +285,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
             <div className="min-w-0">
               <div className="flex items-center gap-1">
                 <p className={`text-[10px] font-bold uppercase tracking-[0.14em] ${accent.label}`}>
-                  {item.label}
+                  {item.label || getTypeLabel(item.type)}
                 </p>
                 {!item.isRead && <Dot size={13} className="text-[#F59E0B]" />}
               </div>
@@ -174,6 +304,24 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
             {item.message}
           </p>
 
+          {reasonBlock ? (
+            <div
+              className={`mb-3 rounded-2xl border px-3.5 py-3 ${reasonBlock.tone}`}
+            >
+              <div className="flex items-start gap-2.5">
+                <reasonBlock.icon size={16} className="mt-0.5 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[11px] font-bold uppercase tracking-[0.12em] opacity-80">
+                    {reasonBlock.label}
+                  </p>
+                  <p className="mt-1 whitespace-pre-wrap break-words text-[13px] leading-6">
+                    {reasonBlock.value}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
           <div className="flex flex-wrap items-center gap-2">
             {!item.isRead && (
               <button
@@ -189,7 +337,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
               </button>
             )}
 
-            {hasRelatedAction && (
+            {hasRelatedAction ? (
               <button
                 type="button"
                 onClick={openRelatedContent}
@@ -198,9 +346,9 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
                 <ArrowUpRight size={14} />
                 {primaryActionLabel || 'Open related'}
               </button>
-            )}
+            ) : null}
 
-            {canOpenDetail && (
+            {!hasRelatedAction && canOpenDetail ? (
               <button
                 type="button"
                 onClick={(event) => {
@@ -209,10 +357,10 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
                 }}
                 className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-[12px] font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
               >
-                <Eye size={14} />
-                View detail
+                <BadgeInfo size={14} />
+                Xem chi tiết
               </button>
-            )}
+            ) : null}
 
             <button
               type="button"

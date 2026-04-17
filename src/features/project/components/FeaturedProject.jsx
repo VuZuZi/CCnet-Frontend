@@ -9,9 +9,11 @@ import {
   Sparkles,
   Share2,
   UserRound,
+  BadgeCheck,
 } from "lucide-react";
 
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+import { useFeaturedProject } from "@/features/project/hooks/useProjectQueries";
 import {
   formatProjectCurrencyVND,
   getProjectDaysLeft,
@@ -22,9 +24,32 @@ import {
   getProjectVolunteerStats,
   isProjectClosed,
   normalizeProjectId,
-  scoreFeaturedProject,
   stripProjectHtml,
 } from "../utils/projectDisplay.utils";
+
+function extractCurrentUserApplicationStatus(project) {
+  const candidates = [
+    project?.currentUserParticipation?.volunteerStatus,
+    project?.currentUserParticipation?.status,
+    project?.currentUserVolunteer?.status,
+    project?.myVolunteerApplication?.status,
+    project?.myApplication?.status,
+    project?.applicationStatus,
+    project?.volunteerStatus,
+  ];
+
+  const matched = candidates.find(
+    (value) => value !== null && value !== undefined,
+  );
+
+  return String(matched || "").trim().toUpperCase();
+}
+
+function isOwnedByCurrentUser(project, currentUserId) {
+  const organizerRaw = project?.organizerId;
+  const organizerId = normalizeProjectId(organizerRaw);
+  return Boolean(currentUserId && organizerId === currentUserId);
+}
 
 export default function FeaturedProject({
   projects = [],
@@ -37,32 +62,37 @@ export default function FeaturedProject({
     currentUser?._id || currentUser?.id || currentUser?.userId,
   );
 
+  const { data: featuredData } = useFeaturedProject();
+
   const featuredProject = useMemo(() => {
-    if (!Array.isArray(projects) || projects.length === 0) return null;
+    const normalizedFeaturedCandidates = [];
 
-    const normalizedFollowedIds = followedOrganizerIds
-      .filter(Boolean)
-      .map((id) => normalizeProjectId(id));
+    if (featuredData) {
+      if (Array.isArray(featuredData)) {
+        normalizedFeaturedCandidates.push(...featuredData);
+      } else if (featuredData?.project) {
+        normalizedFeaturedCandidates.push(featuredData.project);
+      } else {
+        normalizedFeaturedCandidates.push(featuredData);
+      }
+    }
 
-    const nonOwnerCandidates = projects.filter((project) => {
-      const organizerId = normalizeProjectId(project?.organizerId);
-      return !(currentUserId && organizerId === currentUserId);
-    });
+    const safeProjects = Array.isArray(projects) ? projects : [];
 
-    const candidates = nonOwnerCandidates.length > 0 ? nonOwnerCandidates : projects;
-    if (!candidates.length) return null;
+    const firstFeaturedNotOwned = normalizedFeaturedCandidates.find(
+      (project) => project && !isOwnedByCurrentUser(project, currentUserId),
+    );
 
-    const followedProjects = candidates.filter((project) => {
-      const organizerId = normalizeProjectId(project?.organizerId);
-      return normalizedFollowedIds.includes(organizerId);
-    });
+    if (firstFeaturedNotOwned) return firstFeaturedNotOwned;
 
-    const pool = followedProjects.length > 0 ? followedProjects : candidates;
+    const firstListNotOwned = safeProjects.find(
+      (project) => project && !isOwnedByCurrentUser(project, currentUserId),
+    );
 
-    return [...pool].sort(
-      (a, b) => scoreFeaturedProject(b) - scoreFeaturedProject(a),
-    )[0] || null;
-  }, [projects, followedOrganizerIds, currentUserId]);
+    if (firstListNotOwned) return firstListNotOwned;
+
+    return null;
+  }, [featuredData, projects, currentUserId]);
 
   if (!featuredProject) return null;
 
@@ -90,6 +120,13 @@ export default function FeaturedProject({
   const { volunteerNeeded, volunteerJoined, volunteerProgress } =
     getProjectVolunteerStats(featuredProject);
 
+  const currentUserApplicationStatus =
+    extractCurrentUserApplicationStatus(featuredProject);
+
+  const hasJoinedProject =
+    currentUserApplicationStatus === "APPROVED" ||
+    currentUserApplicationStatus === "WITHDRAW_REQUESTED";
+
   const primaryAction = getProjectPrimaryAction({
     project: featuredProject,
     currentUserId,
@@ -97,8 +134,18 @@ export default function FeaturedProject({
     navigate,
   });
 
+  const resolvedPrimaryAction = hasJoinedProject
+    ? {
+        label: "Xem dự án",
+        className:
+          "bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] text-slate-900 hover:brightness-105",
+        onClick: () => navigate(`/projects/${projectId}`),
+      }
+    : primaryAction;
+
   const showSecondaryVolunteerAction =
     !isOwner &&
+    !hasJoinedProject &&
     isFundedProject &&
     isVolunteerProject &&
     !isProjectClosed(featuredProject) &&
@@ -192,6 +239,15 @@ export default function FeaturedProject({
           </p>
 
           <div className="mb-6 flex flex-wrap gap-3">
+            {hasJoinedProject ? (
+              <span className="inline-flex rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm font-bold text-emerald-700">
+                <span className="inline-flex items-center gap-2">
+                  <BadgeCheck size={16} />
+                  Bạn đã tham gia dự án này
+                </span>
+              </span>
+            ) : null}
+
             {isFromFollowedOrganizer && !isOwner ? (
               <span className="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-semibold text-slate-600">
                 Đến từ organizer bạn đang theo dõi
@@ -256,10 +312,10 @@ export default function FeaturedProject({
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <button
               type="button"
-              onClick={primaryAction.onClick}
-              className={`h-14 rounded-2xl text-lg font-extrabold shadow-sm transition-all ${primaryAction.className}`}
+              onClick={resolvedPrimaryAction.onClick}
+              className={`h-14 rounded-2xl text-lg font-extrabold shadow-sm transition-all ${resolvedPrimaryAction.className}`}
             >
-              {primaryAction.label}
+              {resolvedPrimaryAction.label}
             </button>
 
             {showSecondaryVolunteerAction ? (

@@ -1,53 +1,76 @@
-// src/features/volunteer/components/VolunteerApplicationForm.jsx
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
+import { BriefcaseBusiness, CalendarRange, FileText } from 'lucide-react';
 import { useVolunteerMutations } from '../hooks/useVolunteerMutations';
+import { useToast } from '@/shared/contexts/ToastContext';
 
-export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel }) => {
+export const VolunteerApplicationForm = ({ project, projectId, onSuccess, onCancel }) => {
   const { createApplication, isCreating } = useVolunteerMutations();
+  const toast = useToast();
+
+  const roleOptions = useMemo(() => {
+    if (!Array.isArray(project?.volunteerRoles)) return [];
+
+    return project.volunteerRoles
+      .map((role, index) => {
+        const title = String(role?.title || '').trim();
+        const quantity = Number(role?.quantity || 0);
+
+        if (!title) return null;
+
+        return {
+          id: `${title}-${index}`,
+          value: title,
+          label: title,
+          quantity,
+          skillsRequired: Array.isArray(role?.skillsRequired)
+            ? role.skillsRequired.filter(Boolean)
+            : [],
+          duration: role?.duration || '',
+          location: role?.location || '',
+        };
+      })
+      .filter(Boolean);
+  }, [project]);
+
+  const availabilityOptions = [
+    { value: 'FULL_TIME', label: 'Full-time' },
+    { value: 'PART_TIME', label: 'Part-time' },
+    { value: 'WEEKENDS', label: 'Weekends' },
+    { value: 'FLEXIBLE', label: 'Flexible' },
+  ];
 
   const [formData, setFormData] = useState({
     opportunityId: projectId,
     skills: '',
-    availability: [],
+    availability: '',
     motivation: '',
   });
 
   const [errors, setErrors] = useState({});
 
-  // Role options
-  const skillsOptions = [
-    { value: 'field_planting', label: 'Làm việc theo dự án' },
-    { value: 'logistics', label: 'Vận Chuyển' },
-    { value: 'education', label: 'dạy học' },
-    { value: 'data', label: 'dữ liệu' },
-  ];
+  const selectedRole = roleOptions.find((role) => role.value === formData.skills) || null;
 
-  // Availability options
-  const availabilityOptions = [
-    { value: 'full_time', label: 'Full-time', icon: '' },
-    { value: 'part_time', label: 'Part-time', icon: '' },
-    { value: 'weekends', label: 'Weekends', icon: '' },
-    { value: 'flexible', label: 'Flexible', icon: '' },
-  ];
+  const handleSelectRole = (roleValue) => {
+    setFormData((prev) => ({ ...prev, skills: roleValue }));
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    if (errors.skills) {
+      setErrors((prev) => ({ ...prev, skills: '' }));
     }
   };
 
-  const handleAvailabilityToggle = (optionValue) => {
-    setFormData(prev => {
-      const newAvailability = prev.availability.includes(optionValue)
-        ? prev.availability.filter(item => item !== optionValue)
-        : [...prev.availability, optionValue];
-      return { ...prev, availability: newAvailability };
-    });
+  const handleSelectAvailability = (availabilityValue) => {
+    setFormData((prev) => ({ ...prev, availability: availabilityValue }));
 
     if (errors.availability) {
-      setErrors(prev => ({ ...prev, availability: '' }));
+      setErrors((prev) => ({ ...prev, availability: '' }));
+    }
+  };
+
+  const handleChangeMotivation = (e) => {
+    setFormData((prev) => ({ ...prev, motivation: e.target.value }));
+
+    if (errors.motivation) {
+      setErrors((prev) => ({ ...prev, motivation: '' }));
     }
   };
 
@@ -58,14 +81,14 @@ export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel 
       newErrors.skills = 'Vui lòng chọn vị trí ứng tuyển';
     }
 
-    if (formData.availability.length === 0) {
-      newErrors.availability = 'Vui lòng chọn ít nhất một khung thời gian';
+    if (!formData.availability) {
+      newErrors.availability = 'Vui lòng chọn một khung thời gian';
     }
 
     if (!formData.motivation.trim()) {
       newErrors.motivation = 'Vui lòng chia sẻ động lực tham gia';
-    } else if (formData.motivation.length < 10) {
-      newErrors.motivation = 'Động lực nên có ít nhất 10 ký tự';
+    } else if (formData.motivation.trim().length < 10) {
+      newErrors.motivation = 'Nội dung nên có ít nhất 10 ký tự';
     }
 
     setErrors(newErrors);
@@ -77,152 +100,248 @@ export const VolunteerApplicationForm = ({ projectId, user, onSuccess, onCancel 
 
     if (!validate()) return;
 
-    const submitData = {
-      ...formData,
-      availability: formData.availability.join(', '),
-    };
-
     try {
-      await createApplication(submitData);
+      await createApplication({
+        opportunityId: projectId,
+        skills: formData.skills,
+        availability: formData.availability,
+        motivation: formData.motivation.trim(),
+      });
+
       onSuccess?.();
     } catch (error) {
-      console.error('Submit failed:', error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        'Đăng ký thất bại. Vui lòng thử lại sau.';
 
-      // ✅ Xử lý lỗi duplicate
-      if (error?.response?.status === 400 && error?.response?.data?.message?.includes('Already applied')) {
-        alert('Bạn đã đăng ký dự án này rồi!');
-      } else if (error?.message?.includes('E11000') || error?.response?.data?.message?.includes('duplicate')) {
-        alert('Bạn đã đăng ký dự án này rồi! Vui lòng kiểm tra lại.');
-      } else {
-        alert('Đăng ký thất bại. Vui lòng thử lại sau.');
-      }
+      toast.error(message);
     }
   };
 
+  const motivationLength = formData.motivation.trim().length;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Select Role */}
-      <div className="space-y-2">
-        <label className="block text-sm font-bold text-slate-700">
-          Select Role <span className="text-red-500">*</span>
-        </label>
-        <div className="relative">
-          <select
-            name="skills"
-            value={formData.skills}
-            onChange={handleChange}
-            className={`appearance-none bg-white border rounded-xl w-full p-3 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-900 ${errors.skills
-              ? 'border-red-500 focus:ring-red-500'
-              : 'border-slate-200'
-              }`}
-          >
-            <option value="" disabled>Choose a position</option>
-            {skillsOptions.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-slate-500">
-            <span className="material-symbols-outlined">expand_more</span>
+    <form onSubmit={handleSubmit} className="space-y-8">
+      <section className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-700">
+            <BriefcaseBusiness size={18} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900">
+              Vị trí ứng tuyển
+            </h3>
+            <p className="text-sm text-slate-500">
+              Chọn vai trò phù hợp với khả năng của bạn
+            </p>
           </div>
         </div>
-        {errors.skills && (
-          <p className="text-sm text-red-500 mt-1">{errors.skills}</p>
-        )}
-      </div>
 
-      {/* Availability */}
-      <div className="space-y-3">
-        <label className="block text-sm font-bold text-slate-700">
-          Availability <span className="text-red-500">*</span>
-        </label>
+        <div className="space-y-3">
+          {roleOptions.length > 0 ? (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {roleOptions.map((role) => {
+                const isActive = formData.skills === role.value;
+
+                return (
+                  <button
+                    key={role.id}
+                    type="button"
+                    onClick={() => handleSelectRole(role.value)}
+                    className={`rounded-[22px] border p-4 text-left transition-all ${
+                      isActive
+                        ? 'border-amber-300 bg-amber-50 shadow-sm ring-2 ring-amber-100'
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-base font-black text-slate-900">
+                          {role.label}
+                        </div>
+                        {role.quantity > 0 ? (
+                          <div className="mt-1 text-sm text-slate-500">
+                            Cần {role.quantity} người
+                          </div>
+                        ) : null}
+                      </div>
+
+                      <div
+                        className={`mt-1 h-4 w-4 rounded-full border-2 ${
+                          isActive
+                            ? 'border-amber-500 bg-amber-500'
+                            : 'border-slate-300 bg-white'
+                        }`}
+                      />
+                    </div>
+
+                    {role.skillsRequired?.length ? (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {role.skillsRequired.slice(0, 3).map((skill) => (
+                          <span
+                            key={skill}
+                            className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-600"
+                          >
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500">
+              Dự án hiện chưa cấu hình danh sách vai trò volunteer.
+            </div>
+          )}
+
+          {errors.skills ? (
+            <p className="text-sm text-red-500">{errors.skills}</p>
+          ) : null}
+
+          {selectedRole ? (
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+              {selectedRole.location ? (
+                <div>Địa điểm: {selectedRole.location}</div>
+              ) : null}
+              {selectedRole.duration ? (
+                <div className={selectedRole.location ? 'mt-1' : ''}>
+                  Thời lượng: {selectedRole.duration}
+                </div>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-sky-700">
+            <CalendarRange size={18} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900">
+              Thời gian có thể tham gia
+            </h3>
+            <p className="text-sm text-slate-500">
+              Chọn một khung thời gian phù hợp nhất
+            </p>
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-3">
           {availabilityOptions.map((option) => {
-            const isSelected = formData.availability.includes(option.value);
+            const isSelected = formData.availability === option.value;
+
             return (
               <button
                 key={option.value}
                 type="button"
-                onClick={() => handleAvailabilityToggle(option.value)}
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all flex items-center gap-2 ${isSelected
-                  ? 'border-2 border-primary text-slate-900 bg-primary/10'
-                  : 'border border-slate-200 text-slate-600 bg-white hover:border-primary hover:text-primary'
-
-                  }`}
+                onClick={() => handleSelectAvailability(option.value)}
+                className={`group rounded-full px-5 py-3 text-sm font-bold transition-all ${
+                  isSelected
+                    ? 'border border-amber-300 bg-amber-50 text-amber-800 shadow-sm'
+                    : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900'
+                }`}
               >
-                {isSelected && (
-                  <span className="text-sm">Làm</span>
-                )}
-
-                <span className="text-sm">{option.icon}</span>
-                {option.label}
+                <span className="inline-flex items-center gap-2">
+                  <span
+                    className={`h-2.5 w-2.5 rounded-full ${
+                      isSelected ? 'bg-amber-500' : 'bg-slate-300'
+                    }`}
+                  />
+                  {option.label}
+                </span>
               </button>
             );
           })}
         </div>
-        {errors.availability && (
-          <p className="text-sm text-red-500 mt-1">{errors.availability}</p>
-        )}
-      </div>
 
-      {/* Motivation Text Area */}
-      <div className="space-y-2">
-        <label className="block text-sm font-bold text-slate-700">
-          Why do you want to join this project? <span className="text-red-500">*</span>
-        </label>
-        <textarea
-          name="motivation"
-          value={formData.motivation}
-          onChange={handleChange}
-          rows="5"
-          className={`bg-white border rounded-xl w-full p-4 focus:ring-2 focus:ring-primary focus:border-primary outline-none text-slate-900 placeholder:text-slate-400 ${errors.motivation
-            ? 'border-red-500 focus:ring-red-500'
-            : 'border-slate-200'
+        {errors.availability ? (
+          <p className="text-sm text-red-500">{errors.availability}</p>
+        ) : null}
+      </section>
+
+      <section className="space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
+            <FileText size={18} />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-slate-900">
+              Giới thiệu bản thân
+            </h3>
+            <p className="text-sm text-slate-500">
+              Hãy cho organizer thấy vì sao bạn phù hợp với dự án này
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-bold text-slate-800">
+            Lý do bạn muốn tham gia dự án này <span className="text-red-500">*</span>
+          </label>
+
+          <div
+            className={`overflow-hidden rounded-[24px] border bg-white transition-all ${
+              errors.motivation
+                ? 'border-red-400'
+                : 'border-slate-200 shadow-sm'
             }`}
-          placeholder="Tell us about your motivation and relevant skills..."
-        />
-        {errors.motivation && (
-          <p className="text-sm text-red-500 mt-1">{errors.motivation}</p>
-        )}
-        <p className="text-xs text-slate-500">
-          {formData.motivation.length}/50+ characters
-        </p>
-      </div>
+          >
+            <textarea
+              name="motivation"
+              value={formData.motivation}
+              onChange={handleChangeMotivation}
+              rows={6}
+              className="min-h-[180px] w-full resize-none border-0 bg-transparent px-5 py-4 text-base leading-7 text-slate-900 outline-none placeholder:text-slate-400"
+              placeholder="Hãy chia sẻ động lực tham gia, kỹ năng liên quan và cách bạn có thể đóng góp cho dự án..."
+            />
 
-      {/* Footer Buttons */}
-      <div className="border-t border-slate-100 pt-6 flex justify-end items-center gap-4">
-        <button
-          type="button"
-          onClick={onCancel}
-          disabled={isCreating}
-          className="text-slate-500 font-bold px-6 py-3 rounded-xl hover:bg-slate-50 transition-colors disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isCreating}
-          className="bg-primary hover:brightness-105 active:scale-95 text-slate-900 font-bold px-8
-           py-3 rounded-xl shadow-sm transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isCreating ? (
-            <>
-              <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Submitting...
-            </>
-          ) : (
-            <>
+            <div className="flex items-center justify-between border-t border-slate-100 px-5 py-3">
+              {errors.motivation ? (
+                <p className="text-sm text-red-500">{errors.motivation}</p>
+              ) : (
+                <p className="text-sm text-slate-500">
+                  Nội dung rõ ràng sẽ giúp organizer đánh giá tốt hơn.
+                </p>
+              )}
 
-              <span className="material-symbols-outlined text-sm">Submit Application</span>
-            </>
-          )}
-        </button>
-      </div>
+              <div
+                className={`rounded-full px-3 py-1 text-xs font-bold ${
+                  motivationLength >= 10
+                    ? 'bg-emerald-50 text-emerald-700'
+                    : 'bg-slate-100 text-slate-500'
+                }`}
+              >
+                {motivationLength} ký tự
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="flex justify-end gap-3 pt-4 border-t">
+  <button
+    type="button"
+    onClick={onCancel}
+    disabled={isCreating}
+    className="px-5 py-3 rounded-xl text-sm font-semibold text-slate-500 hover:bg-slate-100"
+  >
+    Hủy
+  </button>
+
+  <button
+    type="submit"
+    disabled={isCreating || roleOptions.length === 0}
+    className="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-500 text-slate-900 font-bold"
+  >
+    {isCreating ? 'Đang gửi...' : 'Gửi đơn đăng ký'}
+  </button>
+</div>
     </form>
   );
 };

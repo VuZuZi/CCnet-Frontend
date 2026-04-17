@@ -26,7 +26,7 @@ export function PreviewStickyActions({
           className={`flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 font-bold shadow-sm transition-all sm:w-auto ${
             isPending || !isReady
               ? "cursor-not-allowed bg-slate-400 text-white"
-              : "bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 hover:bg-emerald-700"
+              : "bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] text-slate-900 shadow-lg shadow-amber-500/20 hover:brightness-105"
           }`}
         >
           {isPending ? <Loader2 className="animate-spin" size={20} /> : null}

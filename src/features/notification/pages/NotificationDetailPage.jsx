@@ -12,8 +12,11 @@ import {
   MailWarning,
   Heart,
   MessageCircle,
-  Loader2,
   ArrowUpRight,
+  HeartHandshake,
+  CircleAlert,
+  BadgeInfo,
+  CircleCheckBig,
 } from 'lucide-react';
 
 import { notificationApi } from '../api/notification.api';
@@ -42,6 +45,13 @@ function getTypeIcon(type) {
       return Heart;
     case 'post_commented':
       return MessageCircle;
+    case 'help_request_assigned':
+    case 'help_request_reassigned':
+    case 'help_request_verified':
+    case 'help_request_rejected':
+    case 'help_request_completed':
+    case 'help_request_assignment_responded':
+      return HeartHandshake;
     default:
       return Bell;
   }
@@ -74,6 +84,13 @@ function getTypeLabel(type) {
     case 'help_request_completed':
     case 'help_request_assignment_responded':
       return 'NeedHelp';
+    case 'volunteer_applied':
+    case 'volunteer_application_approved':
+    case 'volunteer_application_rejected':
+    case 'volunteer_withdraw_requested':
+    case 'volunteer_withdraw_approved':
+    case 'volunteer_withdraw_rejected':
+      return 'Volunteer';
     default:
       return 'Notification';
   }
@@ -122,6 +139,60 @@ function formatDateTime(value) {
   }
 }
 
+function getReasonBlock(item) {
+  const metadata = item?.metadata || {};
+
+  const reason =
+    metadata.rejectReason ||
+    metadata.reviewNote ||
+    metadata.withdrawReason ||
+    metadata.rejectionReason ||
+    null;
+
+  if (!reason) return null;
+
+  const type = String(item?.type || '').toLowerCase();
+
+  if (
+    type === 'volunteer_application_rejected' ||
+    type === 'help_request_rejected' ||
+    type === 'project_rejected' ||
+    type === 'organizer_request_declined'
+  ) {
+    return {
+      icon: CircleAlert,
+      label: 'Lý do từ chối',
+      value: reason,
+      tone: 'border-rose-200 bg-rose-50 text-rose-700',
+    };
+  }
+
+  if (type === 'volunteer_withdraw_rejected') {
+    return {
+      icon: BadgeInfo,
+      label: 'Ghi chú từ organizer',
+      value: reason,
+      tone: 'border-amber-200 bg-amber-50 text-amber-700',
+    };
+  }
+
+  if (type === 'volunteer_withdraw_requested') {
+    return {
+      icon: BadgeInfo,
+      label: 'Lý do xin rút',
+      value: reason,
+      tone: 'border-amber-200 bg-amber-50 text-amber-700',
+    };
+  }
+
+  return {
+    icon: CircleCheckBig,
+    label: 'Thông tin bổ sung',
+    value: reason,
+    tone: 'border-sky-200 bg-sky-50 text-sky-700',
+  };
+}
+
 export default function NotificationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -164,6 +235,7 @@ export default function NotificationDetailPage() {
     item?.type,
     item?.actionUrl
   );
+  const reasonBlock = getReasonBlock(item);
 
   if (isLoading) {
     return (
@@ -190,7 +262,6 @@ export default function NotificationDetailPage() {
               </div>
 
               <div className="mt-8 h-36 animate-pulse rounded-[28px] bg-slate-100" />
-
               <div className="mt-6 grid gap-4 md:grid-cols-2">
                 <div className="h-24 animate-pulse rounded-[24px] bg-slate-100" />
                 <div className="h-24 animate-pulse rounded-[24px] bg-slate-100" />
@@ -240,7 +311,7 @@ export default function NotificationDetailPage() {
           <div className="rounded-[32px] border border-[#F2E6C9] bg-white p-8 shadow-sm">
             <div className="flex flex-col items-center text-center">
               <div className="flex h-16 w-16 items-center justify-center rounded-[24px] bg-[#FFF7DB] text-[#E99A00] shadow-[0_10px_30px_rgba(250,204,21,0.18)]">
-                <Loader2 size={28} className="animate-spin" />
+                <ArrowUpRight size={28} />
               </div>
 
               <h1 className="mt-5 text-2xl font-black text-[#0F2747]">
@@ -350,6 +421,22 @@ export default function NotificationDetailPage() {
                 {item.message || 'No message content.'}
               </p>
             </div>
+
+            {reasonBlock ? (
+              <div className={`mt-6 rounded-[24px] border p-5 ${reasonBlock.tone}`}>
+                <div className="flex items-start gap-3">
+                  <reasonBlock.icon size={18} className="mt-0.5 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold uppercase tracking-[0.14em] opacity-80">
+                      {reasonBlock.label}
+                    </p>
+                    <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-7">
+                      {reasonBlock.value}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
 
             <div className="mt-6 grid gap-4 md:grid-cols-2">
               <div className="rounded-[24px] border border-slate-200 bg-[#FCFCFD] p-5">

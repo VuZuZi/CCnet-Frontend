@@ -181,11 +181,11 @@ export const getProjectFundingStats = (project) => {
       project?.currentAmount ??
       project?.stats?.raisedAmount ??
       project?.stats?.currentAmount ??
-      0,
+      0
   );
 
   const targetAmount = safeProjectNumber(
-    project?.targetAmount ?? project?.stats?.targetAmount ?? 0,
+    project?.targetAmount ?? project?.stats?.targetAmount ?? 0
   );
 
   const fundingPercent =
@@ -209,20 +209,20 @@ export const getProjectVolunteerStats = (project) => {
       project?.stats?.volunteerJoined ??
       project?.stats?.volunteerCount ??
       project?.volunteerCount ??
-      0,
+      0
   );
 
   const targetVolunteers =
     safeProjectNumber(
-      project?.stats?.targetVolunteers ?? project?.stats?.volunteerNeeded ?? 0,
+      project?.stats?.targetVolunteers ?? project?.stats?.volunteerNeeded ?? 0
     ) ||
     safeProjectNumber(
       Array.isArray(project?.volunteerRoles)
         ? project.volunteerRoles.reduce(
             (sum, role) => sum + safeProjectNumber(role?.quantity),
-            0,
+            0
           )
-        : 0,
+        : 0
     );
 
   const volunteerPercent =
@@ -277,6 +277,21 @@ export const isProjectClosed = (project) => {
   ].includes(normalizedStatus);
 };
 
+export const getCurrentUserProjectApplicationStatus = (project) => {
+  const candidates = [
+    project?.currentUserParticipation?.volunteerStatus,
+    project?.currentUserParticipation?.status,
+    project?.currentUserVolunteer?.status,
+    project?.myVolunteerApplication?.status,
+    project?.myApplication?.status,
+    project?.applicationStatus,
+    project?.volunteerStatus,
+  ];
+
+  const matched = candidates.find((value) => value !== null && value !== undefined);
+  return String(matched || "").trim().toUpperCase();
+};
+
 export const getProjectPrimaryAction = ({
   project,
   currentUserId,
@@ -290,13 +305,40 @@ export const getProjectPrimaryAction = ({
   const { volunteerPercent } = getProjectVolunteerStats(project);
 
   const closed = isProjectClosed(project);
-  const isVolunteerFull = Boolean(project?.isVolunteerFull) || volunteerPercent >= 100;
+  const isVolunteerFull =
+    Boolean(project?.isVolunteerFull) || volunteerPercent >= 100;
   const isFundingReached = fundingPercent >= 100;
+  const currentUserApplicationStatus =
+    getCurrentUserProjectApplicationStatus(project);
 
   if (isOwner) {
     return {
       label: "Quản lý",
       className: "bg-slate-900 text-white hover:bg-slate-800",
+      onClick: () => navigate(`/projects/${projectId}`),
+    };
+  }
+
+  if (currentUserApplicationStatus === "WITHDRAW_REQUESTED") {
+    return {
+      label: "Đang chờ rút",
+      className: "bg-amber-100 text-amber-800 hover:bg-amber-100",
+      onClick: () => navigate(`/projects/${projectId}`),
+    };
+  }
+
+  if (currentUserApplicationStatus === "APPROVED") {
+    return {
+      label: "Đang tham gia",
+      className: "bg-emerald-100 text-emerald-800 hover:bg-emerald-100",
+      onClick: () => navigate(`/projects/${projectId}`),
+    };
+  }
+
+  if (currentUserApplicationStatus === "PENDING") {
+    return {
+      label: "Đang chờ duyệt",
+      className: "bg-yellow-100 text-yellow-700 hover:bg-yellow-100",
       onClick: () => navigate(`/projects/${projectId}`),
     };
   }
@@ -410,7 +452,7 @@ export const extractFollowedOrganizerId = (item) =>
       item?.userId?.id ||
       item?.userId ||
       item?._id ||
-      item?.id,
+      item?.id
   );
 
 export const matchesProjectFilters = (project, filters, followedOrganizerIds) => {
@@ -459,7 +501,7 @@ export const buildVisibleProjects = ({
   };
 
   const filteredProjects = (projects || []).filter((project) =>
-    matchesProjectFilters(project, filters, followedOrganizerIds),
+    matchesProjectFilters(project, filters, followedOrganizerIds)
   );
 
   const followedProjects = filteredProjects.filter((project) => {
@@ -475,7 +517,7 @@ export const buildVisibleProjects = ({
   const featuredMatches = matchesProjectFilters(
     featuredProject,
     filters,
-    followedOrganizerIds,
+    followedOrganizerIds
   );
 
   if (filters.organizerScope === "FOLLOWED") {

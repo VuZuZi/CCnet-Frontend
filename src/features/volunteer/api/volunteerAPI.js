@@ -1,104 +1,129 @@
 import httpClient from "@/shared/lib/httpClient";
 
+function unwrapData(response) {
+  return response?.data?.data;
+}
+
+function buildProjectApplicationsUrl(projectId, status = null) {
+  if (!projectId) return null;
+  return status
+    ? `/volunteer/projects/${projectId}/${status}`
+    : `/volunteer/projects/${projectId}`;
+}
+
+function ensureApplicationId(applicationId) {
+  if (!applicationId) {
+    throw new Error("Application ID is required");
+  }
+}
+
+async function get(url, config = {}) {
+  const response = await httpClient.get(url, config);
+  return unwrapData(response);
+}
+
+async function post(url, data = {}, config = {}) {
+  const response = await httpClient.post(url, data, config);
+  return unwrapData(response);
+}
+
+async function patch(url, data = {}, config = {}) {
+  const response = await httpClient.patch(url, data, config);
+  return unwrapData(response);
+}
+
 export const volunteerAPI = {
-  getProjectApplications: async (projectId, status) => {
-    if (!projectId) {
+  async getProjectApplications(projectId, status = null) {
+    const url = buildProjectApplicationsUrl(projectId, status);
+
+    if (!url) {
       return { data: [] };
     }
 
     try {
-      const url = `/volunteer/projects/${projectId}/${status}`;
-      const params = {};
-      if (status) params.status = status;
-
-      const response = await httpClient.get(url, { params });
-      return response.data;
+      return await get(url);
     } catch (error) {
-      if (error.response?.status === 404) {
+      if (error?.response?.status === 404) {
         return { data: [] };
       }
       throw error;
     }
   },
 
-  getProjectPendingApplications: async (projectId) => {
-    return volunteerAPI.getProjectApplications(projectId, "PENDING");
+  async getProjectPendingApplications(projectId) {
+    return this.getProjectApplications(projectId, "PENDING");
   },
 
-  getMySupportedProjects: async (params = {}) => {
-    const response = await httpClient.get("/volunteer/me/projects", {
-      params,
-    });
-    return response.data?.data;
+  async getMySupportedProjects(params = {}) {
+    return get("/volunteer/me/projects", { params });
   },
 
-  getApplicationByProject: async (projectId) => {
+  async getApplicationByProject(projectId) {
     if (!projectId) {
       return null;
     }
 
     try {
-      const response = await httpClient.get("/volunteer/application", {
+      return await get("/volunteer/application", {
         params: { opportunityId: projectId },
       });
-      return response.data?.data;
     } catch (error) {
-      if (error.response?.status === 404) {
+      if (error?.response?.status === 404) {
         return null;
       }
       throw error;
     }
   },
 
-  createApplication: async (data) => {
-    const response = await httpClient.post("/volunteer/submit", data);
-    return response.data?.data;
+  async createApplication(data) {
+    return post("/volunteer/submit", data);
   },
 
-  approveApplication: async (applicationId) => {
-    if (!applicationId) {
-      throw new Error("Application ID is required");
-    }
-
-    const response = await httpClient.patch(`/volunteer/${applicationId}/approve`);
-    return response.data?.data;
+  async approveApplication(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/${applicationId}/approve`);
   },
 
-  rejectApplication: async (applicationId, reason) => {
-    if (!applicationId) {
-      throw new Error("Application ID is required");
-    }
-
-    const response = await httpClient.patch(
-      `/volunteer/applications/${applicationId}/reject`,
-      { rejectReason: reason },
-    );
-    return response.data?.data;
+  async rejectApplication(applicationId, reason) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/reject`, {
+      rejectReason: reason,
+    });
   },
 
-  updateApplication: async (applicationId, data) => {
-    if (!applicationId) {
-      throw new Error("Application ID is required");
-    }
-
-    const response = await httpClient.patch(
-      `/volunteer/applications/${applicationId}`,
-      data,
-    );
-    return response.data?.data;
+  async updateApplication(applicationId, data) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}`, data);
   },
 
-  restoreApplication: async (applicationId) => {
-    const response = await httpClient.patch(
-      `/volunteer/applications/${applicationId}/restore`,
-    );
-    return response.data?.data;
+  async restoreApplication(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/restore`);
   },
 
-  cancelApplication: async (applicationId) => {
-    const response = await httpClient.patch(
-      `/volunteer/applications/${applicationId}/cancel`,
-    );
-    return response.data?.data;
+  async cancelApplication(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/cancel`);
+  },
+
+  async requestWithdraw(applicationId, withdrawReason) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/request-withdraw`, {
+      withdrawReason,
+    });
+  },
+
+  async approveWithdraw(applicationId) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/approve-withdraw`);
+  },
+
+  async rejectWithdraw(applicationId, reviewNote) {
+    ensureApplicationId(applicationId);
+    return patch(`/volunteer/applications/${applicationId}/reject-withdraw`, {
+      reviewNote,
+    });
   },
 };
+
+export default volunteerAPI;

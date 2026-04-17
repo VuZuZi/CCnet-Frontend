@@ -49,10 +49,8 @@ const NON_PENDING_STATES = {
 function useModalScrollLock(isOpen) {
   useEffect(() => {
     if (!isOpen) return;
-
     const originalStyle = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-
     return () => {
       document.body.style.overflow = originalStyle;
     };
@@ -75,9 +73,7 @@ function ActionModal({
     reset,
   } = useForm({
     resolver: zodResolver(reasonSchema),
-    defaultValues: {
-      reviewReason: "",
-    },
+    defaultValues: { reviewReason: "" },
   });
 
   if (!isOpen) return null;
@@ -89,25 +85,23 @@ function ActionModal({
       await onConfirm(data.reviewReason);
       onClose();
       reset();
-    } catch {
-      // giữ modal mở nếu request fail
-    }
+    } catch {}
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm">
-      <div className="relative w-full max-w-md animate-in zoom-in-95 rounded-3xl bg-white p-6 shadow-xl fade-in duration-200 sm:p-8">
+      <div className="relative w-full max-w-md rounded-3xl bg-white p-6 shadow-xl sm:p-8">
         <button
           disabled={isProcessing}
           onClick={onClose}
-          className="absolute right-5 top-5 text-slate-400 transition hover:text-slate-600"
+          className="absolute right-5 top-5 text-slate-400 hover:text-slate-600"
         >
           <X size={20} />
         </button>
 
         <div className="mb-5 flex items-center gap-4">
           <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full ${
+            className={`flex h-12 w-12 items-center justify-center rounded-full ${
               isApprove
                 ? "bg-emerald-100 text-emerald-600"
                 : "bg-rose-100 text-rose-600"
@@ -115,6 +109,7 @@ function ActionModal({
           >
             {isApprove ? <CheckCircle size={24} /> : <XCircle size={24} />}
           </div>
+
           <h3 className="text-xl font-bold text-slate-900">
             {isApprove ? "Approve Organizer" : "Decline request"}
           </h3>
@@ -129,21 +124,11 @@ function ActionModal({
             {...register("reviewReason")}
             disabled={isProcessing}
             rows={4}
-            autoFocus
-            placeholder={
-              isApprove
-                ? "Enter a clear reason for approving this organizer request..."
-                : "Enter a clear reason so the Organizer knows how to provide the correct documents..."
-            }
-            className={`w-full rounded-2xl border p-4 text-sm outline-none transition focus:ring-2 disabled:bg-slate-50 disabled:opacity-70 ${
-              errors.reviewReason
-                ? "border-rose-300 focus:border-rose-400 focus:ring-rose-100"
-                : "border-slate-200 focus:border-amber-400 focus:ring-amber-100"
-            }`}
+            className="w-full rounded-2xl border border-slate-200 p-4 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
           />
 
           {errors.reviewReason && (
-            <p className="mt-2 text-xs font-medium text-rose-500">
+            <p className="mt-2 text-xs text-rose-500">
               {errors.reviewReason.message}
             </p>
           )}
@@ -151,9 +136,9 @@ function ActionModal({
           <div className="mt-8 flex justify-end gap-3">
             <button
               type="button"
-              disabled={isProcessing}
               onClick={onClose}
-              className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-100"
+              disabled={isProcessing}
+              className="rounded-xl px-5 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-100"
             >
               Cancel
             </button>
@@ -161,7 +146,7 @@ function ActionModal({
             <button
               type="submit"
               disabled={isProcessing}
-              className={`flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white transition ${
+              className={`rounded-xl px-6 py-2.5 text-sm font-bold text-white ${
                 isApprove
                   ? "bg-emerald-500 hover:bg-emerald-600"
                   : "bg-rose-500 hover:bg-rose-600"
@@ -190,9 +175,7 @@ export function OrganizerReviewActions({
   const [approveModalOpen, setApproveModalOpen] = useState(false);
   const [declineModalOpen, setDeclineModalOpen] = useState(false);
 
-  if (status === "APPROVED") {
-    return null;
-  }
+  if (status === "APPROVED") return null;
 
   if (status !== "PENDING") {
     const stateConfig =
@@ -202,7 +185,7 @@ export function OrganizerReviewActions({
       <div
         className={`flex items-start gap-4 rounded-2xl border p-6 shadow-sm ${stateConfig.wrapperClass}`}
       >
-        <div className="mt-0.5 shrink-0 rounded-full bg-white p-2 shadow-sm">
+        <div className="rounded-full bg-white p-2 shadow-sm">
           {stateConfig.icon}
         </div>
         <div>
@@ -219,25 +202,26 @@ export function OrganizerReviewActions({
 
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-slate-900">Approval Decision</h3>
+      <h3 className="text-lg font-bold text-slate-900">
+        Approval Decision
+      </h3>
+
       <p className="mb-6 mt-1 text-sm text-slate-500">
         Ensure you have thoroughly checked the identification documents and
         organization information before making a decision.
       </p>
 
-      <div className="flex items-center gap-3">
+      <div className="flex justify-end gap-4">
         <button
-          type="button"
           onClick={() => setDeclineModalOpen(true)}
-          className="flex-1 rounded-xl bg-slate-100 px-5 py-3.5 text-sm font-bold text-slate-700 transition hover:bg-slate-200"
+          className="rounded-xl bg-rose-100 px-6 py-3 font-bold text-rose-700 hover:bg-rose-200"
         >
           Decline
         </button>
 
         <button
-          type="button"
           onClick={() => setApproveModalOpen(true)}
-          className="flex-1 rounded-xl bg-amber-500 px-5 py-3.5 text-sm font-bold text-white transition hover:bg-amber-600"
+          className="rounded-xl bg-amber-500 px-6 py-3 font-bold text-white hover:bg-amber-600"
         >
           Approve
         </button>

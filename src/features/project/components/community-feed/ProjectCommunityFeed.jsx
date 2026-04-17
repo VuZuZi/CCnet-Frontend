@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Sparkles, Lock } from "lucide-react";
+import { Sparkles, Lock, FileText } from "lucide-react";
 
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import { useToast } from "@/shared/contexts/ToastContext";
@@ -21,15 +21,23 @@ import {
   normalizeProjectFeedId,
 } from "./utils/projectFeed.utils";
 
-export function ProjectCommunityFeed({ project, isOrganizer }) {
+const VOLUNTEER_FEED_ALLOWED_STATUSES = new Set([
+  "APPROVED",
+  "WITHDRAW_REQUESTED",
+]);
+
+export function ProjectCommunityFeed({
+  project,
+  isOrganizer,
+  isVolunteerMember = false,
+  applicationStatus: applicationStatusFromParent = "",
+}) {
   const toast = useToast();
   const user = useAuthStore((state) => state.user);
 
   const projectId = normalizeProjectFeedId(project?._id || project?.id);
   const projectOrganizerId = normalizeProjectFeedId(project?.organizerId);
   const userId = normalizeProjectFeedId(user?._id || user?.id || user?.userId);
-  const normalizedRole = String(user?.role || "").toLowerCase();
-  const isVolunteerRole = normalizedRole === "volunteer";
 
   const [postContent, setPostContent] = useState("");
   const [commentDrafts, setCommentDrafts] = useState({});
@@ -37,21 +45,37 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
 
   const fileInputRef = useRef(null);
 
+  const shouldFetchApplication =
+    Boolean(projectId && userId && !isOrganizer) &&
+    !VOLUNTEER_FEED_ALLOWED_STATUSES.has(
+      String(applicationStatusFromParent || "").toUpperCase()
+    );
+
   const { data: application } = useQuery({
-    queryKey: ["volunteer-application-by-project", projectId],
+    queryKey: ["volunteer-application-by-project", projectId, userId],
     queryFn: () => volunteerAPI.getApplicationByProject(projectId),
-    enabled: Boolean(projectId && userId && !isOrganizer),
+    enabled: shouldFetchApplication,
+    staleTime: 60 * 1000,
+    retry: false,
   });
+
+  const effectiveApplicationStatus = String(
+    applicationStatusFromParent || application?.status || ""
+  ).toUpperCase();
+
+  const isApprovedVolunteerForFeed =
+    isVolunteerMember ||
+    VOLUNTEER_FEED_ALLOWED_STATUSES.has(effectiveApplicationStatus);
 
   const { canPost, canEngage } = useMemo(
     () =>
       getProjectFeedPermissions({
         userId,
         isOrganizer,
-        isVolunteerRole,
-        applicationStatus: application?.status,
+        isVolunteerRole: isApprovedVolunteerForFeed,
+        applicationStatus: effectiveApplicationStatus,
       }),
-    [application?.status, isOrganizer, isVolunteerRole, userId],
+    [effectiveApplicationStatus, isApprovedVolunteerForFeed, isOrganizer, userId]
   );
 
   const postsQuery = useProjectFeedPosts(projectId, { limit: 10 });
@@ -68,7 +92,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
   const handleCreatePost = async () => {
     if (!canPost) {
       toast.error(
-        "Chỉ project owner hoặc volunteer đã được duyệt mới có thể đăng feed.",
+        "Chỉ project owner hoặc volunteer đã được duyệt mới có thể đăng feed."
       );
       return;
     }
@@ -93,9 +117,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
       setPostMedia(null);
       toast.success("Đăng bài thành công!");
     } catch (error) {
-      toast.error(
-        getProjectFeedErrorMessage(error, "Có lỗi khi đăng bài"),
-      );
+      toast.error(getProjectFeedErrorMessage(error, "Có lỗi khi đăng bài"));
     }
   };
 
@@ -130,7 +152,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
   const handleCreateComment = async (postId) => {
     if (!canEngage) {
       toast.error(
-        "Chỉ project owner hoặc volunteer đã được duyệt mới có thể bình luận.",
+        "Chỉ project owner hoặc volunteer đã được duyệt mới có thể bình luận."
       );
       return;
     }
@@ -142,9 +164,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
       await createComment.mutateAsync({ postId, content });
       setCommentDrafts((prev) => ({ ...prev, [postId]: "" }));
     } catch (error) {
-      toast.error(
-        getProjectFeedErrorMessage(error, "Có lỗi khi bình luận"),
-      );
+      toast.error(getProjectFeedErrorMessage(error, "Có lỗi khi bình luận"));
     }
   };
 
@@ -166,27 +186,41 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
 
   return (
     <section className="space-y-5">
-      <div className="rounded-[28px] border border-amber-200/70 bg-gradient-to-r from-[#FFF8E6] via-[#FFFFFF] to-[#EFF6FF] p-4 shadow-sm sm:p-5">
-        <div className="flex items-start justify-between gap-3">
-          <div>
+      {/* HEADER */}
+      <div className="rounded-[28px] border border-amber-200/70 bg-gradient-to-r from-[#FFF8E6] via-[#FFFFFF] to-[#EFF6FF] p-5 shadow-sm">
+        <div className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
             <p className="inline-flex items-center gap-2 rounded-full border border-amber-300/70 bg-white/80 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.14em] text-amber-700">
               <Sparkles size={13} />
               Community Feed
             </p>
-            <h3 className="mt-2 text-lg font-extrabold text-slate-900">
+
+            <h3 className="mt-2 text-xl font-black tracking-tight text-slate-900">
               Cập nhật tiến độ dự án
             </h3>
-            <p className="mt-1 text-sm text-slate-600">
+
+            <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-600">
               Chỉ project owner hoặc volunteer đã được duyệt mới được đăng bài,
               bình luận và thả tim trong feed dự án.
             </p>
           </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-right shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500">
-              Bài viết
-            </p>
-            <p className="text-xl font-black text-slate-900">{posts.length}</p>
+          {/* FIXED STAT BOX */}
+          <div className="shrink-0 rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <FileText size={18} />
+              </div>
+
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-slate-400">
+                  Bài viết
+                </p>
+                <p className="text-2xl font-black leading-none text-slate-900">
+                  {posts.length}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -206,13 +240,13 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
         postLockedPlaceholder={postLockedPlaceholder}
       />
 
-      {postsQuery.isLoading ? (
+      {postsQuery.isLoading && (
         <div className="rounded-[24px] border border-slate-200 bg-white p-8 text-center text-sm font-semibold text-slate-500 shadow-sm">
           Đang tải feed dự án...
         </div>
-      ) : null}
+      )}
 
-      {!postsQuery.isLoading && posts.length === 0 ? (
+      {!postsQuery.isLoading && posts.length === 0 && (
         <div className="rounded-[24px] border border-dashed border-slate-300 bg-white/80 p-10 text-center shadow-sm">
           <p className="text-base font-bold text-slate-700">
             Chưa có bài viết nào trong dự án này
@@ -221,7 +255,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
             Hãy là người đầu tiên đăng cập nhật để cộng đồng theo dõi tiến độ.
           </p>
         </div>
-      ) : null}
+      )}
 
       {posts.map((post) => (
         <FeedPostCard
@@ -243,7 +277,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
         />
       ))}
 
-      {postsQuery.hasNextPage ? (
+      {postsQuery.hasNextPage && (
         <button
           type="button"
           onClick={() => postsQuery.fetchNextPage()}
@@ -252,9 +286,9 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
         >
           {postsQuery.isFetchingNextPage ? "Loading..." : "Load more"}
         </button>
-      ) : null}
+      )}
 
-      {!canPost || !canEngage ? (
+      {(!canPost || !canEngage) && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-800">
           <div className="flex items-start gap-2">
             <Lock size={16} className="mt-0.5 flex-shrink-0" />
@@ -264,7 +298,7 @@ export function ProjectCommunityFeed({ project, isOrganizer }) {
             </p>
           </div>
         </div>
-      ) : null}
+      )}
     </section>
   );
 }

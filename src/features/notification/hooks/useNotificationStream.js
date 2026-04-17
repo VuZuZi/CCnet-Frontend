@@ -9,12 +9,17 @@ import {
   NOTIFICATION_QUERY_KEYS,
   NOTIFICATION_SSE_EVENTS,
   REALTIME_NOTIFICATION_TYPES,
+  VOLUNTEER_REALTIME_TYPES,
 } from "../constants/notification.constants";
 import { transformNotification } from "../utils/notification.transformer";
 import { calculateTotalPages } from "../utils/notification.helpers";
 import { TRANSACTION_QUERY_KEYS } from "@/features/transaction/constants/transaction.queryKeys";
 import { HELP_REQUEST_KEYS } from "@/features/needHelp/hooks/useHelpRequestQueries";
-import { PROJECT_QUERY_KEYS } from "@/features/project/hooks/useProjectQueries";
+import {
+  PROJECT_FEED_QUERY_KEYS,
+  PROJECT_QUERY_KEYS,
+} from "@/features/project/hooks/useProjectQueries";
+import { volunteerQueryKeys } from "@/features/volunteer/hooks/useVolunteerQueries";
 import {
   ADMIN_PROJECTS_QUERY_KEY,
   ADMIN_STATS_QUERY_KEY,
@@ -128,6 +133,16 @@ function invalidateProjectQueries(queryClient, projectId = null) {
   });
 
   queryClient.invalidateQueries({
+    queryKey: PROJECT_QUERY_KEYS.featured,
+    exact: false,
+  });
+
+  queryClient.invalidateQueries({
+    queryKey: PROJECT_QUERY_KEYS.volunteerNeeded,
+    exact: false,
+  });
+
+  queryClient.invalidateQueries({
     queryKey: ADMIN_PROJECTS_QUERY_KEY,
     exact: false,
   });
@@ -149,6 +164,11 @@ function invalidateProjectQueries(queryClient, projectId = null) {
     });
 
     queryClient.invalidateQueries({
+      queryKey: PROJECT_FEED_QUERY_KEYS.posts(projectId),
+      exact: false,
+    });
+
+    queryClient.invalidateQueries({
       queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId),
       exact: false,
     });
@@ -156,6 +176,18 @@ function invalidateProjectQueries(queryClient, projectId = null) {
 
   queryClient.refetchQueries({
     queryKey: PROJECT_QUERY_KEYS.all,
+    exact: false,
+    type: "active",
+  });
+
+  queryClient.refetchQueries({
+    queryKey: PROJECT_QUERY_KEYS.featured,
+    exact: false,
+    type: "active",
+  });
+
+  queryClient.refetchQueries({
+    queryKey: PROJECT_QUERY_KEYS.volunteerNeeded,
     exact: false,
     type: "active",
   });
@@ -285,6 +317,55 @@ function patchHelpRequestDetailQuery(queryClient, helpRequestId, patch) {
   });
 }
 
+function invalidateVolunteerQueries(queryClient, projectId = null) {
+  queryClient.invalidateQueries({
+    queryKey: volunteerQueryKeys.applicationRoot,
+    exact: false,
+  });
+
+  queryClient.invalidateQueries({
+    queryKey: volunteerQueryKeys.projectApplicationsRoot,
+    exact: false,
+  });
+
+  queryClient.invalidateQueries({
+    queryKey: volunteerQueryKeys.pendingApplicationsRoot,
+    exact: false,
+  });
+
+  queryClient.invalidateQueries({
+    queryKey: volunteerQueryKeys.supportedProjectsRoot,
+    exact: false,
+  });
+
+  if (projectId) {
+    queryClient.invalidateQueries({
+      queryKey: volunteerQueryKeys.projectApplications(projectId),
+      exact: false,
+    });
+  }
+
+  queryClient.refetchQueries({
+    queryKey: volunteerQueryKeys.applicationRoot,
+    exact: false,
+    type: "active",
+  });
+
+  queryClient.refetchQueries({
+    queryKey: volunteerQueryKeys.projectApplicationsRoot,
+    exact: false,
+    type: "active",
+  });
+
+  queryClient.refetchQueries({
+    queryKey: volunteerQueryKeys.supportedProjectsRoot,
+    exact: false,
+    type: "active",
+  });
+
+  invalidateProjectQueries(queryClient, projectId);
+}
+
 const runtime = {
   eventSource: null,
   reconnectTimer: null,
@@ -317,6 +398,7 @@ function detachEventSourceListeners(source, handlers) {
   source.removeEventListener(NOTIFICATION_SSE_EVENTS.READ, handlers.read);
   source.removeEventListener(NOTIFICATION_SSE_EVENTS.READ_ALL, handlers.readAll);
   source.removeEventListener(NOTIFICATION_SSE_EVENTS.DELETED, handlers.deleted);
+  source.removeEventListener("message", handlers.message);
 }
 
 function closeEventSource() {
@@ -402,152 +484,156 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       refreshAllNotificationQueries();
     };
 
-    const handleCreated = (event) => {
-      try {
-        const payload = JSON.parse(event.data);
-        const item = transformNotification(payload.notification);
-        if (!item?.id && !item?.type) return;
+    const processCreatedPayload = (payload) => {
+      const item = transformNotification(payload.notification || payload);
+      if (!item?.id && !item?.type) return;
 
-        if (item?.id) {
-          let didPatchAtLeastOneList = false;
+      if (item?.id) {
+        let didPatchAtLeastOneList = false;
 
-          patchNotificationListQueries(queryClient, (previous) => {
-            didPatchAtLeastOneList = true;
-            return prependUniqueItem(previous, item);
-          });
+        patchNotificationListQueries(queryClient, (previous) => {
+          didPatchAtLeastOneList = true;
+          return prependUniqueItem(previous, item);
+        });
 
-          if (!didPatchAtLeastOneList) {
-            invalidateNotificationList();
-          }
-
-          if (!item.isRead) {
-            bumpUnreadCount();
-          }
+        if (!didPatchAtLeastOneList) {
+          invalidateNotificationList();
         }
 
-        const projectId =
-          item.entityId ||
-          item.metadata?.projectId ||
-          payload.notification?.metadata?.projectId ||
-          null;
+        if (!item.isRead) {
+          bumpUnreadCount();
+        }
+      }
 
-        const helpRequestId =
-          item.entityId ||
-          item.metadata?.helpRequestId ||
-          payload.notification?.metadata?.helpRequestId ||
-          null;
+      const projectId =
+        item.entityId ||
+        item.metadata?.projectId ||
+        payload.notification?.metadata?.projectId ||
+        payload.notification?.entityId ||
+        payload.metadata?.projectId ||
+        null;
 
-        if (HELP_REQUEST_REALTIME_TYPES.includes(item.type)) {
-          invalidateHelpRequestQueries(queryClient, helpRequestId);
+      const helpRequestId =
+        item.entityId ||
+        item.metadata?.helpRequestId ||
+        payload.notification?.metadata?.helpRequestId ||
+        payload.metadata?.helpRequestId ||
+        null;
 
-          if (helpRequestId) {
-            if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_VERIFIED) {
+      if (HELP_REQUEST_REALTIME_TYPES.includes(item.type)) {
+        invalidateHelpRequestQueries(queryClient, helpRequestId);
+
+        if (helpRequestId) {
+          if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_VERIFIED) {
+            patchHelpRequestDetailQuery(queryClient, helpRequestId, {
+              status: "VERIFIED",
+              rejectionReason: null,
+            });
+          }
+
+          if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_REJECTED) {
+            patchHelpRequestDetailQuery(queryClient, helpRequestId, {
+              status: "REJECTED",
+              rejectionReason:
+                item.metadata?.rejectionReason ||
+                payload.notification?.metadata?.rejectionReason ||
+                payload.metadata?.rejectionReason ||
+                null,
+            });
+          }
+
+          if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_COMPLETED) {
+            patchHelpRequestDetailQuery(queryClient, helpRequestId, {
+              status: "COMPLETED",
+            });
+          }
+
+          if (
+            item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_ASSIGNED ||
+            item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_REASSIGNED
+          ) {
+            patchHelpRequestDetailQuery(queryClient, helpRequestId, {
+              status: "VERIFIED",
+            });
+          }
+
+          if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_ASSIGNMENT_RESPONDED) {
+            const action =
+              item.metadata?.action ||
+              payload.notification?.metadata?.action ||
+              payload.metadata?.action ||
+              null;
+
+            if (action === "accepted") {
+              patchHelpRequestDetailQuery(queryClient, helpRequestId, {
+                status: "IN_PROGRESS",
+              });
+            }
+
+            if (action === "rejected") {
               patchHelpRequestDetailQuery(queryClient, helpRequestId, {
                 status: "VERIFIED",
-                rejectionReason: null,
+                assignedOrganizerId: null,
+                assignedAt: null,
               });
-            }
-
-            if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_REJECTED) {
-              patchHelpRequestDetailQuery(queryClient, helpRequestId, {
-                status: "REJECTED",
-                rejectionReason:
-                  item.metadata?.rejectionReason ||
-                  payload.notification?.metadata?.rejectionReason ||
-                  null,
-              });
-            }
-
-            if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_COMPLETED) {
-              patchHelpRequestDetailQuery(queryClient, helpRequestId, {
-                status: "COMPLETED",
-              });
-            }
-
-            if (
-              item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_ASSIGNED ||
-              item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_REASSIGNED
-            ) {
-              patchHelpRequestDetailQuery(queryClient, helpRequestId, {
-                status: "VERIFIED",
-              });
-            }
-
-            if (item.type === REALTIME_NOTIFICATION_TYPES.HELP_REQUEST_ASSIGNMENT_RESPONDED) {
-              const action =
-                item.metadata?.action || payload.notification?.metadata?.action || null;
-
-              if (action === "accepted") {
-                patchHelpRequestDetailQuery(queryClient, helpRequestId, {
-                  status: "IN_PROGRESS",
-                });
-              }
-
-              if (action === "rejected") {
-                patchHelpRequestDetailQuery(queryClient, helpRequestId, {
-                  status: "VERIFIED",
-                  assignedOrganizerId: null,
-                  assignedAt: null,
-                });
-              }
             }
           }
         }
+      }
 
-        if (item.type === REALTIME_NOTIFICATION_TYPES.ORGANIZER_REQUEST_UPDATED) {
-          queryClient.invalidateQueries({
-            queryKey: GLOBAL_QUERY_KEYS.ORGANIZER_REQUEST_ME,
-          });
-          queryClient.invalidateQueries({
-            queryKey: GLOBAL_QUERY_KEYS.PROFILE_ME,
-          });
-        }
+      if (VOLUNTEER_REALTIME_TYPES.includes(item.type)) {
+        invalidateVolunteerQueries(queryClient, projectId);
+      }
 
-        if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_UPDATED) {
-          const nextStatus =
-            item.metadata?.status || payload.notification?.metadata?.status || null;
+      if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_APPLIED) {
+        toast.success("Có đơn đăng ký tình nguyện viên mới.");
+      }
 
-          patchProjectQueries(queryClient, projectId, nextStatus);
-        }
+      if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_APPLICATION_APPROVED) {
+        toast.success("Đơn tình nguyện đã được duyệt.");
+      }
 
-        if (
-          item.type === REALTIME_NOTIFICATION_TYPES.DONATION_SUCCESSFUL ||
-          item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_FAILED
-        ) {
-          if (item.type === REALTIME_NOTIFICATION_TYPES.DONATION_SUCCESSFUL) {
-            toast.success("🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.");
+      if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_APPLICATION_REJECTED) {
+        toast.error("Đơn tình nguyện đã bị từ chối.");
+      }
 
-            queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
-            queryClient.invalidateQueries({
-              queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY,
-            });
-            queryClient.invalidateQueries({
-              queryKey: TRANSACTION_QUERY_KEYS.myDonations(),
-            });
+      if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_WITHDRAW_REQUESTED) {
+        toast.info("Có yêu cầu xin rút khỏi dự án mới.");
+      }
 
-            if (projectId) {
-              queryClient.invalidateQueries({
-                queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId),
-              });
-              invalidateProjectQueries(queryClient, projectId);
-            }
-          } else if (item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_FAILED) {
-            toast.error("Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.");
-          }
+      if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_WITHDRAW_APPROVED) {
+        toast.success("Yêu cầu xin rút đã được chấp thuận.");
+      }
 
-          if (projectId) {
-            globalEventBus.dispatchEvent(
-              new CustomEvent(APP_EVENTS.DONATION_SUCCESS, {
-                detail: { projectId: String(projectId), status: item.type },
-              })
-            );
-          }
-        }
+      if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_WITHDRAW_REJECTED) {
+        toast.error("Yêu cầu xin rút đã bị từ chối.");
+      }
 
-        if (item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_REFUNDED) {
-          toast.success(
-            "Hoàn tiền dự án thành công. Số dư đã được cộng lại vào ví cá nhân của bạn."
-          );
+      if (item.type === REALTIME_NOTIFICATION_TYPES.ORGANIZER_REQUEST_UPDATED) {
+        queryClient.invalidateQueries({
+          queryKey: GLOBAL_QUERY_KEYS.ORGANIZER_REQUEST_ME,
+        });
+        queryClient.invalidateQueries({
+          queryKey: GLOBAL_QUERY_KEYS.PROFILE_ME,
+        });
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_UPDATED) {
+        const nextStatus =
+          item.metadata?.status ||
+          payload.notification?.metadata?.status ||
+          payload.metadata?.status ||
+          null;
+
+        patchProjectQueries(queryClient, projectId, nextStatus);
+      }
+
+      if (
+        item.type === REALTIME_NOTIFICATION_TYPES.DONATION_SUCCESSFUL ||
+        item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_FAILED
+      ) {
+        if (item.type === REALTIME_NOTIFICATION_TYPES.DONATION_SUCCESSFUL) {
+          toast.success("🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.");
 
           queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
           queryClient.invalidateQueries({
@@ -558,17 +644,87 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           });
 
           if (projectId) {
+            queryClient.invalidateQueries({
+              queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId),
+            });
             invalidateProjectQueries(queryClient, projectId);
-
-            globalEventBus.dispatchEvent(
-              new CustomEvent(APP_EVENTS.REFUND_SUCCESS, {
-                detail: { projectId: String(projectId) },
-              })
-            );
           }
+        } else if (item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_FAILED) {
+          toast.error("Giao dịch thất bại hoặc đã bị hủy từ phía ngân hàng.");
         }
+
+        if (projectId) {
+          globalEventBus.dispatchEvent(
+            new CustomEvent(APP_EVENTS.DONATION_SUCCESS, {
+              detail: { projectId: String(projectId), status: item.type },
+            })
+          );
+        }
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_REFUNDED) {
+        toast.success(
+          "Hoàn tiền dự án thành công. Số dư đã được cộng lại vào ví cá nhân của bạn."
+        );
+
+        queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
+        queryClient.invalidateQueries({
+          queryKey: GLOBAL_QUERY_KEYS.WALLET_HISTORY,
+        });
+        queryClient.invalidateQueries({
+          queryKey: TRANSACTION_QUERY_KEYS.myDonations(),
+        });
+
+        if (projectId) {
+          invalidateProjectQueries(queryClient, projectId);
+
+          globalEventBus.dispatchEvent(
+            new CustomEvent(APP_EVENTS.REFUND_SUCCESS, {
+              detail: { projectId: String(projectId) },
+            })
+          );
+        }
+      }
+    };
+
+    const handleCreated = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+        processCreatedPayload(payload);
       } catch (err) {
         console.error("SSE Created Handler Error:", err);
+      }
+    };
+
+    const handleMessage = (event) => {
+      try {
+        const payload = JSON.parse(event.data);
+
+        const eventType =
+          payload?.event ||
+          payload?.type ||
+          payload?.eventType ||
+          payload?.notification?.event ||
+          payload?.notification?.type ||
+          "";
+
+        if (
+          eventType === NOTIFICATION_SSE_EVENTS.CREATED ||
+          eventType === "notification_created" ||
+          payload?.notification ||
+          payload?.id
+        ) {
+          processCreatedPayload(payload);
+        }
+
+        if (
+          eventType === NOTIFICATION_SSE_EVENTS.UNREAD_COUNT &&
+          typeof payload?.unreadCount === "number"
+        ) {
+          setUnreadCount(payload.unreadCount);
+        }
+      } catch {
+        // bỏ qua message không parse được
       }
     };
 
@@ -707,6 +863,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
             read: handleRead,
             readAll: handleReadAll,
             deleted: handleDeleted,
+            message: handleMessage,
           };
 
           source.addEventListener(NOTIFICATION_SSE_EVENTS.CONNECTED, handlers.connected);
@@ -715,6 +872,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           source.addEventListener(NOTIFICATION_SSE_EVENTS.READ, handlers.read);
           source.addEventListener(NOTIFICATION_SSE_EVENTS.READ_ALL, handlers.readAll);
           source.addEventListener(NOTIFICATION_SSE_EVENTS.DELETED, handlers.deleted);
+          source.addEventListener("message", handlers.message);
 
           source.onerror = () => {
             detachEventSourceListeners(source, handlers);
