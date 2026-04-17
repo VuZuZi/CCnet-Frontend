@@ -83,35 +83,35 @@ export function HelpRequestDetailHero({ helpRequest }) {
     (item) => item?.mediaType === 'image' || !item?.mediaType
   )?.url;
 
-  const categoryLabel = CATEGORY_LABELS[category] || 'Community Support';
-  const urgencyLabel = URGENCY_LABELS[urgencyLevel] || 'Medium';
+  const categoryLabel = CATEGORY_LABELS[category] || 'Hỗ trợ cộng đồng';
+  const urgencyLabel = URGENCY_LABELS[urgencyLevel] || 'Trung bình';
   const urgencyClass = URGENCY_STYLES[urgencyLevel] || URGENCY_STYLES.MEDIUM;
 
   const handleShare = async () => {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareData = {
       title,
-      text: `Support this NeedHelp request on CCNet: ${title}`,
+      text: `Hỗ trợ yêu cầu NeedHelp này trên CCNet: ${title}`,
       url: shareUrl,
     };
 
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        toast.success('Share sheet opened.');
+        toast.success('Đã mở bảng chia sẻ.');
         return;
       }
 
       if (navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(shareUrl);
-        toast.success('Link copied to clipboard.');
+        toast.success('Đã sao chép liên kết vào clipboard.');
         return;
       }
 
-      throw new Error('Share is not supported');
+      throw new Error('Chia sẻ không được hỗ trợ');
     } catch (error) {
       if (error?.name === 'AbortError') return;
-      toast.error('Could not share this request right now.');
+      toast.error('Hiện không thể chia sẻ yêu cầu này.');
     }
   };
 
@@ -156,11 +156,11 @@ export function HelpRequestDetailHero({ helpRequest }) {
             <div>
               <div className="flex flex-wrap gap-3">
                 <MetaItem icon={MapPin}>
-                  {location?.address || 'Location will be confirmed by CCNet'}
+                  {location?.address || 'Địa điểm sẽ được CCNet xác nhận'}
                 </MetaItem>
 
                 <MetaItem icon={CalendarDays}>
-                  Submitted {formatDate(createdAt) || 'recently'}
+                  Ngày gửi {formatDate(createdAt) || 'gần đây'}
                 </MetaItem>
               </div>
 
@@ -170,22 +170,22 @@ export function HelpRequestDetailHero({ helpRequest }) {
                 </h1>
 
                 <p className="mt-4 max-w-3xl text-[15px] leading-8 text-slate-500">
-                  This request is visible to the community so organizers and supporters can
-                  review the case, verify the information, and respond in a responsible way.
+                  Yêu cầu này hiển thị cho cộng đồng để nhà tổ chức và người hỗ trợ có thể
+                  xem xét, xác minh thông tin và phản hồi một cách có trách nhiệm.
                 </p>
               </div>
 
               <div className="mt-8 grid gap-4 lg:grid-cols-2">
                 <div className="rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-5">
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                    Submitted by
+                    Người gửi
                   </p>
 
                   <div className="mt-4 flex items-center gap-4">
                     {requester?.avatar ? (
                       <img
                         src={requester.avatar}
-                        alt={requester.fullName || 'Requester'}
+                        alt={requester.fullName || 'Người gửi yêu cầu'}
                         className="h-14 w-14 rounded-full object-cover ring-2 ring-white"
                       />
                     ) : (
@@ -196,10 +196,10 @@ export function HelpRequestDetailHero({ helpRequest }) {
 
                     <div className="min-w-0">
                       <p className="truncate text-base font-bold text-slate-900">
-                        {requester?.fullName || 'Community requester'}
+                        {requester?.fullName || 'Người gửi từ cộng đồng'}
                       </p>
                       <p className="truncate text-sm text-slate-500">
-                        {requester?.email || 'CCNet requester profile'}
+                        {requester?.email || 'Hồ sơ người gửi CCNet'}
                       </p>
                     </div>
                   </div>
@@ -207,7 +207,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
 
                 <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-5">
                   <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400">
-                    Support options
+                    Tùy chọn hỗ trợ
                   </p>
 
                   <div className="mt-4 flex flex-col gap-3">
@@ -225,7 +225,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
 
                     {!contactPhone && !contactEmail ? (
                       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-500">
-                        Contact details will be shared after review.
+                        Thông tin liên hệ sẽ được chia sẻ sau khi kiểm duyệt.
                       </div>
                     ) : null}
                   </div>
@@ -240,7 +240,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
                   className="inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
                 >
                   <ExternalLink size={16} />
-                  View Linked Project
+                  Xem dự án liên kết
                 </Link>
               ) : null}
 
@@ -250,7 +250,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
                 className="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
               >
                 <Share2 size={16} />
-                Share Request
+                Chia sẻ yêu cầu
               </button>
             </div>
           </div>

@@ -45,20 +45,20 @@ export const useHelpRequestFilters = () => {
 };
 
 export const CATEGORY_OPTIONS = [
-  { value: '', label: 'All Categories' },
-  { value: 'Y_TE', label: 'Medical Aid' },
-  { value: 'GIAO_DUC', label: 'Education' },
-  { value: 'THIEN_TAI', label: 'Disaster Relief' },
-  { value: 'XAY_DUNG', label: 'Construction' },
-  { value: 'MOI_TRUONG', label: 'Environment' },
-  { value: 'KHAC', label: 'Other' },
+  { value: '', label: 'Tất cả danh mục' },
+  { value: 'Y_TE', label: 'Hỗ trợ y tế' },
+  { value: 'GIAO_DUC', label: 'Giáo dục' },
+  { value: 'THIEN_TAI', label: 'Cứu trợ thiên tai' },
+  { value: 'XAY_DUNG', label: 'Xây dựng' },
+  { value: 'MOI_TRUONG', label: 'Môi trường' },
+  { value: 'KHAC', label: 'Khác' },
 ];
 
 export const URGENCY_OPTIONS = [
-  { value: '', label: 'All Urgency Levels' },
-  { value: 'CRITICAL', label: 'Critical' },
-  { value: 'HIGH', label: 'High' },
-  { value: 'MEDIUM', label: 'Medium' },
-  { value: 'LOW', label: 'Low' },
+  { value: '', label: 'Tất cả mức độ khẩn cấp' },
+  { value: 'CRITICAL', label: 'Khẩn cấp' },
+  { value: 'HIGH', label: 'Cao' },
+  { value: 'MEDIUM', label: 'Trung bình' },
+  { value: 'LOW', label: 'Thấp' },
 ];
 

@@ -177,7 +177,7 @@ export function EditHelpRequestPage() {
   const handleDelete = () => {
     if (!helpRequest?._id) return;
     const confirmed = window.confirm(
-      'Are you sure you want to delete this help request? This action cannot be undone.'
+      'Bạn có chắc chắn muốn xóa yêu cầu trợ giúp này không? Hành động này không thể hoàn tác.'
     );
     if (confirmed) deleteMutation.mutate(helpRequest._id);
   };
@@ -200,16 +200,16 @@ export function EditHelpRequestPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-rose-700">
             <CircleAlert size={28} />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">Cannot edit this request</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Không thể chỉnh sửa yêu cầu này</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-500">
-            {error?.message || 'The request does not exist or is no longer available.'}
+            {error?.message || 'Yêu cầu không tồn tại hoặc không còn khả dụng.'}
           </p>
           <Link
             to={ROUTES.NEED_HELP}
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 font-bold text-slate-900 transition-colors hover:bg-amber-500"
           >
             <ArrowLeft size={18} />
-            Back to Help Requests
+            Quay lại yêu cầu trợ giúp
           </Link>
         </div>
       </main>
@@ -223,16 +223,16 @@ export function EditHelpRequestPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-rose-100 text-rose-700">
             <CircleAlert size={28} />
           </div>
-          <h2 className="text-2xl font-bold text-slate-900">Permission denied</h2>
+          <h2 className="text-2xl font-bold text-slate-900">Quyền truy cập bị từ chối</h2>
           <p className="mx-auto mt-3 max-w-xl text-slate-500">
-            You can only edit your own help requests.
+            Bạn chỉ có thể chỉnh sửa các yêu cầu trợ giúp của riêng bạn.
           </p>
           <Link
             to={ROUTES.NEED_HELP}
             className="mt-8 inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-6 py-3 font-bold text-slate-900 transition-colors hover:bg-amber-500"
           >
             <ArrowLeft size={18} />
-            Back to Help Requests
+            Quay lại yêu cầu trợ giúp
           </Link>
         </div>
       </main>
@@ -249,13 +249,13 @@ export function EditHelpRequestPage() {
           className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
           <ArrowLeft size={16} />
-          Back to Request Detail
+          Quay lại chi tiết yêu cầu
         </Link>
         <h1 className="text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
-          Edit Help Request
+          Chỉnh sửa yêu cầu trợ giúp
         </h1>
         <p className="mt-2 text-base text-slate-500">
-          Update your story, evidence, and contact information.
+          Cập nhật câu chuyện, bằng chứng và thông tin liên hệ của bạn.
         </p>
       </div>
 
@@ -266,28 +266,28 @@ export function EditHelpRequestPage() {
           <div className="space-y-6 lg:col-span-2">
 
             {/* Basic Details */}
-            <SectionCard icon={FileText} title="Basic Details" accent="amber">
+            <SectionCard icon={FileText} title="Thông tin cơ bản" accent="amber">
               <div className="space-y-5">
-                <FormField label="Request Title" error={errors.title?.message} required>
+                <FormField label="Tiêu đề yêu cầu" error={errors.title?.message} required>
                   <input
                     {...register('title')}
-                    placeholder="e.g., Emergency Medical Support Needed"
+                    placeholder="ví dụ: Cần hỗ trợ y tế khẩn cấp"
                     className={getInputClass(!!errors.title)}
                   />
                 </FormField>
 
                 <SelectField
-                  label="Category"
+                  label="Danh mục"
                   options={HELP_REQUEST_CATEGORIES}
                   error={errors.category?.message}
                   required
-                  placeholder="Select a Category"
+                  placeholder="Chọn một danh mục"
                   {...register('category')}
                 />
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Urgency Level
+                    Mức độ ưu tiên
                   </label>
                   <div className="flex gap-2">
                     {URGENCY_LEVELS.map((u) => (
@@ -328,21 +328,21 @@ export function EditHelpRequestPage() {
             </SectionCard>
 
             {/* Story */}
-            <SectionCard icon={FileText} title="Story & Situation" accent="violet">
-              <FormField label="Story / Description" error={errors.story?.message} required>
+            <SectionCard icon={FileText} title="Câu chuyện & Tình huống" accent="violet">
+              <FormField label="Câu chuyện / Mô tả" error={errors.story?.message} required>
                 <textarea
                   {...register('story')}
                   rows={9}
-                  placeholder="Describe the situation in detail..."
+                  placeholder="Mô tả chi tiết tình huống..."
                   className={`${getInputClass(!!errors.story)} resize-y min-h-[200px]`}
                 />
               </FormField>
             </SectionCard>
 
             {/* Evidence */}
-            <SectionCard icon={ImageIcon} title="Evidence & Visuals" accent="sky">
+            <SectionCard icon={ImageIcon} title="Bằng chứng & Hình ảnh" accent="sky">
               <FormField
-                label="Upload photos, videos, or documents as evidence"
+                label="Tải lên ảnh, video hoặc tài liệu làm bằng chứng"
                 error={errors.evidences?.message}
               >
                 <Controller
@@ -410,22 +410,22 @@ export function EditHelpRequestPage() {
                     = {amountDisplay} đồng
                   </p>
                 ) : (
-                  <p className="mt-1 text-xs text-slate-400">Leave 0 for flexible support</p>
+                  <p className="mt-1 text-xs text-slate-400">Để 0 cho hỗ trợ linh hoạt</p>
                 )}
               </FormField>
             </SectionCard>
 
             {/* Contact */}
-            <SectionCard icon={Phone} title="Contact Information" accent="sky">
+            <SectionCard icon={Phone} title="Thông tin liên hệ" accent="sky">
               <div className="space-y-5">
-                <FormField label="Phone Number" error={errors.contactPhone?.message}>
+                <FormField label="Số điện thoại" error={errors.contactPhone?.message}>
                   <input
                     type="tel"
                     {...register('contactPhone')}
-                    placeholder="0912345678 or +84912345678"
+                    placeholder="0912345678 hoặc +84912345678"
                     className={getInputClass(!!errors.contactPhone)}
                   />
-                  <p className="mt-1 text-xs text-slate-400">Vietnamese format only (optional)</p>
+                  <p className="mt-1 text-xs text-slate-400">Định dạng Việt Nam (tùy chọn)</p>
                 </FormField>
 
                 <FormField label="Email" error={errors.contactEmail?.message}>
@@ -451,7 +451,7 @@ export function EditHelpRequestPage() {
             className="w-full max-w-xs rounded-2xl shadow-lg shadow-amber-500/25 text-base font-bold"
             isLoading={updateMutation.isPending}
           >
-            Save Changes
+            Lưu thay đổi
           </Button>
 
           <button
@@ -461,7 +461,7 @@ export function EditHelpRequestPage() {
             className="inline-flex w-full max-w-xs items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3.5 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-70"
           >
             <Trash2 size={15} />
-            {deleteMutation.isPending ? 'Deleting...' : 'Delete Request'}
+            {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa yêu cầu'}
           </button>
         </div>
       </form>

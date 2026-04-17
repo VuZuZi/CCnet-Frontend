@@ -64,10 +64,10 @@ export default function NotificationSettingsModal({
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-6 py-5">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">
-              Notification settings
+              Cài đặt thông báo
             </h2>
             <p className="mt-1 text-sm text-slate-500">
-              Manage which notifications you want to receive in the app.
+              Quản lý những thông báo nào bạn muốn nhận trong ứng dụng.
             </p>
           </div>
 
@@ -75,7 +75,7 @@ export default function NotificationSettingsModal({
             type="button"
             onClick={handleClose}
             className="inline-flex h-10 w-10 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
-            aria-label="Close"
+            aria-label="Đóng"
           >
             <X size={18} />
           </button>
@@ -84,15 +84,15 @@ export default function NotificationSettingsModal({
         <div className="max-h-[75vh] overflow-y-auto px-6 py-6">
           {!isAllowedRole ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
-              Notification settings are available for user and organizer accounts only.
+              Cài đặt thông báo chỉ khả dụng cho các tài khoản user và organizer.
             </div>
           ) : settingsQuery.isLoading ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
-              Loading notification settings...
+              Đang tải cài đặt thông báo...
             </div>
           ) : settingsQuery.isError ? (
             <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-600">
-              Failed to load notification settings.
+              Không thể tải cài đặt thông báo.
             </div>
           ) : (
             <>
@@ -105,13 +105,13 @@ export default function NotificationSettingsModal({
 
               {updateSettings.isSuccess && (
                 <div className="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
-                  Settings updated successfully.
+                  Cài đặt đã được cập nhật thành công.
                 </div>
               )}
 
               {updateSettings.isError && (
                 <div className="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                  Failed to update settings.
+                  Không thể cập nhật cài đặt.
                 </div>
               )}
             </>

@@ -11,7 +11,7 @@ export function LandingFooter({ navigation }) {
             <div className="flex items-center mb-4">
                <span className="font-bold text-2xl text-black">CCNet</span>
             </div>
-            <p className="text-gray">Modern management system for modern teams.</p>
+            <p className="text-gray">Hệ thống quản lý hiện đại cho các nhóm hiện đại.</p>
           </div>
           
           <div className="md:col-span-8">
@@ -40,7 +40,7 @@ export function LandingFooter({ navigation }) {
         <hr className="my-8 border-light-gray" />
         
         <div className="text-center text-gray text-sm">
-          © {new Date().getFullYear()} CCNet. All rights reserved.
+          © {new Date().getFullYear()} CCNet. Bảo lưu mọi quyền.
         </div>
       </div>
     </footer>

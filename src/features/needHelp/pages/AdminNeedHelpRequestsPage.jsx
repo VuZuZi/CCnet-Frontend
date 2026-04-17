@@ -73,7 +73,7 @@ function PaginationBar({ pagination, onPageChange }) {
         className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
         <ChevronLeft size={16} />
-        Prev
+        Trước
       </button>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -99,7 +99,7 @@ function PaginationBar({ pagination, onPageChange }) {
         disabled={!pagination.hasNext}
         className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        Next
+        Tiếp
         <ChevronRight size={16} />
       </button>
     </div>
@@ -163,16 +163,16 @@ export function AdminNeedHelpRequestsPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
-                Admin NeedHelp Review
+                Kiểm duyệt NeedHelp của Admin
               </div>
 
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-[46px]">
-                Need Help Requests
+                Yêu cầu trợ giúp
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Review submitted requests, moderate publication status, and
-                assign the right organizer with a faster and cleaner workflow.
+                Kiểm duyệt các yêu cầu được gửi, điều chỉnh trạng thái xuất bản và 
+                gán nhà tổ chức phù hợp với quy trình làm việc nhanh hơn và sạch sẽ hơn.
               </p>
             </div>
 
@@ -182,25 +182,25 @@ export function AdminNeedHelpRequestsPage() {
               <div className="grid auto-rows-fr gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <SummaryCard
                   icon={ClipboardList}
-                  label="Loaded On Page"
+                  label="Được tải trên trang"
                   value={summary.total}
                   tone="slate"
                 />
                 <SummaryCard
                   icon={ShieldCheck}
-                  label="Pending Review"
+                  label="Chờ kiểm duyệt"
                   value={summary.pending}
                   tone="amber"
                 />
                 <SummaryCard
                   icon={TimerReset}
-                  label="Verified"
+                  label="Đã xác minh"
                   value={summary.verified}
                   tone="sky"
                 />
                 <SummaryCard
                   icon={Flame}
-                  label="High Priority"
+                  label="Ưu tiên cao"
                   value={summary.priority}
                   tone="emerald"
                 />
@@ -217,7 +217,7 @@ export function AdminNeedHelpRequestsPage() {
           <div className="text-center">
             <Loader2 className="mx-auto animate-spin text-amber-500" size={34} />
             <p className="mt-4 text-sm font-medium text-slate-500">
-              Loading need help requests...
+              Đang tải các yêu cầu trợ giúp...
             </p>
           </div>
         </div>
@@ -226,16 +226,16 @@ export function AdminNeedHelpRequestsPage() {
           <div className="mb-4 flex flex-wrap items-center justify-between gap-3 px-1">
             <div>
               <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                Request Directory
+                Danh mục yêu cầu
               </h2>
               <p className="mt-1 text-sm text-slate-500">
-                Page {pagination?.page || 1}
+                Trang {pagination?.page || 1}
                 {pagination?.totalPages ? ` / ${pagination.totalPages}` : ""}
               </p>
             </div>
 
             <div className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-600">
-              Showing {items.length} request(s) on this page
+              Hiển thị {items.length} yêu cầu trên trang này
             </div>
           </div>
 

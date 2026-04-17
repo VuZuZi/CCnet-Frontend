@@ -21,7 +21,7 @@ export function AdminAssignmentPanel({ helpRequest }) {
 
   const assignedName = helpRequest?.assignedOrganizerId?.fullName;
   const isAssignable = ASSIGNABLE_STATUSES.includes(helpRequest?.status);
-  const buttonLabel = assignedName ? 'Reassign' : 'Assign Organizer';
+  const buttonLabel = assignedName ? 'Giao lại' : 'Giao organizer';
 
   const handleOpenModal = () => {
     if (!isAssignable || assignMutation.isPending) {
@@ -36,20 +36,20 @@ export function AdminAssignmentPanel({ helpRequest }) {
         <div className="min-w-0">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
             <ShieldCheck size={13} />
-            Assignment
+            Giao việc
           </div>
 
           <h3 className="mt-3 text-lg font-bold tracking-tight text-slate-900">
-            Organizer Assignment
+            Giao việc cho organizer
           </h3>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Assign this request to a suitable organizer based on relevance and location.
+            Giao yêu cầu này cho organizer phù hợp dựa trên mức độ liên quan và vị trí.
           </p>
 
           {!isAssignable ? (
             <p className="mt-2 text-sm font-medium text-amber-700">
-              Verify this request first before assigning an organizer.
+              Hãy xác minh yêu cầu này trước khi giao cho organizer.
             </p>
           ) : null}
         </div>
@@ -58,10 +58,10 @@ export function AdminAssignmentPanel({ helpRequest }) {
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
               <UserRound size={13} />
-              Current organizer
+              Organizer hiện tại
             </div>
             <p className="mt-1 text-sm font-semibold text-slate-900">
-              {assignedName || 'Not assigned yet'}
+              {assignedName || 'Chưa được giao'}
             </p>
           </div>
 

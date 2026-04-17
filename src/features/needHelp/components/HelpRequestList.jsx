@@ -47,12 +47,12 @@ export function HelpRequestList({
           <FileSearch size={28} />
         </div>
 
-        <p className="mb-2 text-lg font-medium text-slate-500">No help requests found</p>
+        <p className="mb-2 text-lg font-medium text-slate-500">Không tìm thấy yêu cầu trợ giúp</p>
 
         <p className="mb-4 text-sm text-slate-400">
           {hasActiveFilters
-            ? 'Try adjusting your filters to see more results.'
-            : 'Be the first to create a help request!'}
+            ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
+            : 'Hãy là người đầu tiên tạo yêu cầu trợ giúp!'}
         </p>
 
         {hasActiveFilters ? (
@@ -61,7 +61,7 @@ export function HelpRequestList({
             onClick={onResetFilters}
             className="rounded-full bg-slate-100 px-6 py-2 font-semibold text-slate-700 transition-colors hover:bg-slate-200"
           >
-            Clear Filters
+            Xóa bộ lọc
           </button>
         ) : (
           <Link
@@ -69,7 +69,7 @@ export function HelpRequestList({
             className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-2 font-semibold text-slate-900 transition-colors hover:bg-amber-500"
           >
             <Plus size={18} />
-            Create Request
+            Tạo yêu cầu
           </Link>
         )}
       </div>
@@ -93,7 +93,7 @@ export function HelpRequestList({
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ChevronLeft size={16} />
-            Prev
+            Trước
           </button>
 
           <div className="flex flex-wrap items-center gap-1">
@@ -119,7 +119,7 @@ export function HelpRequestList({
             disabled={currentPage >= totalPages}
             className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Next
+            Tiếp
             <ChevronRight size={16} />
           </button>
         </div>

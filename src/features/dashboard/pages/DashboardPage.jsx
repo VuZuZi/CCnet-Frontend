@@ -17,10 +17,10 @@ export function DashboardPage() {
         
         <header className="mb-8">
           <h1 className="mb-2 flex items-center text-3xl font-bold tracking-tight text-gray-900">
-            Welcome back, {user?.fullName || 'User'}! 
+            Chào mừng trở lại, {user?.fullName || 'Người dùng'}! 
             <Sparkles className="ml-3 h-8 w-8 text-amber-500" aria-hidden="true" />
           </h1>
-          <p className="text-gray-500">Here's what's happening with your account today.</p>
+          <p className="text-gray-500">Đây là những gì đang xảy ra với tài khoản của bạn hôm nay.</p>
         </header>
 
         <section 
@@ -28,25 +28,25 @@ export function DashboardPage() {
           aria-label="Key Statistics"
         >
           <StatsCard 
-            title="Total Projects" 
+            title="Tổng dự án" 
             value="12" 
             icon={<FolderKanban className="h-6 w-6" />} 
             color="purple" 
           />
           <StatsCard 
-            title="Active Tasks" 
+            title="Tác vụ hoạt động" 
             value="24" 
             icon={<CheckCircle2 className="h-6 w-6" />} 
             color="green" 
           />
           <StatsCard 
-            title="Team Members" 
+            title="Thành viên nhóm" 
             value="8" 
             icon={<Users className="h-6 w-6" />} 
             color="blue" 
           />
           <StatsCard 
-            title="Completed" 
+            title="Đã hoàn thành" 
             value="156" 
             icon={<Trophy className="h-6 w-6" />} 
             color="yellow" 
@@ -55,28 +55,28 @@ export function DashboardPage() {
 
         <section className="grid grid-cols-1 lg:grid-cols-2">
           <article className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-            <h2 className="mb-6 text-lg font-bold text-gray-900">Account Information</h2>
+            <h2 className="mb-6 text-lg font-bold text-gray-900">Thông tin tài khoản</h2>
             
             <dl className="space-y-4">
               <div>
                 <dt className="mb-1 text-sm font-medium text-gray-500">Email</dt>
-                <dd className="font-medium text-gray-900">{user?.email || 'N/A'}</dd>
+                <dd className="font-medium text-gray-900">{user?.email || 'Không có'}</dd>
               </div>
               
               <div>
-                <dt className="mb-1 text-sm font-medium text-gray-500">Role</dt>
+                <dt className="mb-1 text-sm font-medium text-gray-500">Vai trò</dt>
                 <dd>
                   <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                    {user?.role || 'Guest'}
+                    {user?.role || 'Khách'}
                   </span>
                 </dd>
               </div>
               
               <div>
-                <dt className="mb-1 text-sm font-medium text-gray-500">User ID</dt>
+                <dt className="mb-1 text-sm font-medium text-gray-500">ID người dùng</dt>
                 <dd>
                   <code className="rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs text-gray-600">
-                    {user?.userId || 'N/A'}
+                    {user?.userId || 'Không có'}
                   </code>
                 </dd>
               </div>

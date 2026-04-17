@@ -26,14 +26,14 @@ export default function NotificationDropdown({
           <div>
             <div className="mb-2 inline-flex items-center gap-1.5 rounded-full border border-white/35 bg-white/20 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#7C2D12] backdrop-blur-sm">
               <Sparkles size={10} />
-              Notification Center
+              Trung tâm Thông báo
             </div>
 
             <h3 className="text-[22px] font-extrabold tracking-tight text-slate-900">
-              Notifications
+              Thông báo
             </h3>
             <p className="mt-0.5 text-[11px] font-semibold text-slate-700">
-              {unreadCount} unread
+              {unreadCount} chưa đọc
             </p>
           </div>
 
@@ -41,8 +41,8 @@ export default function NotificationDropdown({
             {canManageSettings ? (
               <button
                 type="button"
-                title="Notification settings"
-                aria-label="Notification settings"
+                title="Cài đặt thông báo"
+                aria-label="Cài đặt thông báo"
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenSettings?.();
@@ -59,7 +59,7 @@ export default function NotificationDropdown({
               disabled={unreadCount === 0}
               className="rounded-xl border border-white/50 bg-white/90 px-3.5 py-2 text-[11px] font-bold text-[#B45309] shadow-[0_6px_16px_rgba(255,255,255,0.28)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-white hover:text-[#92400E] hover:shadow-[0_10px_24px_rgba(255,255,255,0.38)] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0"
             >
-              Mark all read
+              Đánh dấu tất cả đã đọc
             </button>
           </div>
         </div>
@@ -67,7 +67,7 @@ export default function NotificationDropdown({
 
       {isLoading ? (
         <div className="px-5 py-10 text-center text-sm font-medium text-slate-500">
-          Loading notifications...
+          Đang tải thông báo...
         </div>
       ) : (
         <div className="max-h-[460px] overflow-y-auto bg-white">

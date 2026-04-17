@@ -118,14 +118,14 @@ export function CreateHelpRequestPage() {
           className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-slate-900"
         >
           <ArrowLeft size={16} />
-          Back to Help Requests
+          Quay lại yêu cầu trợ giúp
         </Link>
         <div className="flex flex-col gap-1">
           <h1 className="text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl">
-            Create a Help Request
+            Tạo yêu cầu trợ giúp
           </h1>
           <p className="text-base text-slate-500">
-            Share your story and provide evidence to find a supporting organization.
+            Chia sẻ câu chuyện của bạn và cung cấp bằng chứng để tìm một tổ chức hỗ trợ.
           </p>
         </div>
       </div>
@@ -138,29 +138,29 @@ export function CreateHelpRequestPage() {
           <div className="space-y-6 lg:col-span-2">
 
             {/* Basic Details */}
-            <SectionCard icon={FileText} title="Basic Details" accent="amber">
+            <SectionCard icon={FileText} title="Thông tin cơ bản" accent="amber">
               <div className="space-y-5">
-                <FormField label="Request Title" error={errors.title?.message} required>
+                <FormField label="Tiêu đề yêu cầu" error={errors.title?.message} required>
                   <input
                     {...register('title')}
-                    placeholder="e.g., Emergency Medical Support Needed for Family of 4"
+                    placeholder="ví dụ: Cần hỗ trợ y tế khẩn cấp cho gia đình 4 người"
                     className={getInputClass(!!errors.title)}
                   />
-                  <p className="mt-1 text-xs text-slate-400">10–200 characters</p>
+                  <p className="mt-1 text-xs text-slate-400">10–200 ký tự</p>
                 </FormField>
 
                 <SelectField
-                  label="Category"
+                  label="Danh mục"
                   options={HELP_REQUEST_CATEGORIES}
                   error={errors.category?.message}
                   required
-                  placeholder="Select a Category"
+                  placeholder="Chọn một danh mục"
                   {...register('category')}
                 />
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Urgency Level
+                    Mức độ ưu tiên
                   </label>
                   <div className="flex gap-2">
                     {URGENCY_LEVELS.map((u) => (
@@ -191,11 +191,11 @@ export function CreateHelpRequestPage() {
                       <AlertTriangle size={15} className="mt-0.5 flex-shrink-0 text-orange-500" />
                       <p className="min-w-0 text-xs text-orange-700 leading-relaxed">
                         <span className="font-bold">
-                          {urgencyLevel === 'CRITICAL' ? 'Critical — ' : 'High urgency — '}
+                          {urgencyLevel === 'CRITICAL' ? 'Khẩn cấp — ' : 'Ưu tiên cao — '}
                         </span>
                         {urgencyLevel === 'CRITICAL'
                           ? 'Sẽ được ưu tiên xem xét ngay lập tức.'
-                          : 'Được xem xét trong vòng 24 giờ.'}
+                          : 'Sẽ được xem xét trong vòng 24 giờ.'}
                       </p>
                     </div>
                   )}
@@ -204,22 +204,22 @@ export function CreateHelpRequestPage() {
             </SectionCard>
 
             {/* Story */}
-            <SectionCard icon={FileText} title="Story & Situation" accent="violet">
-              <FormField label="Your Story" error={errors.story?.message} required>
+            <SectionCard icon={FileText} title="Câu chuyện & Tình huống" accent="violet">
+              <FormField label="Câu chuyện của bạn" error={errors.story?.message} required>
                 <textarea
                   {...register('story')}
                   rows={9}
-                  placeholder="Describe the situation in detail — who needs help, what happened, why it's urgent, and how the support will be used..."
+                  placeholder="Mô tả chi tiết tình huống — ai cần giúp, điều gì đã xảy ra, tại sao nó khẩn cấp, và sự hỗ trợ sẽ được sử dụng như thế nào..."
                   className={`${getInputClass(!!errors.story)} resize-y min-h-[200px]`}
                 />
-                <p className="mt-1 text-xs text-slate-400">At least 50 characters. Be as detailed as possible.</p>
+                <p className="mt-1 text-xs text-slate-400">Ít nhất 50 ký tự. Hãy chi tiết nhất có thể.</p>
               </FormField>
             </SectionCard>
 
             {/* Evidence & Visuals */}
-            <SectionCard icon={ImageIcon} title="Evidence & Visuals" accent="sky">
+            <SectionCard icon={ImageIcon} title="Bằng chứng & Hình ảnh" accent="sky">
               <FormField
-                label="Upload photos, videos, or documents"
+                label="Tải lên ảnh, video hoặc tài liệu"
                 error={errors.evidences?.message}
               >
                 <Controller
@@ -242,7 +242,7 @@ export function CreateHelpRequestPage() {
                 />
               </FormField>
               <p className="mt-3 text-xs text-slate-400">
-                JPG, PNG, WEBP, MP4, PDF — max 10 files. Clear photos significantly increase your chances.
+                JPG, PNG, WEBP, MP4, PDF — tối đa 10 tệp. Ảnh rõ ràng sẽ tăng đáng kể cơ hội của bạn.
               </p>
             </SectionCard>
           </div>
@@ -251,7 +251,7 @@ export function CreateHelpRequestPage() {
           <div className="space-y-6 lg:col-span-1">
 
             {/* Location */}
-            <SectionCard icon={MapPin} title="Location" accent="emerald">
+            <SectionCard icon={MapPin} title="Vị trí" accent="emerald">
               <FormField error={errors.location?.address?.message || errors.location?.message}>
                 <Controller
                   name="location"
@@ -268,8 +268,8 @@ export function CreateHelpRequestPage() {
             </SectionCard>
 
             {/* Funding Goal */}
-            <SectionCard icon={DollarSign} title="Funding Goal" accent="amber">
-              <FormField label="Amount Needed (VND)" error={errors.amountNeeded?.message}>
+            <SectionCard icon={DollarSign} title="Mục tiêu tài trợ" accent="amber">
+              <FormField label="Số tiền cần (VND)" error={errors.amountNeeded?.message}>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <span className="text-base font-bold text-slate-400">₫</span>
@@ -289,22 +289,22 @@ export function CreateHelpRequestPage() {
                     = {amountDisplay} đồng
                   </p>
                 ) : (
-                  <p className="mt-1 text-xs text-slate-400">Leave 0 for flexible support</p>
+                  <p className="mt-1 text-xs text-slate-400">Để 0 cho hỗ trợ linh hoạt</p>
                 )}
               </FormField>
             </SectionCard>
 
             {/* Contact Information */}
-            <SectionCard icon={Phone} title="Contact Information" accent="sky">
+            <SectionCard icon={Phone} title="Thông tin liên hệ" accent="sky">
               <div className="space-y-5">
-                <FormField label="Phone Number" error={errors.contactPhone?.message}>
+                <FormField label="Số điện thoại" error={errors.contactPhone?.message}>
                   <input
                     type="tel"
                     {...register('contactPhone')}
                     placeholder="0912345678"
                     className={getInputClass(!!errors.contactPhone)}
                   />
-                  <p className="mt-1 text-xs text-slate-400">Vietnamese format only (optional)</p>
+                  <p className="mt-1 text-xs text-slate-400">Định dạng Việt Nam (tùy chọn)</p>
                 </FormField>
 
                 <FormField label="Email" error={errors.contactEmail?.message}>
@@ -330,10 +330,10 @@ export function CreateHelpRequestPage() {
             className="w-full max-w-md rounded-2xl shadow-lg shadow-amber-500/25 text-base font-bold"
             isLoading={createMutation.isPending}
           >
-            Submit Help Request
+            Gửi yêu cầu trợ giúp
           </Button>
           <p className="text-xs text-slate-400">
-            Your request will be reviewed before going live.
+            Yêu cầu của bạn sẽ được kiểm duyệt trước khi công bố.
           </p>
         </div>
       </form>

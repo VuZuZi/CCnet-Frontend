@@ -2,20 +2,20 @@ import { useEffect, useMemo, useState } from 'react';
 
 const FIELD_CONFIG = {
   systemEnabled: {
-    label: 'System announcements',
-    description: 'General notices from the platform and admin.',
+    label: 'Thông báo hệ thống',
+    description: 'Thông báo chung từ nền tảng và quản trị viên.',
   },
   followEnabled: {
-    label: 'Follow notifications',
-    description: 'Get notified when someone follows you.',
+    label: 'Thông báo theo dõi',
+    description: 'Nhận thông báo khi ai đó theo dõi bạn.',
   },
   projectEnabled: {
-    label: 'Project updates',
-    description: 'Important updates related to projects.',
+    label: 'Cập nhật dự án',
+    description: 'Cập nhật quan trọng liên quan đến các dự án.',
   },
   organizerRequestEnabled: {
-    label: 'Organizer request updates',
-    description: 'Status changes for your organizer application.',
+    label: 'Cập nhật yêu cầu nhà tổ chức',
+    description: 'Thay đổi trạng thái cho ứng dụng nhà tổ chức của bạn.',
   },
 };
 
@@ -92,7 +92,7 @@ export default function NotificationSettingsForm({
   if (!visibleFields.length) {
     return (
       <div className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-500 shadow-sm">
-        Notification settings are not available for this account type.
+        Cài đặt thông báo không khả dụng cho loại tài khoản này.
       </div>
     );
   }
@@ -119,7 +119,7 @@ export default function NotificationSettingsForm({
 
       <div className="flex items-center justify-between gap-3 pt-2">
         <p className="text-xs text-slate-500">
-          Changes affect in-app notifications only.
+          Những thay đổi chỉ ảnh hưởng đến thông báo trong ứng dụng.
         </p>
 
         <button
@@ -127,7 +127,7 @@ export default function NotificationSettingsForm({
           disabled={isSaving}
           className="rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isSaving ? 'Saving...' : 'Save settings'}
+          {isSaving ? 'Đang lưu...' : 'Lưu cài đặt'}
         </button>
       </div>
     </form>

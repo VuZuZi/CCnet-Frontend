@@ -7,10 +7,10 @@ export function FeaturesSection({ features }) {
         
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Everything You Need to <span className="text-orange">Succeed</span>
+            Mọi thứ bạn cần để <span className="text-orange">Thành công</span>
           </h2>
           <p className="text-gray mx-auto max-w-[600px] text-lg">
-            Powerful features designed to help your team collaborate better.
+            Các tính năng mạnh mẽ được thiết kế để giúp nhóm của bạn hợp tác tốt hơn.
           </p>
         </div>
         

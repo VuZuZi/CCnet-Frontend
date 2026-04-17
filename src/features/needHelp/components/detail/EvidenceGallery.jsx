@@ -46,11 +46,11 @@ function EvidenceImagePreview({ imageUrl, onClose }) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Evidence image preview"
+      aria-label="Xem trước ảnh minh chứng"
     >
       <img
         src={imageUrl}
-        alt="Evidence preview"
+        alt="Xem trước minh chứng"
         onClick={(event) => event.stopPropagation()}
         className="h-[86vh] w-auto max-w-[92vw] object-contain shadow-[0_24px_60px_rgba(15,23,42,0.22)]"
       />
@@ -73,8 +73,8 @@ export function EvidenceGallery({ evidences = [] }) {
       <section className="space-y-5">
         <SectionLabel
           icon={Images}
-          label="Evidence & Media"
-          description="Supporting files attached to this request for admin review."
+          label="Minh chứng & Media"
+          description="Tệp minh chứng đính kèm theo yêu cầu để admin kiểm duyệt."
         />
 
         {!!images.length && (
@@ -88,7 +88,7 @@ export function EvidenceGallery({ evidences = [] }) {
               >
                 <img
                   src={evidence.url}
-                  alt={evidence.originalName || `Evidence ${index + 1}`}
+                  alt={evidence.originalName || `Minh chứng ${index + 1}`}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
 
@@ -96,7 +96,7 @@ export function EvidenceGallery({ evidences = [] }) {
 
                 <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-slate-950/70 to-transparent px-3 py-3">
                   <span className="line-clamp-1 text-xs font-medium text-white">
-                    {evidence.originalName || `Image ${index + 1}`}
+                    {evidence.originalName || `Ảnh ${index + 1}`}
                   </span>
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur">
                     <ZoomIn size={15} />
@@ -120,7 +120,7 @@ export function EvidenceGallery({ evidences = [] }) {
                 <span className="inline-flex min-w-0 items-center gap-3 text-slate-700">
                   <PlayCircle size={17} className="shrink-0 text-sky-600" />
                   <span className="truncate font-medium">
-                    {video.originalName || `Video evidence ${index + 1}`}
+                    {video.originalName || `Video minh chứng ${index + 1}`}
                   </span>
                 </span>
                 <ExternalLink size={15} className="shrink-0 text-slate-400" />
@@ -142,7 +142,7 @@ export function EvidenceGallery({ evidences = [] }) {
                 <span className="inline-flex min-w-0 items-center gap-3 text-slate-700">
                   <FileText size={17} className="shrink-0 text-amber-600" />
                   <span className="truncate font-medium">
-                    {document.originalName || `Document ${index + 1}`}
+                    {document.originalName || `Tài liệu ${index + 1}`}
                   </span>
                 </span>
                 <ExternalLink size={15} className="shrink-0 text-slate-400" />

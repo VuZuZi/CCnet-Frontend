@@ -29,7 +29,7 @@ export const useCreateHelpRequest = () => {
   return useMutation({
     mutationFn: helpRequestAPI.create,
     onSuccess: () => {
-      toast.success('Help request created successfully!');
+      toast.success('Tạo yêu cầu trợ giúp thành công!');
       invalidateAllHelpRequestQueries(queryClient);
       navigate('/need-help');
     },
@@ -44,7 +44,7 @@ export const useUpdateHelpRequest = () => {
   return useMutation({
     mutationFn: helpRequestAPI.update,
     onSuccess: (data) => {
-      toast.success('Help request updated successfully!');
+      toast.success('Cập nhật yêu cầu trợ giúp thành công!');
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
     },
@@ -60,7 +60,7 @@ export const useDeleteHelpRequest = () => {
   return useMutation({
     mutationFn: helpRequestAPI.delete,
     onSuccess: () => {
-      toast.success('Help request deleted successfully!');
+      toast.success('Xóa yêu cầu trợ giúp thành công!');
       invalidateAllHelpRequestQueries(queryClient);
       navigate('/need-help');
     },
@@ -75,7 +75,7 @@ export const useCancelHelpRequest = () => {
   return useMutation({
     mutationFn: helpRequestAPI.cancel,
     onSuccess: (data) => {
-      toast.success('Help request cancelled successfully!');
+      toast.success('Đã hủy yêu cầu trợ giúp thành công!');
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
     },
@@ -90,7 +90,7 @@ export const useCompleteHelpRequest = () => {
   return useMutation({
     mutationFn: helpRequestAPI.complete,
     onSuccess: (data) => {
-      toast.success('Help request marked as completed!');
+      toast.success('Đã đánh dấu yêu cầu trợ giúp là hoàn thành!');
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
     },
@@ -107,8 +107,8 @@ export const useVerifyHelpRequest = () => {
     onSuccess: (data, variables) => {
       toast.success(
         variables?.approved
-          ? 'Help request verified successfully!'
-          : 'Help request rejected successfully!'
+          ? 'Xác minh yêu cầu trợ giúp thành công!'
+          : 'Từ chối yêu cầu trợ giúp thành công!'
       );
 
       invalidateAllHelpRequestQueries(queryClient);
@@ -129,7 +129,7 @@ export const useAssignOrganizer = () => {
   return useMutation({
     mutationFn: helpRequestAPI.assignOrganizer,
     onSuccess: (data) => {
-      toast.success('Organizer assigned. Notification sent with request link.');
+      toast.success('Đã gán organizer. Đã gửi thông báo kèm liên kết yêu cầu.');
 
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
@@ -151,8 +151,8 @@ export const useRespondHelpRequestAssignment = () => {
   return useMutation({
     mutationFn: helpRequestAPI.respondAssignment,
     onSuccess: (data, variables) => {
-      const verb = variables?.action === 'accept' ? 'accepted' : 'rejected';
-      toast.success(`Assignment ${verb}. Notification sent with request link.`);
+      const verb = variables?.action === 'accept' ? 'chấp nhận' : 'từ chối';
+      toast.success(`Đã ${verb} giao việc. Đã gửi thông báo kèm liên kết yêu cầu.`);
 
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
