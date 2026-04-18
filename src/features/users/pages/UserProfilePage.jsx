@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useChatStore } from '@/features/chat/stores/useChatStore';
 import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useToast } from '@/shared/contexts/ToastContext';
-import { Wallet, User as UserIcon, Heart } from 'lucide-react'; // Đã thêm icon Heart
+import { Building2, Heart, Wallet } from 'lucide-react';
+import PostFeed from '@/features/Community/components/post/PostFeed';
 
 import { useProfileIdentity } from "../hooks/useProfileIdentity";
 import { useProfile } from "../hooks/useProfile";
@@ -15,27 +16,30 @@ import { useSupportedProjects } from "@/features/volunteer/hooks/useSupportedPro
 
 import { ProfileHeroCard } from "../components/profile/ProfileHeroCard";
 import { ImpactMetrics } from "../components/profile/ImpactMetrics";
-import { ImpactBadges } from "../components/profile/ImpactBadges";
 import { AboutMeCard } from "../components/profile/AboutMeCard";
 import { SkillsSection } from "../components/profile/SkillsSection";
 import { UpgradeBanner } from "../components/profile/UpgradeBanner";
+import { DonationHistoryList } from '@/features/transaction/components/DonationHistoryList';
 import { WalletDashboard } from '@/features/wallet/components/WalletDashboard';
 import { BankAccountManager } from '@/features/bank/components/BankAccountManager';
-import { DonationHistoryList } from '@/features/transaction/components/DonationHistoryList';
 
 export function UserProfilePage() {
   const { id: urlId } = useParams();
 
   const { isOwnProfile, targetUserId, isAuthReady } = useProfileIdentity(urlId);
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
+  const currentUserId = useAuthStore(authSelectors.userId);
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [searchParams] = useSearchParams();
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [reportError, setReportError] = useState(null);
+  const [financeTab, setFinanceTab] = useState('bank');
+  const currentView = searchParams.get('view');
+  const showWalletView = isOwnProfile && currentView === 'wallet';
 
   const {
     data: userProfile,
@@ -53,6 +57,7 @@ export function UserProfilePage() {
   const { data: supportedProjectsData } = useSupportedProjects({ page: 1, limit: 1, view: 'ALL' }, isOwnProfile);
 
   const supportedCount = supportedProjectsData?.summary?.totalSupported || 0;
+  const profileUserId = isOwnProfile ? currentUserId : targetUserId;
 
   const handleOpenChat = async () => {
     if (isOwnProfile || !targetUserId) return;
@@ -115,41 +120,68 @@ export function UserProfilePage() {
     <main className="bg-gray-50 min-h-screen text-gray-900 antialiased py-8 px-4">
       <div className="max-w-7xl mx-auto">
 
-        {isOwnProfile && (
-          <div className="mb-8 flex gap-6 border-b border-slate-200 overflow-x-auto">
-            <button
-              onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold whitespace-nowrap transition-colors ${activeTab === 'profile'
-                  ? 'border-amber-400 text-slate-900'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-            >
-              <UserIcon size={18} /> Hồ sơ cá nhân
-            </button>
-            <button
-              onClick={() => setActiveTab('wallet')}
-              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold whitespace-nowrap transition-colors ${activeTab === 'wallet'
-                  ? 'border-amber-400 text-slate-900'
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-            >
-              <Wallet size={18} /> Ví & Thanh toán
-            </button>
-            <button
-              onClick={() => setActiveTab('donations')}
-              className={`flex items-center gap-2 border-b-2 pb-4 text-sm font-bold whitespace-nowrap transition-colors ${activeTab === 'donations' 
-                  ? 'border-amber-400 text-slate-900' 
-                  : 'border-transparent text-slate-500 hover:text-slate-700'
-                }`}
-            >
-              <Heart size={18} /> Lịch sử ủng hộ
-            </button>
-          </div>
-        )}
+        {showWalletView ? (
+          <div className="space-y-8">
+            <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+              <div className="mb-5">
+                <h2 className="text-xl font-black text-slate-900">Trung tâm tài chính</h2>
+                <p className="mt-1 text-sm text-slate-500">Quản lý ngân hàng, ví và ủng hộ theo từng nhóm để thao tác nhanh hơn.</p>
+              </div>
 
-        {/* Nội dung tương ứng với các tab */}
-        {activeTab === 'profile' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+                <button
+                  type="button"
+                  onClick={() => setFinanceTab('bank')}
+                  className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
+                    financeTab === 'bank'
+                      ? 'border-amber-300 bg-amber-50 text-amber-900'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-sm font-black">
+                    <Building2 size={16} /> Ngân hàng
+                  </div>
+                  <p className="mt-1 text-xs font-medium text-slate-500">Đăng ký tài khoản nhận tiền</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFinanceTab('wallet')}
+                  className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
+                    financeTab === 'wallet'
+                      ? 'border-amber-300 bg-amber-50 text-amber-900'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-sm font-black">
+                    <Wallet size={16} /> Ví & giao dịch
+                  </div>
+                  <p className="mt-1 text-xs font-medium text-slate-500">Số dư, rút tiền, sao kê ví</p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setFinanceTab('donation')}
+                  className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
+                    financeTab === 'donation'
+                      ? 'border-amber-300 bg-amber-50 text-amber-900'
+                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 text-sm font-black">
+                    <Heart size={16} /> Ủng hộ
+                  </div>
+                  <p className="mt-1 text-xs font-medium text-slate-500">Các khoản đã ủng hộ & hoàn tiền</p>
+                </button>
+              </div>
+            </div>
+
+            {financeTab === 'bank' ? <BankAccountManager /> : null}
+            {financeTab === 'wallet' ? <WalletDashboard /> : null}
+            {financeTab === 'donation' ? <DonationHistoryList /> : null}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <section className="lg:col-span-2 space-y-8">
               <ProfileHeroCard
                 user={userProfile}
@@ -167,7 +199,21 @@ export function UserProfilePage() {
                 isOwnProfile={isOwnProfile}
                 onOpenSupportedProjects={() => navigate('/profile/supported-projects')}
               />
-              <ImpactBadges />
+
+              <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
+                <div className="mb-5">
+                  <h2 className="text-lg font-black text-slate-900 sm:text-xl">Bài đăng của {isOwnProfile ? 'bạn' : 'người dùng này'}</h2>
+                  <p className="mt-1 text-sm text-slate-500">Dòng thời gian cá nhân theo thứ tự mới nhất.</p>
+                </div>
+
+                <PostFeed
+                  currentUserId={currentUserId}
+                  onReport={(postId) => navigate(`/community/${postId}`)}
+                  feedType="profile"
+                  profileUserId={profileUserId}
+                  emptyMessage="Chưa có bài đăng nào trong tường cá nhân."
+                />
+              </article>
             </section>
 
             <aside className="space-y-8">
@@ -175,23 +221,6 @@ export function UserProfilePage() {
               <SkillsSection skills={userProfile.skills} />
               <UpgradeBanner isOwnProfile={isOwnProfile} />
             </aside>
-          </div>
-        )}
-        
-        {activeTab === 'wallet' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-in fade-in duration-300">
-            <section className="lg:col-span-2 space-y-8">
-              <WalletDashboard />
-            </section>
-            <aside className="space-y-8">
-              <BankAccountManager />
-            </aside>
-          </div>
-        )}
-
-        {activeTab === 'donations' && (
-          <div className="animate-in fade-in duration-300">
-            <DonationHistoryList />
           </div>
         )}
 

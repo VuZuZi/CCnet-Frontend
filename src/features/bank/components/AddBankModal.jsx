@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Modal } from '@/shared/components/ui/Modal';
 import { useAddBankAccount, useVerifyBankAccount } from '../hooks/useBankMutations';
 import { env } from '@/config/env';
 import { devConfig } from '@/config/app.config';
+import { useVietnamBanks } from '@/features/users/hooks/useVietnamBanks';
+import { BankAutocomplete } from '@/features/users/components/organizerRequest/BankAutocomplete';
 
 const bankSchema = z.object({
     bankName: z.string().min(2, 'Tên ngân hàng tối thiểu 2 ký tự').max(100),
@@ -23,6 +25,7 @@ export function AddBankModal({ isOpen, onClose }) {
 
     const addBankMutation = useAddBankAccount();
     const verifyMutation = useVerifyBankAccount();
+    const { banks, isLoading: isBanksLoading } = useVietnamBanks();
 
     const bankForm = useForm({ resolver: zodResolver(bankSchema) });
     const verifyForm = useForm({ resolver: zodResolver(verifySchema) });
@@ -37,6 +40,16 @@ export function AddBankModal({ isOpen, onClose }) {
     };
 
     const onSubmitBank = (data) => {
+        const isSupportedBank = banks.some((bank) => bank.name === data.bankName);
+
+        if (!isSupportedBank) {
+            bankForm.setError('bankName', {
+                type: 'manual',
+                message: 'Vui lòng chọn ngân hàng từ danh sách gợi ý',
+            });
+            return;
+        }
+
         addBankMutation.mutate(data, {
             onSuccess: (res) => {
                 setVerificationData({
@@ -70,11 +83,20 @@ export function AddBankModal({ isOpen, onClose }) {
                     <div className="rounded-xl bg-blue-50 p-4 text-sm text-blue-800">
                         Hệ thống sẽ chuyển một khoản tiền nhỏ (1.000đ - 9.999đ) vào tài khoản của bạn để xác thực.
                     </div>
-                    <div>
-                        <label className="mb-1.5 block text-sm font-semibold text-slate-700">Tên ngân hàng</label>
-                        <input {...bankForm.register('bankName')} placeholder="VD: Vietcombank" className="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:border-amber-400" />
-                        {bankForm.formState.errors.bankName && <span className="text-xs text-red-500">{bankForm.formState.errors.bankName.message}</span>}
-                    </div>
+                    <Controller
+                        name="bankName"
+                        control={bankForm.control}
+                        render={({ field }) => (
+                            <BankAutocomplete
+                                value={field.value || ''}
+                                onChange={field.onChange}
+                                banks={banks}
+                                isLoading={isBanksLoading}
+                                error={bankForm.formState.errors.bankName?.message}
+                                placeholder="Tìm ngân hàng bạn đang dùng"
+                            />
+                        )}
+                    />
                     <div>
                         <label className="mb-1.5 block text-sm font-semibold text-slate-700">Số tài khoản</label>
                         <input {...bankForm.register('accountNumber')} placeholder="VD: 1903..." className="w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:border-amber-400" />

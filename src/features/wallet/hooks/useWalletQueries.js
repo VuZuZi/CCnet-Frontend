@@ -2,11 +2,12 @@ import { useQuery, useInfiniteQuery } from '@tanstack/react-query';
 import { walletAPI } from '../api/wallet.api';
 import { WALLET_QUERY_KEYS } from '../constants/wallet.queryKeys';
 
-export const useMyWallet = () => {
+export const useMyWallet = (options = {}) => {
     return useQuery({
         queryKey: WALLET_QUERY_KEYS.me(),
         queryFn: walletAPI.getMe,
         staleTime: 1000 * 60 * 2,
+        enabled: options.enabled ?? true,
     });
 };
 
