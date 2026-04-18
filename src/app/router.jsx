@@ -176,7 +176,23 @@ const NotificationDetailPage = lazy(() =>
     default: m.NotificationDetailPage || m.default,
   })),
 );
+const AboutPage = lazy(() =>
+  import("@/pages/info/AboutPage").then((m) => ({
+    default: m.AboutPage || m.default,
+  })),
+);
 
+const TermsPage = lazy(() =>
+  import("@/pages/info/TermsPage").then((m) => ({
+    default: m.TermsPage || m.default,
+  })),
+);
+
+const PrivacyPage = lazy(() =>
+  import("@/pages/info/PrivacyPage").then((m) => ({
+    default: m.PrivacyPage || m.default,
+  })),
+);
 const MockAdminPage = ({ title }) => (
   <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
     <h2 className="text-2xl font-bold text-slate-400">
@@ -269,7 +285,9 @@ export const router = createBrowserRouter([
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
       { path: "payment/result", element: <PaymentResultPage /> },
-
+      { path: "about", element: withSuspense(AboutPage) },
+      { path: "terms", element: withSuspense(TermsPage) },
+      { path: "privacy", element: withSuspense(PrivacyPage) },
       {
         element: (
           <ProtectedRoute>
@@ -292,7 +310,10 @@ export const router = createBrowserRouter([
           },
           { path: "messages", element: withSuspense(ChatPage) },
           { path: "messages/:conversationId", element: withSuspense(ChatPage) },
-          { path: "change-password", element: withSuspense(ChangePasswordPage) },
+          {
+            path: "change-password",
+            element: withSuspense(ChangePasswordPage),
+          },
           {
             path: "notifications/:id",
             element: withSuspense(NotificationDetailPage),
@@ -374,7 +395,10 @@ export const router = createBrowserRouter([
       { path: "organizer-action-logs", element: <OrganizerActionLogsPage /> },
       { path: "organizers/:id", element: <OrganizerRequestDetailPage /> },
       { path: "need-help", element: <AdminNeedHelpRequestsPage /> },
-      { path: "need-help-action-logs", element: <AdminNeedHelpActionLogsPage /> },
+      {
+        path: "need-help-action-logs",
+        element: <AdminNeedHelpActionLogsPage />,
+      },
       { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
       { path: "projects/:id", element: <AdminProjectPreviewPage /> },

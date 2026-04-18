@@ -1,7 +1,15 @@
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, FileSearch, Loader2, Plus } from 'lucide-react';
-import HelpRequestCard from './HelpRequestCard';
+import { useMemo, useState } from "react"; // Bổ sung useState
+import { Link } from "react-router-dom";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileSearch,
+  Loader2,
+  Plus,
+} from "lucide-react";
+import HelpRequestCard from "./HelpRequestCard";
+
+import { ShareModal } from "@/features/Community/components/common/ShareModal";
 
 export function HelpRequestList({
   data,
@@ -11,6 +19,10 @@ export function HelpRequestList({
   hasActiveFilters,
   onResetFilters,
 }) {
+  // 👇 1. TẠO STATE QUẢN LÝ MODAL VÀ DỮ LIỆU SHARE
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [sharedData, setSharedData] = useState(null);
+
   const helpRequests = useMemo(() => {
     return data?.data || [];
   }, [data]);
@@ -28,7 +40,7 @@ export function HelpRequestList({
 
     return Array.from(
       { length: end - adjustedStart + 1 },
-      (_, index) => adjustedStart + index
+      (_, index) => adjustedStart + index,
     );
   }, [currentPage, totalPages]);
 
@@ -47,12 +59,14 @@ export function HelpRequestList({
           <FileSearch size={28} />
         </div>
 
-        <p className="mb-2 text-lg font-medium text-slate-500">Không tìm thấy yêu cầu trợ giúp</p>
+        <p className="mb-2 text-lg font-medium text-slate-500">
+          Không tìm thấy yêu cầu trợ giúp
+        </p>
 
         <p className="mb-4 text-sm text-slate-400">
           {hasActiveFilters
-            ? 'Hãy thử điều chỉnh bộ lọc để xem thêm kết quả.'
-            : 'Hãy là người đầu tiên tạo yêu cầu trợ giúp!'}
+            ? "Hãy thử điều chỉnh bộ lọc để xem thêm kết quả."
+            : "Hãy là người đầu tiên tạo yêu cầu trợ giúp!"}
         </p>
 
         {hasActiveFilters ? (
@@ -77,10 +91,18 @@ export function HelpRequestList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 relative">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {helpRequests.map((helpRequest) => (
-          <HelpRequestCard key={helpRequest._id} helpRequest={helpRequest} />
+          <HelpRequestCard
+            key={helpRequest._id}
+            helpRequest={helpRequest}
+            // 👇 2. TRUYỀN PROP onShare CHO THẺ CON
+            onShare={(data) => {
+              setSharedData(data);
+              setIsShareModalOpen(true);
+            }}
+          />
         ))}
       </div>
 
@@ -104,8 +126,8 @@ export function HelpRequestList({
                 onClick={() => onPageChange(pageNumber)}
                 className={`h-9 min-w-9 rounded-lg px-2 text-sm font-semibold transition-colors ${
                   pageNumber === currentPage
-                    ? 'bg-amber-400 text-slate-900'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? "bg-amber-400 text-slate-900"
+                    : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
                 {pageNumber}
@@ -124,6 +146,16 @@ export function HelpRequestList({
           </button>
         </div>
       )}
+
+      {/* 👇 3. NHÚNG SHARE MODAL VÀO ĐÂY */}
+      <ShareModal
+        isOpen={isShareModalOpen}
+        onClose={() => {
+          setIsShareModalOpen(false);
+          setSharedData(null);
+        }}
+        sharedData={sharedData}
+      />
     </div>
   );
 }
