@@ -6,7 +6,7 @@ import FeedNav from "../components/sidebar/FeedNav";
 import SpotlightWidget from "../components/sidebar/SpotlightWidget";
 import SuggestedUsers from "../components/sidebar/SuggestedUsers";
 
-import PostForm from "../components/post/PostForm";
+import { CreatePostComposer } from "../components/post/CreatePostComposer";
 import PostFeed from "../components/post/PostFeed";
 import PostTheaterMode from "../components/post/PostTheaterMode";
 
@@ -42,7 +42,14 @@ const CommunityPage = () => {
           </aside>
 
           <section className="col-span-12 lg:col-span-6 space-y-6">
-            <PostForm currentUserId={currentUserId} />
+            <CreatePostComposer
+              title="Tạo bài viết mới"
+              subtitle="Nhấn để mở popup soạn bài, đính kèm ảnh/video và chọn quyền riêng tư."
+              defaultPrivacy="public"
+              showPrivacySelector
+              buttonLabel="Đăng vào cộng đồng"
+              compactTrigger
+            />
             <PostFeed
               currentUserId={currentUserId}
               feedType={feedType}

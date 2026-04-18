@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { usePostMutations } from "../../hooks/usePostMutations";
 import { useAuthStore } from "../../../auth/stores/useAuthStore";
 import { useToast } from "@/shared/contexts/ToastContext";
+import { Globe2, Lock, ImagePlus, SendHorizontal } from "lucide-react";
 
 const UserAvatar = ({ user }) => {
   if (user?.avatar) {
@@ -37,9 +38,7 @@ const SharedItemPreview = ({ item, onCancel }) => {
         </button>
       )}
 
-      {/* Bắt đầu Thẻ Preview */}
       <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 flex flex-col sm:flex-row pointer-events-none">
-        {/* Khu vực ảnh Thumbnail */}
         <div className="w-[140px] shrink-0 bg-slate-200 border-r border-slate-100 overflow-hidden relative">
           {item.thumbnail ? (
             <img
@@ -59,7 +58,6 @@ const SharedItemPreview = ({ item, onCancel }) => {
           </span>
         </div>
 
-        {/* Khu vực Nội dung */}
         <div className="p-4 flex flex-col flex-1 min-w-0 bg-white">
           <h4 className="font-bold text-slate-900 line-clamp-2 leading-snug mb-1 text-sm">
             {item.title}
@@ -70,7 +68,6 @@ const SharedItemPreview = ({ item, onCancel }) => {
           </p>
 
           <div className="mt-auto">
-            {/* NÚT VÀNG NẰM Ở ĐÂY */}
             <div className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-bold bg-amber-400 text-slate-900 shadow-sm">
               {isProject ? "Xem Dự Án" : "Giúp Đỡ Ngay"}
               <span className="material-symbols-outlined text-[16px] ml-1">
@@ -87,30 +84,56 @@ const SharedItemPreview = ({ item, onCancel }) => {
 const AttachmentGallery = ({ attachments, onRemove }) => {
   if (!attachments.length) return null;
 
+  const visibleAttachments = attachments.slice(0, 4);
+  const remainingCount = attachments.length - visibleAttachments.length;
+  const singleItem = visibleAttachments.length === 1;
+
   return (
-    <div className="flex gap-3 mt-3 overflow-x-auto pb-2 custom-scrollbar">
-      {attachments.map((att, idx) => (
-        <div key={idx} className="relative shrink-0 group">
-          {att.type.startsWith("video/") ? (
-            <video
-              src={att.preview}
-              className="size-20 object-cover rounded-lg border border-slate-100"
-            />
-          ) : (
-            <img
-              src={att.preview}
-              alt="xem trước"
-              className="size-20 object-cover rounded-lg border border-slate-100"
-            />
-          )}
-          <button
-            onClick={() => onRemove(idx)}
-            className="absolute -top-2 -right-2 bg-slate-800 text-white rounded-full size-5 flex items-center justify-center text-[10px] hover:bg-red-500 shadow-sm"
+    <div
+      className={`mt-4 grid gap-2 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 ${
+        singleItem ? "grid-cols-1" : "grid-cols-2"
+      }`}
+    >
+      {visibleAttachments.map((att, idx) => {
+        const isVideo = att.type.startsWith("video/");
+
+        return (
+          <div
+            key={idx}
+            className={`group relative overflow-hidden bg-slate-100 ${
+              singleItem ? "aspect-[4/3]" : idx === 0 && attachments.length === 3 ? "row-span-2 aspect-[4/5]" : "aspect-square"
+            }`}
           >
-            ✕
-          </button>
-        </div>
-      ))}
+            {isVideo ? (
+              <video
+                src={att.preview}
+                className="h-full w-full object-cover"
+                controls
+              />
+            ) : (
+              <img
+                src={att.preview}
+                alt="xem trước"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              />
+            )}
+
+            {remainingCount > 0 && idx === 3 ? (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-2xl font-black text-white backdrop-blur-[1px]">
+                +{remainingCount}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              onClick={() => onRemove(idx)}
+              className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-black/55 text-white opacity-0 shadow-md transition-opacity hover:bg-red-500 group-hover:opacity-100"
+            >
+              ✕
+            </button>
+          </div>
+        );
+      })}
     </div>
   );
 };
@@ -120,9 +143,14 @@ const PostForm = ({
   initialContent = "",
   onPostSuccess,
   onCancelShare,
+  defaultPrivacy = "public",
+  showPrivacySelector = true,
+  compact = false,
+  embedded = false,
 }) => {
   const [content, setContent] = useState(initialContent);
   const [attachments, setAttachments] = useState([]);
+  const [privacy, setPrivacy] = useState(defaultPrivacy);
   const fileInputRef = useRef(null);
 
   const { user } = useAuthStore();
@@ -134,6 +162,10 @@ const PostForm = ({
   useEffect(() => {
     setContent(initialContent);
   }, [initialContent]);
+
+  useEffect(() => {
+    setPrivacy(defaultPrivacy);
+  }, [defaultPrivacy]);
 
   useEffect(() => {
     return () => attachments.forEach((att) => URL.revokeObjectURL(att.preview));
@@ -166,7 +198,7 @@ const PostForm = ({
 
     const formData = new FormData();
     formData.append("content", content.trim());
-    formData.append("privacy", "public");
+    formData.append("privacy", privacy);
 
     if (sharedItem) {
       const postType =
@@ -180,17 +212,9 @@ const PostForm = ({
 
     createPost.mutate(formData, {
       onSuccess: () => {
-        const successMsg = sharedItem
-          ? `Đã chia sẻ ${sharedItem.entityModel === "Project" ? "dự án" : "yêu cầu giúp đỡ"} thành công!`
-          : "Đã đăng bài viết mới!";
-
-        toast.success(successMsg);
         setContent("");
         setAttachments([]);
         if (onPostSuccess) onPostSuccess();
-      },
-      onError: () => {
-        toast.error("Không thể đăng bài. Vui lòng thử lại sau!");
       },
     });
   };
@@ -204,14 +228,52 @@ const PostForm = ({
     ? "Chia sẻ thêm về điều này..."
     : `${user?.fullName || "Bạn"} đang nghĩ gì vậy?`;
 
+  const privacyOptions = [
+    { value: "public", label: "Công khai", description: "Ai cũng xem được", icon: Globe2 },
+    { value: "private", label: "Riêng tư", description: "Chỉ người theo dõi mới xem", icon: Lock },
+  ];
+
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 mb-6 relative">
-      <div className="flex gap-4">
+    <div className={`relative ${embedded ? "w-full" : `bg-white rounded-[28px] border border-slate-200 shadow-sm mb-6 ${compact ? "p-4 sm:p-5" : "p-5 sm:p-6"}`}`}>
+      <div className={`flex gap-4 ${embedded ? "" : ""}`}>
         <UserAvatar user={user} />
 
         <div className="flex-1 min-w-0">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-black text-slate-900">Tạo bài viết</p>
+              <p className="text-xs text-slate-500">Chia sẻ ngay trên tường cá nhân hoặc bảng tin</p>
+            </div>
+
+            {showPrivacySelector && (
+              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1">
+                {privacyOptions.map((option) => {
+                  const Icon = option.icon;
+                  const isActive = privacy === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setPrivacy(option.value)}
+                      className={`inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-colors ${
+                        isActive
+                          ? "bg-white text-slate-900 shadow-sm"
+                          : "text-slate-500 hover:text-slate-700"
+                      }`}
+                      title={option.description}
+                    >
+                      <Icon size={14} />
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           <textarea
-            className={`w-full bg-slate-50 border rounded-xl px-4 py-3 text-sm focus:ring-2 resize-none outline-none transition-all placeholder:text-slate-400 min-h-[80px] ${
+            className={`w-full bg-slate-50 border rounded-2xl px-4 py-3 text-sm focus:ring-2 resize-none outline-none transition-all placeholder:text-slate-400 min-h-[110px] ${
               isOverLimit
                 ? "border-red-400 focus:ring-red-400/20 text-red-600 bg-red-50/50"
                 : "border-transparent focus:ring-amber-400/20"
@@ -255,28 +317,31 @@ const PostForm = ({
         className="hidden"
       />
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-50">
+      <div className={`flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-4 pt-4 border-t border-slate-100 ${embedded ? "pb-0" : ""}`}>
         <div>
           {!sharedItem && (
             <button
               onClick={() => fileInputRef.current.click()}
-              className="flex items-center gap-2 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors font-medium text-xs"
+              type="button"
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors font-semibold text-xs"
             >
-              <span className="material-symbols-outlined text-amber-500">
-                image
-              </span>
+              <ImagePlus size={16} className="text-amber-500" />
               Ảnh/Video
             </button>
           )}
         </div>
 
-        <button
-          onClick={handlePost}
-          disabled={isPostDisabled}
-          className="bg-amber-400 text-slate-900 text-sm font-bold px-6 py-2 rounded-xl hover:bg-amber-500 shadow-sm shadow-amber-400/30 disabled:opacity-50 transition-all min-w-[100px]"
-        >
-          {createPost?.isPending ? "Đang đăng..." : "Đăng bài"}
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handlePost}
+            disabled={isPostDisabled}
+            className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-slate-900 shadow-sm shadow-amber-400/30 transition-all hover:bg-amber-500 disabled:opacity-50"
+          >
+            <SendHorizontal size={16} />
+            {createPost?.isPending ? "Đang đăng..." : "Đăng bài"}
+          </button>
+        </div>
       </div>
     </div>
   );
