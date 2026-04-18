@@ -16,7 +16,6 @@ export const ADMIN_PROJECT_ACTION_KEYS = {
   RESUME_PROJECT: "RESUME_PROJECT",
   COMPLETE_PROJECT: "COMPLETE_PROJECT",
   CANCEL_PROJECT: "CANCEL_PROJECT",
-  DELETE_PROJECT: "DELETE_PROJECT",
   UPDATE_PROJECT_STATUS: "UPDATE_PROJECT_STATUS",
 };
 
@@ -28,7 +27,6 @@ export const ADMIN_PROJECT_ACTION_LABELS = {
   [ADMIN_PROJECT_ACTION_KEYS.RESUME_PROJECT]: "Resume Project",
   [ADMIN_PROJECT_ACTION_KEYS.COMPLETE_PROJECT]: "Complete Project",
   [ADMIN_PROJECT_ACTION_KEYS.CANCEL_PROJECT]: "Cancel Project",
-  [ADMIN_PROJECT_ACTION_KEYS.DELETE_PROJECT]: "Delete Project",
   [ADMIN_PROJECT_ACTION_KEYS.UPDATE_PROJECT_STATUS]: "Update Status",
 };
 
@@ -46,8 +44,6 @@ export const ADMIN_PROJECT_ACTION_BADGE_STYLES = {
   [ADMIN_PROJECT_ACTION_KEYS.COMPLETE_PROJECT]:
     "border-blue-200 bg-blue-50 text-blue-700",
   [ADMIN_PROJECT_ACTION_KEYS.CANCEL_PROJECT]:
-    "border-rose-200 bg-rose-50 text-rose-700",
-  [ADMIN_PROJECT_ACTION_KEYS.DELETE_PROJECT]:
     "border-rose-200 bg-rose-50 text-rose-700",
   [ADMIN_PROJECT_ACTION_KEYS.UPDATE_PROJECT_STATUS]:
     "border-slate-200 bg-slate-50 text-slate-700",
@@ -121,8 +117,6 @@ export function buildProjectStatusOptions(project) {
   return [...new Set(allStatuses)].map((status) => {
     const normalizedStatus = normalizeProjectStatus(status);
 
-    // Status hiện tại luôn phải hiển thị đúng tên trạng thái thật
-    // ví dụ: Cancelled, Completed, Paused...
     if (normalizedStatus === realStatus) {
       return {
         value: status,

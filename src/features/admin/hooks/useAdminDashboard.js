@@ -59,10 +59,6 @@ export const useAdminDashboard = (activeTab) => {
 
   const actionLogsQueryKey = ADMIN_QUERY_KEYS.actionLogs.all();
 
-  /* =========================
-   * Queries
-   * ========================= */
-
   const statsQuery = useQuery({
     queryKey: ADMIN_STATS_QUERY_KEY,
     queryFn: async () => normalizeResponseData(await adminAPI.getStats()),
@@ -99,10 +95,6 @@ export const useAdminDashboard = (activeTab) => {
     placeholderData: (previousData) => previousData,
   });
 
-  /* =========================
-   * Query snapshots
-   * ========================= */
-
   const statsData = statsQuery.data || null;
   const usersData = usersQuery.data || [];
   const projectsData = projectsQuery.data?.items || [];
@@ -121,10 +113,6 @@ export const useAdminDashboard = (activeTab) => {
     isProjectsFetching: projectsQuery.isFetching,
     isReportsFetching: reportsQuery.isFetching,
   };
-
-  /* =========================
-   * Cache helpers
-   * ========================= */
 
   const invalidateUsersAndLogs = async () => {
     await Promise.all([
@@ -159,10 +147,6 @@ export const useAdminDashboard = (activeTab) => {
     });
   };
 
-  /* =========================
-   * User actions
-   * ========================= */
-
   const toggleBanUser = async (userId, reason) => {
     const normalizedReason = ensureReason(reason, "change user ban status");
 
@@ -192,8 +176,6 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
-  // Legacy compatibility only.
-  // Keep this to avoid breaking older components during migration.
   const toggleVerifyUser = async () => {
     const error = new Error("Verify user feature is disabled.");
     toast.error(error.message);
@@ -225,10 +207,6 @@ export const useAdminDashboard = (activeTab) => {
       throw error;
     }
   };
-
-  /* =========================
-   * Project actions
-   * ========================= */
 
   const updateProjectStatus = async (projectId, payloadOrStatus) => {
     const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
@@ -271,40 +249,6 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
-  const deleteProject = async (projectId, payload = {}) => {
-    const normalizedReason = ensureReason(payload?.reason, "delete project");
-    const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
-
-    queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (prev) => {
-      if (!prev?.items) return prev;
-
-      return {
-        ...prev,
-        items: prev.items.filter((project) => project._id !== projectId),
-      };
-    });
-
-    try {
-      await adminAPI.deleteProject(projectId, { reason: normalizedReason });
-
-      await invalidateProjectsAndLogs();
-
-      toast.success("Project deleted successfully.");
-      return true;
-    } catch (error) {
-      if (previousProjects !== undefined) {
-        queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, previousProjects);
-      }
-
-      toast.error(getErrorMessage(error, "Failed to delete project."));
-      throw error;
-    }
-  };
-
-  /* =========================
-   * Report actions
-   * ========================= */
-
   const handleResolveReport = async (
     reportId,
     actions = ["mark_resolved"],
@@ -346,10 +290,6 @@ export const useAdminDashboard = (activeTab) => {
     }
   };
 
-  /* =========================
-   * Refresh by tab
-   * ========================= */
-
   const refresh = async () => {
     if (activeTab === "overview") {
       await Promise.all([
@@ -373,10 +313,6 @@ export const useAdminDashboard = (activeTab) => {
       await queryClient.invalidateQueries({ queryKey: ADMIN_REPORTS_QUERY_KEY });
     }
   };
-
-  /* =========================
-   * Public API
-   * ========================= */
 
   const dashboardState = useMemo(
     () => ({
@@ -408,7 +344,6 @@ export const useAdminDashboard = (activeTab) => {
       toggleVerifyUser,
       updateUserStatus,
       updateProjectStatus,
-      deleteProject,
       handleResolveReport,
       refresh,
     }),
