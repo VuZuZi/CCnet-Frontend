@@ -19,7 +19,6 @@ import {
 export function useProjectManagementPage() {
   const {
     projects,
-    deleteProject,
     updateProjectStatus,
     loading,
     isProjectsFetching,
@@ -40,7 +39,6 @@ export function useProjectManagementPage() {
   const [historyProject, setHistoryProject] = useState(null);
   const [isGlobalHistoryOpen, setIsGlobalHistoryOpen] = useState(false);
   const [pendingProjectId, setPendingProjectId] = useState(null);
-  const [pendingDeleteProjectId, setPendingDeleteProjectId] = useState(null);
   const [reasonModal, setReasonModal] = useState(createInitialReasonModalState());
   const [isReasonSubmitting, setIsReasonSubmitting] = useState(false);
 
@@ -145,43 +143,13 @@ export function useProjectManagementPage() {
     [handleApprove, openReasonModal]
   );
 
-  const handleDeleteProject = useCallback(
-    (project) => {
-      openReasonModal(
-        project,
-        "delete",
-        ADMIN_PROJECT_ACTION_KEYS.DELETE_PROJECT,
-        ""
-      );
-    },
-    [openReasonModal]
-  );
-
   const handleReasonConfirm = useCallback(
     async (reason) => {
-      const { project, actionType, nextStatus } = reasonModal;
+      const { project, nextStatus } = reasonModal;
       if (!project?._id) return;
 
       try {
         setIsReasonSubmitting(true);
-
-        if (actionType === "delete") {
-          setPendingDeleteProjectId(project._id);
-
-          await deleteProject(project._id, { reason });
-
-          if (selectedProject?._id === project._id) {
-            setSelectedProject(null);
-          }
-
-          if (historyProject?._id === project._id) {
-            setHistoryProject(null);
-          }
-
-          closeReasonModal();
-          return;
-        }
-
         setPendingProjectId(project._id);
 
         const updated = await updateProjectStatus(project._id, {
@@ -193,16 +161,12 @@ export function useProjectManagementPage() {
         closeReasonModal();
       } finally {
         setPendingProjectId(null);
-        setPendingDeleteProjectId(null);
         setIsReasonSubmitting(false);
       }
     },
     [
       closeReasonModal,
-      deleteProject,
-      historyProject?._id,
       reasonModal,
-      selectedProject?._id,
       syncProjectInOpenViews,
       updateProjectStatus,
     ]
@@ -232,13 +196,11 @@ export function useProjectManagementPage() {
     isGlobalHistoryOpen,
     setIsGlobalHistoryOpen,
     pendingProjectId,
-    pendingDeleteProjectId,
     reasonModal,
     isReasonSubmitting,
     closeReasonModal,
     handleApprove,
     requestProjectAction,
-    handleDeleteProject,
     handleReasonConfirm,
   };
 }

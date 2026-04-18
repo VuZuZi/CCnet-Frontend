@@ -78,6 +78,20 @@ export function NavbarChatAction({ hideWidget = false }) {
     return orderedOpenConversationIds;
   }, [focusedConversationId, isMobile, isTablet, orderedOpenConversationIds]);
 
+  const hasUnread = unreadConversationCount > 0;
+
+  const buttonClasses = useMemo(() => {
+    return hasUnread
+      ? 'border-[#FBBF24] bg-[#FFFBEB] text-[#F59E0B] shadow-md shadow-[#FBBF24]/15'
+      : 'border-slate-200 bg-white text-[#F59E0B] shadow-sm';
+  }, [hasUnread]);
+
+  const iconClasses = useMemo(() => {
+    return isOpen
+      ? 'scale-110 text-[#F59E0B]'
+      : 'text-[#F59E0B] group-hover:scale-110';
+  }, [isOpen]);
+
   const updateAnchorRect = () => {
     if (!anchorRef.current) return;
     setAnchorRect(anchorRef.current.getBoundingClientRect());
@@ -132,12 +146,17 @@ export function NavbarChatAction({ hideWidget = false }) {
         <button
           type="button"
           onClick={handleToggle}
-          className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-          aria-label="Mở cửa sổ trò chuyện"
+          className={`group relative inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${buttonClasses}`}
+          aria-label={isOpen ? 'Đóng tiện ích chat' : 'Mở tiện ích chat'}
+          aria-expanded={isOpen}
         >
-          <MessageCircle size={24} />
+          <MessageCircle
+            size={20}
+            className={`transition-transform duration-200 ${iconClasses}`}
+          />
+
           {unreadConversationCount > 0 ? (
-            <span className="absolute -right-1 -top-1 flex min-h-[20px] min-w-[20px] items-center justify-center rounded-full border-2 border-white bg-red-500 px-1 text-[10px] font-bold leading-none text-white">
+            <span className="absolute -right-1 -top-1 flex min-h-[22px] min-w-[22px] items-center justify-center rounded-full border-2 border-white bg-[#F59E0B] px-1 text-[10px] font-bold leading-none text-white shadow-sm">
               {formatBadgeCount(unreadConversationCount)}
             </span>
           ) : null}
@@ -150,7 +169,7 @@ export function NavbarChatAction({ hideWidget = false }) {
               {isOpen ? (
                 <button
                   type="button"
-                  aria-label="Đóng cửa sổ trò chuyện"
+                  aria-label="Đóng tiện ích chat"
                   onClick={() => setIsOpen(false)}
                   className="fixed inset-0 z-40 cursor-default bg-transparent"
                 />
