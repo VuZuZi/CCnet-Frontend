@@ -164,6 +164,11 @@ export const projectAPI = {
     return getData(response);
   },
 
+  async getMapProjects(params) {
+    const response = await httpClient.get("/project/map", { params });
+    return getData(response);
+  },
+
   async getDetail(id) {
     const response = await httpClient.get(`/project/${id}`);
     return getData(response);

@@ -109,6 +109,12 @@ const ProjectListPage = lazy(() =>
   })),
 );
 
+const ProjectMapPage = lazy(() =>
+  import("@/features/project/pages/ProjectMapPage").then((m) => ({
+    default: m.ProjectMapPage || m.default,
+  })),
+);
+
 const ProjectDetailPage = lazy(() =>
   import("@/features/project/pages/ProjectDetailPage").then((m) => ({
     default: m.ProjectDetailPage || m.default,
@@ -130,6 +136,12 @@ const OrganizerWorkspacePage = lazy(() =>
 const NeedHelpPage = lazy(() =>
   import("@/features/needHelp/pages/NeedHelpPage").then((m) => ({
     default: m.NeedHelpPage || m.default,
+  })),
+);
+
+const NeedHelpMapPage = lazy(() =>
+  import("@/features/needHelp/pages/NeedHelpMapPage").then((m) => ({
+    default: m.NeedHelpMapPage || m.default,
   })),
 );
 
@@ -215,6 +227,7 @@ export const router = createBrowserRouter([
         path: "projects",
         children: [
           { index: true, element: withSuspense(ProjectListPage) },
+          { path: "map", element: withSuspense(ProjectMapPage) },
           {
             path: "create",
             element: (
@@ -264,9 +277,11 @@ export const router = createBrowserRouter([
       { path: "search", element: withSuspense(SearchPage) },
 
       { path: "projects", element: withSuspense(ProjectListPage) },
+      { path: "projects/map", element: withSuspense(ProjectMapPage) },
       { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
       { path: "users/:id", element: withSuspense(UserProfilePage) },
       { path: "need-help", element: withSuspense(NeedHelpPage) },
+      { path: "need-help/map", element: withSuspense(NeedHelpMapPage) },
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
       { path: "payment/result", element: <PaymentResultPage /> },
 

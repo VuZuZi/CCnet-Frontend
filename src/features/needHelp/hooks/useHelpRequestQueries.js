@@ -9,6 +9,7 @@ export const HELP_REQUEST_KEYS = {
   myList: (filters) => [...HELP_REQUEST_KEYS.myLists(), { filters }],
   urgent: () => [...HELP_REQUEST_KEYS.all, 'urgent'],
   nearby: (params) => [...HELP_REQUEST_KEYS.all, 'nearby', params],
+  map: () => [...HELP_REQUEST_KEYS.all, 'map'],
   organizerAssignedRoot: () => [...HELP_REQUEST_KEYS.all, 'organizer-assigned'],
   organizerAssigned: (filters) => [...HELP_REQUEST_KEYS.organizerAssignedRoot(), filters],
   organizerSuggestions: (id, filters) => [
@@ -65,6 +66,19 @@ export const useNearbyHelpRequests = (coordinates, maxDistance = 50000) => {
       }),
     enabled: !!coordinates?.length,
     staleTime: 10 * 60 * 1000,
+  });
+};
+
+export const useHelpRequestMap = (enabled = true) => {
+  return useQuery({
+    queryKey: HELP_REQUEST_KEYS.map(),
+    queryFn: () => helpRequestAPI.getMap(),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    placeholderData: (previousData) => previousData,
   });
 };
 
