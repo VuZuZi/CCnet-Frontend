@@ -29,6 +29,32 @@ const normalizeDocument = (doc) => {
   return normalized;
 };
 
+const normalizeLocation = (location) => {
+  if (!location || typeof location !== "object") return null;
+
+  const address =
+    typeof location.address === "string" ? location.address.trim() : "";
+  const coordinates = Array.isArray(location.coordinates)
+    ? location.coordinates.map((value) => Number(value))
+    : [];
+
+  if (
+    location.type !== "Point" ||
+    !address ||
+    coordinates.length !== 2 ||
+    !Number.isFinite(coordinates[0]) ||
+    !Number.isFinite(coordinates[1])
+  ) {
+    return null;
+  }
+
+  return {
+    type: "Point",
+    address,
+    coordinates,
+  };
+};
+
 const readFileAsDataUrl = (file) =>
   new Promise((resolve, reject) => {
     if (!file) {
@@ -48,7 +74,7 @@ const readFileAsDataUrl = (file) =>
     };
 
     reader.onerror = () =>
-      reject(reader.error || new Error("Read file failed"));
+      reject(reader.error || new Error("Không thể đọc tệp"));
 
     reader.readAsDataURL(file);
   });
@@ -56,17 +82,19 @@ const readFileAsDataUrl = (file) =>
 const sanitizePayload = (values) => {
   const payload = {
     ...values,
-    fullNameSnapshot: values.fullNameSnapshot?.trim() || "",
-    emailSnapshot: values.emailSnapshot?.trim() || "",
-    phoneSnapshot: values.phoneSnapshot?.trim() || "",
-    locationSnapshot: values.locationSnapshot?.trim() || "",
-    organizationName: values.organizationName?.trim() || "",
+    fullNameSnapshot:
+      values.fullNameSnapshot?.trim().replace(/\s+/g, " ") || "",
+    emailSnapshot: values.emailSnapshot?.trim().toLowerCase() || "",
+    phoneSnapshot: values.phoneSnapshot?.trim().replace(/\s|[-.]/g, "") || "",
+    locationSnapshot: normalizeLocation(values.locationSnapshot),
+    organizationName:
+      values.organizationName?.trim().replace(/\s+/g, " ") || "",
     organizationWebsite: values.organizationWebsite?.trim() || "",
     bankName: values.bankName?.trim() || "",
     bankAccountNumber: values.bankAccountNumber?.trim() || "",
-    bankAccountName: values.bankAccountName?.trim() || "",
+    bankAccountName:
+      values.bankAccountName?.trim().replace(/\s+/g, " ") || "",
     notes: values.notes?.trim() || "",
-
     idCardFront: normalizeDocument(values.idCardFront),
     idCardBack: normalizeDocument(values.idCardBack),
     selfie: normalizeDocument(values.selfie),
@@ -111,22 +139,20 @@ export function useOrganizerRequestForm(existingRequest = null) {
       emailSnapshot: existingRequest?.emailSnapshot || currentUser?.email || "",
       phoneSnapshot: existingRequest?.phoneSnapshot || currentUser?.phone || "",
       locationSnapshot:
-        existingRequest?.locationSnapshot || currentUser?.location || "",
-
+        normalizeLocation(existingRequest?.locationSnapshot) ||
+        normalizeLocation(currentUser?.location) ||
+        null,
       organizationName: existingRequest?.organizationName || "",
       organizationType: existingRequest?.organizationType || "COMMUNITY",
       organizationWebsite: existingRequest?.organizationWebsite || "",
-
       idCardFront: normalizeDocument(existingRequest?.idCardFront),
       idCardBack: normalizeDocument(existingRequest?.idCardBack),
       selfie: normalizeDocument(existingRequest?.selfie),
       businessLicense: normalizeDocument(existingRequest?.businessLicense),
       bankProof: normalizeDocument(existingRequest?.bankProof),
-
       bankName: existingRequest?.bankName || "",
       bankAccountNumber: existingRequest?.bankAccountNumber || "",
       bankAccountName: existingRequest?.bankAccountName || "",
-
       notes: existingRequest?.notes || "",
     }),
     [existingRequest, currentUser]
@@ -149,14 +175,12 @@ export function useOrganizerRequestForm(existingRequest = null) {
         queryKey: queryKeys.organizerRequests.me(),
       });
 
-      toast.success("Đã gửi hồ sơ Organizer thành công");
+      toast.success("Đã gửi hồ sơ nhà tổ chức thành công");
       navigate("/organizer/request");
     },
     onError: async (error) => {
       if (error.response?.status === 409) {
-        toast.info(
-          "You already have a pending application. Updating your view..."
-        );
+        toast.info("Bạn đã có một hồ sơ đang chờ duyệt. Đang cập nhật lại trang...");
 
         await queryClient.invalidateQueries({
           queryKey: queryKeys.organizerRequests.me(),
@@ -188,7 +212,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
           shouldValidate: true,
         });
       } catch {
-        toast.error("Không thể đọc file. Vui lòng thử lại.");
+        toast.error("Không thể đọc tệp. Vui lòng thử lại.");
       }
 
       return;
@@ -207,7 +231,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
 
   const onInvalid = (errors) => {
     const firstError = getFirstErrorMessage(errors);
-    toast.error(firstError || "Please check the highlighted required fields.");
+    toast.error(firstError || "Vui lòng kiểm tra lại các trường đang được tô đỏ.");
   };
 
   return {

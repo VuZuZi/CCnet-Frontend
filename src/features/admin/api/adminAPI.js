@@ -22,11 +22,6 @@ export const adminAPI = {
   updateProjectStatus: (id, payload) =>
     httpClient.patch(`/admin/projects/${id}/status`, payload),
 
-  deleteProject: (id, payload = {}) =>
-    httpClient.delete(`/admin/projects/${id}`, {
-      data: payload,
-    }),
-
   getReports: () => httpClient.get("/admin/reports"),
 
   resolveReport: (reportId, actions, note) =>

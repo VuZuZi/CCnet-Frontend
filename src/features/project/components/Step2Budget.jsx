@@ -151,7 +151,11 @@ export default function Step2Budget() {
           {isFunded && (
             <>
               <FinancialPlanBlock control={control} errors={errors} />
-              <BudgetBreakdownBlock control={control} errors={errors} />
+              <BudgetBreakdownBlock
+  control={control}
+  register={register}
+  errors={errors}
+/>
             </>
           )}
 

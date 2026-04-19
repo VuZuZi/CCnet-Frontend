@@ -1,12 +1,14 @@
+import { Controller } from "react-hook-form";
 import { UserRound } from "lucide-react";
 import OrganizerSectionCard from "./OrganizerSectionCard";
 import FormErrorText from "./FormErrorText";
+import LocationPicker from "@/shared/components/ui/LocationPicker";
 import {
   inputClass,
   labelClass,
 } from "../../constants/organizerRequestStyles";
 
-export function OrganizerRequestPersonalSection({ register, errors }) {
+export function OrganizerRequestPersonalSection({ register, control, errors }) {
   return (
     <OrganizerSectionCard
       icon={<UserRound size={18} />}
@@ -28,14 +30,14 @@ export function OrganizerRequestPersonalSection({ register, errors }) {
           <label className={labelClass}>Số điện thoại</label>
           <input
             {...register("phoneSnapshot")}
-            placeholder="+84..."
+            placeholder="0987654321"
             className={inputClass}
           />
           <FormErrorText>{errors.phoneSnapshot?.message}</FormErrorText>
         </div>
 
         <div>
-          <label className={labelClass}>Địa chỉ Email</label>
+          <label className={labelClass}>Địa chỉ email</label>
           <input
             {...register("emailSnapshot")}
             placeholder="nguyenvana@example.com"
@@ -46,12 +48,30 @@ export function OrganizerRequestPersonalSection({ register, errors }) {
 
         <div>
           <label className={labelClass}>Địa chỉ</label>
-          <input
-            {...register("locationSnapshot")}
-            placeholder="Tỉnh/Thành phố, Quốc gia"
-            className={inputClass}
+          <Controller
+            name="locationSnapshot"
+            control={control}
+            render={({ field }) => (
+              <div
+                className={
+                  errors.locationSnapshot
+                    ? "rounded-xl ring-2 ring-red-200"
+                    : ""
+                }
+              >
+                <LocationPicker
+                  value={field.value}
+                  onChange={field.onChange}
+                  hasError={!!errors.locationSnapshot}
+                />
+              </div>
+            )}
           />
-          <FormErrorText>{errors.locationSnapshot?.message}</FormErrorText>
+          <FormErrorText>
+            {errors.locationSnapshot?.address?.message ||
+              errors.locationSnapshot?.coordinates?.message ||
+              errors.locationSnapshot?.message}
+          </FormErrorText>
         </div>
       </div>
     </OrganizerSectionCard>
