@@ -1,17 +1,19 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import NeedHelpMapCard from './NeedHelpMapCard';
-
-const ITEM_HEIGHT = 236;
-const OVERSCAN = 3;
+import {
+  NEED_HELP_SIDEBAR_ITEM_HEIGHT,
+  NEED_HELP_SIDEBAR_OVERSCAN,
+} from '../../utils/helpRequestMap.utils';
 
 function NeedHelpMapSidebarComponent({
   visibleItems,
   activeItemId,
   onItemSelect,
   isLoading,
+  summaryText = '',
 }) {
   const scrollRef = useRef(null);
-  const [viewportHeight, setViewportHeight] = useState(400);
+  const [viewportHeight, setViewportHeight] = useState(420);
   const [scrollTop, setScrollTop] = useState(0);
 
   const items = useMemo(
@@ -24,55 +26,58 @@ function NeedHelpMapSidebarComponent({
     if (!element || typeof ResizeObserver === 'undefined') return;
 
     const updateHeight = () => {
-      setViewportHeight(Math.max(220, Math.floor(element.clientHeight)));
+      setViewportHeight(Math.max(260, Math.floor(element.clientHeight)));
     };
 
     updateHeight();
 
-    const observer = new ResizeObserver(() => {
-      updateHeight();
-    });
-
+    const observer = new ResizeObserver(updateHeight);
     observer.observe(element);
 
-    return () => {
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
-  const totalHeight = items.length * ITEM_HEIGHT;
+  useEffect(() => {
+    setScrollTop(0);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
+  }, [items]);
 
-  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
-  const endIndex = Math.min(
-    items.length,
-    Math.ceil((scrollTop + viewportHeight) / ITEM_HEIGHT) + OVERSCAN
+  const totalHeight = items.length * NEED_HELP_SIDEBAR_ITEM_HEIGHT;
+
+  const startIndex = Math.max(
+    0,
+    Math.floor(scrollTop / NEED_HELP_SIDEBAR_ITEM_HEIGHT) - NEED_HELP_SIDEBAR_OVERSCAN
   );
 
-  const virtualItems = useMemo(() => {
-    return items.slice(startIndex, endIndex);
-  }, [items, startIndex, endIndex]);
+  const endIndex = Math.min(
+    items.length,
+    Math.ceil((scrollTop + viewportHeight) / NEED_HELP_SIDEBAR_ITEM_HEIGHT) +
+      NEED_HELP_SIDEBAR_OVERSCAN
+  );
 
-  const offsetY = startIndex * ITEM_HEIGHT;
+  const virtualItems = useMemo(
+    () => items.slice(startIndex, endIndex),
+    [items, startIndex, endIndex]
+  );
+
+  const offsetY = startIndex * NEED_HELP_SIDEBAR_ITEM_HEIGHT;
 
   return (
-    <aside className="flex h-full min-h-0 flex-col rounded-[32px] border border-slate-200/80 bg-white/95 shadow-2xl backdrop-blur-xl">
+    <aside className="flex h-full flex-col rounded-[32px] border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
       <div className="border-b border-slate-100 px-5 pb-4 pt-5">
         <h2 className="text-sm font-bold text-slate-900">
           Yêu cầu trong vùng đang xem
         </h2>
         <p className="mt-1 text-xs text-slate-500">
-          Chọn một mục để định vị nhanh trên bản đồ
+          {summaryText || 'Chọn một mục để định vị nhanh trên bản đồ'}
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden px-0 pb-3 pt-3">
+      <div className="flex-1 overflow-hidden px-0 pb-3 pt-3">
         {isLoading ? (
           <div className="space-y-3 px-4">
-            {Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={index}
-                className="h-32 animate-pulse rounded-[24px] bg-slate-100"
-              />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-[220px] animate-pulse rounded-[28px] bg-slate-100" />
             ))}
           </div>
         ) : items.length === 0 ? (
@@ -82,20 +87,17 @@ function NeedHelpMapSidebarComponent({
                 Không có yêu cầu nào trong vùng bản đồ hiện tại.
               </p>
               <p className="mt-2 text-xs text-slate-400">
-                Hãy kéo bản đồ sang khu vực khác hoặc giảm bộ lọc.
+                Hãy kéo bản đồ hoặc giảm bộ lọc.
               </p>
             </div>
           </div>
         ) : (
           <div
             ref={scrollRef}
-            className="h-full overflow-y-auto px-0"
-            onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+            className="h-full overflow-y-auto"
+            onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
           >
-            <div
-              className="relative w-full"
-              style={{ height: `${totalHeight}px` }}
-            >
+            <div className="relative w-full" style={{ height: totalHeight }}>
               <div
                 className="absolute left-0 top-0 w-full"
                 style={{ transform: `translateY(${offsetY}px)` }}
@@ -117,13 +119,4 @@ function NeedHelpMapSidebarComponent({
   );
 }
 
-const NeedHelpMapSidebar = memo(
-  NeedHelpMapSidebarComponent,
-  (prevProps, nextProps) =>
-    prevProps.visibleItems === nextProps.visibleItems &&
-    prevProps.activeItemId === nextProps.activeItemId &&
-    prevProps.onItemSelect === nextProps.onItemSelect &&
-    prevProps.isLoading === nextProps.isLoading
-);
-
-export default NeedHelpMapSidebar;
+export default memo(NeedHelpMapSidebarComponent);

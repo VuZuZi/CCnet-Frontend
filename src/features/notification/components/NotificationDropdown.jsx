@@ -20,7 +20,7 @@ export default function NotificationDropdown({
   if (!isOpen) return null;
 
   return (
-    <div className="animate-in fade-in zoom-in-95 slide-in-from-top-2 absolute right-0 top-16 z-50 w-[390px] overflow-hidden rounded-[22px] border border-[#FBBF24] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl duration-200">
+    <div className="animate-in fade-in zoom-in-95 slide-in-from-top-2 z-50 w-[390px] overflow-hidden rounded-[22px] border border-[#FBBF24] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.10)] backdrop-blur-xl duration-200">
       <div className="border-b border-[#FBBF24] bg-[#FBBF24] px-5 py-4">
         <div className="flex items-start justify-between gap-4">
           <div>

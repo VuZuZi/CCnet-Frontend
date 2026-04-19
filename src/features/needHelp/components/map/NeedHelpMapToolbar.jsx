@@ -15,7 +15,7 @@ import {
 import {
   CATEGORY_OPTIONS,
   URGENCY_OPTIONS,
-} from '../../hooks/useHelpRequestFilters';
+} from '../../utils/helpRequestMap.utils';
 
 function useClickOutside(ref, onClose) {
   useEffect(() => {
@@ -59,9 +59,7 @@ function CustomSelect({
 
   const handleSelect = (nextValue) => {
     onChange?.({
-      target: {
-        value: nextValue,
-      },
+      target: { value: nextValue },
     });
     setIsOpen(false);
   };
@@ -71,7 +69,7 @@ function CustomSelect({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-10 w-full items-center gap-3 rounded-2xl border px-3 text-left shadow-sm outline-none transition-all ${
+        className={`flex h-11 w-full items-center gap-3 rounded-2xl border px-3 text-left shadow-sm outline-none transition-all ${
           isOpen
             ? 'border-amber-400 bg-white ring-2 ring-amber-400/20'
             : 'border-amber-100 bg-white/90 hover:border-amber-200'
@@ -91,7 +89,7 @@ function CustomSelect({
         />
       </button>
 
-      {isOpen ? (
+      {isOpen && (
         <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[3000] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.16)]">
           <div className="max-h-72 overflow-y-auto p-2">
             {options.map((option) => {
@@ -126,7 +124,7 @@ function CustomSelect({
             })}
           </div>
         </div>
-      ) : null}
+      )}
     </div>
   );
 }
@@ -145,21 +143,19 @@ function NeedHelpMapToolbarComponent({
   isLocating = false,
 }) {
   return (
-    <div className="relative z-[2500] pointer-events-auto overflow-visible rounded-[26px] border border-amber-100/80 bg-white/88 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.06)] backdrop-blur-xl">
-      <div className="flex flex-col gap-3 overflow-visible">
+    <div className="relative z-[2500] pointer-events-auto overflow-visible rounded-[28px] border border-amber-100/80 bg-white/88 px-4 py-3 shadow-[0_12px_34px_rgba(15,23,42,0.07)] backdrop-blur-xl">
+      <div className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
-                <MapPinned size={20} />
-              </div>
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+              <MapPinned size={20} />
+            </div>
 
-              <div className="min-w-0">
-                <h2 className="truncate text-[18px] font-bold text-slate-900">
-                  Bản đồ NeedHelp
-                </h2>
-                <p className="truncate text-sm text-slate-500">{summaryText}</p>
-              </div>
+            <div>
+              <h2 className="text-[18px] font-bold text-slate-900">
+                Bản đồ NeedHelp
+              </h2>
+              <p className="text-sm text-slate-500">{summaryText}</p>
             </div>
           </div>
 
@@ -167,7 +163,7 @@ function NeedHelpMapToolbarComponent({
             <button
               type="button"
               onClick={onLocateMe}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               <LocateFixed size={15} className={isLocating ? 'animate-pulse' : ''} />
               Vị trí của tôi
@@ -176,7 +172,7 @@ function NeedHelpMapToolbarComponent({
             <button
               type="button"
               onClick={onResetVietnam}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               <Compass size={15} />
               Toàn Việt Nam
@@ -184,7 +180,7 @@ function NeedHelpMapToolbarComponent({
 
             <Link
               to="/need-help"
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#FBBF24] px-5 text-sm font-bold text-slate-900 transition-colors hover:bg-amber-500"
+              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#FBBF24] px-5 text-sm font-bold text-slate-900 hover:bg-amber-500"
             >
               <List size={15} />
               Danh sách
@@ -192,18 +188,18 @@ function NeedHelpMapToolbarComponent({
           </div>
         </div>
 
-        <div className="grid overflow-visible gap-2 xl:grid-cols-[minmax(0,1.8fr)_210px_210px_auto]">
+        <div className="grid gap-2 xl:grid-cols-[minmax(0,1.8fr)_220px_220px_auto]">
           <div className="relative">
-            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
               <Search size={15} className="text-slate-400" />
             </div>
 
             <input
               type="text"
               value={localSearch}
-              onChange={(event) => setLocalSearch(event.target.value)}
-              placeholder="Tìm tiêu đề, địa điểm..."
-              className="h-10 w-full rounded-2xl border border-amber-100 bg-white/90 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+              onChange={(e) => setLocalSearch(e.target.value)}
+              placeholder="Tìm tiêu đề, địa điểm, nội dung..."
+              className="h-11 w-full rounded-2xl border border-amber-100 bg-white/90 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
             />
           </div>
 
@@ -220,21 +216,18 @@ function NeedHelpMapToolbarComponent({
             onChange={onUrgencyChange}
             options={URGENCY_OPTIONS}
             icon={AlertTriangle}
-            placeholder="Tất cả mức độ khẩn cấp"
+            placeholder="Tất cả mức độ"
           />
 
           <div className="flex items-center justify-end">
-            {hasActiveFilters ? (
+            {hasActiveFilters && (
               <button
-                type="button"
                 onClick={onResetFilters}
-                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 xl:w-auto"
+                className="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               >
                 <FilterX size={15} />
                 Đặt lại
               </button>
-            ) : (
-              <div className="hidden xl:block" />
             )}
           </div>
         </div>
@@ -243,19 +236,4 @@ function NeedHelpMapToolbarComponent({
   );
 }
 
-const NeedHelpMapToolbar = memo(
-  NeedHelpMapToolbarComponent,
-  (prevProps, nextProps) =>
-    prevProps.summaryText === nextProps.summaryText &&
-    prevProps.localSearch === nextProps.localSearch &&
-    prevProps.filters === nextProps.filters &&
-    prevProps.onCategoryChange === nextProps.onCategoryChange &&
-    prevProps.onUrgencyChange === nextProps.onUrgencyChange &&
-    prevProps.onResetFilters === nextProps.onResetFilters &&
-    prevProps.hasActiveFilters === nextProps.hasActiveFilters &&
-    prevProps.onLocateMe === nextProps.onLocateMe &&
-    prevProps.onResetVietnam === nextProps.onResetVietnam &&
-    prevProps.isLocating === nextProps.isLocating
-);
-
-export default NeedHelpMapToolbar;
+export default memo(NeedHelpMapToolbarComponent);

@@ -171,27 +171,32 @@ export function NavbarChatAction({ hideWidget = false }) {
                   type="button"
                   aria-label="Đóng tiện ích chat"
                   onClick={() => setIsOpen(false)}
-                  className="fixed inset-0 z-40 cursor-default bg-transparent"
+                  className="fixed inset-0 z-[6190] bg-transparent"
                 />
               ) : null}
 
-              <ChatWidget
-                isOpen={isOpen}
-                onClose={() => setIsOpen(false)}
-                anchorRect={anchorRect}
-                onConversationSelected={handleConversationSelected}
-                mode={mode}
-              />
+              <div className="pointer-events-none fixed inset-0 z-[6200]">
+                <div className="pointer-events-auto">
+                  <ChatWidget
+                    isOpen={isOpen}
+                    onClose={() => setIsOpen(false)}
+                    anchorRect={anchorRect}
+                    onConversationSelected={handleConversationSelected}
+                    mode={mode}
+                  />
+                </div>
 
-              {visibleConversationIds.map((conversationId, index) => (
-                <ChatPanel
-                  key={String(conversationId)}
-                  conversationId={conversationId}
-                  index={index}
-                  mode={mode}
-                  onClose={() => closeConversation(conversationId)}
-                />
-              ))}
+                {visibleConversationIds.map((conversationId, index) => (
+                  <div key={String(conversationId)} className="pointer-events-auto">
+                    <ChatPanel
+                      conversationId={conversationId}
+                      index={index}
+                      mode={mode}
+                      onClose={() => closeConversation(conversationId)}
+                    />
+                  </div>
+                ))}
+              </div>
             </>,
             document.body
           )

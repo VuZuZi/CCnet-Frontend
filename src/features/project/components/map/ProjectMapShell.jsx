@@ -96,28 +96,37 @@ export default function ProjectMapShell() {
     setClusterToExpand(null);
   }, []);
 
-  const handleCategoryChange = useCallback((event) => {
-    resetSelection();
+  const handleCategoryChange = useCallback(
+    (event) => {
+      resetSelection();
 
-    setFilters((prev) => ({
-      ...prev,
-      category: event.target.value,
-    }));
-  }, [resetSelection]);
+      setFilters((prev) => ({
+        ...prev,
+        category: event.target.value,
+      }));
+    },
+    [resetSelection]
+  );
 
-  const handleOrganizerScopeChange = useCallback((event) => {
-    resetSelection();
+  const handleOrganizerScopeChange = useCallback(
+    (event) => {
+      resetSelection();
 
-    setFilters((prev) => ({
-      ...prev,
-      organizerScope: event.target.value,
-    }));
-  }, [resetSelection]);
+      setFilters((prev) => ({
+        ...prev,
+        organizerScope: event.target.value,
+      }));
+    },
+    [resetSelection]
+  );
 
-  const handleSearchChange = useCallback((event) => {
-    resetSelection();
-    setSearchInput(event.target.value);
-  }, [resetSelection]);
+  const handleSearchChange = useCallback(
+    (event) => {
+      resetSelection();
+      setSearchInput(event.target.value);
+    },
+    [resetSelection]
+  );
 
   const handleProjectSelect = useCallback((project) => {
     setClusterToExpand(null);

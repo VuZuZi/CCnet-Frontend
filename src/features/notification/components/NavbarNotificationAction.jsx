@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Bell } from 'lucide-react';
 import NotificationBadge from './NotificationBadge';
@@ -10,7 +11,10 @@ import { useNotificationActions } from '../hooks/useNotificationActions';
 export default function NavbarNotificationAction() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  const wrapperRef = useRef(null);
+
+  const anchorRef = useRef(null);
+  const panelRef = useRef(null);
+  const [anchorRect, setAnchorRect] = useState(null);
 
   const notificationsQuery = useNotifications({ page: 1, limit: 20 });
   const unreadCountQuery = useUnreadNotificationCount();
@@ -26,12 +30,18 @@ export default function NavbarNotificationAction() {
       : 'border-slate-200 bg-white text-[#F59E0B] shadow-sm';
   }, [hasUnread]);
 
+  const updateAnchorRect = () => {
+    if (!anchorRef.current) return;
+    setAnchorRect(anchorRef.current.getBoundingClientRect());
+  };
+
   const closeSettingsOnly = () => {
     setIsSettingsOpen(false);
   };
 
   const handleBellClick = () => {
     setIsSettingsOpen(false);
+    updateAnchorRect();
     setIsDropdownOpen((previous) => !previous);
   };
 
@@ -40,10 +50,20 @@ export default function NavbarNotificationAction() {
   };
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isSettingsOpen) return;
+    if (!isDropdownOpen) return undefined;
 
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target)) {
+    updateAnchorRect();
+
+    const handleViewportChange = () => {
+      updateAnchorRect();
+    };
+
+    const handleMouseDown = (event) => {
+      const target = event.target;
+      const clickedAnchor = anchorRef.current?.contains(target);
+      const clickedPanel = panelRef.current?.contains(target);
+
+      if (!clickedAnchor && !clickedPanel) {
         setIsDropdownOpen(false);
       }
     };
@@ -58,18 +78,41 @@ export default function NavbarNotificationAction() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('scroll', handleViewportChange, true);
+    document.addEventListener('mousedown', handleMouseDown);
     document.addEventListener('keydown', handleEscape);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+      document.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isSettingsOpen]);
+  }, [isDropdownOpen, isSettingsOpen]);
+
+  const portalWrapperStyle = useMemo(() => {
+    if (!anchorRect) return undefined;
+
+    const top = anchorRect.bottom + 12;
+    const right =
+      typeof window !== 'undefined'
+        ? Math.max(16, window.innerWidth - anchorRect.right)
+        : 16;
+
+    return {
+      position: 'fixed',
+      top,
+      right,
+      zIndex: 6000,
+      width: 384,
+      maxWidth: 'calc(100vw - 24px)',
+    };
+  }, [anchorRect]);
 
   return (
     <>
-      <div className="relative" ref={wrapperRef}>
+      <div className="relative" ref={anchorRef}>
         <button
           type="button"
           onClick={handleBellClick}
@@ -87,19 +130,41 @@ export default function NavbarNotificationAction() {
           />
           <NotificationBadge count={unreadCount} />
         </button>
-
-        <NotificationDropdown
-          isOpen={isDropdownOpen}
-          items={items}
-          unreadCount={unreadCount}
-          isLoading={notificationsQuery.isLoading}
-          onClose={() => setIsDropdownOpen(false)}
-          onOpenSettings={handleOpenSettings}
-          onMarkAllRead={() => markAllAsRead.mutate()}
-          onRead={(id) => markAsRead.mutate(id)}
-          onDelete={(id) => deleteNotification.mutate(id)}
-        />
       </div>
+
+      {isDropdownOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <>
+              <button
+                type="button"
+                aria-label="Đóng thông báo"
+                onClick={() => setIsDropdownOpen(false)}
+                className="fixed inset-0 z-[5990] cursor-default bg-transparent"
+              />
+
+              <div
+                ref={panelRef}
+                style={portalWrapperStyle}
+                className="z-[6000]"
+              >
+                <div className="relative z-[6000]">
+                  <NotificationDropdown
+                    isOpen={isDropdownOpen}
+                    items={items}
+                    unreadCount={unreadCount}
+                    isLoading={notificationsQuery.isLoading}
+                    onClose={() => setIsDropdownOpen(false)}
+                    onOpenSettings={handleOpenSettings}
+                    onMarkAllRead={() => markAllAsRead.mutate()}
+                    onRead={(id) => markAsRead.mutate(id)}
+                    onDelete={(id) => deleteNotification.mutate(id)}
+                  />
+                </div>
+              </div>
+            </>,
+            document.body
+          )
+        : null}
 
       <NotificationSettingsModal
         isOpen={isSettingsOpen}

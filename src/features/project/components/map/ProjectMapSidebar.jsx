@@ -43,6 +43,35 @@ function ProjectMapSidebarComponent({
     };
   }, []);
 
+  useEffect(() => {
+    const activeIndex = items.findIndex(
+      (project) => project?.projectId === activeProjectId
+    );
+
+    if (activeIndex < 0 || !scrollRef.current) return;
+
+    const container = scrollRef.current;
+    const itemTop = activeIndex * ITEM_HEIGHT;
+    const itemBottom = itemTop + ITEM_HEIGHT;
+    const visibleTop = container.scrollTop;
+    const visibleBottom = visibleTop + container.clientHeight;
+
+    if (itemTop < visibleTop) {
+      container.scrollTo({
+        top: itemTop,
+        behavior: "smooth",
+      });
+      return;
+    }
+
+    if (itemBottom > visibleBottom) {
+      container.scrollTo({
+        top: itemBottom - container.clientHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [activeProjectId, items]);
+
   const totalHeight = items.length * ITEM_HEIGHT;
   const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
   const endIndex = Math.min(

@@ -1,17 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Supercluster from 'supercluster';
 import { toast } from 'react-toastify';
 import { useDebounce } from '@/shared/hooks/useDebounce';
-import { useHelpRequestMap } from '../../hooks/useHelpRequestQueries';
+import { useHelpRequestMapViewport } from '../../hooks/useHelpRequestQueries';
 import {
-  DEFAULT_VIETNAM_BBOX,
-  VIETNAM_DEFAULT_ZOOM,
-  applyNeedHelpMapFilters,
+  buildViewportSignature,
   formatNeedHelpMapSummary,
-  getVisibleItemsFromViewport,
-  normalizeNeedHelpMapItems,
-  sortNeedHelpItems,
-  toNeedHelpGeoJsonPoints,
+  getCategoryLabel,
+  limitSidebarItems,
 } from '../../utils/helpRequestMap.utils';
 import NeedHelpMapToolbar from './NeedHelpMapToolbar';
 import NeedHelpMapSidebar from './NeedHelpMapSidebar';
@@ -23,6 +18,131 @@ const INITIAL_FILTERS = {
   urgencyLevel: '',
 };
 
+const MIN_VIEWPORT_DELTA = 0.0001;
+
+const normalizeMapItem = (item) => {
+  if (!item) return null;
+
+  const coordinates = item?.coordinates || item?.location?.coordinates;
+  if (!Array.isArray(coordinates) || coordinates.length < 2) return null;
+
+  const [longitude, latitude] = coordinates.map(Number);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+
+  const category = item?.category || 'KHAC';
+
+  return {
+    type: 'item',
+    id: String(item?.id || item?._id || ''),
+    title: item?.title || 'Yêu cầu trợ giúp',
+    story: item?.story || '',
+    urgencyLevel: item?.urgencyLevel || 'MEDIUM',
+    category,
+    categoryLabel: item?.categoryLabel || getCategoryLabel(category),
+    status: item?.status || '',
+    address: item?.address || item?.location?.address || 'Chưa có địa điểm cụ thể',
+    amountNeeded: Number(item?.amountNeeded || 0),
+    latitude,
+    longitude,
+    raw: item,
+  };
+};
+
+const normalizeMapResponse = (data = {}) => {
+  const mode = data?.mode === 'item' ? 'item' : 'cluster';
+  const rawItems = Array.isArray(data?.items) ? data.items : [];
+  const rawPanelItems = Array.isArray(data?.panelItems) ? data.panelItems : [];
+  const summary = data?.summary || {};
+
+  const markers = rawItems
+    .map((item) => {
+      if (item?.type === 'cluster') {
+        const latitude = Number(item?.latitude);
+        const longitude = Number(item?.longitude);
+        const count = Number(item?.count || 0);
+
+        if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || count <= 0) {
+          return null;
+        }
+
+        return {
+          type: 'cluster',
+          clusterId: String(item?.clusterId || ''),
+          rawClusterId: item?.rawClusterId,
+          count,
+          latitude,
+          longitude,
+          expandZoom: Number(item?.expandZoom || 11),
+        };
+      }
+
+      return normalizeMapItem(item);
+    })
+    .filter(Boolean);
+
+  const panelItems = rawPanelItems
+    .map(normalizeMapItem)
+    .filter(Boolean);
+
+  return {
+    mode,
+    markers,
+    panelItems,
+    summary: {
+      totalVisible: Number(summary?.totalVisible || 0),
+      itemCount: Number(summary?.itemCount || 0),
+      clusterCount: Number(summary?.clusterCount || 0),
+      requestCount: Number(summary?.requestCount || 0),
+      zoom: Number(summary?.zoom || 6),
+    },
+  };
+};
+
+const normalizeViewportForQuery = (viewport) => {
+  if (!viewport) return null;
+
+  let north = Number(viewport.north);
+  let south = Number(viewport.south);
+  let east = Number(viewport.east);
+  let west = Number(viewport.west);
+  const zoom = Number(viewport.zoom || 6);
+
+  if (
+    !Number.isFinite(north) ||
+    !Number.isFinite(south) ||
+    !Number.isFinite(east) ||
+    !Number.isFinite(west)
+  ) {
+    return null;
+  }
+
+  if (north < south) {
+    [north, south] = [south, north];
+  }
+
+  if (east < west) {
+    [east, west] = [west, east];
+  }
+
+  if (Math.abs(north - south) < MIN_VIEWPORT_DELTA) {
+    north += MIN_VIEWPORT_DELTA / 2;
+    south -= MIN_VIEWPORT_DELTA / 2;
+  }
+
+  if (Math.abs(east - west) < MIN_VIEWPORT_DELTA) {
+    east += MIN_VIEWPORT_DELTA / 2;
+    west -= MIN_VIEWPORT_DELTA / 2;
+  }
+
+  return {
+    north: Number(north.toFixed(5)),
+    south: Number(south.toFixed(5)),
+    east: Number(east.toFixed(5)),
+    west: Number(west.toFixed(5)),
+    zoom,
+  };
+};
+
 export default function NeedHelpMapShell() {
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [localSearch, setLocalSearch] = useState('');
@@ -30,6 +150,7 @@ export default function NeedHelpMapShell() {
 
   const [viewport, setViewport] = useState(null);
   const viewportFrameRef = useRef(0);
+  const lastViewportSignatureRef = useRef('');
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedCluster, setSelectedCluster] = useState(null);
@@ -39,8 +160,6 @@ export default function NeedHelpMapShell() {
   const [locateRequestId, setLocateRequestId] = useState(0);
   const [resetRequestId, setResetRequestId] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
-
-  const { data, isLoading, isFetching } = useHelpRequestMap(true);
 
   useEffect(() => {
     const previousHtmlOverflow = document.documentElement.style.overflow;
@@ -58,138 +177,65 @@ export default function NeedHelpMapShell() {
     };
   }, []);
 
-  const normalizedItems = useMemo(
-    () => normalizeNeedHelpMapItems(data || []),
-    [data]
+  const normalizedViewport = useMemo(
+    () => normalizeViewportForQuery(viewport),
+    [viewport]
   );
 
-  const mergedFilters = useMemo(
-    () => ({
-      ...filters,
-      search: debouncedSearch,
-    }),
-    [filters, debouncedSearch]
-  );
-
-  const hasActiveFilters = Boolean(
-    mergedFilters.search || mergedFilters.category || mergedFilters.urgencyLevel
-  );
-
-  const filteredItems = useMemo(
-    () => applyNeedHelpMapFilters(normalizedItems, mergedFilters),
-    [normalizedItems, mergedFilters]
-  );
-
-  const visibleItems = useMemo(
-    () => sortNeedHelpItems(getVisibleItemsFromViewport(filteredItems, viewport)),
-    [filteredItems, viewport]
-  );
-
-  const sidebarItems = useMemo(
-    () => visibleItems,
-    [visibleItems]
-  );
-
-  const geoJsonPoints = useMemo(
-    () => toNeedHelpGeoJsonPoints(filteredItems),
-    [filteredItems]
-  );
-
-  const clusterIndex = useMemo(() => {
-    const index = new Supercluster({
-      radius: 70,
-      maxZoom: 18,
-      minZoom: 0,
-      minPoints: 2,
-      nodeSize: 64,
-    });
-
-    index.load(geoJsonPoints);
-    return index;
-  }, [geoJsonPoints]);
-
-  const currentBbox = useMemo(() => {
-    if (!viewport) return DEFAULT_VIETNAM_BBOX;
-
-    return [
-      viewport.west,
-      viewport.south,
-      viewport.east,
-      viewport.north,
-    ];
-  }, [viewport]);
-
-  const markerResult = useMemo(() => {
-    const zoom = Math.max(0, Math.min(18, Math.round(viewport?.zoom || VIETNAM_DEFAULT_ZOOM)));
-    const clusters = clusterIndex.getClusters(currentBbox, zoom);
-
-    const markers = clusters.map((feature) => {
-      const [longitude, latitude] = feature.geometry.coordinates;
-      const props = feature.properties || {};
-
-      if (props.cluster) {
-        const clusterId = props.cluster_id;
-        return {
-          type: 'cluster',
-          clusterId: `cluster-${clusterId}`,
-          rawClusterId: clusterId,
-          count: props.point_count || 0,
-          latitude,
-          longitude,
-          expandZoom: clusterIndex.getClusterExpansionZoom(clusterId),
-        };
-      }
-
-      return {
-        type: 'item',
-        id: String(props.id || ''),
-        title: props.title || 'Yêu cầu trợ giúp',
-        story: props.story || '',
-        urgencyLevel: props.urgencyLevel || 'MEDIUM',
-        category: props.category || 'KHAC',
-        categoryLabel: props.categoryLabel || '',
-        status: props.status || '',
-        address: props.address || 'Chưa có địa điểm cụ thể',
-        latitude,
-        longitude,
-      };
-    });
-
-    let clusterCount = 0;
-    for (const item of markers) {
-      if (item.type === 'cluster') clusterCount += 1;
-    }
+  const queryParams = useMemo(() => {
+    if (!normalizedViewport) return null;
 
     return {
-      mode: clusterCount > 0 ? 'cluster' : 'item',
-      markers,
-      clusterCount,
+      north: normalizedViewport.north,
+      south: normalizedViewport.south,
+      east: normalizedViewport.east,
+      west: normalizedViewport.west,
+      zoom: Number(normalizedViewport.zoom || 6),
+      category: filters.category || undefined,
+      urgencyLevel: filters.urgencyLevel || undefined,
+      search: debouncedSearch || undefined,
     };
-  }, [clusterIndex, currentBbox, viewport?.zoom]);
+  }, [normalizedViewport, filters.category, filters.urgencyLevel, debouncedSearch]);
+
+  const { data, isLoading, isFetching } = useHelpRequestMapViewport(
+    queryParams || {},
+    Boolean(queryParams)
+  );
+
+  const normalized = useMemo(() => normalizeMapResponse(data || {}), [data]);
+
+  const sidebarItems = useMemo(
+    () => limitSidebarItems(normalized.panelItems),
+    [normalized.panelItems]
+  );
 
   const summaryText = useMemo(
     () =>
       formatNeedHelpMapSummary({
-        total: filteredItems.length,
-        visible: visibleItems.length,
-        clusterCount: markerResult.clusterCount,
-        mode: markerResult.mode,
+        total: normalized.summary.requestCount,
+        visible: normalized.summary.totalVisible,
+        clusterCount: normalized.summary.clusterCount,
+        mode: normalized.mode,
       }),
-    [filteredItems.length, visibleItems.length, markerResult.clusterCount, markerResult.mode]
+    [normalized]
+  );
+
+  const hasActiveFilters = Boolean(
+    debouncedSearch || filters.category || filters.urgencyLevel
   );
 
   const handleViewportChange = useCallback((nextViewport) => {
     cancelAnimationFrame(viewportFrameRef.current);
 
     viewportFrameRef.current = requestAnimationFrame(() => {
-      setViewport((prevViewport) => {
-        const prevSignature = JSON.stringify(prevViewport || {});
-        const nextSignature = JSON.stringify(nextViewport || {});
-        if (prevSignature === nextSignature) {
-          return prevViewport;
-        }
-        return nextViewport;
-      });
+      const safeViewport = normalizeViewportForQuery(nextViewport);
+      if (!safeViewport) return;
+
+      const nextSignature = buildViewportSignature(safeViewport);
+      if (lastViewportSignatureRef.current === nextSignature) return;
+
+      lastViewportSignatureRef.current = nextSignature;
+      setViewport(safeViewport);
     });
   }, []);
 
@@ -206,21 +252,27 @@ export default function NeedHelpMapShell() {
     setActiveClusterId('');
   }, []);
 
-  const handleCategoryChange = useCallback((event) => {
-    resetSelection();
-    setFilters((prev) => ({
-      ...prev,
-      category: event.target.value,
-    }));
-  }, [resetSelection]);
+  const handleCategoryChange = useCallback(
+    (event) => {
+      resetSelection();
+      setFilters((prev) => ({
+        ...prev,
+        category: event.target.value,
+      }));
+    },
+    [resetSelection]
+  );
 
-  const handleUrgencyChange = useCallback((event) => {
-    resetSelection();
-    setFilters((prev) => ({
-      ...prev,
-      urgencyLevel: event.target.value,
-    }));
-  }, [resetSelection]);
+  const handleUrgencyChange = useCallback(
+    (event) => {
+      resetSelection();
+      setFilters((prev) => ({
+        ...prev,
+        urgencyLevel: event.target.value,
+      }));
+    },
+    [resetSelection]
+  );
 
   const handleResetFilters = useCallback(() => {
     setFilters(INITIAL_FILTERS);
@@ -292,22 +344,25 @@ export default function NeedHelpMapShell() {
             onLocateMe={handleLocateMe}
             onResetVietnam={handleResetVietnam}
             isLocating={isLocating}
+            mode={normalized.mode}
           />
         </div>
 
-        <div className="mt-3 grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[350px_minmax(0,1fr)]">
+        <div className="mt-3 grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
           <div className="min-h-0">
             <NeedHelpMapSidebar
               visibleItems={sidebarItems}
               activeItemId={activeItemId}
               onItemSelect={handleItemSelect}
               isLoading={isLoading}
+              summaryText={summaryText}
+              mode={normalized.mode}
             />
           </div>
 
           <div className="relative z-0 min-h-0">
             <NeedHelpMapCanvas
-              markers={markerResult.markers}
+              markers={normalized.markers}
               activeItemId={activeItemId}
               activeClusterId={activeClusterId}
               onItemSelect={handleItemSelect}

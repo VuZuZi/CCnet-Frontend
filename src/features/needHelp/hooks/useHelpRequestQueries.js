@@ -10,6 +10,7 @@ export const HELP_REQUEST_KEYS = {
   urgent: () => [...HELP_REQUEST_KEYS.all, 'urgent'],
   nearby: (params) => [...HELP_REQUEST_KEYS.all, 'nearby', params],
   map: () => [...HELP_REQUEST_KEYS.all, 'map'],
+  mapViewport: (params) => [...HELP_REQUEST_KEYS.all, 'map-viewport', params],
   organizerAssignedRoot: () => [...HELP_REQUEST_KEYS.all, 'organizer-assigned'],
   organizerAssigned: (filters) => [...HELP_REQUEST_KEYS.organizerAssignedRoot(), filters],
   organizerSuggestions: (id, filters) => [
@@ -76,6 +77,24 @@ export const useHelpRequestMap = (enabled = true) => {
     enabled,
     staleTime: 5 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+export const useHelpRequestMapViewport = (params = {}, enabled = true) => {
+  return useQuery({
+    queryKey: HELP_REQUEST_KEYS.mapViewport(params),
+    queryFn: () => helpRequestAPI.getMapViewport(params),
+    enabled:
+      Boolean(enabled) &&
+      Number.isFinite(Number(params?.north)) &&
+      Number.isFinite(Number(params?.south)) &&
+      Number.isFinite(Number(params?.east)) &&
+      Number.isFinite(Number(params?.west)),
+    staleTime: 20 * 1000,
+    gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
     placeholderData: (previousData) => previousData,

@@ -6,12 +6,33 @@ export const VIETNAM_MAP_BOUNDS = [
 ];
 
 export const NEED_HELP_CLUSTER_SWITCH_ZOOM = 11;
+export const NEED_HELP_SIDEBAR_ITEM_HEIGHT = 248;
+export const NEED_HELP_SIDEBAR_OVERSCAN = 3;
+export const NEED_HELP_MAX_VISIBLE_SIDEBAR_ITEMS = 200;
 
 export const DEFAULT_VIETNAM_BBOX = [
   VIETNAM_MAP_BOUNDS[0][1],
   VIETNAM_MAP_BOUNDS[0][0],
   VIETNAM_MAP_BOUNDS[1][1],
   VIETNAM_MAP_BOUNDS[1][0],
+];
+
+export const CATEGORY_OPTIONS = [
+  { value: '', label: 'Tất cả danh mục' },
+  { value: 'Y_TE', label: 'Hỗ trợ y tế' },
+  { value: 'GIAO_DUC', label: 'Giáo dục' },
+  { value: 'THIEN_TAI', label: 'Cứu trợ thiên tai' },
+  { value: 'XAY_DUNG', label: 'Xây dựng' },
+  { value: 'MOI_TRUONG', label: 'Môi trường' },
+  { value: 'KHAC', label: 'Khác' },
+];
+
+export const URGENCY_OPTIONS = [
+  { value: '', label: 'Tất cả mức độ' },
+  { value: 'CRITICAL', label: 'Khẩn cấp' },
+  { value: 'HIGH', label: 'Cao' },
+  { value: 'MEDIUM', label: 'Trung bình' },
+  { value: 'LOW', label: 'Thấp' },
 ];
 
 export const normalizeVietnameseText = (value = '') =>
@@ -69,24 +90,25 @@ export const normalizeNeedHelpMapItems = (items = []) =>
         return null;
       }
 
-      const category = item.category || 'KHAC';
+      const category = item?.category || 'KHAC';
       const categoryLabel = getCategoryLabel(category);
-      const title = item.title || 'Yêu cầu trợ giúp';
-      const story = item.story || '';
+      const title = item?.title || 'Yêu cầu trợ giúp';
+      const story = item?.story || '';
       const address =
-        item.address || item.location?.address || 'Chưa có địa điểm cụ thể';
+        item?.address || item?.location?.address || 'Chưa có địa điểm cụ thể';
 
       return {
-        id: String(item.id || item._id || ''),
+        id: String(item?.id || item?._id || ''),
         title,
         story,
-        urgencyLevel: item.urgencyLevel || 'MEDIUM',
+        urgencyLevel: item?.urgencyLevel || 'MEDIUM',
         category,
         categoryLabel,
-        status: item.status || '',
+        status: item?.status || '',
         address,
         latitude,
         longitude,
+        amountNeeded: Number(item?.amountNeeded || 0),
         searchText: normalizeVietnameseText(
           [title, address, story, categoryLabel].filter(Boolean).join(' ')
         ),
@@ -96,9 +118,9 @@ export const normalizeNeedHelpMapItems = (items = []) =>
     .filter(Boolean);
 
 export const applyNeedHelpMapFilters = (items = [], filters = {}) => {
-  const search = normalizeVietnameseText(filters.search || '');
-  const category = String(filters.category || '').trim();
-  const urgencyLevel = String(filters.urgencyLevel || '').trim();
+  const search = normalizeVietnameseText(filters?.search || '');
+  const category = String(filters?.category || '').trim();
+  const urgencyLevel = String(filters?.urgencyLevel || '').trim();
 
   return items.filter((item) => {
     if (category && item.category !== category) return false;
@@ -134,24 +156,31 @@ export const sortNeedHelpItems = (items = []) => {
       (urgencyWeight[b.urgencyLevel] || 0) - (urgencyWeight[a.urgencyLevel] || 0);
 
     if (urgencyDiff !== 0) return urgencyDiff;
-    return a.title.localeCompare(b.title);
+
+    const amountDiff = Number(b.amountNeeded || 0) - Number(a.amountNeeded || 0);
+    if (amountDiff !== 0) return amountDiff;
+
+    return String(a.title || '').localeCompare(String(b.title || ''), 'vi');
   });
 };
 
+export const limitSidebarItems = (items = [], maxItems = NEED_HELP_MAX_VISIBLE_SIDEBAR_ITEMS) =>
+  (Array.isArray(items) ? items : []).slice(0, maxItems);
+
 export const getClusterBadgeSizeClass = (count = 0) => {
-  if (count >= 100) return 'h-[80px] w-[80px] text-[21px]';
-  if (count >= 30) return 'h-[74px] w-[74px] text-[20px]';
+  if (count >= 100) return 'h-[84px] w-[84px] text-[22px]';
+  if (count >= 30) return 'h-[76px] w-[76px] text-[20px]';
   if (count >= 10) return 'h-[68px] w-[68px] text-[19px]';
   if (count >= 5) return 'h-[62px] w-[62px] text-[18px]';
-  return 'h-[58px] w-[58px] text-[17px]';
+  return 'h-[56px] w-[56px] text-[17px]';
 };
 
 export const getClusterIconPixelSize = (count = 0) => {
-  if (count >= 100) return 100;
-  if (count >= 30) return 94;
+  if (count >= 100) return 104;
+  if (count >= 30) return 96;
   if (count >= 10) return 88;
   if (count >= 5) return 82;
-  return 78;
+  return 76;
 };
 
 export const toNeedHelpGeoJsonPoints = (items = []) =>
@@ -170,6 +199,7 @@ export const toNeedHelpGeoJsonPoints = (items = []) =>
       categoryLabel: item.categoryLabel,
       status: item.status,
       address: item.address,
+      amountNeeded: item.amountNeeded,
       latitude: item.latitude,
       longitude: item.longitude,
     },
@@ -186,4 +216,16 @@ export const formatNeedHelpMapSummary = ({
   }
 
   return `${visible} yêu cầu trong vùng • ${total} tổng cộng`;
+};
+
+export const buildViewportSignature = (viewport = null) => {
+  if (!viewport) return '';
+
+  return JSON.stringify({
+    north: Number(Number(viewport.north || 0).toFixed(5)),
+    south: Number(Number(viewport.south || 0).toFixed(5)),
+    east: Number(Number(viewport.east || 0).toFixed(5)),
+    west: Number(Number(viewport.west || 0).toFixed(5)),
+    zoom: Number(viewport.zoom || 0),
+  });
 };

@@ -33,7 +33,7 @@ export const useProjectMapQuery = (filters = {}, options = {}) => {
           cleanedFilters.east !== undefined &&
           cleanedFilters.west !== undefined
       ),
-    staleTime: 30 * 1000,
+    staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,

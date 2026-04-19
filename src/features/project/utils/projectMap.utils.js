@@ -20,10 +20,10 @@ export const buildMapViewportParams = (bounds, zoom, filters = {}) => {
   if (!bounds) return null;
 
   return {
-    north: Number(bounds.north.toFixed(5)),
-    south: Number(bounds.south.toFixed(5)),
-    east: Number(bounds.east.toFixed(5)),
-    west: Number(bounds.west.toFixed(5)),
+    north: Number(bounds.north.toFixed(6)),
+    south: Number(bounds.south.toFixed(6)),
+    east: Number(bounds.east.toFixed(6)),
+    west: Number(bounds.west.toFixed(6)),
     zoom: Math.max(1, Math.round(Number(zoom) || VIETNAM_DEFAULT_ZOOM)),
     category: filters.category || undefined,
     organizerScope: filters.organizerScope || undefined,
@@ -139,20 +139,18 @@ export const normalizeProjectMapResponse = (response) => {
   };
 };
 
-export const getClusterBadgeSizeClass = (count = 0) => {
-  if (count >= 100) return "h-[58px] w-[58px] text-[16px]";
-  if (count >= 30) return "h-[53px] w-[53px] text-[15px]";
-  if (count >= 10) return "h-[48px] w-[48px] text-[14px]";
-  if (count >= 5) return "h-[44px] w-[44px] text-[13px]";
-  return "h-[40px] w-[40px] text-[12px]";
+export const getClusterBadgeSizeClass = (count) => {
+  if (count >= 100) return "h-16 w-16 text-base";
+  if (count >= 30) return "h-14 w-14 text-sm";
+  if (count >= 10) return "h-12 w-12 text-sm";
+  return "h-10 w-10 text-xs";
 };
 
-export const getClusterIconPixelSize = (count = 0) => {
-  if (count >= 100) return 74;
-  if (count >= 30) return 68;
-  if (count >= 10) return 62;
-  if (count >= 5) return 58;
-  return 54;
+export const getClusterIconPixelSize = (count) => {
+  if (count >= 100) return 84;
+  if (count >= 30) return 76;
+  if (count >= 10) return 68;
+  return 60;
 };
 
 export const formatVisibleSummaryText = (summary, mode) => {

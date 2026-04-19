@@ -36,6 +36,13 @@ export const helpRequestAPI = {
     return response.data?.data;
   },
 
+  getMapViewport: async (params = {}) => {
+    const response = await httpClient.get('/help-requests/map', {
+      params: sanitizeQueryParams(params),
+    });
+    return response.data?.data;
+  },
+
   getMyRequests: async (params = {}) => {
     const response = await httpClient.get('/help-requests/user/my-requests', {
       params: sanitizeQueryParams(params),

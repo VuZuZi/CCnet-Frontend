@@ -70,6 +70,24 @@ function MapViewportWatcher({ onViewportChange }) {
       lastViewportRef.current = signature;
       onViewportChange?.(nextViewport);
     },
+    zoomend(event) {
+      const nextMap = event.target;
+      const bounds = nextMap.getBounds();
+
+      const nextViewport = {
+        north: Number(bounds.getNorth().toFixed(5)),
+        south: Number(bounds.getSouth().toFixed(5)),
+        east: Number(bounds.getEast().toFixed(5)),
+        west: Number(bounds.getWest().toFixed(5)),
+        zoom: nextMap.getZoom(),
+      };
+
+      const signature = JSON.stringify(nextViewport);
+      if (lastViewportRef.current === signature) return;
+
+      lastViewportRef.current = signature;
+      onViewportChange?.(nextViewport);
+    },
   });
 
   return null;
@@ -298,8 +316,8 @@ function createUserLocationIcon() {
 
 function NeedHelpPopupContent({ item }) {
   return (
-    <div className="w-[250px]">
-      <div className="mb-2 flex items-center gap-2">
+    <div className="w-[260px]">
+      <div className="mb-2 flex flex-wrap items-center gap-2">
         <span
           className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${getUrgencyBadgeClass(
             item.urgencyLevel
@@ -324,9 +342,20 @@ function NeedHelpPopupContent({ item }) {
         <span className="line-clamp-2">{item.address}</span>
       </div>
 
-      <p className="mt-2 line-clamp-2 text-xs text-slate-500">
+      <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-500">
         {item.story || 'Yêu cầu trợ giúp này đang chờ được xem xét và hỗ trợ.'}
       </p>
+
+      {Number(item.amountNeeded || 0) > 0 ? (
+        <div className="mt-3 rounded-2xl bg-slate-50 px-3 py-2">
+          <div className="text-[11px] font-semibold text-slate-500">
+            Mức hỗ trợ cần thiết
+          </div>
+          <div className="mt-1 text-sm font-bold text-slate-900">
+            {Number(item.amountNeeded || 0).toLocaleString('vi-VN')} đ
+          </div>
+        </div>
+      ) : null}
 
       <Link
         to={`/need-help/${item.id}`}
@@ -353,7 +382,10 @@ function NeedHelpMapCanvasComponent({
   resetRequestId,
 }) {
   const userLocationIcon = useMemo(() => createUserLocationIcon(), []);
-  const safeMarkers = useMemo(() => (Array.isArray(markers) ? markers : []), [markers]);
+  const safeMarkers = useMemo(
+    () => (Array.isArray(markers) ? markers : []),
+    [markers]
+  );
 
   return (
     <div
@@ -427,7 +459,7 @@ function NeedHelpMapCanvasComponent({
                         {item.count} yêu cầu trong khu vực này
                       </h3>
                       <p className="mt-1 text-xs text-slate-500">
-                        Bấm vào cụm để phóng to và xem từng yêu cầu chi tiết hơn.
+                        Bấm vào cụm để zoom sâu hơn và xem chi tiết từng yêu cầu.
                       </p>
                     </div>
                   </Popup>
@@ -435,26 +467,22 @@ function NeedHelpMapCanvasComponent({
               );
             }
 
-            if (item.type === 'item') {
-              const isActive = activeItemId === item.id;
+            const isActive = activeItemId === item.id;
 
-              return (
-                <Marker
-                  key={item.id}
-                  position={[item.latitude, item.longitude]}
-                  icon={createItemIcon(isActive)}
-                  eventHandlers={{
-                    click: () => onItemSelect?.(item),
-                  }}
-                >
-                  <Popup>
-                    <NeedHelpPopupContent item={item} />
-                  </Popup>
-                </Marker>
-              );
-            }
-
-            return null;
+            return (
+              <Marker
+                key={item.id}
+                position={[item.latitude, item.longitude]}
+                icon={createItemIcon(isActive)}
+                eventHandlers={{
+                  click: () => onItemSelect?.(item),
+                }}
+              >
+                <Popup>
+                  <NeedHelpPopupContent item={item} />
+                </Popup>
+              </Marker>
+            );
           })}
 
           {userLocation ? (
