@@ -60,11 +60,11 @@ export function Step3Preview() {
       <PreviewValidationErrors items={validationItems} />
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        <div className="space-y-6 lg:col-span-7">
+        <div className="min-w-0 space-y-6 lg:col-span-7">
           <PreviewProjectCard formData={formData} />
         </div>
 
-        <div className="space-y-6 lg:col-span-5">
+        <div className="min-w-0 space-y-6 lg:col-span-5">
           <PreviewUploadedMedia formData={formData} />
         </div>
       </div>

@@ -1,4 +1,11 @@
-import { LayoutGrid, Search, Loader2, ChevronDown } from "lucide-react";
+import { Link } from "react-router-dom";
+import {
+  LayoutGrid,
+  Search,
+  Loader2,
+  ChevronDown,
+  Map,
+} from "lucide-react";
 
 const CATEGORY_OPTIONS = [
   { value: "", label: "Tất cả danh mục" },
@@ -54,13 +61,23 @@ export default function ProjectFilterBar({
   };
 
   return (
-    <div className="sticky top-20 z-40 mb-6 flex flex-col items-start justify-between gap-4 border-b border-slate-200 bg-slate-50/95 py-4 backdrop-blur-md md:flex-row md:items-center">
-      <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
-        <LayoutGrid className="text-amber-500" size={24} />
-        Khám phá tất cả dự án
-      </h2>
+    <div className="sticky top-20 z-40 mb-6 flex flex-col gap-4 border-b border-slate-200 bg-slate-50/95 py-4 backdrop-blur-md">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-900">
+          <LayoutGrid className="text-amber-500" size={24} />
+          Khám phá tất cả dự án
+        </h2>
 
-      <div className="flex w-full flex-col gap-3 xl:w-auto xl:flex-row">
+        <Link
+          to="/projects/map"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-[#FBBF24] px-5 text-sm font-black text-slate-900 shadow-sm transition-all hover:bg-[#F59E0B]"
+        >
+          <Map size={18} />
+          Xem bản đồ
+        </Link>
+      </div>
+
+      <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
           <div className="relative w-full sm:min-w-[320px] xl:w-[360px]">
             {isFetching ? (

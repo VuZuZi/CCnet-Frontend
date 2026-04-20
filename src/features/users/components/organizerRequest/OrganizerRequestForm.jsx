@@ -31,15 +31,16 @@ export function OrganizerRequestForm({
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
-          Trở thành Người tổ chức
+          Đăng ký trở thành nhà tổ chức
         </h1>
         <p className="mt-3 text-sm text-slate-500 md:text-base">
-          Gửi tài liệu xác minh để tạo và quản lý các dự án từ thiện.
+          Gửi hồ sơ xác minh để tạo và quản lý các dự án thiện nguyện.
         </p>
       </div>
 
       <OrganizerRequestPersonalSection
         register={register}
+        control={control}
         errors={errors}
       />
 
@@ -87,13 +88,14 @@ export function OrganizerRequestForm({
           {isSubmitting
             ? "Đang gửi..."
             : isResubmitting
-            ? "Gửi lại đơn đăng ký"
-            : "Gửi đơn đăng ký"}
+              ? "Gửi lại hồ sơ"
+              : "Gửi hồ sơ"}
         </button>
       </div>
 
       <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-sm text-sky-700">
-        Đơn đăng ký của bạn sẽ được ban quản trị CCNet xét duyệt. Quá trình này có thể mất từ 1–3 ngày làm việc.
+        Hồ sơ của bạn sẽ được quản lý CCNet xem xét. Quá trình phê duyệt có thể
+        mất từ 1 đến 3 ngày làm việc.
       </div>
     </form>
   );

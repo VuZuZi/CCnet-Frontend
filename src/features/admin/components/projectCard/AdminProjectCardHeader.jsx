@@ -3,7 +3,6 @@ import {
   History,
   Loader2,
   Mail,
-  Trash2,
   Users,
 } from "lucide-react";
 
@@ -25,13 +24,10 @@ export default function AdminProjectCardHeader({
   documentsCount,
   descriptionText,
   isUpdatingThisProject,
-  isDeletingThisProject,
   hasStatusOptions,
-  canDelete,
   onRequestProjectAction,
   onApprove,
   onOpenHistory,
-  onDelete,
 }) {
   const statusStyle = getAdminUIStatusStyle(uiStatus);
 
@@ -109,11 +105,7 @@ export default function AdminProjectCardHeader({
                   onRequestProjectAction(project, selectedStatus);
                 }
               }}
-              disabled={
-                isUpdatingThisProject ||
-                isDeletingThisProject ||
-                !hasStatusOptions
-              }
+              disabled={isUpdatingThisProject || !hasStatusOptions}
               className="h-10 w-full rounded-xl border border-amber-300 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition hover:border-amber-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {statusOptions.map((option) => (
@@ -128,7 +120,7 @@ export default function AdminProjectCardHeader({
                 <button
                   type="button"
                   onClick={() => onApprove(project)}
-                  disabled={isUpdatingThisProject || isDeletingThisProject}
+                  disabled={isUpdatingThisProject}
                   className={`${primaryAction.className} h-10 flex-1 rounded-xl shadow-sm`}
                   title={primaryAction.title}
                 >
@@ -146,41 +138,11 @@ export default function AdminProjectCardHeader({
               <button
                 type="button"
                 onClick={() => onOpenHistory(project)}
-                disabled={isUpdatingThisProject || isDeletingThisProject}
+                disabled={isUpdatingThisProject}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
                 title="Xem lịch sử"
               >
                 <History size={16} />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (canDelete) {
-                    onDelete(project);
-                  }
-                }}
-                disabled={
-                  isUpdatingThisProject ||
-                  isDeletingThisProject ||
-                  !canDelete
-                }
-                className={`inline-flex h-10 w-10 items-center justify-center rounded-xl border shadow-sm transition ${
-                  canDelete
-                    ? "border-rose-100 bg-rose-50 text-rose-700 hover:bg-rose-100"
-                    : "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-                } disabled:opacity-50`}
-                title={
-                  canDelete
-                    ? "Xóa dự án"
-                    : "Không thể xóa dự án ở trạng thái này"
-                }
-              >
-                {isDeletingThisProject ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <Trash2 size={16} />
-                )}
               </button>
             </div>
           </div>

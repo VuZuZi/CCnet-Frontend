@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ChevronDown,
@@ -41,80 +42,157 @@ function Avatar({ user, size = 'sm' }) {
 
 export function NavbarUserDropdown({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
+  const anchorRef = useRef(null);
+  const panelRef = useRef(null);
+  const [anchorRect, setAnchorRect] = useState(null);
+
   const normalizedRole = String(user?.role || '').toLowerCase();
   const isOrganizer = normalizedRole === 'organizer';
 
+  const updateAnchorRect = () => {
+    if (!anchorRef.current) return;
+    setAnchorRect(anchorRef.current.getBoundingClientRect());
+  };
+
+  const handleToggle = () => {
+    updateAnchorRect();
+    setIsOpen((prev) => !prev);
+  };
+
   useEffect(() => {
-    const handleClick = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
+    if (!isOpen) return undefined;
+
+    updateAnchorRect();
+
+    const handleViewportChange = () => {
+      updateAnchorRect();
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
+    const handleMouseDown = (event) => {
+      const target = event.target;
+      const clickedAnchor = anchorRef.current?.contains(target);
+      const clickedPanel = panelRef.current?.contains(target);
+
+      if (!clickedAnchor && !clickedPanel) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('scroll', handleViewportChange, true);
+    window.addEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleMouseDown);
+
+    return () => {
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+      window.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [isOpen]);
+
+  const panelStyle = useMemo(() => {
+    if (!anchorRect) return undefined;
+
+    return {
+      position: 'fixed',
+      top: anchorRect.bottom + 12,
+      right: Math.max(16, window.innerWidth - anchorRect.right),
+      zIndex: 5000,
+    };
+  }, [anchorRect]);
 
   return (
-    <div className="relative ml-2" ref={ref}>
-      <div
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex cursor-pointer items-center gap-2 transition-opacity hover:opacity-80"
-      >
-        <Avatar user={user} size="sm" />
-        <div className="hidden text-left leading-tight lg:block">
-          <span className="block text-sm font-bold text-slate-900">
-            {user?.fullName || 'Alex Doe'}
-          </span>
-          <span className="block text-xs capitalize text-slate-500">
-            {user?.role || 'Nhà tài trợ'}
-          </span>
-        </div>
-        <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
+    <>
+      <div className="relative ml-2" ref={anchorRef}>
+        <button
+          type="button"
+          onClick={handleToggle}
+          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          aria-expanded={isOpen}
+          aria-haspopup="menu"
+        >
+          <Avatar user={user} size="sm" />
+          <div className="hidden text-left leading-tight lg:block">
+            <span className="block text-sm font-bold text-slate-900">
+              {user?.fullName || 'Alex Doe'}
+            </span>
+            <span className="block text-xs capitalize text-slate-500">
+              {user?.role || 'Nhà tài trợ'}
+            </span>
+          </div>
+          <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
+        </button>
       </div>
 
-      {isOpen && (
-        <div className="animate-in fade-in slide-in-from-top-2 absolute right-0 z-50 mt-4 w-56 rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
-          <Link
-            to={ROUTES.PROFILE}
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
-          >
-            <UserIcon size={16} /> Hồ sơ
-          </Link>
+      {isOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <>
+              <button
+                type="button"
+                aria-label="Đóng menu người dùng"
+                onClick={() => setIsOpen(false)}
+                className="fixed inset-0 z-[4990] cursor-default bg-transparent"
+              />
 
-          <Link
-            to={isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD}
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
-          >
-            <LayoutDashboard size={16} /> {isOrganizer ? 'Không gian làm việc của bạn' : 'Bảng điều khiển'}
-          </Link>
+              <div
+                ref={panelRef}
+                style={panelStyle}
+                className="animate-in fade-in slide-in-from-top-2 w-56 rounded-xl border border-slate-100 bg-white py-2 shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
+              >
+                <Link
+                  to={ROUTES.PROFILE}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <UserIcon size={16} /> Hồ sơ
+                </Link>
 
-          <Link
-            to={`${ROUTES.PROFILE}?view=wallet`}
-            onClick={() => setIsOpen(false)}
-            className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
-          >
-            <Wallet size={16} /> Ví, giao dịch & ủng hộ
-          </Link>
+                <Link
+                  to={`${ROUTES.PROFILE}?view=wallet`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <Wallet size={16} /> Ví, giao dịch & ủng hộ
+                </Link>
 
-          <div className="mx-4 my-1 h-px bg-slate-100" />
+                <div className="mx-4 my-1 h-px bg-slate-100" />
 
-          <button
-            onClick={() => {
-              setIsOpen(false);
-              onLogout();
-            }}
-            className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
-            type="button"
-          >
-            <LogOut size={16} /> Đăng xuất
-          </button>
-        </div>
-      )}
-    </div>
+                <Link
+                  to={isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <LayoutDashboard size={16} />
+                  {isOrganizer
+                    ? 'Không gian làm việc của bạn'
+                    : 'Bảng điều khiển'}
+                </Link>
+
+                <div className="mx-4 my-1 h-px bg-slate-100" />
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    onLogout();
+                  }}
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+                >
+                  <LogOut size={16} /> Đăng xuất
+                </button>
+              </div>
+            </>,
+            document.body
+          )
+        : null}
+    </>
   );
 }
 

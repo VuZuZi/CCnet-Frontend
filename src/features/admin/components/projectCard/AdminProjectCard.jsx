@@ -16,7 +16,6 @@ import {
   resolveProjectTimelineState,
   resolveVolunteerSummary,
 } from "../../utils/adminProjectDisplay.utils";
-import { canDeleteProject } from "../../utils/adminProject.permissions";
 import { getCardTone } from "../../utils/adminProjectCard.utils";
 
 import AdminProjectCardHeader from "./AdminProjectCardHeader";
@@ -27,11 +26,9 @@ import AdminProjectCardFooterActions from "./AdminProjectCardFooterActions";
 export default function AdminProjectCard({
   project,
   pendingProjectId,
-  pendingDeleteProjectId,
   onRequestProjectAction,
   onApprove,
   onOpenHistory,
-  onDelete,
   onOpenDetail,
 }) {
   const realStatus = normalizeProjectStatus(project?.status);
@@ -61,9 +58,7 @@ export default function AdminProjectCard({
   const organizer = resolveProjectOrganizer(project);
 
   const isUpdatingThisProject = pendingProjectId === project._id;
-  const isDeletingThisProject = pendingDeleteProjectId === project._id;
   const hasStatusOptions = statusOptions.length > 1;
-  const canDelete = canDeleteProject(realStatus);
 
   return (
     <div
@@ -81,13 +76,10 @@ export default function AdminProjectCard({
         documentsCount={documentsCount}
         descriptionText={descriptionText}
         isUpdatingThisProject={isUpdatingThisProject}
-        isDeletingThisProject={isDeletingThisProject}
         hasStatusOptions={hasStatusOptions}
-        canDelete={canDelete}
         onRequestProjectAction={onRequestProjectAction}
         onApprove={onApprove}
         onOpenHistory={onOpenHistory}
-        onDelete={onDelete}
       />
 
       <div className="space-y-4 p-4">

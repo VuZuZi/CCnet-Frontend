@@ -1,43 +1,55 @@
-import { Link } from 'react-router-dom';
-import { CalendarDays, CircleDollarSign, MapPin } from 'lucide-react';
+import { Link } from "react-router-dom";
+import {
+  CalendarDays,
+  CircleDollarSign,
+  MapPin,
+  Share2,
+  AlertCircle,
+} from "lucide-react";
 
-import { formatDate, formatVND } from '@/shared/lib/formatters';
-import { StatusBadge } from './detail/StatusBadge';
-import { HELP_REQUEST_CATEGORIES, URGENCY_LEVELS } from '../validations/helpRequestSchema';
+import { formatDate, formatVND } from "@/shared/lib/formatters";
+import { StatusBadge } from "./detail/StatusBadge";
+import {
+  HELP_REQUEST_CATEGORIES,
+  URGENCY_LEVELS,
+} from "../validations/helpRequestSchema";
 
 const CATEGORY_LABELS = Object.fromEntries(
-  HELP_REQUEST_CATEGORIES.map((item) => [item.value, item.label])
+  HELP_REQUEST_CATEGORIES.map((item) => [item.value, item.label]),
 );
 
 const URGENCY_MAP = Object.fromEntries(
-  URGENCY_LEVELS.map((item) => [item.value, item])
+  URGENCY_LEVELS.map((item) => [item.value, item]),
 );
 
 function getCoverImage(evidences = []) {
-  return evidences.find((item) => item?.mediaType === 'image' || !item?.mediaType)?.url || null;
+  return (
+    evidences.find((item) => item?.mediaType === "image" || !item?.mediaType)
+      ?.url || null
+  );
 }
 
 function formatCompactAmount(amountNeeded = 0) {
   const amount = Number(amountNeeded || 0);
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    return 'Hỗ trợ linh hoạt';
+    return "Hỗ trợ linh hoạt";
   }
 
   if (amount >= 1_000_000_000_000) {
-    return `${(amount / 1_000_000_000_000).toLocaleString('vi-VN', {
+    return `${(amount / 1_000_000_000_000).toLocaleString("vi-VN", {
       maximumFractionDigits: 1,
     })} nghìn tỷ đ`;
   }
 
   if (amount >= 1_000_000_000) {
-    return `${(amount / 1_000_000_000).toLocaleString('vi-VN', {
+    return `${(amount / 1_000_000_000).toLocaleString("vi-VN", {
       maximumFractionDigits: 1,
     })} tỷ đ`;
   }
 
   if (amount >= 1_000_000) {
-    return `${(amount / 1_000_000).toLocaleString('vi-VN', {
+    return `${(amount / 1_000_000).toLocaleString("vi-VN", {
       maximumFractionDigits: 1,
     })} triệu đ`;
   }
@@ -46,14 +58,18 @@ function formatCompactAmount(amountNeeded = 0) {
 }
 
 function getRequesterName(requesterId) {
-  if (!requesterId) return 'Người yêu cầu từ cộng đồng';
-  if (typeof requesterId === 'object') {
-    return requesterId.fullName || requesterId.username || 'Người yêu cầu từ cộng đồng';
+  if (!requesterId) return "Người yêu cầu từ cộng đồng";
+  if (typeof requesterId === "object") {
+    return (
+      requesterId.fullName ||
+      requesterId.username ||
+      "Người yêu cầu từ cộng đồng"
+    );
   }
-  return 'Người yêu cầu từ cộng đồng';
+  return "Người yêu cầu từ cộng đồng";
 }
 
-function HelpRequestCard({ helpRequest }) {
+function HelpRequestCard({ helpRequest, onShare }) {
   const {
     _id,
     title,
@@ -70,20 +86,42 @@ function HelpRequestCard({ helpRequest }) {
 
   const coverImage = getCoverImage(evidences);
   const requesterName = getRequesterName(requesterId);
-  const categoryLabel = CATEGORY_LABELS[category] || 'Khác';
+  const categoryLabel = CATEGORY_LABELS[category] || "Khác";
   const urgency = URGENCY_MAP[urgencyLevel];
   const compactAmount = formatCompactAmount(amountNeeded);
+  const isCritical = urgencyLevel === "critical" || urgencyLevel === "high";
+
+  const handleShareClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (onShare) {
+      const shareData = {
+        entityId: _id,
+        entityModel: "NeedHelp",
+        title: title,
+        thumbnail: coverImage || "",
+        description: story || "",
+        ownerName: requesterName,
+        location: location?.address || "Đang cập nhật",
+        endDateText: "Đang kêu gọi hỗ trợ",
+        isUrgent: isCritical,
+      };
+      onShare(shareData);
+    }
+  };
 
   return (
     <Link
       to={`/need-help/${_id}`}
-      className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-amber-200 hover:shadow-[0_18px_36px_-24px_rgba(15,23,42,0.22)]"
+      className="group flex flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-amber-200 hover:shadow-xl"
     >
-      <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+      {/* 1. Phần Ảnh Bìa & Badges */}
+      <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-100">
         {coverImage ? (
           <img
             src={coverImage}
-            alt={title || 'Yêu cầu trợ giúp'}
+            alt={title || "Yêu cầu trợ giúp"}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -92,59 +130,96 @@ function HelpRequestCard({ helpRequest }) {
           </div>
         )}
 
+        {/* Badges Top */}
         <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3">
           <span
-            className={`rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${
-              urgency?.color || 'bg-slate-100 text-slate-700'
+            className={`flex items-center gap-1 rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] shadow-sm ${
+              isCritical
+                ? "bg-red-500 text-white animate-pulse"
+                : urgency?.color || "bg-slate-100 text-slate-700"
             }`}
           >
-            {urgency?.label || urgencyLevel || 'Trung bình'}
+            {isCritical && <AlertCircle size={12} strokeWidth={3} />}
+            {urgency?.label || urgencyLevel || "Trung bình"}
           </span>
 
-          <span className="rounded-full bg-white/92 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-slate-700 backdrop-blur">
+          <span className="rounded-full bg-white/95 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.1em] text-slate-700 shadow-sm backdrop-blur">
             {categoryLabel}
           </span>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-950/45 via-slate-950/10 to-transparent p-3">
-          <StatusBadge status={status} size="sm" className="bg-white/95" />
+        {/* Status Bottom */}
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent p-3 pt-12">
+          <StatusBadge
+            status={status}
+            size="sm"
+            className="bg-white/95 shadow-sm"
+          />
         </div>
       </div>
 
-      <div className="space-y-4 p-4">
-        <div>
-          <h3 className="line-clamp-2 text-lg font-extrabold leading-tight tracking-tight text-slate-900 transition-colors group-hover:text-amber-700">
-            {title || 'Yêu cầu chưa có tiêu đề'}
+      {/* 2. Phần Nội dung Chi tiết */}
+      <div className="flex flex-1 flex-col p-5">
+        {/* Tiêu đề & Mô tả */}
+        <div className="mb-4">
+          <h3 className="line-clamp-2 text-lg font-extrabold leading-snug tracking-tight text-slate-900 transition-colors group-hover:text-amber-600">
+            {title || "Yêu cầu chưa có tiêu đề"}
           </h3>
-
-          <p className="mt-2 line-clamp-3 text-sm leading-6 text-slate-500">
-            {story || 'Yêu cầu này chưa có câu chuyện mô tả.'}
+          <p className="mt-2 line-clamp-2 text-sm leading-relaxed text-slate-500 italic">
+            "{story || "Yêu cầu này chưa có câu chuyện mô tả."}"
           </p>
         </div>
 
-        <div className="grid gap-3">
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <MapPin size={15} className="text-slate-400" />
-            <span className="line-clamp-1">
-              {location?.address || 'Chưa có địa điểm cụ thể'}
+        {/* Khối Thông tin (Icon + Text) */}
+        <div className="mb-5 grid gap-2.5 rounded-xl bg-slate-50 p-3.5 border border-slate-100">
+          <div className="flex items-center gap-2.5 text-sm text-slate-600">
+            <MapPin size={16} className="text-slate-400 shrink-0" />
+            <span className="line-clamp-1 font-medium">
+              {location?.address || "Chưa có địa điểm cụ thể"}
             </span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <CircleDollarSign size={15} className="text-slate-400" />
-            <span className="line-clamp-1">{compactAmount}</span>
+          <div className="flex items-center gap-2.5 text-sm text-slate-600">
+            <CircleDollarSign size={16} className="text-amber-500 shrink-0" />
+            <span className="line-clamp-1 font-bold text-amber-700">
+              {compactAmount}
+            </span>
           </div>
 
-          <div className="flex items-center gap-2 text-sm text-slate-600">
-            <CalendarDays size={15} className="text-slate-400" />
-            <span>{formatDate(createdAt) || 'Gần đây'}</span>
+          <div className="flex items-center gap-2.5 text-sm text-slate-600">
+            <CalendarDays size={16} className="text-slate-400 shrink-0" />
+            <span className="font-medium">
+              {formatDate(createdAt) || "Gần đây"}
+            </span>
           </div>
         </div>
 
-        <div className="border-t border-slate-100 pt-3">
-          <p className="text-sm font-medium text-slate-700">
-            Yêu cầu bởi <span className="font-bold text-slate-900">{requesterName}</span>
-          </p>
+        {/* 3. Phần Footer (Tác giả & Nút Action) */}
+        <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-500">
+              {requesterName.charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-xs font-bold text-slate-900">
+                {requesterName}
+              </p>
+              <p className="text-[10px] text-slate-500">Người yêu cầu</p>
+            </div>
+          </div>
+
+          {/* Nút Share nổi bật hơn */}
+          <button
+            onClick={handleShareClick}
+            className="group/share flex shrink-0 items-center justify-center gap-1.5 rounded-xl bg-amber-50 px-3.5 py-2 text-xs font-bold text-amber-600 transition-all hover:bg-amber-400 hover:text-slate-900 hover:shadow-md hover:shadow-amber-400/20 active:scale-95"
+          >
+            <Share2
+              size={14}
+              strokeWidth={2.5}
+              className="transition-transform group-hover/share:-rotate-12"
+            />
+            Chia sẻ
+          </button>
         </div>
       </div>
     </Link>
