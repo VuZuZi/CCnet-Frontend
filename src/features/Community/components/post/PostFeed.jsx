@@ -3,9 +3,9 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { usePosts } from "../../hooks/usePosts";
 import PostCard from "../post/PostCard";
 
-const PostFeed = ({ currentUserId, onReport, feedType }) => {
+const PostFeed = ({ currentUserId, onReport, feedType, profileUserId, emptyMessage }) => {
   const { data, fetchNextPage, hasNextPage, isLoading, isError, error } =
-    usePosts(10, feedType);
+    usePosts(10, feedType, { profileUserId });
 
   if (isLoading) return <PostFeedSkeleton />;
 
@@ -25,7 +25,7 @@ const PostFeed = ({ currentUserId, onReport, feedType }) => {
           post_add
         </span>
         <p className="text-slate-500 font-medium">
-          Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ nhé!
+          {emptyMessage || "Chưa có bài viết nào. Hãy là người đầu tiên chia sẻ nhé!"}
         </p>
       </div>
     );
