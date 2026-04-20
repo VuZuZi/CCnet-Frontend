@@ -36,10 +36,7 @@ const dateOrEmptySchema = z.coerce.date().optional().or(z.literal(""));
 
 const baseMilestoneSchema = z.object({
   title: z.string().min(1, "Tên mốc không được để trống").max(100, "Tên mốc tối đa 100 ký tự"),
-  description: z
-    .string()
-    .optional()
-    .default(""),
+  description: z.string().optional().default(""),
   targetAmount: z.coerce.number().optional().default(0),
   startDate: dateOrEmptySchema,
   endDate: dateOrEmptySchema,
@@ -47,7 +44,10 @@ const baseMilestoneSchema = z.object({
 });
 
 const strictMilestoneSchema = z.object({
-  title: z.string().min(1, "Tên mốc không được để trống").max(100, "Tên mốc tối đa 100 ký tự"),
+  title: z
+    .string()
+    .min(1, "Tên mốc không được để trống")
+    .max(100, "Tên mốc tối đa 100 ký tự"),
   description: z
     .string()
     .min(10, "Vui lòng nhập mô tả rõ ràng cho mốc này")
@@ -55,10 +55,7 @@ const strictMilestoneSchema = z.object({
   targetAmount: z.coerce.number().optional().default(0),
   startDate: dateOrEmptySchema,
   endDate: dateOrEmptySchema,
-  deliverables: z
-    .string()
-    .min(5, "Bắt buộc khai báo kết quả")
-    .max(1000, "Kết quả nghiệm thu tối đa 1000 ký tự"),
+  deliverables: z.string().optional().default(""),
 });
 
 const volunteerRoleSchema = z.object({
@@ -112,7 +109,12 @@ const validateMinimumMedia = (coverMedia, documents, ctx, message) => {
   }
 };
 
-const validateVolunteerRequirement = (needsVolunteers, volunteerRoles, ctx, path = ["volunteerRoles"]) => {
+const validateVolunteerRequirement = (
+  needsVolunteers,
+  volunteerRoles,
+  ctx,
+  path = ["volunteerRoles"],
+) => {
   if (needsVolunteers && (!volunteerRoles || volunteerRoles.length === 0)) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
@@ -168,6 +170,48 @@ const validateMilestoneDateOrder = (milestones, ctx) => {
   });
 };
 
+const validateMilestoneRequiredFields = (milestones, ctx) => {
+  milestones.forEach((milestone, index) => {
+    const deliverables = String(milestone.deliverables || "").trim();
+
+    if (!milestone.startDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bắt buộc",
+        path: ["milestones", index, "startDate"],
+      });
+    }
+
+    if (!milestone.endDate) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bắt buộc",
+        path: ["milestones", index, "endDate"],
+      });
+    }
+
+    if (!deliverables) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bắt buộc khai báo kết quả",
+        path: ["milestones", index, "deliverables"],
+      });
+    } else if (deliverables.length < 5) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Bắt buộc khai báo kết quả",
+        path: ["milestones", index, "deliverables"],
+      });
+    } else if (deliverables.length > 1000) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Kết quả nghiệm thu tối đa 1000 ký tự",
+        path: ["milestones", index, "deliverables"],
+      });
+    }
+  });
+};
+
 const validateFundedMilestones = (
   milestones,
   targetAmount,
@@ -186,26 +230,11 @@ const validateFundedMilestones = (
 
   let totalMilestoneAmount = 0;
 
-  milestones.forEach((milestone, index) => {
+  milestones.forEach((milestone) => {
     totalMilestoneAmount += Number(milestone.targetAmount) || 0;
-
-    if (!milestone.startDate) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Bắt buộc",
-        path: ["milestones", index, "startDate"],
-      });
-    }
-
-    if (!milestone.endDate) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Bắt buộc",
-        path: ["milestones", index, "endDate"],
-      });
-    }
   });
 
+  validateMilestoneRequiredFields(milestones, ctx);
   validateMilestoneDateOrder(milestones, ctx);
   validateMilestoneInsideProjectRange(
     milestones,
@@ -221,6 +250,41 @@ const validateFundedMilestones = (
       path: ["milestones"],
     });
   }
+};
+
+const validateVolunteerOnlyMilestones = (
+  milestones,
+  projectStartDate,
+  projectEndDate,
+  ctx,
+) => {
+  if (!milestones || milestones.length === 0) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Vẫn phải có ít nhất 1 mốc hoạt động (không kèm ngân sách)",
+      path: ["milestones"],
+    });
+    return;
+  }
+
+  validateMilestoneRequiredFields(milestones, ctx);
+  validateMilestoneDateOrder(milestones, ctx);
+  validateMilestoneInsideProjectRange(
+    milestones,
+    projectStartDate,
+    projectEndDate,
+    ctx,
+  );
+
+  milestones.forEach((milestone, index) => {
+    if ((Number(milestone.targetAmount) || 0) > 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Dự án Volunteer không có ngân sách",
+        path: ["milestones", index, "targetAmount"],
+      });
+    }
+  });
 };
 
 export const draftStep1Schema = z.object({
@@ -371,23 +435,12 @@ export const strictStep2Schema = (
           });
         }
 
-        if (!data.milestones || data.milestones.length === 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Vẫn phải có ít nhất 1 mốc hoạt động (không kèm ngân sách)",
-            path: ["milestones"],
-          });
-        }
-
-        data.milestones.forEach((milestone, index) => {
-          if ((Number(milestone.targetAmount) || 0) > 0) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "Dự án Volunteer không có ngân sách",
-              path: ["milestones", index, "targetAmount"],
-            });
-          }
-        });
+        validateVolunteerOnlyMilestones(
+          data.milestones,
+          projectStartDate,
+          projectEndDate,
+          ctx,
+        );
       }
 
       validateVolunteerRequirement(
@@ -429,7 +482,7 @@ export const createProjectSubmitSchema = (
             targetAmount: z.coerce.number().optional().default(0),
             startDate: z.any().optional(),
             endDate: z.any().optional(),
-            deliverables: z.string().min(5, "Thiếu deliverables"),
+            deliverables: z.string().optional().default(""),
           }),
         )
         .min(1, "Phải có ít nhất 1 milestone"),
@@ -449,6 +502,15 @@ export const createProjectSubmitSchema = (
         data.documents,
         ctx,
         "Bắt buộc phải có tối thiểu 3 file minh chứng",
+      );
+
+      validateMilestoneRequiredFields(data.milestones, ctx);
+      validateMilestoneDateOrder(data.milestones, ctx);
+      validateMilestoneInsideProjectRange(
+        data.milestones,
+        data.startDate,
+        data.endDate,
+        ctx,
       );
 
       if (data.projectType === "FUNDED") {
@@ -496,16 +558,6 @@ export const createProjectSubmitSchema = (
             path: ["milestones"],
           });
         }
-
-        data.milestones.forEach((milestone, index) => {
-          if (!milestone.endDate) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              message: "Mốc FUNDED bắt buộc phải có hạn chót",
-              path: ["milestones", index, "endDate"],
-            });
-          }
-        });
       }
 
       validateVolunteerRequirement(
@@ -525,5 +577,13 @@ export const createProjectSubmitSchema = (
             });
           }
         });
+
+        if (!data.needsVolunteers) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Dự án Volunteer-only bắt buộc phải bật tính năng Tuyển tình nguyện viên",
+            path: ["needsVolunteers"],
+          });
+        }
       }
     });

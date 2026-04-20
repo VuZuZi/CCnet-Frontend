@@ -13,12 +13,12 @@ import { devConfig } from '@/config/app.config';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-const cn = (...inputs) => twMerge(clsx(inputs));
-
 import { FinancialPlanBlock } from './FinancialPlanBlock';
 import { BudgetBreakdownBlock } from './BudgetBreakdownBlock';
 import { MilestonesBlock } from './MilestonesBlock';
 import { VolunteerRolesBlock } from './VolunteerRolesBlock';
+
+const cn = (...inputs) => twMerge(clsx(inputs));
 
 const formatDateForInput = (isoString) => {
   if (!isoString) return '';
@@ -27,10 +27,13 @@ const formatDateForInput = (isoString) => {
 
 const getTierLimits = (tier) => {
   switch (tier) {
-    case 3: return { maxFunding: 999999999999 };
-    case 2: return { maxFunding: 200000000 };
+    case 3:
+      return { maxFunding: 999999999999 };
+    case 2:
+      return { maxFunding: 200000000 };
     case 1:
-    default: return { maxFunding: 50000000 };
+    default:
+      return { maxFunding: 50000000 };
   }
 };
 
@@ -39,7 +42,15 @@ export default function Step2Budget() {
   const user = useAuthStore((state) => state.user);
   const { maxFunding } = getTierLimits(user?.kycTier || 1);
 
-  const { formData, updateFormData, nextStep, prevStep, projectId, setProjectId } = useProjectDraftStore();
+  const {
+    formData,
+    updateFormData,
+    nextStep,
+    prevStep,
+    projectId,
+    setProjectId,
+  } = useProjectDraftStore();
+
   const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
   const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
   const toast = useToast();
@@ -48,37 +59,78 @@ export default function Step2Budget() {
   const isFunded = formData.projectType === 'FUNDED';
 
   const methods = useForm({
-    resolver: zodResolver(strictStep2Schema(isFunded, maxFunding, formData.startDate, formData.endDate)),
+    resolver: zodResolver(
+      strictStep2Schema(
+        isFunded,
+        maxFunding,
+        formData.startDate,
+        formData.endDate
+      )
+    ),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       targetAmount: formData.targetAmount || 0,
       mvpAmount: formData.mvpAmount || 0,
-      budgetBreakdown: formData.budgetBreakdown?.length ? formData.budgetBreakdown : [],
+      budgetBreakdown: formData.budgetBreakdown?.length
+        ? formData.budgetBreakdown
+        : [],
       milestones: formData.milestones?.length
-        ? formData.milestones.map(m => ({
-          ...m,
-          startDate: formatDateForInput(m.startDate),
-          endDate: formatDateForInput(m.endDate)
-        }))
+        ? formData.milestones.map((m) => ({
+            ...m,
+            startDate: formatDateForInput(m.startDate),
+            endDate: formatDateForInput(m.endDate),
+          }))
         : [],
       needsVolunteers: isFunded ? (formData.needsVolunteers || false) : true,
-      volunteerRoles: formData.volunteerRoles?.length ? formData.volunteerRoles : [],
-    }
+      volunteerRoles: formData.volunteerRoles?.length
+        ? formData.volunteerRoles
+        : [],
+    },
   });
 
-  const { register, control, handleSubmit, setValue, getValues, formState: { errors } } = methods;
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    trigger,
+    formState: { errors },
+  } = methods;
 
   useEffect(() => {
     if (!isFunded) {
-      setValue('needsVolunteers', true);
-      setValue('targetAmount', 0);
-      setValue('mvpAmount', 0);
-      setValue('budgetBreakdown', []);
+      setValue('needsVolunteers', true, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue('targetAmount', 0, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue('mvpAmount', 0, {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+      setValue('budgetBreakdown', [], {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+
       const currentMilestones = getValues('milestones') || [];
       currentMilestones.forEach((m, idx) => {
-        if (m.targetAmount > 0) setValue(`milestones.${idx}.targetAmount`, 0);
+        if ((Number(m?.targetAmount) || 0) > 0) {
+          setValue(`milestones.${idx}.targetAmount`, 0, {
+            shouldValidate: true,
+            shouldDirty: true,
+          });
+        }
       });
+
+      trigger();
     }
-  }, [isFunded, setValue, getValues]);
+  }, [isFunded, setValue, getValues, trigger]);
 
   const normalizeDataForSave = (data) => {
     const normalizedVolunteerRoles = (data.volunteerRoles || []).map((role) => ({
@@ -86,18 +138,28 @@ export default function Step2Budget() {
       quantity: Number(role?.quantity || 0),
       skillsRequired: Array.isArray(role?.skillsRequired)
         ? role.skillsRequired
-        : String(role?.skills || '').split(',').map((s) => s.trim()).filter(Boolean),
+        : String(role?.skills || '')
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean),
       location: role?.location || '',
       duration: role?.duration || '',
     }));
 
-    const step2Payload = isFunded ? data : {
-      ...data,
-      targetAmount: 0,
-      mvpAmount: 0,
-      budgetBreakdown: [],
-      milestones: data.milestones.map(m => ({ ...m, targetAmount: 0 }))
-    };
+    const safeMilestones = Array.isArray(data.milestones) ? data.milestones : [];
+
+    const step2Payload = isFunded
+      ? data
+      : {
+          ...data,
+          targetAmount: 0,
+          mvpAmount: 0,
+          budgetBreakdown: [],
+          milestones: safeMilestones.map((m) => ({
+            ...m,
+            targetAmount: 0,
+          })),
+        };
 
     return {
       ...step2Payload,
@@ -116,42 +178,63 @@ export default function Step2Budget() {
       };
 
       if (!projectId) {
-        const created = await createDraft(isAutoSave ? { ...fullFormData, silent: true } : fullFormData);
-        if (created?._id) setProjectId(created._id);
+        const created = await createDraft(
+          isAutoSave ? { ...fullFormData, silent: true } : fullFormData
+        );
+        if (created?._id) {
+          setProjectId(created._id);
+        }
       } else {
-        await updateDraft({ id: projectId, data: fullFormData, silent: isAutoSave });
+        await updateDraft({
+          id: projectId,
+          data: fullFormData,
+          silent: isAutoSave,
+        });
       }
 
-      if (!isAutoSave) toast.success('Đã lưu bản nháp an toàn!');
+      if (!isAutoSave) {
+        toast.success('Đã lưu bản nháp an toàn!');
+      }
+
       return true;
     } catch (error) {
-      const apiMessage = error?.response?.data?.message || 'Lưu dữ liệu thất bại.';
+      const apiMessage =
+        error?.response?.data?.message || 'Lưu dữ liệu thất bại.';
       toast.error(apiMessage);
-      devConfig.error("[CTO Log] Save Step 2 Failed:", error);
+      devConfig.error('[CTO Log] Save Step 2 Failed:', error);
       return false;
     }
   };
 
-  const handleNextStep = handleSubmit(async (data) => {
-    const isSuccess = await executeSave(data, true);
-    if (isSuccess) {
-      nextStep();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  const handleNextStep = handleSubmit(
+    async (data) => {
+      const isSuccess = await executeSave(data, true);
+      if (isSuccess) {
+        nextStep();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    },
+    (validationErrors) => {
+      devConfig.log('[CTO Log] Form Validation Failed:', validationErrors);
+      toast.error('Dữ liệu chưa hợp lệ. Vui lòng kiểm tra các mục được bôi đỏ!');
     }
-  }, (validationErrors) => {
-    devConfig.log('[CTO Log] Form Validation Failed:', validationErrors);
-    toast.error('Dữ liệu chưa hợp lệ. Vui lòng kiểm tra các mục được bôi đỏ!');
-  });
+  );
 
   return (
     <FormProvider {...methods}>
       <form className="pb-32 max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <fieldset disabled={isPending} className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed">
-
+        <fieldset
+          disabled={isPending}
+          className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
           {isFunded && (
             <>
               <FinancialPlanBlock control={control} errors={errors} />
-              <BudgetBreakdownBlock control={control} errors={errors} />
+              <BudgetBreakdownBlock
+                control={control}
+                register={register}
+                errors={errors}
+              />
             </>
           )}
 
@@ -170,7 +253,6 @@ export default function Step2Budget() {
             setValue={setValue}
             isFunded={isFunded}
           />
-
         </fieldset>
 
         <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 py-4 px-4 sm:px-6 lg:px-8 transition-all duration-300">
@@ -199,8 +281,10 @@ export default function Step2Budget() {
                 onClick={handleNextStep}
                 disabled={isPending}
                 className={cn(
-                  "flex items-center gap-2 px-8 py-3 font-bold rounded-xl shadow-sm transition-all",
-                  isPending ? "bg-slate-400 text-white" : "bg-[#fbbf24] text-white hover:bg-[#f59e0b] shadow-[#fbbf24]/20"
+                  'flex items-center gap-2 px-8 py-3 font-bold rounded-xl shadow-sm transition-all',
+                  isPending
+                    ? 'bg-slate-400 text-white'
+                    : 'bg-[#fbbf24] text-white hover:bg-[#f59e0b] shadow-[#fbbf24]/20'
                 )}
               >
                 {isPending && <Loader2 className="animate-spin" size={18} />}

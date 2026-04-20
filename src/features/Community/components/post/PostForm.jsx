@@ -3,7 +3,9 @@ import { usePostMutations } from "../../hooks/usePostMutations";
 import { useAuthStore } from "../../../auth/stores/useAuthStore";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { Globe2, Lock, ImagePlus, SendHorizontal } from "lucide-react";
+import { SharedEntityCard } from "./SharedEntityCard";
 
+// --- Sub-component Avatar ---
 const UserAvatar = ({ user }) => {
   if (user?.avatar) {
     return (
@@ -24,63 +26,7 @@ const UserAvatar = ({ user }) => {
   );
 };
 
-const SharedItemPreview = ({ item, onCancel }) => {
-  const isProject = item.entityModel === "Project";
-
-  return (
-    <div className="mt-3 relative">
-      {onCancel && (
-        <button
-          onClick={onCancel}
-          className="absolute -top-2 -right-2 z-10 size-7 flex items-center justify-center rounded-full bg-slate-500 text-white hover:bg-red-500 shadow-md transition-colors"
-        >
-          ✕
-        </button>
-      )}
-
-      <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 flex flex-col sm:flex-row pointer-events-none">
-        <div className="w-[140px] shrink-0 bg-slate-200 border-r border-slate-100 overflow-hidden relative">
-          {item.thumbnail ? (
-            <img
-              src={item.thumbnail}
-              alt="Ảnh đại diện"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-400 text-xs font-medium bg-slate-100">
-              Không có ảnh
-            </div>
-          )}
-          <span
-            className={`absolute top-2 left-2 px-2.5 py-1 text-[9px] font-bold uppercase tracking-wide rounded-md shadow-sm text-white ${isProject ? "bg-blue-600" : "bg-red-500"}`}
-          >
-            {isProject ? "Dự án" : "Cần giúp đỡ"}
-          </span>
-        </div>
-
-        <div className="p-4 flex flex-col flex-1 min-w-0 bg-white">
-          <h4 className="font-bold text-slate-900 line-clamp-2 leading-snug mb-1 text-sm">
-            {item.title}
-          </h4>
-          <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed">
-            {item.description ||
-              "Hãy cùng chung tay đóng góp cho dự án ý nghĩa này!"}
-          </p>
-
-          <div className="mt-auto">
-            <div className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-xs font-bold bg-amber-400 text-slate-900 shadow-sm">
-              {isProject ? "Xem Dự Án" : "Giúp Đỡ Ngay"}
-              <span className="material-symbols-outlined text-[16px] ml-1">
-                arrow_forward
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+// --- Sub-component Gallery ảnh ---
 const AttachmentGallery = ({ attachments, onRemove }) => {
   if (!attachments.length) return null;
 
@@ -138,6 +84,7 @@ const AttachmentGallery = ({ attachments, onRemove }) => {
   );
 };
 
+// --- Component PostForm CHÍNH ---
 const PostForm = ({
   sharedItem = null,
   initialContent = "",
@@ -204,6 +151,7 @@ const PostForm = ({
       const postType =
         sharedItem.entityModel === "Project" ? "share_project" : "need_help";
       formData.append("type", postType);
+      console.log("DỮ LIỆU CHUẨN BỊ GỬI LÊN SERVER:", sharedItem);
       formData.append("sharedEntity", JSON.stringify(sharedItem));
     } else {
       formData.append("type", "normal");
@@ -295,10 +243,6 @@ const PostForm = ({
             <span>{content.length}/300</span>
           </div>
 
-          {sharedItem && (
-            <SharedItemPreview item={sharedItem} onCancel={onCancelShare} />
-          )}
-
           {!sharedItem && (
             <AttachmentGallery
               attachments={attachments}
@@ -308,6 +252,23 @@ const PostForm = ({
         </div>
       </div>
 
+      {/* Khối 2: Thẻ Preview nằm dưới, chiếm full chiều rộng (kéo ra lề trái) */}
+      {sharedItem && (
+        <div className="relative mt-4">
+          <SharedEntityCard entity={sharedItem} isPreview={true} />
+          {onCancelShare && (
+            <button
+              onClick={onCancelShare}
+              type="button"
+              className="absolute -top-2 -right-2 z-30 size-7 flex items-center justify-center rounded-full bg-slate-800 text-white hover:bg-red-500 shadow-lg transition-all hover:scale-110 active:scale-95"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Input File Ẩn */}
       <input
         type="file"
         multiple

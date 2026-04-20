@@ -1,27 +1,63 @@
-import { format } from 'date-fns';
-import { Star } from 'lucide-react';
+import { format } from "date-fns";
+import { Star, ShieldCheck } from "lucide-react";
 
-export function AboutMeCard({ about, level, title, createdAt }) {
-  const joinedDate = createdAt ? format(new Date(createdAt), 'MMMM yyyy') : 'Không rõ';
+const isOrganizerProfile = (userLike) => {
+  const role = String(userLike?.role || "").toLowerCase();
+  return role === "organizer" || Number(userLike?.kyc?.tier || 0) >= 2;
+};
+
+export function AboutMeCard({
+  about,
+  level,
+  title,
+  createdAt,
+  role,
+  kyc,
+  organization,
+}) {
+  const joinedDate = createdAt
+    ? format(new Date(createdAt), "MMMM yyyy")
+    : "Không rõ";
+
+  const isOrganizer = isOrganizerProfile({ role, kyc });
 
   return (
-    <article className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100" data-purpose="about-section">
-      <h2 className="text-sm font-bold uppercase tracking-wider text-gray-400 mb-4">Giới thiệu bản thân</h2>
+    <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
+      <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-400">
+        {isOrganizer ? "Giới thiệu nhà tổ chức" : "Giới thiệu bản thân"}
+      </h2>
+
       <div className="space-y-4">
         <div>
-          <p className="text-sm text-gray-600 leading-relaxed">
-            {about || "Người dùng này chưa viết gì về bản thân."}
+          <p className="text-sm leading-relaxed text-gray-600">
+            {about ||
+              (isOrganizer
+                ? "Nhà tổ chức này chưa thêm mô tả về tổ chức."
+                : "Người dùng này chưa viết gì về bản thân.")}
           </p>
         </div>
+
+        {isOrganizer && organization?.name && (
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+            <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-emerald-800">
+              <ShieldCheck className="h-4 w-4" />
+              Nhà tổ chức đã xác minh
+            </div>
+            <p className="text-sm text-emerald-700">{organization.name}</p>
+          </div>
+        )}
+
         <div className="flex items-center gap-3 text-sm text-gray-500">
           <span className="flex items-center gap-1 font-medium text-gray-700">
-            <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-            Cấp độ {level || 1} {title || 'Thành viên'}
+            <Star className="h-4 w-4 fill-amber-500 text-amber-500" />
+            Cấp độ {level || 1} {title || "Thành viên"}
           </span>
-          <span className="h-1 w-1 bg-gray-300 rounded-full"></span>
+          <span className="h-1 w-1 rounded-full bg-gray-300"></span>
           <span>Tham gia từ {joinedDate}</span>
         </div>
       </div>
     </article>
   );
 }
+
+export default AboutMeCard;

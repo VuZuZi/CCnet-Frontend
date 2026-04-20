@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
 import EditPostModal from "./EditPostModal";
 import PostTheaterMode from "./PostTheaterMode";
+// CHÚ Ý IMPORT:
+import { SharedEntityCard } from "./SharedEntityCard";
 
 const POST_TYPE_LABELS = {
   share_project: "đã chia sẻ một dự án",
@@ -158,61 +160,7 @@ const ImageGrid = ({ images, onImageClick }) => {
   );
 };
 
-const SharedEntityCard = ({ entity }) => {
-  const isProject = entity.entityModel === "Project";
-  const linkTo = isProject
-    ? `/projects/${entity.entityId}`
-    : `/need-help/${entity.entityId}`;
-
-  const badgeClass = isProject ? "bg-blue-600" : "bg-red-500";
-  const btnClass =
-    "bg-amber-400 text-slate-900 hover:bg-amber-500 shadow-sm shadow-amber-400/30";
-
-  return (
-    <div className="px-5 pb-4">
-      <div className="border border-slate-200 rounded-2xl overflow-hidden bg-slate-50 flex flex-col sm:flex-row relative group hover:shadow-md hover:border-amber-200 transition-all duration-300">
-        <div className="w-full sm:w-[160px] h-[140px] sm:h-auto shrink-0 bg-slate-200 border-b sm:border-b-0 sm:border-r border-slate-100 overflow-hidden relative">
-          {entity.thumbnail ? (
-            <img
-              src={entity.thumbnail}
-              alt="Ảnh đại diện"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium bg-slate-100">
-              Không có ảnh
-            </div>
-          )}
-          <span
-            className={`absolute top-2 left-2 px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg shadow-sm text-white tracking-wide ${badgeClass}`}
-          >
-            {isProject ? "Dự án" : "Cần giúp đỡ"}
-          </span>
-        </div>
-        <div className="p-4 flex flex-col flex-1 min-w-0 bg-white">
-          <h4 className="font-bold text-slate-900 line-clamp-2 leading-snug mb-1.5 text-base group-hover:text-amber-600 transition-colors">
-            {entity.title}
-          </h4>
-          <p className="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-4">
-            {entity.description || "Nhấn để xem chi tiết dự án này..."}
-          </p>
-          <div className="mt-auto">
-            <Link
-              to={linkTo}
-              className={`inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${btnClass}`}
-            >
-              {isProject ? "Xem Dự Án" : "Giúp Đỡ Ngay"}
-              <span className="material-symbols-outlined text-[18px] ml-1.5 transition-transform group-hover:translate-x-1">
-                arrow_forward
-              </span>
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
+// --- COMPONENT CHÍNH POSTCARD ---
 const PostCard = ({ post, currentUserId, onReport }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -233,7 +181,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
 
   return (
     <>
-      <article className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden w-full min-w-0 hover:shadow-md transition-shadow duration-300">
+      <article className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden w-full min-w-0 hover:shadow-md transition-shadow duration-300">
         <div className="px-5 pt-4 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar user={post.author} />
@@ -277,6 +225,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             </div>
           </div>
 
+          {/* Menu Dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu((prev) => !prev)}
@@ -303,11 +252,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                       label="Xóa bài viết"
                       variant="danger"
                       onClick={() => {
-                        if (
-                          window.confirm(
-                            "Bạn có chắc chắn muốn xóa bài viết này không?",
-                          )
-                        )
+                        if (window.confirm("Xóa bài viết này?"))
                           deletePost.mutate(post._id);
                         setShowMenu(false);
                       }}
@@ -317,9 +262,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                   <>
                     <MenuBtn
                       icon={post.isSaved ? "bookmark_added" : "bookmark"}
-                      label={
-                        post.isSaved ? "Bỏ lưu bài viết" : "Lưu bài viết"
-                      }
+                      label={post.isSaved ? "Bỏ lưu bài viết" : "Lưu bài viết"}
                       onClick={() => {
                         toggleSavePost.mutate(post._id);
                         setShowMenu(false);
@@ -341,6 +284,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           </div>
         </div>
 
+        {/* Nội dung text */}
         {post.content && (
           <div className="px-5 pb-3 w-full overflow-hidden">
             <Link
@@ -354,8 +298,9 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           </div>
         )}
 
+        {/* HIỂN THỊ THẺ SHARE HOẶC ẢNH */}
         {post.sharedEntity ? (
-          <SharedEntityCard entity={post.sharedEntity} />
+          <SharedEntityCard entity={post.sharedEntity} isPreview={false} />
         ) : (
           <ImageGrid
             images={post.images}
@@ -402,9 +347,6 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             <HeartIcon filled={isLiked} className="size-5" />
             <span>Thích</span>
           </button>
-
- 
-
           <Link
             to={`/community/${post._id}`}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all duration-200 active:scale-95"
@@ -415,6 +357,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
         </div>
       </article>
 
+      {/* Modals */}
       {isEditOpen && (
         <EditPostModal
           isOpen={isEditOpen}
@@ -451,5 +394,6 @@ const MenuBtn = ({ icon, label, onClick, variant = "default" }) => (
     {label}
   </button>
 );
+
 
 export default PostCard;
