@@ -33,7 +33,7 @@ const ProfileWidget = () => {
         </div>
       </div>
       <Link
-        to={`/profile/${user?._id || ""}`}
+        to="/profile"
         className="block w-full mt-4 bg-primary text-white text-center text-sm font-bold py-2.5 rounded-xl hover:bg-yellow-500 transition-all"
       >
         Xem hồ sơ

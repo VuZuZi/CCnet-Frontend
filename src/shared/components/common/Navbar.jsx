@@ -5,26 +5,25 @@ import {
   Search,
   Menu,
   X,
+  Wallet,
   User as UserIcon,
   LayoutDashboard,
   LogOut,
   HeartHandshake,
-  ChevronDown, // Bổ sung import ChevronDown
-  Info, // Bổ sung import Info
-} from "lucide-react";
-import {
-  useAuthStore,
-  authSelectors,
-} from "@/features/auth/stores/useAuthStore";
-import { useLogout } from "@/features/auth/hooks/useLogout";
-import { ROUTES } from "@/shared/constants/routes";
-import { Button, cn } from "@/shared/components/ui/Button/Button";
-import { CCNetLogo } from "@/shared/components/ui/Logo/CCNetLogo";
-import GlobalSearch from "@/features/search/components/GlobalSearch";
-import { useOrganizerAssignedRequests } from "@/features/needHelp/hooks/useHelpRequestQueries";
-import NavbarChatAction from "./navbar/NavbarChatAction";
-import NavbarUserDropdown from "./navbar/NavbarUserDropdown";
-import NavbarNotificationAction from "@/features/notification/components/NavbarNotificationAction";
+  ChevronDown,
+  Info,
+} from 'lucide-react';
+import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
+import { useLogout } from '@/features/auth/hooks/useLogout';
+import { ROUTES } from '@/shared/constants/routes';
+import { Button, cn } from '@/shared/components/ui/Button/Button';
+import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
+import GlobalSearch from '@/features/search/components/GlobalSearch';
+import { useOrganizerAssignedRequests } from '@/features/needHelp/hooks/useHelpRequestQueries';
+import { useMyWallet } from '@/features/wallet/hooks/useWalletQueries';
+import NavbarChatAction from './navbar/NavbarChatAction';
+import NavbarUserDropdown from './navbar/NavbarUserDropdown';
+import NavbarNotificationAction from '@/features/notification/components/NavbarNotificationAction';
 
 const NAV_LINKS = [
   { label: "Dự án", to: ROUTES.PROJECTS },
@@ -130,6 +129,7 @@ function AboutDropdown() {
 export function Navbar() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const user = useAuthStore(authSelectors.user);
+  const { data: walletData, isLoading: isWalletLoading } = useMyWallet({ enabled: isAuthenticated });
   const { logout } = useLogout();
   const location = useLocation();
   const normalizedRole = String(user?.role || "").toLowerCase();
@@ -211,6 +211,16 @@ export function Navbar() {
 
                 {/* 4. THÔNG BÁO */}
                 <NavbarNotificationAction isAuthenticated={isAuthenticated} />
+
+                <div
+                  className="hidden items-center gap-1.5 p-2 text-slate-500 md:flex"
+                  title="Số dư ví"
+                >
+                  <Wallet size={20} />
+                  <span className="text-xs font-bold text-slate-600">
+                    {isWalletLoading ? '...' : `${(walletData?.balance || 0).toLocaleString('vi-VN')}đ`}
+                  </span>
+                </div>
 
                 <button className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 md:hidden">
                   <Search size={24} />

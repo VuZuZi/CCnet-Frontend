@@ -1,9 +1,11 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { postAPI } from "../api/postAPI";
 
-export const usePosts = (limit = 10, feedType = "for-you") => {
+export const usePosts = (limit = 10, feedType = "for-you", options = {}) => {
+  const profileUserId = options?.profileUserId || null;
+
   return useInfiniteQuery({
-    queryKey: ["posts", limit, feedType],
+    queryKey: ["posts", limit, feedType, profileUserId],
 
     queryFn: ({ pageParam = null }) => {
       const params = { limit };
@@ -14,6 +16,10 @@ export const usePosts = (limit = 10, feedType = "for-you") => {
       }
       if (feedType === "following") {
         params.type = "following";
+      }
+      if (feedType === "profile" && profileUserId) {
+        params.type = "profile";
+        params.profileUserId = profileUserId;
       }
 
       return postAPI.getPosts(params);

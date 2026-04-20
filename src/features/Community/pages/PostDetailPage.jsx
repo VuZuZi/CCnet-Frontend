@@ -132,6 +132,7 @@ export function PostDetailPage() {
       comments: currentPost.latestComments || currentPost.comments || [],
       userReaction: currentPost.userReaction,
       stats: currentPost.stats || { likes: 0, comments: 0 },
+      isEdited: currentPost.isEdited || false,
     };
   }, [currentPost]);
 

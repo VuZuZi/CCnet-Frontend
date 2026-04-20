@@ -13,6 +13,37 @@ const POST_TYPE_LABELS = {
   need_help: "đang kêu gọi hỗ trợ",
 };
 
+const PRIVACY_LABELS = {
+  public: { label: "Công khai", icon: "public" },
+  private: { label: "Riêng tư", icon: "lock" },
+  friends: { label: "Bạn bè", icon: "group" },
+};
+
+const getRelativeTime = (dateStr) => {
+  if (!dateStr) return "";
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+  const diffWeek = Math.floor(diffDay / 7);
+
+  if (diffSec < 60) return "Vừa xong";
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffHour < 24) return `${diffHour} giờ trước`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  if (diffWeek < 4) return `${diffWeek} tuần trước`;
+
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 const useClickOutside = (ref, handler) => {
   useEffect(() => {
     const listener = (e) => {
@@ -27,6 +58,36 @@ const useClickOutside = (ref, handler) => {
 const getAuthorName = (author) =>
   author?.fullName || author?.username || "Người ẩn danh";
 
+const HeartIcon = ({ filled, className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill={filled ? "currentColor" : "none"}
+    stroke="currentColor"
+    strokeWidth={filled ? "0" : "2"}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+  </svg>
+);
+
+ 
+
+const CommentIcon = ({ className = "" }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+  </svg>
+);
+
 const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
   const name = getAuthorName(user);
   const profileLink = `/users/${user?._id || user?.id}`;
@@ -35,7 +96,7 @@ const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
     return (
       <Link
         to={profileLink}
-        className={`bg-center bg-cover rounded-full ring-1 ring-slate-100 shrink-0 block hover:opacity-80 transition-opacity ${size}`}
+        className={`bg-center bg-cover rounded-full ring-2 ring-white shadow-sm shrink-0 block hover:opacity-80 transition-opacity ${size}`}
         style={{ backgroundImage: `url("${user.avatar}")` }}
       />
     );
@@ -44,7 +105,7 @@ const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
   return (
     <Link
       to={profileLink}
-      className={`bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center rounded-full shrink-0 hover:opacity-80 transition-opacity ${size} ${textSize}`}
+      className={`bg-gradient-to-br from-amber-100 to-yellow-200 text-amber-700 font-bold flex items-center justify-center rounded-full shrink-0 hover:opacity-80 transition-opacity ring-2 ring-white shadow-sm ${size} ${textSize}`}
     >
       {name.charAt(0).toUpperCase()}
     </Link>
@@ -54,17 +115,46 @@ const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
 const ImageGrid = ({ images, onImageClick }) => {
   if (!images?.length) return null;
 
+  const getImageSrc = (img) => img?.url || img?.preview || img;
+  const count = images.length;
+  const visibleImages = images.slice(0, 5);
+  const remainingCount = count - 5;
+
+  const getGridClass = () => {
+    if (count === 1) return "grid-cols-1";
+    if (count === 2) return "grid-cols-2";
+    if (count === 3) return "grid-cols-2 grid-rows-2";
+    if (count === 4) return "grid-cols-2 grid-rows-2";
+    return "grid-cols-6 grid-rows-2";
+  };
+
+  const getItemClassName = (index) => {
+    if (count === 1) return "col-span-1 aspect-[16/10]";
+    if (count === 2) return "aspect-[4/5]";
+    if (count === 3) {
+      if (index === 0) return "row-span-2 aspect-auto h-full";
+      return "aspect-square";
+    }
+    if (count === 4) return "aspect-square";
+    if (index < 3) return "col-span-2 aspect-[4/3]";
+    return "col-span-3 aspect-[16/9]";
+  };
+
   return (
-    <div className="grid grid-cols-2 gap-1 px-1">
-      {images.map((img, i) => (
+    <div className={`grid gap-0.5 overflow-hidden ${getGridClass()}`}>
+      {visibleImages.map((img, i) => (
         <div
           key={i}
           onClick={() => onImageClick(i)}
-          className={`bg-slate-100 aspect-video bg-center bg-cover cursor-pointer hover:opacity-95 transition-opacity ${
-            images.length === 1 ? "col-span-2" : ""
-          }`}
-          style={{ backgroundImage: `url("${img.url}")` }}
-        />
+          className={`relative overflow-hidden bg-slate-100 bg-center bg-cover cursor-pointer hover:brightness-[0.92] transition-all duration-200 ${getItemClassName(i)}`}
+          style={{ backgroundImage: `url("${getImageSrc(img)}")` }}
+        >
+          {i === 4 && remainingCount > 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-3xl font-black text-white backdrop-blur-[2px]">
+              +{remainingCount}
+            </div>
+          ) : null}
+        </div>
       ))}
     </div>
   );
@@ -76,8 +166,6 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [theaterIndex, setTheaterIndex] = useState(null);
 
-  // (Đã dọn phần xử lý comments vì bạn nói sẽ giữ nguyên phần dưới, nếu cần bạn cứ paste lại state comments vào đây)
-
   const menuRef = useRef(null);
   useClickOutside(menuRef, () => setShowMenu(false));
 
@@ -87,24 +175,21 @@ const PostCard = ({ post, currentUserId, onReport }) => {
 
   const isAuthor = currentUserId === post?.author?._id;
   const isLiked = post?.userReaction === "like";
-  const isDisliked = post?.userReaction === "dislike";
   const stats = post?.stats || { likes: 0, comments: 0 };
-  const postDate = post?.createdAt
-    ? new Date(post.createdAt).toLocaleDateString("vi-VN")
-    : "";
+  const relativeTime = getRelativeTime(post?.createdAt);
+  const privacyInfo = PRIVACY_LABELS[post?.privacy] || PRIVACY_LABELS.public;
 
   return (
     <>
-      <article className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-visible w-full min-w-0 hover:shadow-md transition-shadow">
-        {/* Header */}
-        <div className="p-5 pb-3 flex items-center justify-between">
+      <article className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden w-full min-w-0 hover:shadow-md transition-shadow duration-300">
+        <div className="px-5 pt-4 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar user={post.author} />
             <div>
               <div className="flex items-center flex-wrap gap-1">
                 <Link
                   to={`/users/${post.author?._id}`}
-                  className="text-slate-900 font-bold text-sm hover:underline"
+                  className="text-slate-900 font-bold text-[14px] hover:underline"
                 >
                   {getAuthorName(post.author)}
                 </Link>
@@ -114,9 +199,29 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                   </span>
                 )}
               </div>
-              <p className="text-slate-400 text-[11px] font-medium uppercase mt-0.5">
-                {post.privacy} • {postDate}
-              </p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-slate-400 text-[11px] font-medium">
+                  {relativeTime}
+                </span>
+                <span className="text-slate-300 text-[11px]">·</span>
+                <span
+                  className="inline-flex items-center gap-0.5 text-slate-400 text-[11px] font-medium"
+                  title={privacyInfo.label}
+                >
+                  <span className="material-symbols-outlined text-[12px]">
+                    {privacyInfo.icon}
+                  </span>
+                  {privacyInfo.label}
+                </span>
+                {post.isEdited && (
+                  <>
+                    <span className="text-slate-300 text-[11px]">·</span>
+                    <span className="text-slate-400 text-[11px] italic">
+                      Đã chỉnh sửa
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 
@@ -124,12 +229,14 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu((prev) => !prev)}
-              className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-50 transition-colors"
+              className="text-slate-400 hover:text-slate-600 p-1.5 rounded-full hover:bg-slate-100 transition-colors"
             >
-              <span className="material-symbols-outlined">more_horiz</span>
+              <span className="material-symbols-outlined text-[22px]">
+                more_horiz
+              </span>
             </button>
             {showMenu && (
-              <div className="absolute right-0 top-full mt-1 w-44 bg-white rounded-xl shadow-xl border border-slate-100 py-1.5 z-20 animate-fade-in-down">
+              <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-20">
                 {isAuthor ? (
                   <>
                     <MenuBtn
@@ -162,8 +269,8 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                       }}
                     />
                     <MenuBtn
-                      icon="warning"
-                      label="Báo cáo vi phạm"
+                      icon="flag"
+                      label="Báo cáo bài viết"
                       variant="warning"
                       onClick={() => {
                         onReport(post._id);
@@ -179,10 +286,15 @@ const PostCard = ({ post, currentUserId, onReport }) => {
 
         {/* Nội dung text */}
         {post.content && (
-          <div className="px-5 mb-4">
-            <p className="text-slate-700 text-base leading-relaxed whitespace-pre-wrap break-words">
-              {post.content}
-            </p>
+          <div className="px-5 pb-3 w-full overflow-hidden">
+            <Link
+              to={`/community/${post._id}`}
+              className="block w-full"
+            >
+              <p className="text-slate-800 text-[15px] leading-relaxed whitespace-pre-wrap break-words">
+                {post.content}
+              </p>
+            </Link>
           </div>
         )}
 
@@ -196,39 +308,53 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           />
         )}
 
-        {/* Action Buttons */}
-        <div className="px-5 py-3 flex items-center gap-6 border-b border-slate-50 border-t mt-2">
-          <ActionBtn
-            active={isLiked}
-            icon="favorite"
-            label={`${stats.likes}`}
-            color="text-red-500"
+        {(stats.likes > 0 || stats.comments > 0) && (
+          <div className="mx-5 py-2.5 flex items-center justify-between text-[13px] text-slate-500">
+            {stats.likes > 0 ? (
+              <span className="flex items-center gap-1.5">
+                <span className="inline-flex items-center justify-center size-[22px] rounded-full bg-gradient-to-br from-rose-400 to-pink-500 shadow-sm">
+                  <HeartIcon filled className="size-3 text-white" />
+                </span>
+                <span className="font-medium">{stats.likes}</span>
+              </span>
+            ) : (
+              <span />
+            )}
+            {stats.comments > 0 && (
+              <Link
+                to={`/community/${post._id}`}
+                className="hover:underline font-medium"
+              >
+                {stats.comments} bình luận
+              </Link>
+            )}
+          </div>
+        )}
+
+        <div className="mx-5 py-1 flex items-center border-t border-slate-100">
+          <button
             onClick={() =>
               toggleReaction.mutate({ postId: post._id, type: "like" })
             }
             disabled={!currentUserId}
-          />
-          <ActionBtn
-            active={isDisliked}
-            icon="thumb_down"
-            color="text-slate-700"
-            onClick={() =>
-              toggleReaction.mutate({ postId: post._id, type: "dislike" })
-            }
-            disabled={!currentUserId}
-          />
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] transition-all duration-200 active:scale-95 disabled:opacity-30
+              ${
+                isLiked
+                  ? "text-rose-500 hover:bg-rose-50"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+              }`}
+          >
+            <HeartIcon filled={isLiked} className="size-5" />
+            <span>Thích</span>
+          </button>
           <Link
             to={`/community/${post._id}`}
-            className="flex items-center gap-2 text-slate-500 font-bold text-sm ml-auto hover:text-slate-800 transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all duration-200 active:scale-95"
           >
-            <span className="material-symbols-outlined text-[20px]">
-              chat_bubble
-            </span>
-            {stats.comments} Bình luận
+            <CommentIcon className="size-5" />
+            <span>Bình luận</span>
           </Link>
         </div>
-
-        {/* Bạn có thể paste lại phần Comment UI ở đây nếu cần */}
       </article>
 
       {/* Modals */}
@@ -251,38 +377,23 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   );
 };
 
-// --- COMPONENT PHỤ ---
+// ─── SUB-COMPONENTS ───
 const MenuBtn = ({ icon, label, onClick, variant = "default" }) => (
   <button
     onClick={onClick}
-    className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-3 hover:bg-slate-50 transition-colors ${
-      variant === "danger"
-        ? "text-red-600 font-medium"
-        : variant === "warning"
-          ? "text-orange-600 font-medium"
-          : "text-slate-700 font-medium"
-    }`}
+    className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors
+      ${
+        variant === "danger"
+          ? "text-red-600 hover:bg-red-50"
+          : variant === "warning"
+            ? "text-orange-600 hover:bg-orange-50"
+            : "text-slate-700 hover:bg-slate-50"
+      }`}
   >
-    <span className="material-symbols-outlined text-[20px]">{icon}</span>
+    <span className="material-symbols-outlined text-[18px]">{icon}</span>
     {label}
   </button>
 );
 
-const ActionBtn = ({ active, icon, label, color, onClick, disabled }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    className={`flex items-center gap-1.5 font-bold text-sm transition-all p-1 rounded-lg hover:bg-slate-50 ${
-      active ? color : "text-slate-500"
-    } disabled:opacity-30`}
-  >
-    <span
-      className={`material-symbols-outlined text-[22px] ${active ? "fill-current" : ""}`}
-    >
-      {icon}
-    </span>
-    {label && <span>{label}</span>}
-  </button>
-);
 
 export default PostCard;

@@ -4,6 +4,12 @@ import { FiArrowRight } from "react-icons/fi";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
 
+const PRIVACY_LABELS = {
+  public: { label: "Công khai", icon: "public" },
+  private: { label: "Riêng tư", icon: "lock" },
+  friends: { label: "Bạn bè", icon: "group" },
+};
+
 const SharedEntityCard = ({ entity }) => {
   if (!entity) return null;
   const isProject = entity.entityModel === "Project";
@@ -65,7 +71,7 @@ const TextOnlyPostView = ({
   targetCommentId = "",
 }) => {
   const isLiked = post.userReaction === "like";
-  const isDisliked = post.userReaction === "dislike";
+ 
 
   const [sortMode, setSortMode] = useState("relevant");
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -179,9 +185,23 @@ const TextOnlyPostView = ({
           </div>
           <div>
             <h3 className="font-bold text-slate-900">{post.authorName}</h3>
-            <p className="text-sm text-slate-500">
-              {post.timeAgo} • {post.privacy}
-            </p>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="text-sm text-slate-500">{post.timeAgo}</span>
+              <span className="text-slate-300 text-xs">•</span>
+              <span className="inline-flex items-center gap-0.5 text-sm text-slate-500">
+                <span className="material-symbols-outlined text-[14px]">{PRIVACY_LABELS[post.privacy]?.icon || "public"}</span>
+                {PRIVACY_LABELS[post.privacy]?.label || "Công khai"}
+              </span>
+              {post.isEdited && (
+                <>
+                  <span className="text-slate-300 text-xs">•</span>
+                  <span className="inline-flex items-center gap-0.5 text-sm text-slate-400 italic">
+                    <span className="material-symbols-outlined text-[13px]">edit</span>
+                    Đã chỉnh sửa
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
@@ -200,37 +220,21 @@ const TextOnlyPostView = ({
               })
             }
             className={`flex items-center gap-2 text-sm font-bold transition-all hover:opacity-70 ${
-              isLiked ? "text-yellow-500" : "text-slate-500"
+              isLiked ? "text-rose-500" : "text-slate-500"
             }`}
           >
-            <span
-              className={`material-symbols-outlined ${isLiked ? "fill-current" : ""}`}
-            >
-              favorite
-            </span>
-            {post.stats?.likes || 0} Lượt thích
+            <svg viewBox="0 0 24 24" className="size-5" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isLiked ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+            </svg>
+            {post.stats?.likes || 0} Thích
           </button>
 
-          <button
-            onClick={() =>
-              toggleReaction.mutate({
-                postId: post.id || post._id,
-                type: "dislike",
-              })
-            }
-            className={`flex items-center gap-2 text-sm font-bold transition-all hover:opacity-70 ${
-              isDisliked ? "text-red-500" : "text-slate-500"
-            }`}
-          >
-            <span
-              className={`material-symbols-outlined ${isDisliked ? "fill-current" : ""}`}
-            >
-              thumb_down
-            </span>
-          </button>
+ 
 
           <div className="ml-auto flex items-center gap-2 text-sm font-bold text-slate-500">
-            <span className="material-symbols-outlined">chat_bubble</span>{" "}
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+            </svg>
             {totalComments} Bình luận
           </div>
         </div>

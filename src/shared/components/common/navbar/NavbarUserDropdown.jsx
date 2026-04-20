@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LogOut,
   User as UserIcon,
+  Wallet,
 } from 'lucide-react';
 import { ROUTES } from '@/shared/constants/routes';
 import { cn } from '@/shared/components/ui/Button/Button';
@@ -152,6 +153,16 @@ export function NavbarUserDropdown({ user, onLogout }) {
                 >
                   <UserIcon size={16} /> Hồ sơ
                 </Link>
+
+                <Link
+                  to={`${ROUTES.PROFILE}?view=wallet`}
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                >
+                  <Wallet size={16} /> Ví, giao dịch & ủng hộ
+                </Link>
+
+                <div className="mx-4 my-1 h-px bg-slate-100" />
 
                 <Link
                   to={isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD}
