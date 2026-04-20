@@ -11,7 +11,7 @@ function ProjectMapSidebarComponent({
   activeProjectId,
   onProjectSelect,
   isLoading,
-  isFetching,
+  isFetching: _isFetching,
 }) {
   const scrollRef = useRef(null);
   const [viewportHeight, setViewportHeight] = useState(420);
@@ -73,6 +73,7 @@ function ProjectMapSidebarComponent({
   }, [activeProjectId, items]);
 
   const totalHeight = items.length * ITEM_HEIGHT;
+
   const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
   const endIndex = Math.min(
     items.length,
@@ -89,19 +90,13 @@ function ProjectMapSidebarComponent({
   return (
     <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white/95 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex flex-shrink-0 items-center justify-between border-b border-slate-100 px-4 pb-2.5 pt-3">
+        <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-4 pb-2.5 pt-3">
           <div className="flex items-center gap-2">
             <Layers3 size={16} className="text-amber-500" />
             <h2 className="text-sm font-black uppercase tracking-wide text-slate-900">
               Dự án trong vùng đang xem
             </h2>
           </div>
-
-          {isFetching ? (
-            <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-700">
-              Đang cập nhật...
-            </span>
-          ) : null}
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden px-0 pb-3 pt-3">
