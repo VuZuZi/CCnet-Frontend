@@ -29,6 +29,20 @@ export const helpRequestAPI = {
     return response.data?.data;
   },
 
+  getMap: async (params = {}) => {
+    const response = await httpClient.get('/help-requests/map', {
+      params: sanitizeQueryParams(params),
+    });
+    return response.data?.data;
+  },
+
+  getMapViewport: async (params = {}) => {
+    const response = await httpClient.get('/help-requests/map', {
+      params: sanitizeQueryParams(params),
+    });
+    return response.data?.data;
+  },
+
   getMyRequests: async (params = {}) => {
     const response = await httpClient.get('/help-requests/user/my-requests', {
       params: sanitizeQueryParams(params),
@@ -86,9 +100,12 @@ export const helpRequestAPI = {
   },
 
   getOrganizerSuggestions: async (id, params = {}) => {
-    const response = await httpClient.get(`/help-requests/${id}/organizer-suggestions`, {
-      params: sanitizeQueryParams(params),
-    });
+    const response = await httpClient.get(
+      `/help-requests/${id}/organizer-suggestions`,
+      {
+        params: sanitizeQueryParams(params),
+      }
+    );
     return response.data?.data;
   },
 
@@ -107,9 +124,12 @@ export const helpRequestAPI = {
   },
 
   respondAssignment: async ({ id, action }) => {
-    const response = await httpClient.patch(`/help-requests/${id}/assignment-response`, {
-      action,
-    });
+    const response = await httpClient.patch(
+      `/help-requests/${id}/assignment-response`,
+      {
+        action,
+      }
+    );
     return response.data?.data;
   },
 

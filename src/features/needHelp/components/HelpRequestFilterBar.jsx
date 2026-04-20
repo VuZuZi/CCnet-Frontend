@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { AlertTriangle, FilterX, Layers, Plus, Search } from 'lucide-react';
+import { AlertTriangle, FilterX, Layers, Map, Plus, Search } from 'lucide-react';
 import { CATEGORY_OPTIONS, URGENCY_OPTIONS } from '../hooks/useHelpRequestFilters';
 
 export function HelpRequestFilterBar({
@@ -18,14 +18,24 @@ export function HelpRequestFilterBar({
           Dùng bộ lọc để nhanh chóng tìm các yêu cầu phù hợp nhất với bạn.
         </p>
 
-        <Link
-          to="/need-help/create"
-          onClick={onCreateClick}
-          className="inline-flex h-10 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-500"
-        >
-          <Plus size={16} />
-          Tạo yêu cầu
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/need-help/map"
+            className="inline-flex h-10 items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 text-sm font-bold text-slate-900 shadow-sm transition-colors hover:bg-amber-100"
+          >
+            <Map size={16} />
+            Xem bản đồ
+          </Link>
+
+          <Link
+            to="/need-help/create"
+            onClick={onCreateClick}
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-500"
+          >
+            <Plus size={16} />
+            Tạo yêu cầu
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-2 xl:grid-cols-[minmax(0,1.8fr)_repeat(2,minmax(0,0.8fr))_auto]">

@@ -31,13 +31,11 @@ const ProjectManagement = () => {
     isGlobalHistoryOpen,
     setIsGlobalHistoryOpen,
     pendingProjectId,
-    pendingDeleteProjectId,
     reasonModal,
     isReasonSubmitting,
     closeReasonModal,
     handleApprove,
     requestProjectAction,
-    handleDeleteProject,
     handleReasonConfirm,
   } = useProjectManagementPage();
 
@@ -100,11 +98,9 @@ const ProjectManagement = () => {
                 key={project._id}
                 project={project}
                 pendingProjectId={pendingProjectId}
-                pendingDeleteProjectId={pendingDeleteProjectId}
                 onRequestProjectAction={requestProjectAction}
                 onApprove={handleApprove}
                 onOpenHistory={setHistoryProject}
-                onDelete={handleDeleteProject}
                 onOpenDetail={setSelectedProject}
               />
             ))}

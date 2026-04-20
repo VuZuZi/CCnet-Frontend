@@ -6,6 +6,13 @@ import {
 
 const formatMoney = (value) => Number(value || 0).toLocaleString("vi-VN");
 
+const formatDate = (value) => {
+  if (!value) return "Chưa cập nhật";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Chưa cập nhật";
+  return date.toLocaleDateString("vi-VN");
+};
+
 export function PreviewProjectCard({ formData }) {
   const milestones = Array.isArray(formData?.milestones) ? formData.milestones : [];
   const volunteerRoles = Array.isArray(formData?.volunteerRoles)
@@ -13,7 +20,7 @@ export function PreviewProjectCard({ formData }) {
     : [];
 
   return (
-    <div className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
+    <div className="min-w-0 space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
       <div className="flex flex-wrap items-center gap-2">
         <PreviewStatusPill tone="amber">
           {getPreviewProjectTypeLabel(formData?.projectType)}
@@ -28,45 +35,45 @@ export function PreviewProjectCard({ formData }) {
         ) : null}
       </div>
 
-      <div>
-        <h2 className="text-2xl font-black tracking-tight text-slate-900">
+      <div className="min-w-0">
+        <h2 className="break-words text-2xl font-black tracking-tight text-slate-900">
           {formData?.title || "Dự án chưa có tiêu đề"}
         </h2>
 
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 break-words text-sm text-slate-500">
           {formData?.location?.address || "Chưa có địa điểm"}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
             Đối tượng thụ hưởng
           </p>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+          <p className="mt-2 break-all whitespace-pre-wrap text-sm leading-6 text-slate-700">
             {formData?.beneficiaryInfo?.details || "Chưa có thông tin đối tượng thụ hưởng"}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
             Thời gian thực hiện
           </p>
-          <p className="mt-2 text-sm leading-6 text-slate-700">
-            Bắt đầu: {formData?.startDate || "Chưa cập nhật"}
+          <p className="mt-2 break-words text-sm leading-6 text-slate-700">
+            Bắt đầu: {formatDate(formData?.startDate)}
           </p>
-          <p className="text-sm leading-6 text-slate-700">
-            Kết thúc: {formData?.endDate || "Chưa cập nhật"}
+          <p className="break-words text-sm leading-6 text-slate-700">
+            Kết thúc: {formatDate(formData?.endDate)}
           </p>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-4">
         <p className="text-xs font-bold uppercase tracking-[0.08em] text-slate-500">
           Câu chuyện dự án
         </p>
         <div
-          className="prose prose-slate mt-3 max-w-none text-sm"
+          className="prose prose-slate mt-3 max-w-none break-words text-sm [&_*]:max-w-full [&_img]:h-auto [&_img]:max-w-full [&_table]:block [&_table]:max-w-full [&_table]:overflow-x-auto [&_td]:break-words [&_th]:break-words [&_p]:break-words"
           dangerouslySetInnerHTML={{
             __html: formData?.description || "<p>Chưa có câu chuyện dự án.</p>",
           }}
@@ -87,12 +94,12 @@ export function PreviewProjectCard({ formData }) {
               {milestones.map((milestone, index) => (
                 <div
                   key={`${milestone?.title || "milestone"}-${index}`}
-                  className="rounded-xl border border-amber-200 bg-white p-3"
+                  className="min-w-0 rounded-xl border border-amber-200 bg-white p-3"
                 >
-                  <p className="font-bold text-slate-900">
+                  <p className="break-words font-bold text-slate-900">
                     {milestone?.title || `Mốc ${index + 1}`}
                   </p>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 break-words text-sm text-slate-600">
                     {formatMoney(milestone?.targetAmount)}đ
                   </p>
                 </div>
@@ -117,10 +124,10 @@ export function PreviewProjectCard({ formData }) {
               {volunteerRoles.map((role, index) => (
                 <div
                   key={`${role?.title || "role"}-${index}`}
-                  className="rounded-xl border border-emerald-200 bg-white p-3"
+                  className="min-w-0 rounded-xl border border-emerald-200 bg-white p-3"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-bold text-slate-900">
+                    <p className="break-words font-bold text-slate-900">
                       {role?.title || `Vị trí ${index + 1}`}
                     </p>
                     <p className="text-sm font-semibold text-emerald-700">
@@ -129,13 +136,13 @@ export function PreviewProjectCard({ formData }) {
                   </div>
 
                   {role?.skills ? (
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1 break-words text-sm text-slate-600">
                       Kỹ năng: {role.skills}
                     </p>
                   ) : null}
 
                   {role?.location ? (
-                    <p className="mt-1 text-sm text-slate-600">
+                    <p className="mt-1 break-words text-sm text-slate-600">
                       Địa điểm/Thời gian: {role.location}
                     </p>
                   ) : null}
