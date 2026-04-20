@@ -140,9 +140,20 @@ const PostTheaterMode = ({
                 <h4 className="truncate text-sm font-bold leading-tight text-gray-900">
                   {authorName}
                 </h4>
-                <p className="text-[11px] uppercase tracking-tighter text-gray-400">
-                  Thành viên cộng đồng
-                </p>
+                <div className="flex items-center gap-1 text-[11px] text-gray-400">
+                  <span>{new Date(post.createdAt).toLocaleDateString("vi-VN")}</span>
+                  <span>•</span>
+                  <span className="inline-flex items-center gap-0.5">
+                    <span className="material-symbols-outlined text-[12px]">{post.privacy === "private" ? "lock" : "public"}</span>
+                    {post.privacy === "private" ? "Riêng tư" : "Công khai"}
+                  </span>
+                  {post.isEdited && (
+                    <>
+                      <span>•</span>
+                      <span className="italic">Đã chỉnh sửa</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
             {/* Mình đã ẩn nút close trên header đi vì đã có nút Back to đùng ở ngoài */}

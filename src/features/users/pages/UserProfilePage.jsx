@@ -22,6 +22,7 @@ import { UpgradeBanner } from "../components/profile/UpgradeBanner";
 import { DonationHistoryList } from '@/features/transaction/components/DonationHistoryList';
 import { WalletDashboard } from '@/features/wallet/components/WalletDashboard';
 import { BankAccountManager } from '@/features/bank/components/BankAccountManager';
+import { CreatePostComposer } from '@/features/Community/components/post/CreatePostComposer';
 
 const isOrganizerProfile = (user) => {
   const role = String(user?.role || "").toLowerCase();
@@ -317,8 +318,19 @@ export function UserProfilePage() {
                 }
               />
 
-              <article className="rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
-                <div className="mb-5">
+              {isOwnProfile ? (
+                <CreatePostComposer
+                  title="Đăng bài trên hồ sơ của bạn"
+                  subtitle="Mở popup để soạn bài, thêm ảnh/video và chọn Công khai hoặc Riêng tư."
+                  defaultPrivacy="public"
+                  showPrivacySelector
+                  buttonLabel="Đăng lên hồ sơ"
+                  compactTrigger
+                />
+              ) : null}
+
+              <div className="space-y-4">
+                <div className="mb-2 px-1">
                   <h2 className="text-lg font-black text-slate-900 sm:text-xl">Bài đăng của {isOwnProfile ? 'bạn' : 'người dùng này'}</h2>
                   <p className="mt-1 text-sm text-slate-500">Dòng thời gian cá nhân theo thứ tự mới nhất.</p>
                 </div>
@@ -330,7 +342,7 @@ export function UserProfilePage() {
                   profileUserId={profileUserId}
                   emptyMessage="Chưa có bài đăng nào trong tường cá nhân."
                 />
-              </article>
+              </div>
             </section>
 
             <aside className="space-y-8">
