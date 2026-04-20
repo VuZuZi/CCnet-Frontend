@@ -55,7 +55,7 @@ export function SupportedProjectsPage() {
   const isBusy = isLoading || isFetching;
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#FFF5D6_0%,transparent_24%),linear-gradient(180deg,#FFFDF8_0%,#F8FAFC_100%)] px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-white px-4 py-8 text-slate-900 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
         <SupportedProjectsHero
           totalSupported={summary.totalSupported}

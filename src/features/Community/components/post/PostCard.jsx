@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
 import EditPostModal from "./EditPostModal";
 import PostTheaterMode from "./PostTheaterMode";
+import TextOnlyPostView from "./TextOnlyPostView";
 // CHÚ Ý IMPORT:
 import { SharedEntityCard } from "./SharedEntityCard";
 
@@ -165,11 +166,13 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [theaterIndex, setTheaterIndex] = useState(null);
+  const [isCommentViewOpen, setIsCommentViewOpen] = useState(false);
+  const [commentContent, setCommentContent] = useState("");
 
   const menuRef = useRef(null);
   useClickOutside(menuRef, () => setShowMenu(false));
 
-  const { toggleReaction, deletePost, toggleSavePost } = usePostMutations();
+  const { toggleReaction, deletePost, toggleSavePost, addComment } = usePostMutations();
 
   if (!post) return null;
 
@@ -321,12 +324,12 @@ const PostCard = ({ post, currentUserId, onReport }) => {
               <span />
             )}
             {stats.comments > 0 && (
-              <Link
-                to={`/community/${post._id}`}
-                className="hover:underline font-medium"
+              <button
+                onClick={() => setIsCommentViewOpen(true)}
+                className="hover:underline font-medium cursor-pointer text-slate-500 hover:text-slate-700"
               >
                 {stats.comments} bình luận
-              </Link>
+              </button>
             )}
           </div>
         )}
@@ -347,13 +350,13 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             <HeartIcon filled={isLiked} className="size-5" />
             <span>Thích</span>
           </button>
-          <Link
-            to={`/community/${post._id}`}
+          <button
+            onClick={() => setIsCommentViewOpen(true)}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all duration-200 active:scale-95"
           >
             <CommentIcon className="size-5" />
             <span>Bình luận</span>
-          </Link>
+          </button>
         </div>
       </article>
 
@@ -371,6 +374,17 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           post={post}
           initialIndex={theaterIndex}
           onClose={() => setTheaterIndex(null)}
+        />
+      )}
+
+      {isCommentViewOpen && (
+        <TextOnlyPostView
+          post={post}
+          commentContent={commentContent}
+          setCommentContent={setCommentContent}
+          toggleReaction={toggleReaction}
+          addComment={addComment}
+          onClose={() => setIsCommentViewOpen(false)}
         />
       )}
     </>

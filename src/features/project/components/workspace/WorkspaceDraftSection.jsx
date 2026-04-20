@@ -77,11 +77,9 @@ export function WorkspaceDraftSection({
         </div>
       ) : (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-            {paginatedDraftProjects.map((draft) => (
-              <WorkspaceDraftCard key={draft._id} draft={draft} />
-            ))}
-          </div>
+          {paginatedDraftProjects.map((draft) => (
+            <WorkspaceDraftCard key={draft._id} draft={draft} />
+          ))}
 
           <WorkspacePagination
             currentPage={activeDraftPage}
