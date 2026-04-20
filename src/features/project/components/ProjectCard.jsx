@@ -42,10 +42,8 @@ export function ProjectCard({ project }) {
 
   const isOwner = Boolean(currentUserId && organizerId === currentUserId);
 
-  const { isVolunteerOnly, isFunded, needsVolunteers, isMixedProject } = useMemo(
-    () => getProjectMode(project),
-    [project],
-  );
+  const { isVolunteerOnly, isFunded, needsVolunteers, isMixedProject } =
+    useMemo(() => getProjectMode(project), [project]);
 
   const { currentAmount, targetAmount, fundingPercent } = useMemo(
     () => getProjectFundingStats(project),
@@ -73,10 +71,19 @@ export function ProjectCard({ project }) {
     entityModel: "Project",
     title: project?.title,
     thumbnail: project?.coverMedia?.url || "",
-    description:
-      project?.summary ||
-      project?.description ||
-      "Hãy cùng chung tay đóng góp cho dự án ý nghĩa này!",
+    description: project?.summary || project?.description || "",
+
+    ownerName: organizerName || "Đang cập nhật",
+    location: project?.location?.address || "Đang cập nhật địa điểm",
+    endDateText:
+      daysLeft < 0
+        ? "Đã kết thúc"
+        : daysLeft === 0
+          ? "Hôm nay"
+          : `Còn ${daysLeft} ngày`,
+    fundingPercent: fundingPercent || 0,
+    isFunded: isFunded,
+    isUrgent: project?.isUrgent,
   };
 
   const primaryAction = getProjectPrimaryAction({
@@ -212,7 +219,11 @@ export function ProjectCard({ project }) {
                       đã đóng góp
                     </span>
                   </span>
-                  <span className={fundingCompleted ? "text-emerald-600" : "text-amber-500"}>
+                  <span
+                    className={
+                      fundingCompleted ? "text-emerald-600" : "text-amber-500"
+                    }
+                  >
                     {fundingPercent}%
                   </span>
                 </div>
@@ -249,6 +260,7 @@ export function ProjectCard({ project }) {
               </div>
             ) : null}
 
+            {/* 👇 CẬP NHẬT NÚT ACTION Ở ĐÂY 👇 */}
             <div className="flex gap-3">
               <Link
                 to={`/projects/${project?._id}`}
@@ -257,6 +269,7 @@ export function ProjectCard({ project }) {
                 {primaryAction.label}
               </Link>
 
+              {/* NÚT SHARE ĐÃ ĐƯỢC ĐỒNG BỘ */}
               <button
                 type="button"
                 onClick={(event) => {
@@ -264,11 +277,17 @@ export function ProjectCard({ project }) {
                   event.stopPropagation();
                   setIsShareOpen(true);
                 }}
-                className="flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 text-slate-500 transition-colors hover:bg-blue-50 hover:text-blue-600"
+                className="group/share flex shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-50 px-4 py-3 text-xs font-bold text-amber-600 transition-all hover:bg-amber-400 hover:text-slate-900 hover:shadow-md hover:shadow-amber-400/20 active:scale-95"
               >
-                <Share2 size={18} />
+                <Share2
+                  size={16}
+                  strokeWidth={2.5}
+                  className="transition-transform group-hover/share:-rotate-12"
+                />
+                <span className="hidden sm:inline-block">Chia sẻ</span>
               </button>
             </div>
+            {/* 👆 KẾT THÚC CẬP NHẬT NÚT ACTION 👆 */}
           </div>
         </div>
       </div>
