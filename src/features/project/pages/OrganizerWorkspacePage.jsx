@@ -2,8 +2,6 @@ import { Link } from "react-router-dom";
 import {
   BriefcaseBusiness,
   PlusCircle,
-  ArrowRight,
-  HeartHandshake,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -13,6 +11,7 @@ import { PageLoader } from "@/shared/components/ui/PageLoader";
 import WorkspaceSummaryStats from "../components/workspace/WorkspaceSummaryStats";
 import WorkspaceDraftSection from "../components/workspace/WorkspaceDraftSection";
 import WorkspaceProjectSection from "../components/workspace/WorkspaceProjectSection";
+import WorkspaceAssignedNeedHelpSection from "../components/workspace/WorkspaceAssignedNeedHelpSection";
 import {
   PAGE_SIZE,
   DRAFT_PAGE_SIZE,
@@ -140,7 +139,7 @@ export function OrganizerWorkspacePage() {
 
   if (isError) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 py-10 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl rounded-3xl border border-red-100 bg-white p-10 text-center text-red-500">
           Không thể tải dữ liệu khu vực làm việc.
         </div>
@@ -149,7 +148,7 @@ export function OrganizerWorkspacePage() {
   }
 
   return (
-    <main className="min-h-screen bg-[linear-gradient(180deg,#FFFCF5_0%,#F8FAFC_100%)] px-4 py-10 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-8">
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
@@ -185,52 +184,43 @@ export function OrganizerWorkspacePage() {
 
         <WorkspaceSummaryStats summary={summary} />
 
-        <WorkspaceDraftSection
-          isDraftLoading={isDraftLoading}
-          isDraftFetching={isDraftFetching}
-          filteredDraftProjects={filteredDraftProjects}
-          paginatedDraftProjects={paginatedDraftProjects}
-          draftKeyword={draftKeyword}
-          onDraftKeywordChange={handleDraftKeywordChange}
-          draftType={draftType}
-          onDraftTypeChange={handleDraftTypeChange}
-          activeDraftPage={activeDraftPage}
-          draftTotalPages={draftTotalPages}
-          onDraftPageChange={setDraftCurrentPage}
-        />
-
-        <WorkspaceProjectSection
-          filteredProjects={filteredProjects}
-          paginatedProjects={paginatedProjects}
-          keyword={keyword}
-          onKeywordChange={handleKeywordChange}
-          status={status}
-          onStatusChange={handleStatusChange}
-          projectType={projectType}
-          onProjectTypeChange={handleProjectTypeChange}
-          volunteerMode={volunteerMode}
-          onVolunteerModeChange={handleVolunteerModeChange}
-          activeCurrentPage={activeCurrentPage}
-          totalPages={totalPages}
-          onPageChange={setCurrentPage}
-        />
-
-        <section className="rounded-3xl border border-emerald-200 bg-emerald-50/70 p-5 shadow-sm">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="inline-flex items-center gap-2 text-emerald-800">
-              <HeartHandshake size={18} />
-              <span className="font-semibold">Bạn có NeedHelp được admin gán?</span>
-            </div>
-
-            <Link
-              to="/organizer/need-help"
-              className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-700"
-            >
-              Mở danh sách NeedHelp
-              <ArrowRight size={14} />
-            </Link>
+        <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:items-start">
+          <div>
+            <WorkspaceProjectSection
+              filteredProjects={filteredProjects}
+              paginatedProjects={paginatedProjects}
+              keyword={keyword}
+              onKeywordChange={handleKeywordChange}
+              status={status}
+              onStatusChange={handleStatusChange}
+              projectType={projectType}
+              onProjectTypeChange={handleProjectTypeChange}
+              volunteerMode={volunteerMode}
+              onVolunteerModeChange={handleVolunteerModeChange}
+              activeCurrentPage={activeCurrentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
-        </section>
+
+          <div className="space-y-6 xl:sticky xl:top-24">
+            <WorkspaceAssignedNeedHelpSection />
+
+            <WorkspaceDraftSection
+              isDraftLoading={isDraftLoading}
+              isDraftFetching={isDraftFetching}
+              filteredDraftProjects={filteredDraftProjects}
+              paginatedDraftProjects={paginatedDraftProjects}
+              draftKeyword={draftKeyword}
+              onDraftKeywordChange={handleDraftKeywordChange}
+              draftType={draftType}
+              onDraftTypeChange={handleDraftTypeChange}
+              activeDraftPage={activeDraftPage}
+              draftTotalPages={draftTotalPages}
+              onDraftPageChange={setDraftCurrentPage}
+            />
+          </div>
+        </div>
       </div>
     </main>
   );

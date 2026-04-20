@@ -8,7 +8,7 @@ import {
   User as UserIcon,
   LayoutDashboard,
   LogOut,
-  HeartHandshake,
+  BriefcaseBusiness,
 } from 'lucide-react';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useLogout } from '@/features/auth/hooks/useLogout';
@@ -16,7 +16,6 @@ import { ROUTES } from '@/shared/constants/routes';
 import { Button, cn } from '@/shared/components/ui/Button/Button';
 import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
 import GlobalSearch from '@/features/search/components/GlobalSearch';
-import { useOrganizerAssignedRequests } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import { useMyWallet } from '@/features/wallet/hooks/useWalletQueries';
 import NavbarChatAction from './navbar/NavbarChatAction';
 import NavbarUserDropdown from './navbar/NavbarUserDropdown';
@@ -265,101 +264,18 @@ export function Navbar() {
 function OrganizerNeedHelpAction({ user }) {
   const role = user?.role?.toString().toLowerCase();
   const isOrganizer = role === 'organizer';
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
-
-  const { data, refetch } = useOrganizerAssignedRequests(
-    { status: 'VERIFIED', limit: 6, sortBy: 'assignedAt' },
-    isOrganizer
-  );
-
-  useEffect(() => {
-    if (isOpen && isOrganizer) {
-      refetch();
-    }
-  }, [isOpen, isOrganizer, refetch]);
-
-  useEffect(() => {
-    if (!isOrganizer) return;
-
-    const interval = setInterval(() => {
-      refetch();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [isOrganizer, refetch]);
-
-  useEffect(() => {
-    const handleClick = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
-        setIsOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClick);
-    return () => document.removeEventListener('mousedown', handleClick);
-  }, []);
 
   if (!isOrganizer) return null;
 
-  const suggestedItems = data?.data || [];
-
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        className="relative rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
-        title="Gợi ý yêu cầu Cần giúp đỡ"
-      >
-        <HeartHandshake size={24} />
-        {suggestedItems.length > 0 ? (
-          <span className="absolute right-1.5 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-emerald-500" />
-        ) : null}
-      </button>
-
-      {isOpen ? (
-        <div className="absolute right-0 z-50 mt-3 w-80 rounded-xl border border-slate-100 bg-white p-3 shadow-lg">
-          <div className="mb-2 px-1">
-            <p className="text-sm font-semibold text-slate-900">Gợi ý từ hệ thống</p>
-            <p className="text-xs text-slate-500">
-              Mở và phản hồi các yêu cầu Cần giúp đỡ được giao.
-            </p>
-          </div>
-
-          <div className="max-h-72 space-y-2 overflow-y-auto">
-            {suggestedItems.length ? (
-              suggestedItems.map((item) => (
-                <Link
-                  key={item._id}
-                  to={`/need-help/${item._id}`}
-                  onClick={() => setIsOpen(false)}
-                  className="block rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-50"
-                >
-                  <p className="line-clamp-1 text-sm font-semibold text-slate-900">
-                    {item.title}
-                  </p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                    {item.location?.address || 'Không có địa chỉ'}
-                  </p>
-                </Link>
-              ))
-            ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
-                Không có yêu cầu nào được gợi ý lúc này.
-              </div>
-            )}
-          </div>
-
-          <Link
-            to="/organizer/need-help"
-            onClick={() => setIsOpen(false)}
-            className="mt-3 block rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
-          >
-            Xem tất cả công việc được giao
-          </Link>
-        </div>
-      ) : null}
-    </div>
+    <Link
+      to={ROUTES.WORKSPACE}
+      className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
+      title="Không gian làm việc"
+      aria-label="Không gian làm việc"
+    >
+      <BriefcaseBusiness size={22} />
+    </Link>
   );
 }
 

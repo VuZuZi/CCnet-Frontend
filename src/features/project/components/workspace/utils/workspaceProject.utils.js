@@ -143,3 +143,13 @@ export const paginateItems = (items = [], currentPage = 1, pageSize = 10) => {
 
 export const formatWorkspaceMoney = (value) =>
   `${formatProjectCurrency(value)}đ`;
+
+export const getWorkspaceProjectCoverUrl = (project) => {
+  if (project?.coverMedia?.url) return project.coverMedia.url;
+
+  if (Array.isArray(project?.coverMedia) && project.coverMedia[0]?.url) {
+    return project.coverMedia[0].url;
+  }
+
+  return null;
+};
