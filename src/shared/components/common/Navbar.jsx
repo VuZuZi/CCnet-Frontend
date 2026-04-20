@@ -1,5 +1,6 @@
-import { useState, useEffect, useRef } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { createPortal } from 'react-dom';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Search,
   Menu,
@@ -147,11 +148,10 @@ export function Navbar() {
   }, [location.pathname]);
 
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
+    <nav className="sticky top-0 z-[3000] w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="w-full px-6 sm:px-8 lg:px-10 xl:px-12">
-        <div className="grid h-20 grid-cols-[auto_minmax(320px,1fr)_auto] items-center gap-6 lg:gap-8">
-          {/* KHU VỰC BÊN TRÁI: Logo + Nav Links */}
-          <div className="flex min-w-0 items-center gap-6 lg:gap-8">
+        <div className="grid h-20 grid-cols-[auto_minmax(320px,1fr)_auto] items-center gap-8 lg:gap-10 overflow-visible">
+          <div className="flex min-w-0 items-center gap-10 overflow-visible">
             <Link
               to={ROUTES.HOME}
               className="group flex flex-shrink-0 items-center gap-3 outline-none"
@@ -193,8 +193,7 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* KHU VỰC BÊN PHẢI: Icons + Profile */}
-          <div className="flex items-center justify-end gap-2 sm:gap-3 lg:gap-4">
+          <div className="flex items-center justify-end gap-3 overflow-visible sm:gap-4 lg:gap-5">
             {isAuthenticated ? (
               <>
                 {/* 1. DROPDOWN GIỚI THIỆU (Nằm trái cùng) */}
@@ -217,8 +216,7 @@ export function Navbar() {
                   <Search size={24} />
                 </button>
 
-                {/* 5. USER PROFILE */}
-                <div className="hidden border-l border-slate-200 pl-4 ml-1 sm:block">
+                <div className="hidden border-l border-slate-200 pl-4 sm:block overflow-visible">
                   <NavbarUserDropdown user={user} onLogout={logout} />
                 </div>
               </>
@@ -259,7 +257,7 @@ export function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="animate-in slide-in-from-top-2 absolute left-0 top-20 flex w-full flex-col gap-4 border-b border-slate-200 bg-white px-4 py-4 shadow-xl lg:hidden">
+        <div className="animate-in slide-in-from-top-2 absolute left-0 top-20 z-[3100] flex w-full flex-col gap-4 border-b border-slate-200 bg-white px-4 py-4 shadow-xl lg:hidden">
           <div className="md:hidden">
             <div className="relative">
               <Search
@@ -330,7 +328,7 @@ export function Navbar() {
                     {user?.fullName}
                   </p>
                   <p className="text-xs capitalize text-slate-500">
-                    {user?.role || "Người dùng"}
+                    {user?.role || 'Người dùng'}
                   </p>
                 </div>
               </div>
@@ -377,21 +375,29 @@ function OrganizerNeedHelpAction({ user }) {
   const role = user?.role?.toString().toLowerCase();
   const isOrganizer = role === "organizer";
   const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef(null);
+  const anchorRef = useRef(null);
+  const panelRef = useRef(null);
+  const [anchorRect, setAnchorRect] = useState(null);
 
   const { data, refetch } = useOrganizerAssignedRequests(
     { status: "VERIFIED", limit: 6, sortBy: "assignedAt" },
     isOrganizer,
   );
 
+  const updateAnchorRect = () => {
+    if (!anchorRef.current) return;
+    setAnchorRect(anchorRef.current.getBoundingClientRect());
+  };
+
   useEffect(() => {
     if (isOpen && isOrganizer) {
       refetch();
+      updateAnchorRect();
     }
   }, [isOpen, isOrganizer, refetch]);
 
   useEffect(() => {
-    if (!isOrganizer) return;
+    if (!isOrganizer) return undefined;
 
     const interval = setInterval(() => {
       refetch();
@@ -401,94 +407,153 @@ function OrganizerNeedHelpAction({ user }) {
   }, [isOrganizer, refetch]);
 
   useEffect(() => {
-    const handleClick = (event) => {
-      if (ref.current && !ref.current.contains(event.target)) {
+    if (!isOpen) return undefined;
+
+    const handleViewportChange = () => {
+      updateAnchorRect();
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
         setIsOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+    const handleMouseDown = (event) => {
+      const target = event.target;
+      const clickedAnchor = anchorRef.current?.contains(target);
+      const clickedPanel = panelRef.current?.contains(target);
+
+      if (!clickedAnchor && !clickedPanel) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleViewportChange);
+    window.addEventListener('scroll', handleViewportChange, true);
+    window.addEventListener('keydown', handleEscape);
+    document.addEventListener('mousedown', handleMouseDown);
+
+    return () => {
+      window.removeEventListener('resize', handleViewportChange);
+      window.removeEventListener('scroll', handleViewportChange, true);
+      window.removeEventListener('keydown', handleEscape);
+      document.removeEventListener('mousedown', handleMouseDown);
+    };
+  }, [isOpen]);
 
   if (!isOrganizer) return null;
 
   const suggestedItems = data?.data || [];
   const hasItems = suggestedItems.length > 0;
 
+  const panelStyle = useMemo(() => {
+    if (!anchorRect) return undefined;
+
+    return {
+      position: 'fixed',
+      top: anchorRect.bottom + 12,
+      right: Math.max(16, window.innerWidth - anchorRect.right),
+      zIndex: 5000,
+    };
+  }, [anchorRect]);
+
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={() => setIsOpen((prev) => !prev)}
-        className={`group relative inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
-          hasItems
-            ? 'border-[#FBBF24] bg-[#FFFBEB] text-[#F59E0B] shadow-md shadow-[#FBBF24]/15'
-            : 'border-slate-200 bg-white text-[#F59E0B] shadow-sm'
-        }`}
-        title="Các yêu cầu Cần hỗ trợ được gợi ý"
-        aria-label="Các yêu cầu Cần hỗ trợ được gợi ý"
-        aria-expanded={isOpen}
-        type="button"
-      >
-        <HeartHandshake
-          size={20}
-          className={`transition-transform duration-200 ${
-            isOpen ? 'scale-110 text-[#F59E0B]' : 'text-[#F59E0B] group-hover:scale-110'
+    <>
+      <div className="relative" ref={anchorRef}>
+        <button
+          onClick={() => {
+            updateAnchorRect();
+            setIsOpen((prev) => !prev);
+          }}
+          className={`group relative inline-flex h-12 w-12 items-center justify-center rounded-2xl border transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg ${
+            hasItems
+              ? 'border-[#FBBF24] bg-[#FFFBEB] text-[#F59E0B] shadow-md shadow-[#FBBF24]/15'
+              : 'border-slate-200 bg-white text-[#F59E0B] shadow-sm'
           }`}
-        />
+          title="Các yêu cầu Cần hỗ trợ được gợi ý"
+          aria-label="Các yêu cầu Cần hỗ trợ được gợi ý"
+          aria-expanded={isOpen}
+          type="button"
+        >
+          <HeartHandshake
+            size={20}
+            className={`transition-transform duration-200 ${
+              isOpen
+                ? 'scale-110 text-[#F59E0B]'
+                : 'text-[#F59E0B] group-hover:scale-110'
+            }`}
+          />
 
-        {hasItems ? (
-          <span className="absolute -right-1 -top-1 flex min-h-[22px] min-w-[22px] items-center justify-center rounded-full border-2 border-white bg-[#F59E0B] px-1 text-[10px] font-bold leading-none text-white shadow-sm">
-            {suggestedItems.length > 99 ? '99+' : suggestedItems.length}
-          </span>
-        ) : null}
-      </button>
+          {hasItems ? (
+            <span className="absolute -right-1 -top-1 flex min-h-[22px] min-w-[22px] items-center justify-center rounded-full border-2 border-white bg-[#F59E0B] px-1 text-[10px] font-bold leading-none text-white shadow-sm">
+              {suggestedItems.length > 99 ? '99+' : suggestedItems.length}
+            </span>
+          ) : null}
+        </button>
+      </div>
 
-      {isOpen ? (
-        <div className="absolute right-0 z-50 mt-3 w-80 rounded-xl border border-slate-100 bg-white p-3 shadow-lg">
-          <div className="mb-2 px-1">
-            <p className="text-sm font-semibold text-slate-900">
-              Gợi ý từ hệ thống
-            </p>
-            <p className="text-xs text-slate-500">
-              Mở và phản hồi các yêu cầu Cần hỗ trợ đã được phân công.
-            </p>
-          </div>
+      {isOpen && typeof document !== 'undefined'
+        ? createPortal(
+            <>
+              <button
+                type="button"
+                aria-label="Đóng gợi ý NeedHelp"
+                onClick={() => setIsOpen(false)}
+                className="fixed inset-0 z-[4990] cursor-default bg-transparent"
+              />
 
-          <div className="max-h-72 space-y-2 overflow-y-auto">
-            {suggestedItems.length ? (
-              suggestedItems.map((item) => (
+              <div
+                ref={panelRef}
+                style={panelStyle}
+                className="w-80 rounded-xl border border-slate-100 bg-white p-3 shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
+              >
+                <div className="mb-2 px-1">
+                  <p className="text-sm font-semibold text-slate-900">
+                    Gợi ý từ quản trị viên
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Mở và phản hồi các yêu cầu Cần hỗ trợ đã được phân công.
+                  </p>
+                </div>
+
+                <div className="max-h-72 space-y-2 overflow-y-auto">
+                  {suggestedItems.length ? (
+                    suggestedItems.map((item) => (
+                      <Link
+                        key={item._id}
+                        to={`/need-help/${item._id}`}
+                        onClick={() => setIsOpen(false)}
+                        className="block rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-50"
+                      >
+                        <p className="line-clamp-1 text-sm font-semibold text-slate-900">
+                          {item.title}
+                        </p>
+                        <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+                          {item.location?.address || 'Chưa có địa điểm'}
+                        </p>
+                      </Link>
+                    ))
+                  ) : (
+                    <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
+                      Hiện chưa có yêu cầu nào được gợi ý.
+                    </div>
+                  )}
+                </div>
+
                 <Link
-                  key={item._id}
-                  to={`/need-help/${item._id}`}
+                  to="/organizer/need-help"
                   onClick={() => setIsOpen(false)}
-                  className="block rounded-lg border border-slate-200 p-2.5 transition hover:bg-slate-50"
+                  className="mt-3 block rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
                 >
-                  <p className="line-clamp-1 text-sm font-semibold text-slate-900">
-                    {item.title}
-                  </p>
-                  <p className="mt-0.5 line-clamp-1 text-xs text-slate-500">
-                    {item.location?.address || "Không có địa chỉ"}
-                  </p>
+                  Xem tất cả phân công
                 </Link>
-              ))
-            ) : (
-              <div className="rounded-lg border border-dashed border-slate-300 p-4 text-center text-xs text-slate-500">
-                Hiện chưa có yêu cầu nào được gợi ý.
               </div>
-            )}
-          </div>
-
-          <Link
-            to="/organizer/need-help"
-            onClick={() => setIsOpen(false)}
-            className="mt-3 block rounded-lg bg-slate-900 px-3 py-2 text-center text-xs font-semibold text-white transition hover:bg-slate-800"
-          >
-            Xem tất cả phân công
-          </Link>
-        </div>
-      ) : null}
-    </div>
+            </>,
+            document.body
+          ) 
+      : null}
+    </>
   );
 }
 

@@ -91,9 +91,9 @@ const sanitizeMilestones = (milestones) => {
       targetAmount: Number(milestone?.targetAmount || 0),
       startDate: toIsoOrUndefined(milestone?.startDate),
       endDate: toIsoOrUndefined(milestone?.endDate),
-      deliverables: milestone?.deliverables
-        ? String(milestone.deliverables).trim()
-        : undefined,
+      deliverables: String(milestone?.deliverables || "").trim(),
+      location: milestone?.location || undefined,
+      evidencePolicy: milestone?.evidencePolicy || undefined,
     }))
     .filter(
       (milestone) =>
@@ -102,7 +102,9 @@ const sanitizeMilestones = (milestones) => {
         milestone.targetAmount > 0 ||
         milestone.startDate ||
         milestone.endDate ||
-        milestone.deliverables,
+        milestone.deliverables ||
+        milestone.location ||
+        milestone.evidencePolicy,
     );
 };
 
@@ -161,6 +163,11 @@ export const projectAPI = {
 
   async getExplore(params) {
     const response = await httpClient.get("/project/explore", { params });
+    return getData(response);
+  },
+
+  async getMapProjects(params) {
+    const response = await httpClient.get("/project/map", { params });
     return getData(response);
   },
 

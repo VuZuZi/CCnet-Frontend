@@ -14,7 +14,7 @@ function getPanelLayout(mode, index = 0) {
   if (mode === "mobile") {
     return {
       className:
-        "fixed inset-0 z-[1300] h-screen w-screen rounded-none border-0 bg-white shadow-none",
+        "fixed inset-0 z-[6300] h-screen w-screen rounded-none border-0 bg-white shadow-none",
       style: undefined,
       wrapperClassName: "rounded-none",
     };
@@ -23,7 +23,7 @@ function getPanelLayout(mode, index = 0) {
   if (mode === "tablet") {
     return {
       className:
-        "fixed bottom-4 right-4 z-[1100] h-[min(760px,calc(100vh-32px))] w-[min(480px,calc(100vw-32px))] rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
+        "fixed bottom-4 right-4 z-[6300] h-[min(760px,calc(100vh-32px))] w-[min(480px,calc(100vw-32px))] rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
       style: undefined,
       wrapperClassName: "rounded-[24px]",
     };
@@ -31,7 +31,7 @@ function getPanelLayout(mode, index = 0) {
 
   return {
     className:
-      "fixed bottom-6 z-[1001] h-[560px] w-[376px] rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
+      "fixed bottom-6 z-[6300] h-[560px] w-[376px] rounded-[24px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
     style: { right: getDesktopPanelRightOffset(index) },
     wrapperClassName: "rounded-[24px]",
   };
@@ -72,7 +72,7 @@ export function ChatPanel({ conversationId, index = 0, mode = "desktop", onClose
               onOpenFullPage,
             }) => (
               <ChatHeader
-                conversation={headerConversation}
+                conversation={headerConversation || conversation}
                 myId={myId}
                 title={title}
                 isGroup={headerConversation?.type === "group"}
