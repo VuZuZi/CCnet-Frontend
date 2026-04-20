@@ -1,35 +1,30 @@
 import React from "react";
 import PostForm from "../post/PostForm";
 
-export const ShareModal = ({
-  isOpen,
-  onClose,
-  sharedData,
-  initialText = "Mọi người xem dự án mới của mình nhé! ",
-}) => {
+export const ShareModal = ({ isOpen, onClose, sharedData, initialText }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
+    <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease-out]">
       <div className="absolute inset-0" onClick={onClose}></div>
 
-      <div className="relative bg-white rounded-2xl w-full max-w-xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header của Modal */}
-        <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white">
-          <h3 className="font-extrabold text-lg text-slate-900 m-0">
+      {/* Tắt fadeInUp, chỉ dùng fadeIn để hiện ngay lập tức */}
+      <div className="relative flex max-h-[95vh] w-full max-w-xl flex-col overflow-hidden rounded-2xl bg-white shadow-2xl animate-[fadeIn_0.2s_ease-out]">
+        <div className="flex items-center justify-between border-b border-slate-100 px-6 py-4">
+          <h3 className="m-0 text-lg font-extrabold text-slate-900">
             {sharedData?.entityModel === "Project"
               ? "Chia sẻ dự án"
               : "Kêu gọi hỗ trợ"}
           </h3>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-red-500 hover:bg-red-50 size-8 flex items-center justify-center rounded-full transition-colors"
+            className="text-slate-400 hover:text-red-500 text-xl"
           >
             ✕
           </button>
         </div>
 
-        <div className="p-4 bg-slate-50 overflow-y-auto">
+        <div className="overflow-y-auto p-4 bg-slate-50/30">
           <PostForm
             sharedItem={sharedData}
             initialContent={initialText}
