@@ -32,9 +32,20 @@ const CommentItem = ({ comment, isReply = false, targetCommentId = "" }) => {
       <div
         className={`${
           isReply ? "size-7 text-[10px]" : "size-8 text-xs"
-        } rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shrink-0`}
+        } rounded-full bg-gray-200 text-gray-600 flex items-center justify-center font-bold shrink-0 overflow-hidden flex-shrink-0`}
       >
-        {authorInitials}
+        {comment.author?.avatar ? (
+          <img
+            src={comment.author.avatar}
+            alt={authorName}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        ) : (
+          authorInitials
+        )}
       </div>
 
       <div className="flex-1 min-w-0">

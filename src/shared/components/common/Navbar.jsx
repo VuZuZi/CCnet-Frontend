@@ -19,6 +19,7 @@ import { ROUTES } from '@/shared/constants/routes';
 import { Button, cn } from '@/shared/components/ui/Button/Button';
 import { CCNetLogo } from '@/shared/components/ui/Logo/CCNetLogo';
 import GlobalSearch from '@/features/search/components/GlobalSearch';
+import { useOrganizerAssignedRequests } from '@/features/needHelp/hooks/useHelpRequestQueries';
 import { useMyWallet } from '@/features/wallet/hooks/useWalletQueries';
 import NavbarChatAction from './navbar/NavbarChatAction';
 import NavbarUserDropdown from './navbar/NavbarUserDropdown';

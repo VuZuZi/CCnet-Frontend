@@ -4,6 +4,7 @@ import CommentItem from "../comment/CommentItem";
 import { usePostMutations } from "../../hooks/usePostMutations";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
+import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 
 const PostTheaterMode = ({
   post,
@@ -17,6 +18,7 @@ const PostTheaterMode = ({
   const [page, setPage] = useState(0);
   const [allComments, setAllComments] = useState(post?.latestComments || []);
   const dropdownRef = useRef(null);
+  const user = useAuthStore((state) => state.user);
 
   const { addComment } = usePostMutations();
 
@@ -81,6 +83,14 @@ const PostTheaterMode = ({
       });
       const newComment = result?.data || result;
       if (newComment && newComment._id) {
+        if (!newComment.author || typeof newComment.author !== 'object' || !newComment.author.fullName) {
+          newComment.author = {
+            _id: user?._id || user?.id,
+            fullName: user?.fullName,
+            username: user?.username,
+            avatar: user?.avatar,
+          };
+        }
         setAllComments((prev) => [newComment, ...prev]);
       }
       setCommentContent("");
@@ -103,20 +113,11 @@ const PostTheaterMode = ({
   };
 
   return (
-    // 1. THẺ NỀN ĐEN BÊN NGOÀI: Đã thêm onClick={onClose} để bấm nền đen thoát
+    // 1. THẺ NỀN BÊN NGOÀI: Đã thêm onClick={onClose} để bấm nền thoát
     <div
-      className="fixed inset-0 z-[9999] flex items-stretch justify-center bg-black/95 overflow-y-auto py-10"
+      className="fixed inset-0 z-[9999] flex items-stretch justify-center bg-slate-900/50 backdrop-blur-sm overflow-y-auto py-10"
       onClick={onClose}
     >
-      {/* 2. NÚT BACK CỐ ĐỊNH: Dùng fixed để luôn neo ở góc trên trái màn hình */}
-      <button
-        onClick={onClose}
-        className="fixed left-6 top-6 z-[10000] flex items-center gap-2 text-slate-300 hover:text-white font-medium transition-colors"
-      >
-        <span className="material-symbols-outlined text-xl">arrow_back</span>
-        Quay lại
-      </button>
-
       {/* 3. KHUNG HIỂN THỊ CHÍNH Ở GIỮA: Đã thêm e.stopPropagation() để chặn click lan ra nền đen */}
       <div
         className="my-auto flex h-[90vh] min-h-[600px] w-full max-w-7xl flex-col overflow-hidden bg-white shadow-2xl md:flex-row md:rounded-2xl cursor-default"
@@ -133,8 +134,12 @@ const PostTheaterMode = ({
         <section className="relative flex h-full min-h-0 w-full flex-col border-l border-gray-100 bg-white md:w-[420px]">
           <header className="flex shrink-0 items-center justify-between border-b border-gray-100 p-4">
             <div className="flex items-center space-x-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-black">
-                {authorInitials}
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-yellow-400 text-sm font-bold text-black overflow-hidden">
+                {post.author?.avatar ? (
+                  <img src={post.author.avatar} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  authorInitials
+                )}
               </div>
               <div className="min-w-0">
                 <h4 className="truncate text-sm font-bold leading-tight text-gray-900">
@@ -156,12 +161,11 @@ const PostTheaterMode = ({
                 </div>
               </div>
             </div>
-            {/* Mình đã ẩn nút close trên header đi vì đã có nút Back to đùng ở ngoài */}
             <button
               onClick={onClose}
-              className="hidden p-1 text-gray-400 hover:text-gray-600 md:flex"
+              className="flex p-1 text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <span className="material-symbols-outlined text-3xl">close</span>
+              <span className="material-symbols-outlined text-2xl">close</span>
             </button>
           </header>
 
