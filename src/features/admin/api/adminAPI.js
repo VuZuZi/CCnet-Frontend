@@ -28,6 +28,15 @@ export const adminAPI = {
 
   getReports: () => httpClient.get("/admin/reports"),
 
+  getRefundRequests: (params = {}) =>
+    httpClient.get("/transactions/admin/refund-requests", { params }),
+
+  approveRefundRequest: (id, payload = {}) =>
+    httpClient.patch(`/transactions/admin/refund-requests/${id}/approve`, payload),
+
+  rejectRefundRequest: (id, payload = {}) =>
+    httpClient.patch(`/transactions/admin/refund-requests/${id}/reject`, payload),
+
   resolveReport: (reportId, actions, note) =>
     httpClient.patch(`/admin/reports/${reportId}/resolve`, { actions, note }),
 

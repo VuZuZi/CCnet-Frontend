@@ -57,7 +57,7 @@ export function RefundModal({ isOpen, onClose, transaction }) {
                     </div>
                     
                     <div className="pt-3 border-t border-slate-100 flex justify-between items-center">
-                        <span className="text-base font-bold text-slate-900">Tiền thực nhận về Ví:</span>
+                            <span className="text-base font-bold text-slate-900">Tiền dự kiến nhận về Ví:</span>
                         <span className="text-xl font-black text-emerald-600">{refundAmount.toLocaleString()}đ</span>
                     </div>
                 </div>
@@ -65,7 +65,7 @@ export function RefundModal({ isOpen, onClose, transaction }) {
                 <div className="flex items-start gap-2 rounded-xl bg-emerald-50 p-3">
                     <ShieldCheck className="text-emerald-600 mt-0.5" size={16} />
                     <p className="text-xs text-emerald-700 font-medium">
-                        Khoản phí {penaltyFee.toLocaleString()}đ sẽ được chuyển thẳng vào quỹ của dự án để hỗ trợ mục tiêu thiện nguyện. Hệ thống không thu thêm bất kỳ khoản phí nào.
+                        Yêu cầu hoàn tiền sẽ được admin kiểm tra và duyệt. Sau khi duyệt, {refundAmount.toLocaleString()}đ sẽ về ví của bạn và {penaltyFee.toLocaleString()}đ được giữ lại làm phí duy trì nền tảng.
                     </p>
                 </div>
 
@@ -86,7 +86,7 @@ export function RefundModal({ isOpen, onClose, transaction }) {
                         disabled={refundMutation.isPending}
                         className="py-3.5 rounded-2xl font-bold text-white bg-slate-900 hover:bg-rose-600 transition-colors disabled:opacity-50"
                     >
-                        Xác nhận hoàn
+                        Gửi yêu cầu hoàn tiền
                     </button>
                 </div>
             </form>

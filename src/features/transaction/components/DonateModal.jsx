@@ -29,7 +29,7 @@ const donateSchema = z.object({
 
 const SUGGESTED_AMOUNTS = [50000, 100000, 200000, 500000];
 
-export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectStatus }) {
+export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectStatus, currentFundedAmount = 0, targetAmount = 0 }) {
     const [bankTransferData, setBankTransferData] = useState(null);
     const [displayAmount, setDisplayAmount] = useState('');
     const [isSuccess, setIsSuccess] = useState(false);
@@ -42,10 +42,21 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
     const checkStatusMutation = useCheckStatusMutation();
     const toast = useToast();
 
-    const { register, handleSubmit, formState: { errors }, watch, setValue, reset } = useForm({
+    const { register, handleSubmit, formState: { errors }, watch, setValue, reset, setError, clearErrors } = useForm({
         resolver: zodResolver(donateSchema),
         defaultValues: { paymentMethod: PAYMENT_METHODS.BANK_TRANSFER, amount: 0, isAnonymous: false, message: '' }
     });
+
+    const safeTargetAmount = Number(targetAmount || 0);
+    const safeFundedAmount = Number(currentFundedAmount || 0);
+    const remainingAmount = safeTargetAmount > 0
+        ? Math.max(safeTargetAmount - safeFundedAmount, 0)
+        : Infinity;
+
+    const validateAmountWithinRemaining = (amount) => {
+        if (!Number.isFinite(remainingAmount)) return true;
+        return amount <= remainingAmount;
+    };
 
     const selectedMethod = watch('paymentMethod');
     const watchAmount = watch('amount');
@@ -98,21 +109,42 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
         if (!rawValue) {
             setDisplayAmount('');
             setValue('amount', 0, { shouldValidate: true });
+            clearErrors('amount');
             return;
         }
         const num = parseInt(rawValue, 10);
+
+        if (!validateAmountWithinRemaining(num)) {
+            setError('amount', {
+                type: 'manual',
+                message: `Số tiền vượt quá phần còn thiếu (${remainingAmount.toLocaleString('vi-VN')}đ).`
+            });
+        } else {
+            clearErrors('amount');
+        }
+
         setDisplayAmount(num.toLocaleString('vi-VN'));
         setValue('amount', num, { shouldValidate: true });
     };
 
     const handleSuggestClick = (val) => {
+        if (!validateAmountWithinRemaining(val)) return;
         setDisplayAmount(val.toLocaleString('vi-VN'));
+        clearErrors('amount');
         setValue('amount', val, { shouldValidate: true });
     };
 
     const onSubmit = (data) => {
         if (projectStatus && projectStatus !== 'FUNDING') {
             handleClose();
+            return;
+        }
+
+        if (!validateAmountWithinRemaining(data.amount)) {
+            setError('amount', {
+                type: 'manual',
+                message: `Số tiền vượt quá phần còn thiếu (${remainingAmount.toLocaleString('vi-VN')}đ).`
+            });
             return;
         }
 
@@ -191,8 +223,8 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
                         <div className="flex items-start gap-3 rounded-xl border border-amber-100 bg-amber-50 p-4 mb-6">
                             <ShieldCheck className="mt-0.5 flex-shrink-0 text-amber-600" size={20} />
                             <div>
-                                <p className="text-sm font-bold text-amber-900">Mọi đóng góp đều được bảo vệ qua tài khoản Ký quỹ (Escrow)</p>
-                                <p className="mt-1 line-clamp-1 text-xs text-amber-700">{projectTitle}</p>
+                                <p className="text-sm font-bold text-amber-900">Mọi đóng góp đều được bảo vệ qua tài khoản Ký quỹ</p>
+                                <p className="mt-1 line-clamp-1 text-s text-amber-700">Chiến Dịch: {projectTitle}</p>
                             </div>
                         </div>
 
@@ -200,6 +232,11 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
                             <div className="space-y-6">
                                 <div>
                                     <label className="mb-2 block text-sm font-semibold text-slate-700">Số tiền ủng hộ (VNĐ)</label>
+                                    {Number.isFinite(remainingAmount) && (
+                                        <p className="mb-2 text-xs font-semibold text-amber-700">
+                                            Còn thiếu để đạt mục tiêu: {remainingAmount.toLocaleString('vi-VN')}đ
+                                        </p>
+                                    )}
                                     <input
                                         type="text"
                                         inputMode="numeric"
@@ -216,7 +253,8 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
                                                 key={val}
                                                 type="button"
                                                 onClick={() => handleSuggestClick(val)}
-                                                className="rounded-xl border border-slate-200 bg-slate-50 py-2 text-xs font-bold text-slate-600 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
+                                                disabled={!validateAmountWithinRemaining(val)}
+                                                className="rounded-xl border border-slate-200 bg-slate-50 py-2 text-xs font-bold text-slate-600 transition-colors hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:bg-slate-50 disabled:hover:text-slate-600"
                                             >
                                                 {(val / 1000)}k
                                             </button>

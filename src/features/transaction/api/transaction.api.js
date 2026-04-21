@@ -29,10 +29,5 @@ export const transactionAPI = {
     checkStatus: async (transactionId) => {
         const response = await httpClient.get(`/transactions/${transactionId}/status`);
         return response.data.data;
-    },
-
-    updateMessage: async ({ id, payload }) => {
-        const response = await httpClient.put(`/transactions/${id}/message`, payload);
-        return response.data;
     }
 };

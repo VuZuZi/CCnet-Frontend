@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useMyDonations } from '../hooks/useDonationQueries';
-import { useUpdateDonationMessageMutation } from '../hooks/useTransactionMutations';
 import { differenceInHours } from 'date-fns';
 import { RefundModal } from './RefundModal';
 import { SuspenseClaimModal } from './SuspenseClaimModal';
@@ -10,21 +9,16 @@ import {
     MessageCircle,
     UserCircle,
     ShieldQuestion,
-    Edit3,
     EyeOff,
     ChevronRight,
     History
 } from 'lucide-react';
-import { useToast } from '@/shared/contexts/ToastContext';
 
 export function DonationHistoryList() {
     const [page] = useState(1);
     const { data, isLoading } = useMyDonations({ page, limit: 15 });
     const [selectedTxForRefund, setSelectedTxForRefund] = useState(null);
     const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
-
-    const updateMessageMutation = useUpdateDonationMessageMutation();
-    const toast = useToast();
 
     if (isLoading) return (
         <div className="space-y-4">
@@ -39,21 +33,6 @@ export function DonationHistoryList() {
     const checkIsRefundable = (createdAt, projectStatus) => {
         const hours = differenceInHours(new Date(), new Date(createdAt));
         return hours < 72 && projectStatus === 'FUNDING';
-    };
-
-    const handleEditMessage = (tx) => {
-        const newMessage = prompt("Nhập lời nhắn mới của bạn (Tối đa 500 ký tự):", tx.message || "");
-        if (newMessage === null) return;
-
-        if (newMessage.length > 500) {
-            toast.error("Lời nhắn quá dài (Tối đa 500 ký tự)");
-            return;
-        }
-
-        updateMessageMutation.mutate({
-            id: tx._id,
-            payload: { message: newMessage, isAnonymous: tx.isAnonymous }
-        });
     };
 
     return (
@@ -91,8 +70,10 @@ export function DonationHistoryList() {
             ) : (
                 <div className="grid gap-4">
                     {donations.map((tx) => {
-                        const isRefunded = tx.type === 'REFUND' || tx.status === 'REFUNDED';
-                        const isRefundable = checkIsRefundable(tx.createdAt, tx.projectId?.status);
+                        const isRefunded = tx.status === 'REFUNDED' || tx.refundRequest?.status === 'COMPLETED';
+                        const isRefundPending = tx.refundRequest?.status === 'PENDING';
+                        const isRefundRejected = tx.refundRequest?.status === 'REJECTED';
+                        const isRefundable = checkIsRefundable(tx.createdAt, tx.projectId?.status) && !tx.refundRequest;
 
                         return (
                             <div
@@ -102,8 +83,8 @@ export function DonationHistoryList() {
                                 <div className="flex flex-col md:flex-row justify-between gap-4">
                                     <div className="flex-1 space-y-3">
                                         <div className="flex items-center gap-2">
-                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isRefunded ? 'bg-slate-100 text-slate-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                                                {isRefunded ? 'Đã hoàn tiền' : 'Thành công'}
+                                            <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isRefunded ? 'bg-slate-100 text-slate-500' : isRefundPending ? 'bg-amber-50 text-amber-700' : isRefundRejected ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
+                                                {isRefunded ? 'Đã hoàn tiền' : isRefundPending ? 'Chờ duyệt hoàn tiền' : isRefundRejected ? 'Hoàn tiền bị từ chối' : 'Thành công'}
                                             </span>
                                             <span className="text-xs text-slate-400 font-medium italic">
                                                 ID: {tx.bankTransactionRef || tx._id.slice(-8).toUpperCase()}
@@ -127,15 +108,6 @@ export function DonationHistoryList() {
                                                     <p className="text-sm text-slate-600 italic font-medium leading-relaxed">
                                                         "{tx.message}"
                                                     </p>
-                                                    {!isRefunded && (
-                                                        <button
-                                                            onClick={() => handleEditMessage(tx)}
-                                                            className="absolute -right-2 -top-2 p-1.5 bg-slate-50 rounded-full text-slate-400 hover:text-amber-600 opacity-0 group-hover:opacity-100 transition-all"
-                                                            title="Sửa lời nhắn"
-                                                        >
-                                                            <Edit3 size={14} />
-                                                        </button>
-                                                    )}
                                                 </div>
                                             )}
 
@@ -150,14 +122,7 @@ export function DonationHistoryList() {
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-xs font-bold text-slate-500">
                                                     <MessageCircle size={14} className="text-slate-400" />
-                                                    {tx.message ? 'Có lời nhắn' : (
-                                                        <button
-                                                            onClick={() => handleEditMessage(tx)}
-                                                            className="text-amber-600 hover:underline"
-                                                        >
-                                                            + Thêm lời nhắn
-                                                        </button>
-                                                    )}
+                                                    {tx.message ? 'Có lời nhắn' : 'Không có lời nhắn'}
                                                 </div>
                                             </div>
                                         </div>
@@ -175,6 +140,14 @@ export function DonationHistoryList() {
                                             {isRefunded ? (
                                                 <div className="px-4 py-2 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-black uppercase text-center flex items-center gap-2">
                                                     <RotateCcw size={14} /> Tiền đã về ví
+                                                </div>
+                                            ) : isRefundPending ? (
+                                                <div className="px-4 py-2 rounded-2xl bg-amber-50 border border-amber-100 text-amber-700 text-[11px] font-black uppercase text-center">
+                                                    Chờ admin duyệt
+                                                </div>
+                                            ) : isRefundRejected ? (
+                                                <div className="px-4 py-2 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-[11px] font-black uppercase text-center">
+                                                    Admin từ chối yêu cầu
                                                 </div>
                                             ) : isRefundable ? (
                                                 <button
