@@ -28,6 +28,14 @@ export const FILTER_CONFIG = [
       "border border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100",
   },
   {
+    key: ADMIN_UI_PROJECT_STATUS.UPDATING,
+    label: "Updating",
+    activeClassName:
+      "bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 shadow-sm",
+    idleClassName:
+      "border border-amber-200 bg-amber-50 text-amber-800 hover:bg-amber-100",
+  },
+  {
     key: ADMIN_UI_PROJECT_STATUS.PAUSED,
     label: "Paused",
     activeClassName:

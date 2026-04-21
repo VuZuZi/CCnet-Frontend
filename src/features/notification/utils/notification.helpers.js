@@ -41,8 +41,10 @@ export function getNotificationLabel(type) {
     case 'system_announcement':
       return 'Hệ thống';
     case 'donation_successful':
+    case 'refund_request_submitted':
     case 'transaction_failed':
     case 'transaction_refunded':
+    case 'refund_request_rejected':
       return 'Giao dịch';
     case 'post_reacted':
       return 'Phản ứng bài viết';
@@ -98,6 +100,13 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
     case 'organizer_request_declined':
       return 'Mở yêu cầu';
 
+    case 'refund_request_submitted':
+    case 'refund_request_rejected':
+      return 'Mở mục ủng hộ';
+
+    case 'transaction_refunded':
+      return 'Mở ví & giao dịch';
+
     default:
       return 'Mở liên quan';
   }
@@ -127,6 +136,9 @@ export function shouldPreferRelatedNavigation(type, actionUrl) {
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
+    case 'refund_request_submitted':
+    case 'refund_request_rejected':
+    case 'transaction_refunded':
       return true;
 
     default:

@@ -6,6 +6,7 @@ import ProjectDetailHeader from "./ProjectDetailHeader";
 import ProjectStatusBanner from "./ProjectStatusBanner";
 import ProjectDescriptionSection from "./ProjectDescriptionSection";
 import ProjectFieldsTable from "./ProjectFieldsTable";
+import ProjectMilestonesSection from "./ProjectMilestonesSection";
 import ProjectOrganizerCard from "./ProjectOrganizerCard";
 import ProjectDocumentsList from "./ProjectDocumentsList";
 
@@ -182,16 +183,34 @@ export function AdminProjectDetailModal({
   useEffect(() => {
     if (!open) return undefined;
 
+    const body = window.document.body;
+    const originalOverflow = body.style.overflow;
+    const originalPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = Math.max(
+      0,
+      window.innerWidth - window.document.documentElement.clientWidth,
+    );
+
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+      body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+
+    return () => {
+      body.style.overflow = originalOverflow;
+      body.style.paddingRight = originalPaddingRight;
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return undefined;
+
     const handleKeyDown = (event) => {
       if (event.key === "Escape" && !previewDocument) onClose?.();
     };
 
-    const originalOverflow = window.document.body.style.overflow;
-    window.document.body.style.overflow = "hidden";
     window.addEventListener("keydown", handleKeyDown);
-
     return () => {
-      window.document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [open, onClose, previewDocument]);
@@ -256,6 +275,16 @@ export function AdminProjectDetailModal({
   const description = getProjectDetailDescription(displayProject);
   const coverUrl = getProjectDetailCoverUrl(displayProject);
   const documents = getProjectDetailDocuments(displayProject);
+  const milestones = Array.isArray(displayProject?.milestones)
+    ? displayProject.milestones
+    : [];
+  const hasSeedProjectData = Boolean(
+    project?.title || project?.status || project?.organizerId,
+  );
+  const shouldShowSkeleton =
+    isLoadingDetail && !detailProject && !hasSeedProjectData;
+  const shouldShowErrorState =
+    Boolean(detailError) && !detailProject && !hasSeedProjectData;
 
   const items = useMemo(() => {
     const rows = buildProjectDetailRows(displayProject, documents);
@@ -292,7 +321,7 @@ export function AdminProjectDetailModal({
           </div>
 
           <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden bg-[linear-gradient(180deg,#F8FAFC_0%,#F1F5F9_100%)] px-3 py-3 md:px-5 md:py-5">
-            {isLoadingDetail ? (
+            {shouldShowSkeleton ? (
               <div className="space-y-5">
                 <div className="animate-pulse rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm md:p-5">
                   <div className="h-5 w-44 rounded bg-slate-200" />
@@ -333,7 +362,7 @@ export function AdminProjectDetailModal({
                   </div>
                 </div>
               </div>
-            ) : detailError ? (
+            ) : shouldShowErrorState ? (
               <div className="rounded-[24px] border border-red-100 bg-white p-8 text-center shadow-sm md:p-10">
                 <p className="text-lg font-black text-red-500">
                   Không tải được chi tiết dự án
@@ -342,6 +371,13 @@ export function AdminProjectDetailModal({
               </div>
             ) : (
               <div className="space-y-5">
+                {isLoadingDetail ? (
+                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-100 bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
+                    <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-amber-500" />
+                    Đang đồng bộ chi tiết dự án...
+                  </div>
+                ) : null}
+
                 <ProjectStatusBanner project={displayProject} />
 
                 <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.95fr)]">
@@ -356,6 +392,8 @@ export function AdminProjectDetailModal({
                       search={search}
                       onSearchChange={setSearch}
                     />
+
+                    <ProjectMilestonesSection milestones={milestones} />
                   </div>
 
                   <div className="min-w-0 space-y-5">

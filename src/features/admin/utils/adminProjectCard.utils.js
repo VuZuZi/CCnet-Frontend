@@ -20,6 +20,14 @@ export function getCardTone(uiStatus) {
         timeline: "bg-amber-50/45 border-amber-100",
       };
 
+    case "UPDATING":
+      return {
+        card: "bg-amber-50/45 border-amber-100",
+        header: "bg-amber-50/55 border-amber-100",
+        section: "bg-white/92",
+        timeline: "bg-amber-50/45 border-amber-100",
+      };
+
     case "PAUSED":
       return {
         card: "bg-orange-50/45 border-orange-100",

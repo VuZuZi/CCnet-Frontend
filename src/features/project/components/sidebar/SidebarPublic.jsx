@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -55,13 +55,6 @@ export function SidebarPublic({ project }) {
     volunteerPercent,
   } = useMemo(() => getSidebarProjectStats(project), [project]);
 
-  useEffect(() => {
-    if (!isFundingPhase && isDonateOpen) {
-      toast.info("Dự án hiện không còn ở giai đoạn gọi vốn.");
-      setIsDonateOpen(false);
-    }
-  }, [isFundingPhase, isDonateOpen, toast]);
-
   const handleShare = async () => {
     const shareUrl = window.location.href;
 
@@ -107,6 +100,12 @@ export function SidebarPublic({ project }) {
 
     if (!isFundingPhase) {
       toast.info("Dự án hiện không ở giai đoạn nhận đóng góp.");
+      return;
+    }
+
+    const remainingAmount = Math.max(Number(targetAmount || 0) - Number(availableBalance || 0), 0);
+    if (remainingAmount <= 0) {
+      toast.info("Dự án đã đạt đủ mục tiêu gây quỹ.");
       return;
     }
 
@@ -207,6 +206,8 @@ export function SidebarPublic({ project }) {
         projectId={projectId}
         projectTitle={project?.title || project?.name}
         projectStatus={project?.status}
+        currentFundedAmount={availableBalance}
+        targetAmount={targetAmount}
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { PROJECT_STATUS, PROJECT_TYPE } from "@/shared/constants/project";
 export const ADMIN_UI_PROJECT_STATUS = {
   ACTIVE: "ACTIVE",
   PENDING_APPROVAL: "PENDING_APPROVAL",
+  UPDATING: "UPDATING",
   PAUSED: "PAUSED",
   COMPLETED: "COMPLETED",
   CANCELLED: "CANCELLED",
@@ -19,6 +20,7 @@ export const ADMIN_PROJECT_STATUS_LABELS = {
   [PROJECT_STATUS.RECRUITING]: "Recruiting Volunteers",
   [PROJECT_STATUS.EXECUTING]: "Executing",
   [PROJECT_STATUS.ACTIVE]: "Active",
+  [PROJECT_STATUS.UPDATING]: "Updating",
   [PROJECT_STATUS.PAUSED]: "Paused",
 
   [PROJECT_STATUS.COMPLETED_SUCCESSFULLY]: "Completed",
@@ -37,6 +39,7 @@ export const ADMIN_PROJECT_STATUS_LABELS = {
 export const ADMIN_UI_STATUS_LABELS = {
   [ADMIN_UI_PROJECT_STATUS.ACTIVE]: "Active",
   [ADMIN_UI_PROJECT_STATUS.PENDING_APPROVAL]: "Pending Review",
+  [ADMIN_UI_PROJECT_STATUS.UPDATING]: "Updating",
   [ADMIN_UI_PROJECT_STATUS.PAUSED]: "Paused",
   [ADMIN_UI_PROJECT_STATUS.COMPLETED]: "Completed",
   [ADMIN_UI_PROJECT_STATUS.CANCELLED]: "Cancelled",
@@ -47,31 +50,37 @@ export const ADMIN_UI_STATUS_STYLES = {
     bg: "bg-emerald-50",
     text: "text-emerald-700",
     border: "border-emerald-200",
-    icon: "🟢",
+    icon: "A",
   },
   [ADMIN_UI_PROJECT_STATUS.PENDING_APPROVAL]: {
     bg: "bg-amber-50",
     text: "text-amber-700",
     border: "border-amber-200",
-    icon: "🟡",
+    icon: "P",
+  },
+  [ADMIN_UI_PROJECT_STATUS.UPDATING]: {
+    bg: "bg-amber-50",
+    text: "text-amber-800",
+    border: "border-amber-200",
+    icon: "U",
   },
   [ADMIN_UI_PROJECT_STATUS.PAUSED]: {
     bg: "bg-orange-50",
     text: "text-orange-700",
     border: "border-orange-200",
-    icon: "⏸️",
+    icon: "II",
   },
   [ADMIN_UI_PROJECT_STATUS.COMPLETED]: {
     bg: "bg-blue-50",
     text: "text-blue-700",
     border: "border-blue-200",
-    icon: "✅",
+    icon: "OK",
   },
   [ADMIN_UI_PROJECT_STATUS.CANCELLED]: {
     bg: "bg-rose-50",
     text: "text-rose-700",
     border: "border-rose-200",
-    icon: "❌",
+    icon: "X",
   },
 };
 
@@ -85,6 +94,7 @@ export const MANAGEABLE_REAL_STATUSES = [
   PROJECT_STATUS.RECRUITING,
   PROJECT_STATUS.EXECUTING,
   PROJECT_STATUS.ACTIVE,
+  PROJECT_STATUS.UPDATING,
   PROJECT_STATUS.PAUSED,
 ];
 
@@ -116,19 +126,18 @@ export const PENDING_REAL_STATUSES = [
 ];
 
 const DROPDOWN_STATUS_LABELS = {
-  [PROJECT_STATUS.REVISION_REQUESTED]: "🟠 Revision Requested",
-  [PROJECT_STATUS.REJECTED]: "❌ Rejected",
-  [PROJECT_STATUS.PAUSED]: "⏸️ Paused",
-  [PROJECT_STATUS.COMPLETED_SUCCESSFULLY]: "✅ Completed",
-  [PROJECT_STATUS.COMPLETED_PARTIAL]: "✅ Partially Completed",
-
-  // Action label trong dropdown phải là Cancel, không phải Cancelled
-  [PROJECT_STATUS.CANCELLED_BY_PLATFORM]: "❌ Cancel",
-  [PROJECT_STATUS.CANCELLED_BY_ORGANIZER]: "❌ Cancel",
-  [PROJECT_STATUS.CANCELLED_FRAUD]: "❌ Cancel",
-
-  [PROJECT_STATUS.PENDING_APPROVAL]: "🟡 Pending Review",
-  [PROJECT_STATUS.UNDER_REVIEW]: "🟡 Pending Review",
+  [PROJECT_STATUS.REVISION_REQUESTED]: "Revision Requested",
+  [PROJECT_STATUS.REJECTED]: "Rejected",
+  [PROJECT_STATUS.UPDATING]: "Updating",
+  [PROJECT_STATUS.PAUSED]: "Paused",
+  [PROJECT_STATUS.COMPLETED_SUCCESSFULLY]: "Completed",
+  [PROJECT_STATUS.COMPLETED_PARTIAL]: "Partially Completed",
+  [PROJECT_STATUS.CANCELLED_BY_PLATFORM]: "Cancel",
+  [PROJECT_STATUS.CANCELLED_BY_ORGANIZER]: "Cancel",
+  [PROJECT_STATUS.CANCELLED_FRAUD]: "Cancel",
+  [PROJECT_STATUS.PENDING_APPROVAL]: "Pending Review",
+  [PROJECT_STATUS.UNDER_REVIEW]: "Pending Review",
+  [PROJECT_STATUS.EXECUTING]: "Executing",
 };
 
 export function normalizeProjectStatus(status) {
@@ -166,6 +175,10 @@ export function mapProjectStatusToUI(status) {
     return ADMIN_UI_PROJECT_STATUS.ACTIVE;
   }
 
+  if (normalizedStatus === PROJECT_STATUS.UPDATING) {
+    return ADMIN_UI_PROJECT_STATUS.UPDATING;
+  }
+
   if (COMPLETED_REAL_STATUSES.includes(normalizedStatus)) {
     return ADMIN_UI_PROJECT_STATUS.COMPLETED;
   }
@@ -195,7 +208,7 @@ export function getAdminUIStatusStyle(uiStatus) {
       bg: "bg-slate-50",
       text: "text-slate-600",
       border: "border-slate-200",
-      icon: "📌",
+      icon: "i",
     }
   );
 }
@@ -213,17 +226,17 @@ export function getDropdownStatusLabel(status, projectType, options = {}) {
   const volunteerOnly = isVolunteerOnlyProject(projectType);
 
   if (normalizedStatus === PROJECT_STATUS.FUNDING) {
-    return isResume ? "🟢 Resume Fundraising" : "🟢 Fundraising";
+    return isResume ? "Resume Fundraising" : "Fundraising";
   }
 
   if (normalizedStatus === PROJECT_STATUS.RECRUITING) {
     if (volunteerOnly) {
       return isResume
-        ? "🟢 Resume Volunteer Recruiting"
-        : "🟢 Volunteer Recruiting";
+        ? "Resume Volunteer Recruiting"
+        : "Volunteer Recruiting";
     }
 
-    return isResume ? "🟢 Resume Recruiting" : "🟢 Recruiting";
+    return isResume ? "Resume Recruiting" : "Recruiting";
   }
 
   return (

@@ -457,6 +457,38 @@ export const strictStep2Schema = (
       );
     });
 
+export const updatingMilestonesSchema = ({
+  isFunded,
+  matchAmount,
+  projectStartDate,
+  projectEndDate,
+}) =>
+  z
+    .object({
+      targetAmount: z.coerce.number().optional().default(0),
+      milestones: z.array(strictMilestoneSchema).optional().default([]),
+    })
+    .superRefine((data, ctx) => {
+      const milestones = data.milestones || [];
+
+      if (isFunded) {
+        validateFundedMilestones(
+          milestones,
+          Number(matchAmount || 0),
+          projectStartDate,
+          projectEndDate,
+          ctx,
+        );
+      } else {
+        validateVolunteerOnlyMilestones(
+          milestones,
+          projectStartDate,
+          projectEndDate,
+          ctx,
+        );
+      }
+    });
+
 export const createProjectSubmitSchema = (
   tierCapMaxFunding,
   tierMaxDurationDays,

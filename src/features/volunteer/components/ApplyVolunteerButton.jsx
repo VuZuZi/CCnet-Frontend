@@ -88,6 +88,10 @@ function getApplicationStatusConfig(applicationStatus, isVolunteerFull) {
   }
 }
 
+function isProjectUpdating(project) {
+  return String(project?.status || "").toUpperCase() === "UPDATING";
+}
+
 function getActionBlockedMessage(applicationStatus) {
   switch (applicationStatus) {
     case "PENDING":
@@ -171,6 +175,7 @@ export const ApplyVolunteerButton = ({
 
   const { data: application, isFetching: isCheckingApplication } =
     useApplicationStatus(effectiveProjectId, currentUserId);
+  const isUpdatingProject = isProjectUpdating(project);
 
   const applicationId = application?.id || application?._id || null;
   const hasApplied = Boolean(applicationId);
@@ -189,6 +194,13 @@ export const ApplyVolunteerButton = ({
       navigate("/login", {
         state: { from: `/projects/${effectiveProjectId}` },
       });
+      return;
+    }
+
+    if (isUpdatingProject) {
+      toast.info(
+        "Dự án đang được cập nhật nên tạm thời chưa nhận thêm tình nguyện viên",
+      );
       return;
     }
 
@@ -304,16 +316,26 @@ export const ApplyVolunteerButton = ({
       <>
         <div className="flex flex-col gap-2">
           <button
-            disabled={statusConfig.disabled}
-            onClick={statusConfig.disabled ? undefined : handlePrimaryClick}
+            disabled={statusConfig.disabled || isUpdatingProject}
+            onClick={
+              statusConfig.disabled || isUpdatingProject
+                ? undefined
+                : handlePrimaryClick
+            }
             className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold ${statusConfig.className} ${className}`}
           >
             <StatusIcon className="h-5 w-5" />
-            {statusConfig.text}
+            {isUpdatingProject ? "Tạm khóa đăng ký volunteer" : statusConfig.text}
           </button>
 
           {isCheckingApplication ? (
             <p className="text-xs text-slate-500">Đang đồng bộ trạng thái...</p>
+          ) : null}
+
+          {isUpdatingProject ? (
+            <p className="text-xs text-amber-700">
+              Dự án đang ở trạng thái Updating nên chưa nhận thêm tình nguyện viên mới.
+            </p>
           ) : null}
 
           {applicationStatus === "WITHDRAW_REQUESTED" &&
@@ -415,15 +437,21 @@ export const ApplyVolunteerButton = ({
       <div className="space-y-2">
         <button
           onClick={handlePrimaryClick}
-          disabled={statusConfig.disabled}
+          disabled={statusConfig.disabled || isUpdatingProject}
           className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all ${statusConfig.className} ${className}`}
         >
           <Users className="h-5 w-5" />
-          {statusConfig.text}
+          {isUpdatingProject ? "Tạm khóa đăng ký volunteer" : statusConfig.text}
         </button>
 
         {isCheckingApplication ? (
           <p className="text-xs text-slate-500">Đang đồng bộ trạng thái...</p>
+        ) : null}
+
+        {isUpdatingProject ? (
+          <p className="text-xs text-amber-700">
+            Dự án đang được organizer cập nhật lại theo yêu cầu từ quản trị viên.
+          </p>
         ) : null}
       </div>
 

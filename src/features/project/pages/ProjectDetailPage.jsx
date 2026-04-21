@@ -21,7 +21,7 @@ import { VolunteerManager } from "@/features/volunteer/components/VolunteerManag
 import { ProjectCommunityFeed } from "@/features/project/components/community-feed/ProjectCommunityFeed";
 import { ProjectMilestonesTab } from "@/features/evidence/components/ProjectMilestonesTab";
 
-const PROJECT_GROUP_OPENABLE_STATUSES = ["ACTIVE", "EXECUTING", "PAUSED"];
+const PROJECT_GROUP_OPENABLE_STATUSES = ["ACTIVE", "EXECUTING", "PAUSED", "UPDATING"];
 const VOLUNTEER_MEMBER_STATUSES = new Set(["APPROVED", "WITHDRAW_REQUESTED"]);
 
 function normalizeProjectTab(tabValue, isOrganizer) {

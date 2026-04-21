@@ -20,6 +20,7 @@ import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewP
 import AdminNotificationsPage from "@/features/admin/pages/AdminNotificationsPage";
 import AdminNotificationHistoryPage from "@/features/admin/pages/AdminNotificationHistoryPage";
 import AdminActionLogsPage from "@/features/admin/pages/AdminActionLogsPage";
+import AdminRefundRequestsPage from "@/features/admin/pages/AdminRefundRequestsPage";
 import AdminNeedHelpRequestsPage from "@/features/needHelp/pages/AdminNeedHelpRequestsPage";
 import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpRequestDetailPage";
 import AdminNeedHelpActionLogsPage from "@/features/needHelp/pages/AdminNeedHelpActionLogsPage";
@@ -127,6 +128,12 @@ const ProjectDetailPage = lazy(() =>
 const CreateProjectPage = lazy(() =>
   import("@/features/project/pages/CreateProjectPage").then((m) => ({
     default: m.CreateProjectPage || m.default,
+  })),
+);
+
+const ProjectUpdatingMilestonesPage = lazy(() =>
+  import("@/features/project/pages/ProjectUpdatingMilestonesPage").then((m) => ({
+    default: m.ProjectUpdatingMilestonesPage || m.default,
   })),
 );
 
@@ -260,6 +267,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
                 {withSuspense(CreateProjectPage)}
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ":id/updating",
+            element: (
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
+                {withSuspense(ProjectUpdatingMilestonesPage)}
               </ProtectedRoute>
             ),
           },
@@ -423,6 +438,7 @@ export const router = createBrowserRouter([
       { path: "finance/:projectId", element: <AdminFinanceDetailPage /> },
       { path: "projects/:id", element: <AdminProjectPreviewPage /> },
       { path: "reports", element: <ReportManagement /> },
+      { path: "refunds", element: <AdminRefundRequestsPage /> },
     ],
   },
 

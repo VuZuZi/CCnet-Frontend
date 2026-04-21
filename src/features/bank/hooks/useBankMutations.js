@@ -5,30 +5,18 @@ import { useToast } from '@/shared/contexts/ToastContext';
 import { getErrorMessage } from '@/shared/lib/httpClient';
 
 export const useAddBankAccount = () => {
+    const queryClient = useQueryClient();
     const toast = useToast();
 
     return useMutation({
         mutationFn: bankAPI.addAccount,
         retry: false,
-        onError: (error) => {
-            toast.error(getErrorMessage(error) || 'Thêm thẻ thất bại');
-        },
-    });
-};
-
-export const useVerifyBankAccount = () => {
-    const queryClient = useQueryClient();
-    const toast = useToast();
-
-    return useMutation({
-        mutationFn: bankAPI.verifyAccount,
-        retry: false,
-        onSuccess: () => {
-            toast.success('Xác thực thẻ ngân hàng thành công!');
+        onSuccess: (response) => {
+            toast.success(response?.message || 'Đã thêm thẻ ngân hàng thành công');
             queryClient.invalidateQueries({ queryKey: BANK_QUERY_KEYS.list() });
         },
         onError: (error) => {
-            toast.error(getErrorMessage(error) || 'Xác thực thất bại');
+            toast.error(getErrorMessage(error) || 'Thêm thẻ thất bại');
         },
     });
 };

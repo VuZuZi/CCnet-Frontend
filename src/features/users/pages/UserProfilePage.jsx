@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useChatStore } from '@/features/chat/stores/useChatStore';
 import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
@@ -132,14 +132,42 @@ export function UserProfilePage() {
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [reportError, setReportError] = useState(null);
-  const [financeTab, setFinanceTab] = useState('bank');
+  const resolveFinanceTab = (params) => {
+    const requestedTab = String(
+      params.get('tab') || params.get('walletTab') || ''
+    ).toLowerCase();
+
+    if (requestedTab === 'wallet' || requestedTab === 'donation' || requestedTab === 'bank') {
+      return requestedTab;
+    }
+
+    return 'bank';
+  };
+
+  const [financeTab, setFinanceTab] = useState(() => resolveFinanceTab(searchParams));
   const currentView = searchParams.get('view');
   const showWalletView = isOwnProfile && currentView === 'wallet';
+
+  useEffect(() => {
+    if (!showWalletView) return;
+    setFinanceTab(resolveFinanceTab(searchParams));
+  }, [showWalletView, searchParams]);
+
+  const handleFinanceTabChange = (tab) => {
+    setFinanceTab(tab);
+
+    if (!showWalletView) return;
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('view', 'wallet');
+    nextParams.set('tab', tab);
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const {
     data: userProfile,
@@ -248,7 +276,7 @@ export function UserProfilePage() {
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <button
                   type="button"
-                  onClick={() => setFinanceTab('bank')}
+                  onClick={() => handleFinanceTabChange('bank')}
                   className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     financeTab === 'bank'
                       ? 'border-amber-300 bg-amber-50 text-amber-900'
@@ -265,7 +293,7 @@ export function UserProfilePage() {
 
                 <button
                   type="button"
-                  onClick={() => setFinanceTab('wallet')}
+                  onClick={() => handleFinanceTabChange('wallet')}
                   className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     financeTab === 'wallet'
                       ? 'border-amber-300 bg-amber-50 text-amber-900'
@@ -282,7 +310,7 @@ export function UserProfilePage() {
 
                 <button
                   type="button"
-                  onClick={() => setFinanceTab('donation')}
+                  onClick={() => handleFinanceTabChange('donation')}
                   className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     financeTab === 'donation'
                       ? 'border-amber-300 bg-amber-50 text-amber-900'
