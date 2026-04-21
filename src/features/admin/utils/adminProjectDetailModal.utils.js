@@ -1,6 +1,7 @@
 import {
   CheckCircle,
   PauseCircle,
+  RefreshCw,
   XCircle,
   AlertCircle,
   Clock,
@@ -17,6 +18,7 @@ import {
 export const STATUS_ICON_MAP = {
   PENDING_APPROVAL: Clock,
   ACTIVE: CheckCircle,
+  UPDATING: RefreshCw,
   PAUSED: PauseCircle,
   CANCELLED: XCircle,
   COMPLETED: CheckCircle,

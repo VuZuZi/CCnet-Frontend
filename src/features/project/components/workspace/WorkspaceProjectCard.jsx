@@ -30,6 +30,7 @@ const STATUS_ICONS = {
   DRAFT: Clock3,
   PENDING_APPROVAL: Clock3,
   ACTIVE: CheckCircle2,
+  UPDATING: PauseCircle,
   PAUSED: PauseCircle,
   COMPLETED: CheckCircle2,
   CANCELLED: XCircle,
@@ -117,6 +118,16 @@ export function WorkspaceProjectCard({ project }) {
                 >
                   <FileText size={14} />
                   Chỉnh sửa
+                </Link>
+              ) : null}
+
+              {project.status === "UPDATING" ? (
+                <Link
+                  to={`/projects/${project._id}/updating`}
+                  className="inline-flex items-center gap-1 rounded-xl bg-amber-500 px-3 py-2 text-xs font-semibold text-slate-900 transition hover:bg-amber-600"
+                >
+                  <FileText size={14} />
+                  Cập nhật milestone
                 </Link>
               ) : null}
             </div>

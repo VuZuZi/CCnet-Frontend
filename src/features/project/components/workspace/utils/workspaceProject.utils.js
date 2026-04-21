@@ -12,6 +12,7 @@ export const STATUS_OPTIONS = [
   { value: "ALL", label: "Tất cả trạng thái" },
   { value: "PENDING_APPROVAL", label: "Chờ duyệt" },
   { value: "ACTIVE", label: "Đang hoạt động" },
+  { value: "UPDATING", label: "Đang cập nhật" },
   { value: "PAUSED", label: "Tạm dừng" },
   { value: "COMPLETED", label: "Hoàn thành" },
   { value: "CANCELLED", label: "Đã hủy" },
@@ -27,6 +28,7 @@ export const STATUS_LABELS = {
   DRAFT: "Bản nháp",
   PENDING_APPROVAL: "Chờ duyệt",
   ACTIVE: "Đang hoạt động",
+  UPDATING: "Đang cập nhật",
   PAUSED: "Tạm dừng",
   COMPLETED: "Hoàn thành",
   CANCELLED: "Đã hủy",
@@ -117,7 +119,7 @@ export const buildWorkspaceSummary = ({
     const { currentAmount, targetAmount } = getProjectFundingStats(project);
     const { currentVolunteers, targetVolunteers } = getProjectVolunteerStats(project);
 
-    if (normalizedStatus === "ACTIVE") totals.active += 1;
+    if (normalizedStatus === "ACTIVE" || normalizedStatus === "UPDATING") totals.active += 1;
     if (normalizedStatus === "PENDING_APPROVAL") totals.pending += 1;
 
     totals.raised += Number(currentAmount || 0);

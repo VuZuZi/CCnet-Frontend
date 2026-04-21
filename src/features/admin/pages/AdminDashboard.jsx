@@ -88,6 +88,21 @@ const AdminDashboard = () => {
           value={stats?.reports?.total || 0}
           icon="flag"
         />
+
+        <StatCard
+          title="Số dư ví tổng (tất cả dự án)"
+          value={`${Number(stats?.finance?.globalProjectWalletBalance || 0).toLocaleString('vi-VN')} đ`}
+          icon="wallet"
+        />
+
+        <StatCard
+          title="Yêu cầu hoàn tiền chờ duyệt"
+          value={
+            stats?.refunds?.byStatus?.find((item) => item._id === 'PENDING')?.count ||
+            0
+          }
+          icon="refresh"
+        />
       </div>
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm md:p-6">

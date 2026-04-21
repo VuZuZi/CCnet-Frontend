@@ -5,6 +5,7 @@ import {
   Wallet,
   MessageSquare,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
 
 function formatCurrency(value) {
@@ -52,6 +53,7 @@ export function SidebarOrganizer({
 
   const pendingAppsCount = getPendingCount();
   const hasProjectGroup = Boolean(projectConversation?._id);
+  const isUpdating = String(project?.status || '').toUpperCase() === 'UPDATING';
 
   return (
     <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
@@ -147,6 +149,22 @@ export function SidebarOrganizer({
               <Users className="h-6 w-6" />
             </div>
           </div>
+        </div>
+      ) : null}
+
+      {isUpdating ? (
+        <div className="rounded-[24px] border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-black text-amber-900">Yêu cầu cập nhật từ quản trị viên</p>
+          <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-amber-800">
+            {project?.updateRequestReason || 'Vui lòng rà soát lại milestone của dự án.'}
+          </p>
+
+          <Link
+            to={`/projects/${projectId}/updating`}
+            className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-900 transition hover:bg-amber-600"
+          >
+            Cập nhật milestone
+          </Link>
         </div>
       ) : null}
 

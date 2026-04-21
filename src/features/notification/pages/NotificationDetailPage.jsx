@@ -45,6 +45,12 @@ function getTypeIcon(type) {
       return Heart;
     case 'post_commented':
       return MessageCircle;
+    case 'refund_request_submitted':
+    case 'transaction_refunded':
+    case 'refund_request_rejected':
+    case 'transaction_failed':
+    case 'donation_successful':
+      return CircleCheckBig;
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':
@@ -77,6 +83,12 @@ function getTypeLabel(type) {
       return 'Phản ứng bài viết';
     case 'post_commented':
       return 'Bình luận bài viết';
+    case 'refund_request_submitted':
+    case 'transaction_refunded':
+    case 'refund_request_rejected':
+    case 'transaction_failed':
+    case 'donation_successful':
+      return 'Giao dịch';
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':

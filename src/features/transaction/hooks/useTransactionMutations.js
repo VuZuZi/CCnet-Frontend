@@ -71,10 +71,10 @@ export const useRefundMutation = () => {
         mutationFn: transactionAPI.refund,
         retry: false,
         onMutate: () => {
-            useTransactionLockStore.getState().lock('Đang xử lý hoàn tiền vào Ví...');
+            useTransactionLockStore.getState().lock('Đang gửi yêu cầu hoàn tiền...');
         },
-        onSuccess: (res, variables) => {
-            toast.success('Xin hoàn tiền thành công!');
+        onSuccess: () => {
+            toast.success('Đã gửi yêu cầu hoàn tiền, vui lòng chờ admin duyệt.');
 
             queryClient.invalidateQueries({ queryKey: WALLET_QUERY_KEYS.me() });
             queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
@@ -101,38 +101,3 @@ export const useCheckStatusMutation = () => {
     });
 };
 
-export const useUpdateDonationMessageMutation = () => {
-    const toast = useToast();
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: transactionAPI.updateMessage,
-        retry: false,
-        onMutate: async ({ id, payload }) => {
-            await queryClient.cancelQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
-
-            const previousDonations = queryClient.getQueryData(TRANSACTION_QUERY_KEYS.myDonations());
-
-            queryClient.setQueriesData({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() }, (oldData) => {
-                if (!oldData || !oldData.donations) return oldData;
-                return {
-                    ...oldData,
-                    donations: oldData.donations.map(tx => 
-                        tx._id === id ? { ...tx, message: payload.message, isAnonymous: payload.isAnonymous } : tx
-                    )
-                };
-            });
-
-            return { previousDonations };
-        },
-        onError: (error, variables, context) => {
-            if (context?.previousDonations) {
-                queryClient.setQueryData(TRANSACTION_QUERY_KEYS.myDonations(), context.previousDonations);
-            }
-            toast.error(getErrorMessage(error) || 'Cập nhật lời nhắn thất bại.');
-        },
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });
-        }
-    });
-};

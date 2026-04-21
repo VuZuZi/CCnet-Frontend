@@ -28,8 +28,10 @@ export const REALTIME_NOTIFICATION_TYPES = Object.freeze({
   PROJECT_UPDATED: "project_updated",
 
   DONATION_SUCCESSFUL: "donation_successful",
+  REFUND_REQUEST_SUBMITTED: "refund_request_submitted",
   TRANSACTION_FAILED: "transaction_failed",
   TRANSACTION_REFUNDED: "transaction_refunded",
+  REFUND_REQUEST_REJECTED: "refund_request_rejected",
 
   VOLUNTEER_APPLIED: "volunteer_applied",
   VOLUNTEER_APPLICATION_APPROVED: "volunteer_application_approved",

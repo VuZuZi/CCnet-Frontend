@@ -33,6 +33,7 @@ export const PROJECT_QUERY_KEYS = {
   ],
   detail: (id) => [...PROJECT_BASE_KEY, "detail", id],
   draftDetail: (id) => [...PROJECT_BASE_KEY, "draft-detail", id],
+  updatingDetail: (id) => [...PROJECT_BASE_KEY, "updating-detail", id],
   featured: [...PROJECT_BASE_KEY, "featured"],
   volunteerNeeded: [...PROJECT_BASE_KEY, "volunteer-needed"],
   categoryCount: (filters = {}, category) => [
@@ -83,6 +84,14 @@ export const useProjectDraftDetail = (id) =>
   useQuery({
     queryKey: PROJECT_QUERY_KEYS.draftDetail(id),
     queryFn: () => projectAPI.getDraftDetail(id),
+    enabled: Boolean(id),
+    staleTime: 60 * 1000,
+  });
+
+export const useUpdatingProjectDetail = (id) =>
+  useQuery({
+    queryKey: PROJECT_QUERY_KEYS.updatingDetail(id),
+    queryFn: () => projectAPI.getUpdatingDetail(id),
     enabled: Boolean(id),
     staleTime: 60 * 1000,
   });

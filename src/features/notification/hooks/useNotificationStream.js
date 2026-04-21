@@ -685,6 +685,26 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           );
         }
       }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.REFUND_REQUEST_SUBMITTED) {
+        toast.success(
+          "Đã gửi yêu cầu hoàn tiền. Admin sẽ xem xét và phản hồi sớm nhất."
+        );
+
+        queryClient.invalidateQueries({
+          queryKey: TRANSACTION_QUERY_KEYS.myDonations(),
+        });
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.REFUND_REQUEST_REJECTED) {
+        toast.error(
+          "Yêu cầu hoàn tiền đã bị từ chối. Vui lòng xem lại chi tiết trong mục ủng hộ."
+        );
+
+        queryClient.invalidateQueries({
+          queryKey: TRANSACTION_QUERY_KEYS.myDonations(),
+        });
+      }
     };
 
     const handleCreated = (event) => {

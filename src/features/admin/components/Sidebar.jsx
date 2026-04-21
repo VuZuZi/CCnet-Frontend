@@ -8,7 +8,8 @@ import {
   ShieldCheck,
   HeartHandshake,
   Bell,
-  Landmark
+  Landmark,
+  RotateCcw
 } from "lucide-react";
 
 const MENU_ITEMS = [
@@ -67,6 +68,13 @@ const MENU_ITEMS = [
     icon: Landmark,
     end: false,
     matchPaths: ["/admin/finance"],
+  },
+  {
+    path: "/admin/refunds",
+    label: "Yêu cầu hoàn tiền",
+    icon: RotateCcw,
+    end: false,
+    matchPaths: ["/admin/refunds"],
   },
 ];
 
