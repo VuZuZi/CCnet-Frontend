@@ -18,6 +18,7 @@ import { SidebarPublic } from "../components/sidebar/SidebarPublic";
 import { SidebarVolunteer } from "../components/sidebar/SidebarVolunteer";
 import { VolunteerManager } from "@/features/volunteer/components/VolunteerManager.jsx";
 import { ProjectCommunityFeed } from "@/features/project/components/community-feed/ProjectCommunityFeed";
+import { ProjectMilestonesTab } from "@/features/evidence/components/ProjectMilestonesTab";
 
 const PROJECT_GROUP_OPENABLE_STATUSES = ["ACTIVE", "EXECUTING", "PAUSED"];
 const VOLUNTEER_MEMBER_STATUSES = new Set(["APPROVED", "WITHDRAW_REQUESTED"]);
@@ -119,9 +120,9 @@ export function ProjectDetailPage() {
 
   const isOrganizer = Boolean(
     currentUser &&
-      project &&
-      String(currentUserId) &&
-      String(currentUserId) === String(organizerId)
+    project &&
+    String(currentUserId) &&
+    String(currentUserId) === String(organizerId)
   );
 
   const projectLevelApplicationStatus = extractProjectApplicationStatus(project);
@@ -134,9 +135,9 @@ export function ProjectDetailPage() {
 
   const isVolunteerMember = Boolean(
     currentUser &&
-      project &&
-      !isOrganizer &&
-      VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus)
+    project &&
+    !isOrganizer &&
+    VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus)
   );
 
   useEffect(() => {
@@ -270,6 +271,9 @@ export function ProjectDetailPage() {
             isOrganizer={isOrganizer}
           />
         );
+
+      case 'milestones':
+        return <ProjectMilestonesTab project={project} isOrganizer={isOrganizer} />;
 
       default:
         return null;

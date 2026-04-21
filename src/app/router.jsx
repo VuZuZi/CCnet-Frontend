@@ -25,6 +25,9 @@ import AdminHelpRequestDetailPage from "@/features/needHelp/pages/AdminHelpReque
 import AdminNeedHelpActionLogsPage from "@/features/needHelp/pages/AdminNeedHelpActionLogsPage";
 import { PaymentResultPage } from "@/features/transaction/pages/PaymentResultPage";
 
+import AdminFinanceSummaryPage from "@/features/adminFinance/pages/AdminFinanceSummaryPage";
+import AdminFinanceDetailPage from "@/features/adminFinance/pages/AdminFinanceDetailPage";
+
 const LoginPage = lazy(() =>
   import("@/features/auth/pages/LoginPage").then((m) => ({
     default: m.LoginPage || m.default,
@@ -416,6 +419,8 @@ export const router = createBrowserRouter([
       },
       { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
+      { path: "finance", element: <AdminFinanceSummaryPage /> },
+      { path: "finance/:projectId", element: <AdminFinanceDetailPage /> },
       { path: "projects/:id", element: <AdminProjectPreviewPage /> },
       { path: "reports", element: <ReportManagement /> },
     ],
