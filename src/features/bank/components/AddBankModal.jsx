@@ -61,9 +61,6 @@ export function AddBankModal({ isOpen, onClose }) {
             title="Thêm Thẻ Ngân Hàng"
         >
             <form onSubmit={bankForm.handleSubmit(onSubmitBank)} className="space-y-4">
-                <div className="rounded-xl bg-emerald-50 p-4 text-sm text-emerald-800 border border-emerald-200">
-                    Chỉ cần nhập đúng ngân hàng, số tài khoản và tên tài khoản. Hệ thống sẽ lưu và xác thực ngay.
-                </div>
                 <Controller
                     name="bankName"
                     control={bankForm.control}

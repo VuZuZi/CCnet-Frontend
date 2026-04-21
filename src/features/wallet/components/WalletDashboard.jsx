@@ -2,13 +2,10 @@ import { useMyWallet, useWalletHistory } from '../hooks/useWalletQueries';
 import { PageLoader } from '@/shared/components/ui/PageLoader';
 import { ArrowDownLeft, ArrowUpRight, Wallet, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { useState } from 'react';
-import { WithdrawModal } from '@/features/transaction/components/WithdrawModal';
 
 export function WalletDashboard() {
     const { data: wallet, isLoading: isLoadingWallet, isError: isWalletError } = useMyWallet();
     const { data: historyData, isLoading: isLoadingHistory } = useWalletHistory();
-    const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
 
     const history = historyData?.pages.flatMap((page) => page.history) || [];
 
@@ -24,13 +21,6 @@ export function WalletDashboard() {
         <div className="space-y-6">
             {/* Wallet Balance Card */}
             <div className="relative overflow-hidden rounded-[28px] bg-[linear-gradient(135deg,#FBBF24_0%,#F59E0B_100%)] p-8 text-white shadow-lg">
-                {/* Nút Rút Tiền đặt ở góc phải */}
-                <button 
-                    onClick={() => setIsWithdrawOpen(true)}
-                    className="absolute top-6 right-6 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-md px-4 py-2 rounded-xl text-sm font-bold transition-colors"
-                >
-                    Rút tiền
-                </button>
 
                 <div className="relative z-10 flex flex-col items-center justify-center text-center">
                     <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md">
@@ -97,7 +87,7 @@ export function WalletDashboard() {
                 </div>
             </div>
 
-            <WithdrawModal isOpen={isWithdrawOpen} onClose={() => setIsWithdrawOpen(false)} />
+            
         </div>
     );
 }
