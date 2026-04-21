@@ -1,4 +1,5 @@
-import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ChevronLeft, PanelLeftOpen } from "lucide-react";
 import { toast } from "react-toastify";
 
 import { useProjectMapQuery } from "../../hooks/useProjectMapQueries";
@@ -31,6 +32,7 @@ export default function ProjectMapShell() {
   const [locateRequestId, setLocateRequestId] = useState(0);
   const [resetRequestId, setResetRequestId] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -42,6 +44,22 @@ export default function ProjectMapShell() {
 
     return () => window.clearTimeout(timer);
   }, [searchInput]);
+
+  useEffect(() => {
+    const previousHtmlOverflow = document.documentElement.style.overflow;
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousBodyBackground = document.body.style.backgroundColor;
+
+    document.documentElement.style.overflow = "hidden";
+    document.body.style.overflow = "hidden";
+    document.body.style.backgroundColor = "rgb(255,248,230)";
+
+    return () => {
+      document.documentElement.style.overflow = previousHtmlOverflow;
+      document.body.style.overflow = previousBodyOverflow;
+      document.body.style.backgroundColor = previousBodyBackground;
+    };
+  }, []);
 
   const queryParams = useMemo(
     () =>
@@ -99,7 +117,6 @@ export default function ProjectMapShell() {
   const handleCategoryChange = useCallback(
     (event) => {
       resetSelection();
-
       setFilters((prev) => ({
         ...prev,
         category: event.target.value,
@@ -111,7 +128,6 @@ export default function ProjectMapShell() {
   const handleOrganizerScopeChange = useCallback(
     (event) => {
       resetSelection();
-
       setFilters((prev) => ({
         ...prev,
         organizerScope: event.target.value,
@@ -183,10 +199,22 @@ export default function ProjectMapShell() {
 
   return (
     <div className="h-[calc(100vh-88px)] overflow-hidden bg-[#FFF8E6]">
-      <div className="mx-auto flex h-full max-w-[1720px] flex-col px-4 py-4 sm:px-5 lg:px-6">
-        <div className="mb-4 flex-shrink-0">
+      <div className="relative h-full w-full overflow-hidden rounded-[34px] border border-amber-100 shadow-[0_28px_80px_rgba(15,23,42,0.12)]">
+        <ProjectMapCanvas
+          items={normalized.items}
+          activeProjectId={activeProjectId}
+          onProjectSelect={handleProjectSelect}
+          onClusterSelect={handleClusterSelect}
+          onViewportChange={handleViewportChange}
+          selectedProject={selectedProject}
+          clusterToExpand={clusterToExpand}
+          userLocation={userLocation}
+          locateRequestId={locateRequestId}
+          resetRequestId={resetRequestId}
+        />
+
+        <div className="pointer-events-none absolute inset-x-6 top-5 z-[2300]">
           <ProjectMapToolbar
-            summaryText={summaryText}
             searchValue={searchInput}
             onSearchChange={handleSearchChange}
             filters={filters}
@@ -198,38 +226,41 @@ export default function ProjectMapShell() {
           />
         </div>
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[340px_minmax(0,1fr)]">
-          <div className="min-h-0">
-            <ProjectMapSidebar
-              panelProjects={normalized.panelProjects}
-              activeProjectId={activeProjectId}
-              onProjectSelect={handleProjectSelect}
-              isLoading={isLoading}
-              isFetching={isFetching}
-            />
-          </div>
+        <ProjectMapSidebar
+          panelProjects={normalized.panelProjects}
+          activeProjectId={activeProjectId}
+          onProjectSelect={handleProjectSelect}
+          isLoading={isLoading}
+          summaryText={summaryText}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen(false)}
+        />
 
-          <div className="relative min-h-0">
-            <ProjectMapCanvas
-              items={normalized.items}
-              activeProjectId={activeProjectId}
-              onProjectSelect={handleProjectSelect}
-              onClusterSelect={handleClusterSelect}
-              onViewportChange={handleViewportChange}
-              selectedProject={selectedProject}
-              clusterToExpand={clusterToExpand}
-              userLocation={userLocation}
-              locateRequestId={locateRequestId}
-              resetRequestId={resetRequestId}
-            />
+        {isSidebarOpen ? (
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="pointer-events-auto absolute left-[389px] top-[144px] z-[2400] flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-white/92 text-slate-700 shadow-[0_18px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:bg-white"
+            aria-label="Đóng danh sách"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="pointer-events-auto absolute left-6 top-[144px] z-[2400] inline-flex h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/92 px-4 text-sm font-bold text-slate-800 shadow-[0_18px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:bg-white"
+          >
+            <PanelLeftOpen size={18} />
+            Mở danh sách
+          </button>
+        )}
 
-            {isFetching ? (
-              <div className="pointer-events-none absolute right-4 top-4 rounded-full border border-amber-200 bg-white/95 px-4 py-2 text-sm font-bold text-amber-700 shadow-lg backdrop-blur">
-                Đang cập nhật bản đồ...
-              </div>
-            ) : null}
+        {isFetching ? (
+          <div className="pointer-events-none absolute right-6 top-[96px] z-[2300] rounded-full bg-white/94 px-4 py-2 text-sm font-semibold text-slate-700 shadow-lg backdrop-blur">
+            Đang cập nhật bản đồ...
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

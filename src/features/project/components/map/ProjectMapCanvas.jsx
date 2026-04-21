@@ -1,25 +1,23 @@
-import { memo, useEffect, useMemo, useRef } from "react";
-import {
-  CircleMarker,
-  MapContainer,
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import MapView, {
+  FullscreenControl,
+  GeolocateControl,
+  Layer,
   Marker,
+  NavigationControl,
   Popup,
-  TileLayer,
-  ZoomControl,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
-import L from "leaflet";
+  ScaleControl,
+  Source,
+} from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { Link } from "react-router-dom";
-import { LocateFixed, MapPin } from "lucide-react";
+import { CircleDollarSign, Layers3, MapPin, Navigation, Users } from "lucide-react";
 
 import {
   MAP_PROJECT_MODE_SWITCH_ZOOM,
   VIETNAM_DEFAULT_ZOOM,
   VIETNAM_MAP_BOUNDS,
   VIETNAM_MAP_CENTER,
-  getClusterBadgeSizeClass,
-  getClusterIconPixelSize,
   isClusterItem,
   isProjectItem,
 } from "../../utils/projectMap.utils";
@@ -31,318 +29,476 @@ import {
 
 const BRAND_YELLOW = "#FBBF24";
 const MAP_SOFT_YELLOW = "#FFF8E6";
-const BRAND_TEXT = "#111827";
+const MAP_STYLE_URL = "https://tiles.openfreemap.org/styles/bright";
 
-function MapViewportWatcher({ onViewportChange }) {
-  const map = useMap();
-  const lastViewportRef = useRef("");
+const SOURCE_CLUSTERS = "project-clusters-source";
+const SOURCE_ITEMS = "project-items-source";
+const SOURCE_ACTIVE_CLUSTER = "project-active-cluster-source";
+const SOURCE_ACTIVE_ITEM = "project-active-item-source";
 
-  useEffect(() => {
-    const syncViewport = () => {
-      const bounds = map.getBounds();
-      const nextViewport = {
-        north: Number(bounds.getNorth().toFixed(5)),
-        south: Number(bounds.getSouth().toFixed(5)),
-        east: Number(bounds.getEast().toFixed(5)),
-        west: Number(bounds.getWest().toFixed(5)),
-        zoom: map.getZoom(),
-      };
+const LAYER_CLUSTER_HALO = "project-cluster-halo";
+const LAYER_CLUSTER_CORE = "project-cluster-core";
+const LAYER_CLUSTER_LABEL = "project-cluster-label";
 
-      const signature = JSON.stringify(nextViewport);
-      if (lastViewportRef.current === signature) return;
+const LAYER_ITEM_HALO = "project-item-halo";
+const LAYER_ITEM_CORE = "project-item-core";
+const LAYER_ITEM_LABEL = "project-item-label";
 
-      lastViewportRef.current = signature;
-      onViewportChange?.(nextViewport);
-    };
+const LAYER_ACTIVE_CLUSTER_HALO = "project-active-cluster-halo";
+const LAYER_ACTIVE_CLUSTER_CORE = "project-active-cluster-core";
+const LAYER_ACTIVE_CLUSTER_LABEL = "project-active-cluster-label";
 
-    syncViewport();
-  }, [map, onViewportChange]);
+const LAYER_ACTIVE_ITEM_HALO = "project-active-item-halo";
+const LAYER_ACTIVE_ITEM_CORE = "project-active-item-core";
+const LAYER_ACTIVE_ITEM_LABEL = "project-active-item-label";
 
-  useMapEvents({
-    moveend(event) {
-      const nextMap = event.target;
-      const bounds = nextMap.getBounds();
+const INTERACTIVE_LAYER_IDS = [
+  LAYER_CLUSTER_CORE,
+  LAYER_CLUSTER_LABEL,
+  LAYER_ACTIVE_CLUSTER_CORE,
+  LAYER_ACTIVE_CLUSTER_LABEL,
+  LAYER_ITEM_CORE,
+  LAYER_ITEM_LABEL,
+  LAYER_ACTIVE_ITEM_CORE,
+  LAYER_ACTIVE_ITEM_LABEL,
+];
 
-      const nextViewport = {
-        north: Number(bounds.getNorth().toFixed(5)),
-        south: Number(bounds.getSouth().toFixed(5)),
-        east: Number(bounds.getEast().toFixed(5)),
-        west: Number(bounds.getWest().toFixed(5)),
-        zoom: nextMap.getZoom(),
-      };
+function getLng(item) {
+  if (Number.isFinite(item?.longitude)) return item.longitude;
 
-      const signature = JSON.stringify(nextViewport);
-      if (lastViewportRef.current === signature) return;
+  if (Array.isArray(item?.coordinates) && Number.isFinite(item.coordinates[0])) {
+    return item.coordinates[0];
+  }
 
-      lastViewportRef.current = signature;
-      onViewportChange?.(nextViewport);
+  if (
+    item?.location &&
+    Array.isArray(item.location.coordinates) &&
+    Number.isFinite(item.location.coordinates[0])
+  ) {
+    return item.location.coordinates[0];
+  }
+
+  return null;
+}
+
+function getLat(item) {
+  if (Number.isFinite(item?.latitude)) return item.latitude;
+
+  if (Array.isArray(item?.coordinates) && Number.isFinite(item.coordinates[1])) {
+    return item.coordinates[1];
+  }
+
+  if (
+    item?.location &&
+    Array.isArray(item.location.coordinates) &&
+    Number.isFinite(item.location.coordinates[1])
+  ) {
+    return item.location.coordinates[1];
+  }
+
+  return null;
+}
+
+function hideSensitiveSeaLabels(map) {
+  const sensitiveSeaMask = {
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "Polygon",
+      coordinates: [[
+        [108.5, 8.0],
+        [122.8, 8.0],
+        [122.8, 20.5],
+        [108.5, 20.5],
+        [108.5, 8.0],
+      ]],
     },
-  });
+  };
 
-  return null;
-}
+  const style = map.getStyle?.();
+  const layers = style?.layers || [];
 
-function MapResizeController() {
-  const map = useMap();
+  layers.forEach((layer) => {
+    if (!layer?.id || layer.type !== "symbol") return;
 
-  useEffect(() => {
-    const safeInvalidate = () => {
-      requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
-      });
-    };
+    const id = String(layer.id).toLowerCase();
+    const sourceLayer = String(layer["source-layer"] || "").toLowerCase();
 
-    safeInvalidate();
+    const isSensitiveTextLayer =
+      id.includes("place") ||
+      id.includes("label") ||
+      id.includes("name") ||
+      id.includes("marine") ||
+      id.includes("water") ||
+      id.includes("ocean") ||
+      id.includes("sea") ||
+      id.includes("island") ||
+      sourceLayer.includes("place") ||
+      sourceLayer.includes("name") ||
+      sourceLayer.includes("marine") ||
+      sourceLayer.includes("water") ||
+      sourceLayer.includes("ocean") ||
+      sourceLayer.includes("sea") ||
+      sourceLayer.includes("island");
 
-    const timeoutId = window.setTimeout(safeInvalidate, 120);
+    if (!isSensitiveTextLayer) return;
 
-    const container = map.getContainer();
-    if (!container || typeof ResizeObserver === "undefined") {
-      return () => {
-        window.clearTimeout(timeoutId);
-      };
-    }
+    try {
+      const currentFilter = map.getFilter(layer.id);
 
-    const observer = new ResizeObserver(() => {
-      safeInvalidate();
-    });
-
-    observer.observe(container);
-    window.addEventListener("resize", safeInvalidate);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      observer.disconnect();
-      window.removeEventListener("resize", safeInvalidate);
-    };
-  }, [map]);
-
-  return null;
-}
-
-function MapProgrammaticController({
-  selectedProject,
-  clusterToExpand,
-  locateRequestId,
-  userLocation,
-  resetRequestId,
-}) {
-  const map = useMap();
-  const lastLocateRequestId = useRef(0);
-  const lastResetRequestId = useRef(0);
-  const lastClusterKey = useRef("");
-  const lastProjectId = useRef("");
-
-  useEffect(() => {
-    if (!selectedProject?.projectId) return;
-    if (lastProjectId.current === selectedProject.projectId) return;
-
-    lastProjectId.current = selectedProject.projectId;
-    map.flyTo(
-      [selectedProject.latitude, selectedProject.longitude],
-      Math.max(map.getZoom(), MAP_PROJECT_MODE_SWITCH_ZOOM + 1),
-      {
-        animate: true,
-        duration: 0.7,
+      if (currentFilter) {
+        map.setFilter(layer.id, [
+          "all",
+          currentFilter,
+          ["!", ["within", sensitiveSeaMask]],
+        ]);
+      } else {
+        map.setFilter(layer.id, ["!", ["within", sensitiveSeaMask]]);
       }
-    );
-  }, [map, selectedProject]);
-
-  useEffect(() => {
-    if (!clusterToExpand?.clusterId) return;
-    if (lastClusterKey.current === clusterToExpand.clusterId) return;
-
-    lastClusterKey.current = clusterToExpand.clusterId;
-
-    map.flyTo(
-      [clusterToExpand.latitude, clusterToExpand.longitude],
-      Math.max(
-        clusterToExpand.expandZoom || MAP_PROJECT_MODE_SWITCH_ZOOM,
-        map.getZoom() + 2
-      ),
-      {
-        animate: true,
-        duration: 0.65,
-      }
-    );
-  }, [map, clusterToExpand]);
-
-  useEffect(() => {
-    if (!locateRequestId || lastLocateRequestId.current === locateRequestId) {
-      return;
-    }
-
-    lastLocateRequestId.current = locateRequestId;
-
-    if (!userLocation) return;
-
-    map.flyTo([userLocation.latitude, userLocation.longitude], 13, {
-      animate: true,
-      duration: 0.7,
-    });
-  }, [locateRequestId, map, userLocation]);
-
-  useEffect(() => {
-    if (!resetRequestId || lastResetRequestId.current === resetRequestId) {
-      return;
-    }
-
-    lastResetRequestId.current = resetRequestId;
-
-    map.fitBounds(VIETNAM_MAP_BOUNDS, {
-      padding: [32, 32],
-      animate: true,
-      duration: 0.7,
-    });
-  }, [map, resetRequestId]);
-
-  return null;
-}
-
-const clusterIconCache = new Map();
-const userLocationIconCache = new Map();
-
-function createClusterIcon(cluster, isActive) {
-  const cacheKey = `${cluster.count}-${isActive ? "1" : "0"}`;
-  if (clusterIconCache.has(cacheKey)) {
-    return clusterIconCache.get(cacheKey);
-  }
-
-  const sizeClass = getClusterBadgeSizeClass(cluster.count);
-  const iconPixelSize = getClusterIconPixelSize(cluster.count);
-  const iconAnchor = Math.round(iconPixelSize / 2);
-
-  const html = `
-    <div class="relative flex items-center justify-center">
-      <div class="absolute ${
-        isActive
-          ? "h-[calc(100%+26px)] w-[calc(100%+26px)] bg-[rgba(251,191,36,0.30)]"
-          : "h-[calc(100%+20px)] w-[calc(100%+20px)] bg-[rgba(251,191,36,0.18)]"
-      } rounded-full"></div>
-      <div class="absolute ${
-        isActive
-          ? "h-[calc(100%+12px)] w-[calc(100%+12px)] bg-[rgba(251,191,36,0.14)]"
-          : "h-[calc(100%+8px)] w-[calc(100%+8px)] bg-[rgba(251,191,36,0.08)]"
-      } rounded-full"></div>
-      <div class="relative flex ${sizeClass} items-center justify-center rounded-full border-[5px] ${
-        isActive
-          ? "border-[#111827] bg-[#FBBF24] text-[#111827] shadow-[0_14px_28px_rgba(17,24,39,0.22)] scale-105"
-          : "border-white bg-[#FBBF24] text-[#111827] shadow-[0_10px_22px_rgba(17,24,39,0.16)]"
-      } font-black tracking-tight transition-all">
-        ${cluster.count}
-      </div>
-    </div>
-  `;
-
-  const icon = L.divIcon({
-    html,
-    className: "bg-transparent border-0",
-    iconSize: [iconPixelSize, iconPixelSize],
-    iconAnchor: [iconAnchor, iconAnchor],
+    } catch {}
   });
-
-  clusterIconCache.set(cacheKey, icon);
-  return icon;
 }
 
-function createUserLocationIcon() {
-  if (userLocationIconCache.has("default")) {
-    return userLocationIconCache.get("default");
-  }
-
-  const html = `
-    <div class="relative flex h-8 w-8 items-center justify-center">
-      <div class="absolute h-8 w-8 rounded-full bg-sky-500/20 animate-pulse"></div>
-      <div class="absolute h-4 w-4 rounded-full border-2 border-white bg-sky-500 shadow-lg"></div>
-    </div>
-  `;
-
-  const icon = L.divIcon({
-    html,
-    className: "bg-transparent border-0",
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-  });
-
-  userLocationIconCache.set("default", icon);
-  return icon;
+function buildFeatureCollection(features) {
+  return {
+    type: "FeatureCollection",
+    features,
+  };
 }
 
-function ProjectPopupContent({ project }) {
+function makeClusterFeature(item) {
+  return {
+    type: "Feature",
+    id: item.clusterId,
+    geometry: {
+      type: "Point",
+      coordinates: [item.longitude, item.latitude],
+    },
+    properties: {
+      kind: "cluster",
+      clusterId: item.clusterId,
+      rawClusterId: item.rawClusterId ?? "",
+      count: Number(item.count || 0),
+      expandZoom: Number(item.expandZoom || 11),
+      longitude: item.longitude,
+      latitude: item.latitude,
+    },
+  };
+}
+
+function makeItemFeature(item) {
+  return {
+    type: "Feature",
+    id: item.projectId,
+    geometry: {
+      type: "Point",
+      coordinates: [item.longitude, item.latitude],
+    },
+    properties: {
+      kind: "item",
+      id: item.projectId,
+      title: item.title || "",
+      summary: item.summary || "",
+      category: item.category || "",
+      address: item.address || "",
+      longitude: item.longitude,
+      latitude: item.latitude,
+    },
+  };
+}
+
+const clusterHaloLayer = {
+  id: LAYER_CLUSTER_HALO,
+  type: "circle",
+  source: SOURCE_CLUSTERS,
+  paint: {
+    "circle-radius": [
+      "interpolate",
+      ["linear"],
+      ["get", "count"],
+      1, 28,
+      5, 32,
+      20, 38,
+      100, 46,
+    ],
+    "circle-color": "rgba(251,191,36,0.14)",
+  },
+};
+
+const clusterCoreLayer = {
+  id: LAYER_CLUSTER_CORE,
+  type: "circle",
+  source: SOURCE_CLUSTERS,
+  paint: {
+    "circle-radius": [
+      "interpolate",
+      ["linear"],
+      ["get", "count"],
+      1, 18,
+      5, 21,
+      20, 24,
+      100, 28,
+    ],
+    "circle-color": "#FBBF24",
+    "circle-stroke-width": 5,
+    "circle-stroke-color": "#ffffff",
+  },
+};
+
+const clusterLabelLayer = {
+  id: LAYER_CLUSTER_LABEL,
+  type: "symbol",
+  source: SOURCE_CLUSTERS,
+  layout: {
+    "text-field": ["to-string", ["get", "count"]],
+    "text-size": [
+      "interpolate",
+      ["linear"],
+      ["get", "count"],
+      1, 12,
+      5, 14,
+      20, 16,
+      100, 18,
+    ],
+    "text-font": ["Open Sans Bold"],
+    "text-allow-overlap": true,
+  },
+  paint: {
+    "text-color": "#111827",
+  },
+};
+
+const itemHaloLayer = {
+  id: LAYER_ITEM_HALO,
+  type: "circle",
+  source: SOURCE_ITEMS,
+  paint: {
+    "circle-radius": 22,
+    "circle-color": "rgba(251,191,36,0.14)",
+  },
+};
+
+const itemCoreLayer = {
+  id: LAYER_ITEM_CORE,
+  type: "circle",
+  source: SOURCE_ITEMS,
+  paint: {
+    "circle-radius": 14,
+    "circle-color": "#FBBF24",
+    "circle-stroke-width": 4,
+    "circle-stroke-color": "#ffffff",
+  },
+};
+
+const itemLabelLayer = {
+  id: LAYER_ITEM_LABEL,
+  type: "symbol",
+  source: SOURCE_ITEMS,
+  layout: {
+    "text-field": "1",
+    "text-size": 11,
+    "text-font": ["Open Sans Bold"],
+    "text-allow-overlap": true,
+  },
+  paint: {
+    "text-color": "#111827",
+  },
+};
+
+const activeClusterHaloLayer = {
+  id: LAYER_ACTIVE_CLUSTER_HALO,
+  type: "circle",
+  source: SOURCE_ACTIVE_CLUSTER,
+  paint: {
+    "circle-radius": [
+      "interpolate",
+      ["linear"],
+      ["get", "count"],
+      1, 34,
+      5, 38,
+      20, 44,
+      100, 52,
+    ],
+    "circle-color": "rgba(251,191,36,0.22)",
+  },
+};
+
+const activeClusterCoreLayer = {
+  id: LAYER_ACTIVE_CLUSTER_CORE,
+  type: "circle",
+  source: SOURCE_ACTIVE_CLUSTER,
+  paint: {
+    "circle-radius": [
+      "interpolate",
+      ["linear"],
+      ["get", "count"],
+      1, 20,
+      5, 23,
+      20, 26,
+      100, 31,
+    ],
+    "circle-color": "#FBBF24",
+    "circle-stroke-width": 5,
+    "circle-stroke-color": "#111827",
+  },
+};
+
+const activeClusterLabelLayer = {
+  id: LAYER_ACTIVE_CLUSTER_LABEL,
+  type: "symbol",
+  source: SOURCE_ACTIVE_CLUSTER,
+  layout: {
+    "text-field": ["to-string", ["get", "count"]],
+    "text-size": [
+      "interpolate",
+      ["linear"],
+      ["get", "count"],
+      1, 12,
+      5, 14,
+      20, 16,
+      100, 18,
+    ],
+    "text-font": ["Open Sans Bold"],
+    "text-allow-overlap": true,
+  },
+  paint: {
+    "text-color": "#111827",
+  },
+};
+
+const activeItemHaloLayer = {
+  id: LAYER_ACTIVE_ITEM_HALO,
+  type: "circle",
+  source: SOURCE_ACTIVE_ITEM,
+  paint: {
+    "circle-radius": 28,
+    "circle-color": "rgba(251,191,36,0.22)",
+  },
+};
+
+const activeItemCoreLayer = {
+  id: LAYER_ACTIVE_ITEM_CORE,
+  type: "circle",
+  source: SOURCE_ACTIVE_ITEM,
+  paint: {
+    "circle-radius": 16,
+    "circle-color": "#FBBF24",
+    "circle-stroke-width": 4,
+    "circle-stroke-color": "#111827",
+  },
+};
+
+const activeItemLabelLayer = {
+  id: LAYER_ACTIVE_ITEM_LABEL,
+  type: "symbol",
+  source: SOURCE_ACTIVE_ITEM,
+  layout: {
+    "text-field": "1",
+    "text-size": 11,
+    "text-font": ["Open Sans Bold"],
+    "text-allow-overlap": true,
+  },
+  paint: {
+    "text-color": "#111827",
+  },
+};
+
+const ProjectPopupContent = memo(function ProjectPopupContent({ project }) {
+  if (!project) return null;
+
   const funding = getProjectFundingStats(project.raw || project);
   const volunteer = getProjectVolunteerStats(project.raw || project);
 
+  const coverImage =
+    project?.coverImage ||
+    "https://images.unsplash.com/photo-1509099836639-18ba1795216d?auto=format&fit=crop&w=800&q=80";
+
+  const hasFunding = Number(funding?.targetAmount || 0) > 0;
+  const hasVolunteers =
+    Boolean(project?.needsVolunteers) ||
+    Number(volunteer?.targetVolunteers || 0) > 0;
+
   return (
-    <div className="w-[260px]">
+    <div className="w-[min(300px,calc(100vw-48px))] max-w-full min-w-0">
       <img
-        src={project.coverImage}
-        alt={project.title}
-        className="h-32 w-full rounded-2xl object-cover"
+        src={coverImage}
+        alt={project?.title || "Project cover"}
+        className="h-28 w-full rounded-2xl object-cover"
       />
 
       <div className="mt-3">
-        <div className="mb-2 flex items-center gap-2">
-          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-800">
-            {getProjectCategoryLabel(project.category)}
+        <div className="mb-2 flex min-w-0 flex-wrap items-center gap-2 pr-6">
+          <span className="inline-flex max-w-full rounded-full bg-amber-100 px-3 py-1 text-[11px] font-bold text-amber-800">
+            <span className="truncate">
+              {getProjectCategoryLabel(project?.category)}
+            </span>
           </span>
 
-          {project.isUrgent ? (
-            <span className="rounded-full bg-red-100 px-2.5 py-1 text-[11px] font-bold text-red-700">
+          {project?.isUrgent ? (
+            <span className="rounded-full bg-red-100 px-3 py-1 text-[11px] font-bold text-red-700">
               Khẩn cấp
             </span>
           ) : null}
         </div>
 
-        <h3 className="line-clamp-2 text-sm font-bold text-slate-900">
-          {project.title}
+        <h3 className="line-clamp-2 min-w-0 break-words text-[17px] font-bold leading-7 text-slate-900">
+          {project?.title || "Dự án cộng đồng"}
         </h3>
 
-        <div className="mt-2 flex items-start gap-1.5 text-xs text-slate-500">
-          <MapPin size={13} className="mt-0.5 flex-shrink-0" />
-          <span className="line-clamp-2">{project.address}</span>
+        <div className="mt-2.5 flex min-w-0 items-start gap-2 text-sm text-slate-500">
+          <MapPin size={15} className="mt-0.5 shrink-0" />
+          <span className="line-clamp-1 min-w-0 break-words">
+            {project?.address || "Chưa có địa chỉ"}
+          </span>
         </div>
 
-        <p className="mt-2 line-clamp-2 text-xs text-slate-500">
-          {project.summary}
+        <p className="mt-2.5 line-clamp-2 min-w-0 break-words text-sm leading-6 text-slate-500">
+          {project?.summary || "Dự án đang chờ bạn khám phá thêm chi tiết."}
         </p>
 
-        {Number(funding.targetAmount || 0) > 0 ? (
-          <div className="mt-3 rounded-2xl bg-slate-50 px-3 py-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-              <span>Gây quỹ</span>
-              <span>{funding.fundingPercent}%</span>
-            </div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  width: `${funding.fundingPercent}%`,
-                  backgroundColor: BRAND_YELLOW,
-                }}
-              />
-            </div>
-          </div>
-        ) : null}
+        {(hasFunding || hasVolunteers) ? (
+          <div
+            className={`mt-4 grid gap-3 ${
+              hasFunding && hasVolunteers ? "grid-cols-2" : "grid-cols-1"
+            }`}
+          >
+            {hasFunding ? (
+              <div className="rounded-[18px] bg-slate-50 px-3 py-3">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                  <CircleDollarSign size={14} />
+                  Gây quỹ
+                </div>
+                <div className="mt-1 text-[15px] font-bold text-slate-900">
+                  {Number(funding?.fundingPercent || 0)}%
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {Number(funding?.currentAmount || 0).toLocaleString("vi-VN")} /{" "}
+                  {Number(funding?.targetAmount || 0).toLocaleString("vi-VN")} đ
+                </div>
+              </div>
+            ) : null}
 
-        {(project.needsVolunteers ||
-          Number(volunteer.targetVolunteers || 0) > 0) ? (
-          <div className="mt-2 rounded-2xl bg-slate-50 px-3 py-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
-              <span>Tình nguyện viên</span>
-              <span>{volunteer.volunteerPercent}%</span>
-            </div>
-            <div className="mt-1 h-2 overflow-hidden rounded-full bg-slate-200">
-              <div
-                className="h-full rounded-full bg-emerald-400"
-                style={{ width: `${volunteer.volunteerPercent}%` }}
-              />
-            </div>
+            {hasVolunteers ? (
+              <div className="rounded-[18px] bg-slate-50 px-3 py-3">
+                <div className="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500">
+                  <Users size={14} />
+                  Tình nguyện
+                </div>
+                <div className="mt-1 text-[15px] font-bold text-slate-900">
+                  {Number(volunteer?.volunteerPercent || 0)}%
+                </div>
+                <div className="text-[11px] text-slate-500">
+                  {Number(volunteer?.currentVolunteers || 0)} /{" "}
+                  {Number(volunteer?.targetVolunteers || 0)} TNV
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
 
         <Link
-          to={`/projects/${project.projectId}`}
-          className="mt-3 inline-flex w-full items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-bold text-slate-900 transition-colors hover:opacity-95"
+          to={`/projects/${project?.projectId}`}
+          className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-full px-4 text-[15px] font-bold text-slate-900 transition hover:brightness-95"
           style={{ backgroundColor: BRAND_YELLOW }}
         >
           Xem chi tiết
@@ -350,7 +506,28 @@ function ProjectPopupContent({ project }) {
       </div>
     </div>
   );
-}
+});
+
+const ClusterPopupContent = memo(function ClusterPopupContent({ item }) {
+  return (
+    <div className="w-[min(260px,calc(100vw-48px))] max-w-full min-w-0">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+          <Layers3 size={18} />
+        </div>
+
+        <div className="min-w-0">
+          <div className="break-words text-sm font-bold text-slate-900">
+            {item?.count} dự án trong khu vực này
+          </div>
+          <div className="mt-1 text-xs leading-5 text-slate-500">
+            Bấm vào cụm để phóng to và xem chi tiết hơn
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
 
 function ProjectMapCanvasComponent({
   items,
@@ -364,139 +541,534 @@ function ProjectMapCanvasComponent({
   locateRequestId,
   resetRequestId,
 }) {
-  const userLocationIcon = useMemo(() => createUserLocationIcon(), []);
-  const safeItems = useMemo(
-    () => (Array.isArray(items) ? items : []),
-    [items]
+  const mapRef = useRef(null);
+  const lastLocateRequestId = useRef(0);
+  const lastResetRequestId = useRef(0);
+  const lastProjectId = useRef("");
+  const lastClusterId = useRef("");
+  const lastViewportRef = useRef("");
+  const viewportTimeoutRef = useRef(null);
+  const labelsHiddenRef = useRef(false);
+
+  const [popupProject, setPopupProject] = useState(null);
+  const [popupCluster, setPopupCluster] = useState(null);
+  const [baseReady, setBaseReady] = useState(false);
+
+  const safeItems = useMemo(() => (Array.isArray(items) ? items : []), [items]);
+
+  const initialViewState = useMemo(
+    () => ({
+      longitude: VIETNAM_MAP_CENTER[1],
+      latitude: VIETNAM_MAP_CENTER[0],
+      zoom: VIETNAM_DEFAULT_ZOOM,
+    }),
+    []
+  );
+
+  const normalizedBounds = useMemo(
+    () => [
+      [VIETNAM_MAP_BOUNDS[0][1], VIETNAM_MAP_BOUNDS[0][0]],
+      [VIETNAM_MAP_BOUNDS[1][1], VIETNAM_MAP_BOUNDS[1][0]],
+    ],
+    []
+  );
+
+  const visibleItems = useMemo(
+    () =>
+      safeItems
+        .map((item) => {
+          const longitude = getLng(item);
+          const latitude = getLat(item);
+
+          return {
+            ...item,
+            longitude,
+            latitude,
+          };
+        })
+        .filter(
+          (item) =>
+            Number.isFinite(item.longitude) && Number.isFinite(item.latitude)
+        ),
+    [safeItems]
+  );
+
+  const projectMap = useMemo(() => {
+    const result = new globalThis.Map();
+    visibleItems.forEach((item) => {
+      if (isProjectItem(item) && item.projectId) {
+        result.set(String(item.projectId), item);
+      }
+    });
+    return result;
+  }, [visibleItems]);
+
+  const clusterMap = useMemo(() => {
+    const result = new globalThis.Map();
+    visibleItems.forEach((item) => {
+      if (isClusterItem(item) && item.clusterId) {
+        result.set(String(item.clusterId), item);
+      }
+    });
+    return result;
+  }, [visibleItems]);
+
+  const inactiveClusterFeatures = useMemo(
+    () =>
+      visibleItems
+        .filter(
+          (item) =>
+            isClusterItem(item) &&
+            String(item.clusterId) !== String(activeProjectId || "")
+        )
+        .map(makeClusterFeature),
+    [visibleItems, activeProjectId]
+  );
+
+  const activeClusterFeatures = useMemo(
+    () =>
+      visibleItems
+        .filter(
+          (item) =>
+            isClusterItem(item) &&
+            String(item.clusterId) === String(activeProjectId || "")
+        )
+        .map(makeClusterFeature),
+    [visibleItems, activeProjectId]
+  );
+
+  const inactiveProjectFeatures = useMemo(
+    () =>
+      visibleItems
+        .filter(
+          (item) =>
+            isProjectItem(item) &&
+            String(item.projectId) !== String(activeProjectId || "")
+        )
+        .map(makeItemFeature),
+    [visibleItems, activeProjectId]
+  );
+
+  const activeProjectFeatures = useMemo(
+    () =>
+      visibleItems
+        .filter(
+          (item) =>
+            isProjectItem(item) &&
+            String(item.projectId) === String(activeProjectId || "")
+        )
+        .map(makeItemFeature),
+    [visibleItems, activeProjectId]
+  );
+
+  const clusterGeoJson = useMemo(
+    () => buildFeatureCollection(inactiveClusterFeatures),
+    [inactiveClusterFeatures]
+  );
+
+  const activeClusterGeoJson = useMemo(
+    () => buildFeatureCollection(activeClusterFeatures),
+    [activeClusterFeatures]
+  );
+
+  const itemGeoJson = useMemo(
+    () => buildFeatureCollection(inactiveProjectFeatures),
+    [inactiveProjectFeatures]
+  );
+
+  const activeItemGeoJson = useMemo(
+    () => buildFeatureCollection(activeProjectFeatures),
+    [activeProjectFeatures]
+  );
+
+  useEffect(() => {
+    if (!selectedProject?.projectId) return;
+    if (lastProjectId.current === selectedProject.projectId) return;
+
+    const map = mapRef.current?.getMap?.();
+    const lng = getLng(selectedProject);
+    const lat = getLat(selectedProject);
+
+    if (!map || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+    lastProjectId.current = selectedProject.projectId;
+    setPopupCluster(null);
+
+    map.flyTo({
+      center: [lng, lat],
+      zoom: Math.max(map.getZoom(), MAP_PROJECT_MODE_SWITCH_ZOOM + 1),
+      duration: 450,
+      essential: true,
+    });
+
+    setPopupProject({
+      ...selectedProject,
+      longitude: lng,
+      latitude: lat,
+    });
+  }, [selectedProject]);
+
+  useEffect(() => {
+    if (!clusterToExpand?.clusterId) return;
+    if (lastClusterId.current === clusterToExpand.clusterId) return;
+
+    const map = mapRef.current?.getMap?.();
+    const lng = getLng(clusterToExpand);
+    const lat = getLat(clusterToExpand);
+
+    if (!map || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+    lastClusterId.current = clusterToExpand.clusterId;
+    setPopupProject(null);
+
+    map.flyTo({
+      center: [lng, lat],
+      zoom: clusterToExpand.expandZoom || Math.max(map.getZoom() + 2, 10),
+      duration: 430,
+      essential: true,
+    });
+
+    setPopupCluster({
+      ...clusterToExpand,
+      longitude: lng,
+      latitude: lat,
+    });
+  }, [clusterToExpand]);
+
+  useEffect(() => {
+    if (!locateRequestId || lastLocateRequestId.current === locateRequestId) return;
+
+    lastLocateRequestId.current = locateRequestId;
+
+    const map = mapRef.current?.getMap?.();
+    const lng = getLng(userLocation);
+    const lat = getLat(userLocation);
+
+    if (!map || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+    map.flyTo({
+      center: [lng, lat],
+      zoom: 13,
+      duration: 480,
+      essential: true,
+    });
+  }, [locateRequestId, userLocation]);
+
+  useEffect(() => {
+    if (!resetRequestId || lastResetRequestId.current === resetRequestId) return;
+
+    lastResetRequestId.current = resetRequestId;
+
+    const map = mapRef.current?.getMap?.();
+    if (!map) return;
+
+    setPopupProject(null);
+    setPopupCluster(null);
+
+    map.fitBounds(normalizedBounds, {
+      padding: 32,
+      duration: 500,
+      essential: true,
+    });
+  }, [normalizedBounds, resetRequestId]);
+
+  useEffect(() => {
+    return () => {
+      if (viewportTimeoutRef.current) clearTimeout(viewportTimeoutRef.current);
+    };
+  }, []);
+
+  const emitViewportChange = useCallback(
+    (map) => {
+      const bounds = map.getBounds();
+
+      const nextViewport = {
+        north: Number(bounds.getNorth().toFixed(5)),
+        south: Number(bounds.getSouth().toFixed(5)),
+        east: Number(bounds.getEast().toFixed(5)),
+        west: Number(bounds.getWest().toFixed(5)),
+        zoom: Number(map.getZoom().toFixed(2)),
+      };
+
+      const signature = JSON.stringify(nextViewport);
+      if (lastViewportRef.current === signature) return;
+
+      lastViewportRef.current = signature;
+      onViewportChange?.(nextViewport);
+    },
+    [onViewportChange]
+  );
+
+  const handleViewportChange = useCallback(
+    (event) => {
+      const map = event.target;
+
+      if (viewportTimeoutRef.current) {
+        clearTimeout(viewportTimeoutRef.current);
+      }
+
+      viewportTimeoutRef.current = setTimeout(() => {
+        emitViewportChange(map);
+      }, 60);
+    },
+    [emitViewportChange]
+  );
+
+  const tryHideLabels = useCallback((map) => {
+    if (labelsHiddenRef.current) return;
+    hideSensitiveSeaLabels(map);
+    labelsHiddenRef.current = true;
+  }, []);
+
+  const handleMapLoad = useCallback(
+    (event) => {
+      const map = event.target;
+      tryHideLabels(map);
+      setBaseReady(true);
+      emitViewportChange(map);
+    },
+    [emitViewportChange, tryHideLabels]
+  );
+
+  const handleStyleData = useCallback(() => {
+    const map = mapRef.current?.getMap?.();
+    if (!map) return;
+    tryHideLabels(map);
+  }, [tryHideLabels]);
+
+  const handleMapClick = useCallback(
+    (event) => {
+      const feature = event.features?.[0];
+
+      if (!feature) {
+        setPopupProject(null);
+        setPopupCluster(null);
+        return;
+      }
+
+      const layerId = feature.layer?.id || "";
+      const props = feature.properties || {};
+
+      if (layerId.includes("cluster")) {
+        const clusterId = String(props.clusterId || "");
+        const cluster = clusterMap.get(clusterId);
+
+        if (cluster) {
+          setPopupProject(null);
+          setPopupCluster(cluster);
+          onClusterSelect?.(cluster);
+          return;
+        }
+      }
+
+      if (layerId.includes("item")) {
+        const id = String(props.id || "");
+        const project = projectMap.get(id);
+
+        if (project) {
+          setPopupCluster(null);
+          setPopupProject(project);
+          onProjectSelect?.(project);
+          return;
+        }
+      }
+
+      setPopupProject(null);
+      setPopupCluster(null);
+    },
+    [clusterMap, onClusterSelect, onProjectSelect, projectMap]
   );
 
   return (
-    <div
-      className="h-full w-full overflow-hidden rounded-[32px] border border-amber-100 shadow-[0_20px_60px_rgba(15,23,42,0.10)]"
-      style={{ backgroundColor: MAP_SOFT_YELLOW }}
-    >
+    <>
       <style>{`
-        .project-map-surface .leaflet-container {
-          background: ${MAP_SOFT_YELLOW} !important;
-          height: 100% !important;
-          width: 100% !important;
+        .project-maplibre,
+        .project-maplibre .maplibregl-map,
+        .project-maplibre .maplibregl-canvas-container,
+        .project-maplibre .maplibregl-canvas {
+          width: 100%;
+          height: 100%;
         }
-        .project-map-surface .leaflet-control-zoom a {
+
+        .project-maplibre .maplibregl-map {
+          background: ${MAP_SOFT_YELLOW};
+        }
+
+        .project-maplibre .maplibregl-canvas {
+          outline: none;
+        }
+
+        .project-maplibre .maplibregl-ctrl-group {
+          border-radius: 18px !important;
+          overflow: hidden;
+          border: 1px solid #fde68a !important;
+          box-shadow: 0 10px 22px rgba(15,23,42,0.10) !important;
+        }
+
+        .project-maplibre .maplibregl-ctrl-group button {
           background: #ffffff !important;
-          color: #111827 !important;
-          border-color: #fde68a !important;
         }
-        .project-map-surface .leaflet-control-zoom a:hover {
+
+        .project-maplibre .maplibregl-ctrl-group button:hover {
           background: #fef3c7 !important;
         }
-        .project-map-surface .leaflet-popup-content-wrapper {
-          border-radius: 18px !important;
+
+        .project-maplibre .maplibregl-ctrl-scale {
+          border-radius: 999px !important;
+          border: 1px solid #fde68a !important;
+          background: rgba(255,255,255,0.96) !important;
+          color: #0f172a !important;
+          padding: 2px 10px !important;
+          box-shadow: 0 8px 16px rgba(15,23,42,0.08) !important;
         }
-        .project-map-surface .leaflet-popup-tip {
-          background: #ffffff !important;
+
+        .project-maplibre .maplibregl-popup {
+          max-width: none !important;
+        }
+
+        .project-maplibre .maplibregl-popup-content {
+          padding: 14px !important;
+          border-radius: 22px !important;
+          box-shadow: 0 16px 34px rgba(15,23,42,0.16) !important;
+        }
+
+        .project-maplibre .maplibregl-popup-tip {
+          border-top-color: white !important;
+        }
+
+        .project-maplibre .maplibregl-popup-close-button {
+          font-size: 20px;
+          line-height: 1;
+          color: #475569;
+          padding: 8px 10px;
+          right: 2px;
+          top: 2px;
         }
       `}</style>
 
-      <div className="project-map-surface h-full w-full">
-        <MapContainer
-          center={VIETNAM_MAP_CENTER}
-          zoom={VIETNAM_DEFAULT_ZOOM}
+      <div className="project-maplibre absolute inset-0">
+        <MapView
+          ref={mapRef}
+          initialViewState={initialViewState}
+          mapStyle={MAP_STYLE_URL}
           minZoom={5}
-          zoomControl={false}
-          className="h-full w-full"
-          style={{ backgroundColor: MAP_SOFT_YELLOW, height: "100%", width: "100%" }}
+          maxZoom={18}
+          dragRotate={false}
+          pitchWithRotate={false}
+          touchZoomRotate={false}
+          attributionControl={false}
+          interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+          style={{ width: "100%", height: "100%" }}
+          onLoad={handleMapLoad}
+          onStyleData={handleStyleData}
+          onMoveEnd={handleViewportChange}
+          onZoomEnd={handleViewportChange}
+          onClick={handleMapClick}
         >
-          <TileLayer
-            attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          <NavigationControl position="bottom-right" />
+          <GeolocateControl
+            position="bottom-right"
+            trackUserLocation
+            showUserHeading
           />
+          <FullscreenControl position="bottom-right" />
+          <ScaleControl position="bottom-left" unit="metric" />
 
-          <ZoomControl position="bottomright" />
+          {baseReady ? (
+            <>
+              <Source id={SOURCE_CLUSTERS} type="geojson" data={clusterGeoJson}>
+                <Layer {...clusterHaloLayer} />
+                <Layer {...clusterCoreLayer} />
+                <Layer {...clusterLabelLayer} />
+              </Source>
 
-          <MapResizeController />
-          <MapViewportWatcher onViewportChange={onViewportChange} />
+              <Source
+                id={SOURCE_ACTIVE_CLUSTER}
+                type="geojson"
+                data={activeClusterGeoJson}
+              >
+                <Layer {...activeClusterHaloLayer} />
+                <Layer {...activeClusterCoreLayer} />
+                <Layer {...activeClusterLabelLayer} />
+              </Source>
 
-          <MapProgrammaticController
-            selectedProject={selectedProject}
-            clusterToExpand={clusterToExpand}
-            locateRequestId={locateRequestId}
-            userLocation={userLocation}
-            resetRequestId={resetRequestId}
-          />
+              <Source id={SOURCE_ITEMS} type="geojson" data={itemGeoJson}>
+                <Layer {...itemHaloLayer} />
+                <Layer {...itemCoreLayer} />
+                <Layer {...itemLabelLayer} />
+              </Source>
 
-          {safeItems.map((item) => {
-            if (isClusterItem(item)) {
-              const isActive = activeProjectId === item.clusterId;
+              <Source
+                id={SOURCE_ACTIVE_ITEM}
+                type="geojson"
+                data={activeItemGeoJson}
+              >
+                <Layer {...activeItemHaloLayer} />
+                <Layer {...activeItemCoreLayer} />
+                <Layer {...activeItemLabelLayer} />
+              </Source>
+            </>
+          ) : null}
 
-              return (
-                <Marker
-                  key={item.clusterId}
-                  position={[item.latitude, item.longitude]}
-                  icon={createClusterIcon(item, isActive)}
-                  eventHandlers={{
-                    click: () => onClusterSelect?.(item),
-                  }}
-                >
-                  <Popup>
-                    <div className="w-[220px]">
-                      <h3 className="text-sm font-bold text-slate-900">
-                        {item.count} dự án trong khu vực này
-                      </h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Bấm vào cụm để phóng to và xem từng dự án chi tiết hơn.
-                      </p>
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            }
-
-            if (isProjectItem(item)) {
-              const isActive = activeProjectId === item.projectId;
-
-              return (
-                <CircleMarker
-                  key={item.projectId}
-                  center={[item.latitude, item.longitude]}
-                  radius={isActive ? 16 : 13}
-                  pathOptions={{
-                    color: isActive ? BRAND_TEXT : "#ffffff",
-                    weight: isActive ? 6 : 5,
-                    fillColor: BRAND_YELLOW,
-                    fillOpacity: 1,
-                  }}
-                  eventHandlers={{
-                    click: () => onProjectSelect?.(item),
-                  }}
-                >
-                  <Popup>
-                    <ProjectPopupContent project={item} />
-                  </Popup>
-                </CircleMarker>
-              );
-            }
-
-            return null;
-          })}
-
-          {userLocation ? (
-            <Marker
-              position={[userLocation.latitude, userLocation.longitude]}
-              icon={userLocationIcon}
+          {popupProject ? (
+            <Popup
+              longitude={popupProject.longitude}
+              latitude={popupProject.latitude}
+              anchor="top"
+              offset={18}
+              closeOnClick={false}
+              onClose={() => setPopupProject(null)}
             >
-              <Popup>
+              <ProjectPopupContent project={popupProject} />
+            </Popup>
+          ) : null}
+
+          {popupCluster ? (
+            <Popup
+              longitude={popupCluster.longitude}
+              latitude={popupCluster.latitude}
+              anchor="top"
+              offset={18}
+              closeOnClick={false}
+              onClose={() => setPopupCluster(null)}
+            >
+              <ClusterPopupContent item={popupCluster} />
+            </Popup>
+          ) : null}
+
+          {Number.isFinite(getLng(userLocation)) && Number.isFinite(getLat(userLocation)) ? (
+            <>
+              <Marker
+                longitude={getLng(userLocation)}
+                latitude={getLat(userLocation)}
+                anchor="center"
+              >
+                <div className="relative flex h-10 w-10 items-center justify-center">
+                  <div className="absolute h-10 w-10 rounded-full bg-sky-500/20 animate-pulse" />
+                  <div className="absolute h-5 w-5 rounded-full border-4 border-white bg-sky-500 shadow-lg" />
+                </div>
+              </Marker>
+
+              <Popup
+                longitude={getLng(userLocation)}
+                latitude={getLat(userLocation)}
+                anchor="top"
+                offset={16}
+                closeButton={false}
+                closeOnClick={false}
+              >
                 <div className="flex items-center gap-2">
-                  <LocateFixed size={16} className="text-sky-500" />
+                  <Navigation size={16} className="text-sky-500" />
                   <span className="text-sm font-semibold text-slate-900">
                     Vị trí hiện tại của bạn
                   </span>
                 </div>
               </Popup>
-            </Marker>
+            </>
           ) : null}
-        </MapContainer>
+        </MapView>
       </div>
-    </div>
+    </>
   );
 }
 

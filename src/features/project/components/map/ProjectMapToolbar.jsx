@@ -1,12 +1,14 @@
-import { memo, useState, useRef, useEffect } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  Compass,
-  LocateFixed,
-  List,
-  Search,
-  Sparkles,
+  Check,
   ChevronDown,
+  Compass,
+  Layers,
+  List,
+  LocateFixed,
+  Search,
+  Users,
 } from "lucide-react";
 
 const CATEGORY_OPTIONS = [
@@ -21,7 +23,7 @@ const CATEGORY_OPTIONS = [
 
 const ORGANIZER_SCOPE_OPTIONS = [
   { value: "ALL", label: "Tất cả organizer" },
-  { value: "FOLLOWED", label: "Organizer đã follow" },
+  { value: "FOLLOWED", label: "Đã follow" },
 ];
 
 function useClickOutside(ref, onClose) {
@@ -32,9 +34,7 @@ function useClickOutside(ref, onClose) {
     };
 
     const handleEscape = (event) => {
-      if (event.key === "Escape") {
-        onClose?.();
-      }
+      if (event.key === "Escape") onClose?.();
     };
 
     document.addEventListener("mousedown", handleClickOutside);
@@ -47,37 +47,46 @@ function useClickOutside(ref, onClose) {
   }, [ref, onClose]);
 }
 
-function CustomSelect({ value, onChange, options }) {
+function CustomSelect({
+  value,
+  onChange,
+  options,
+  icon: Icon,
+  placeholder,
+  className = "",
+}) {
   const rootRef = useRef(null);
   const [isOpen, setIsOpen] = useState(false);
 
   useClickOutside(rootRef, () => setIsOpen(false));
 
   const selectedOption =
-    options.find((option) => option.value === value) || options[0];
+    options.find((option) => option.value === value) ||
+    options[0] ||
+    { label: placeholder || "" };
 
   const handleSelect = (nextValue) => {
     onChange?.({
-      target: {
-        value: nextValue,
-      },
+      target: { value: nextValue },
     });
     setIsOpen(false);
   };
 
   return (
-    <div ref={rootRef} className="relative z-[2600] min-w-0 overflow-visible">
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-10 w-full items-center justify-between rounded-2xl border px-4 text-sm font-semibold shadow-sm outline-none transition-all ${
+        className={`flex h-11 w-full min-w-0 items-center gap-2 rounded-2xl border px-3 text-left shadow-sm outline-none transition-all ${
           isOpen
-            ? "border-amber-400 bg-amber-50 ring-4 ring-amber-100"
-            : "border-slate-200 bg-white hover:border-amber-300"
+            ? "border-amber-400 bg-white ring-2 ring-amber-400/20"
+            : "border-amber-100 bg-white/95 hover:border-amber-200"
         }`}
       >
-        <span className="truncate text-slate-700">{selectedOption?.label}</span>
-
+        <Icon size={15} className="shrink-0 text-slate-400" />
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-700">
+          {selectedOption.label || placeholder}
+        </span>
         <ChevronDown
           size={16}
           className={`shrink-0 text-slate-400 transition-transform ${
@@ -87,7 +96,7 @@ function CustomSelect({ value, onChange, options }) {
       </button>
 
       {isOpen ? (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[3000] overflow-hidden rounded-2xl border border-amber-100 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.16)]">
+        <div className="absolute right-0 top-[calc(100%+8px)] z-[5000] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.16)]">
           <div className="max-h-72 overflow-y-auto p-2">
             {options.map((option) => {
               const isActive = option.value === value;
@@ -97,13 +106,25 @@ function CustomSelect({ value, onChange, options }) {
                   key={option.value || "empty"}
                   type="button"
                   onClick={() => handleSelect(option.value)}
-                  className={`w-full rounded-xl px-4 py-2.5 text-left text-sm font-semibold transition-colors ${
+                  className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors ${
                     isActive
-                      ? "bg-amber-100 text-slate-900"
-                      : "text-slate-700 hover:bg-amber-50"
+                      ? "bg-amber-50 text-amber-700"
+                      : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
-                  {option.label}
+                  <span
+                    className={`flex h-5 w-5 items-center justify-center rounded-full border ${
+                      isActive
+                        ? "border-amber-300 bg-amber-100 text-amber-700"
+                        : "border-slate-200 bg-white text-transparent"
+                    }`}
+                  >
+                    <Check size={12} />
+                  </span>
+
+                  <span className="min-w-0 flex-1 truncate text-sm font-semibold">
+                    {option.label}
+                  </span>
                 </button>
               );
             })}
@@ -114,8 +135,20 @@ function CustomSelect({ value, onChange, options }) {
   );
 }
 
+function ToolbarButton({ onClick, icon: Icon, children, className = "" }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 ${className}`}
+    >
+      <Icon size={15} className="shrink-0" />
+      <span className="truncate">{children}</span>
+    </button>
+  );
+}
+
 function ProjectMapToolbarComponent({
-  summaryText,
   searchValue,
   onSearchChange,
   filters,
@@ -126,84 +159,152 @@ function ProjectMapToolbarComponent({
   isLocating = false,
 }) {
   return (
-    <div className="relative z-[2500] pointer-events-auto overflow-visible rounded-[26px] border border-amber-100 bg-white/95 px-4 py-3 shadow-[0_10px_30px_rgba(15,23,42,0.05)] backdrop-blur-xl">
-      <div className="flex flex-col gap-3 overflow-visible">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="min-w-0">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 shadow-sm">
-                <Sparkles size={18} />
-              </div>
-
-              <div className="min-w-0">
-                <h2 className="truncate text-[20px] font-black tracking-tight text-slate-900 sm:text-[22px]">
-                  Bản đồ dự án cộng đồng
-                </h2>
-                <p className="truncate text-sm font-medium text-slate-500">
-                  {summaryText}
-                </p>
-              </div>
-            </div>
+    <div className="pointer-events-auto rounded-[24px] border border-white/70 bg-white/84 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl">
+      <div className="hidden xl:grid xl:grid-cols-[minmax(260px,0.95fr)_225px_185px_130px_130px_135px] xl:items-center xl:gap-3">
+        <div className="relative min-w-0">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search size={15} className="text-slate-400" />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={onLocateMe}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:border-amber-300 hover:bg-amber-50 hover:text-slate-900"
-            >
-              <LocateFixed
-                size={15}
-                className={isLocating ? "animate-pulse" : ""}
-              />
-              Vị trí của tôi
-            </button>
-
-            <button
-              type="button"
-              onClick={onResetVietnam}
-              className="inline-flex h-10 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition-all hover:border-amber-300 hover:bg-amber-50 hover:text-slate-900"
-            >
-              <Compass size={15} />
-              Toàn Việt Nam
-            </button>
-
-            <Link
-              to="/projects"
-              className="inline-flex h-10 items-center gap-2 rounded-full bg-[#FBBF24] px-5 text-sm font-black text-slate-900 transition-all hover:bg-[#F59E0B]"
-            >
-              <List size={15} />
-              Danh sách
-            </Link>
-          </div>
+          <input
+            type="text"
+            value={searchValue}
+            onChange={onSearchChange}
+            placeholder="Tìm dự án, địa điểm, organizer..."
+            className="h-11 w-full rounded-2xl border border-amber-100 bg-white/95 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+          />
         </div>
 
-        <div className="grid grid-cols-1 gap-3 overflow-visible xl:grid-cols-[minmax(0,1.35fr)_210px_210px]">
-          <div className="relative min-w-0">
-            <Search
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-              size={17}
-            />
-            <input
-              type="text"
-              value={searchValue}
-              onChange={onSearchChange}
-              placeholder="Tìm theo tên dự án, địa điểm, organizer..."
-              className="h-10 w-full rounded-2xl border border-slate-200 bg-white pl-11 pr-4 text-sm font-medium text-slate-700 shadow-sm outline-none transition-all placeholder:text-slate-400 focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
-            />
+        <CustomSelect
+          value={filters.category}
+          onChange={onCategoryChange}
+          options={CATEGORY_OPTIONS}
+          icon={Layers}
+          placeholder="Danh mục"
+        />
+
+        <CustomSelect
+          value={filters.organizerScope}
+          onChange={onOrganizerScopeChange}
+          options={ORGANIZER_SCOPE_OPTIONS}
+          icon={Users}
+          placeholder="Organizer"
+        />
+
+        <ToolbarButton onClick={onLocateMe} icon={LocateFixed}>
+          <span className={isLocating ? "animate-pulse" : ""}>Vị trí tôi</span>
+        </ToolbarButton>
+
+        <ToolbarButton onClick={onResetVietnam} icon={Compass}>
+          Việt Nam
+        </ToolbarButton>
+
+        <Link
+          to="/projects"
+          className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-2xl bg-[#FBBF24] px-4 text-sm font-bold text-slate-900 transition hover:bg-[#F59E0B]"
+        >
+          <List size={15} className="shrink-0" />
+          <span className="truncate">Danh sách</span>
+        </Link>
+      </div>
+
+      <div className="hidden lg:grid xl:hidden lg:grid-cols-[minmax(220px,1fr)_190px_160px_112px] lg:gap-3">
+        <div className="relative min-w-0">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search size={15} className="text-slate-400" />
           </div>
 
+          <input
+            type="text"
+            value={searchValue}
+            onChange={onSearchChange}
+            placeholder="Tìm dự án..."
+            className="h-11 w-full rounded-2xl border border-amber-100 bg-white/95 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+          />
+        </div>
+
+        <CustomSelect
+          value={filters.category}
+          onChange={onCategoryChange}
+          options={CATEGORY_OPTIONS}
+          icon={Layers}
+          placeholder="Danh mục"
+        />
+
+        <CustomSelect
+          value={filters.organizerScope}
+          onChange={onOrganizerScopeChange}
+          options={ORGANIZER_SCOPE_OPTIONS}
+          icon={Users}
+          placeholder="Organizer"
+        />
+
+        <Link
+          to="/projects"
+          className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-2xl bg-[#FBBF24] px-4 text-sm font-bold text-slate-900 transition hover:bg-[#F59E0B]"
+        >
+          <List size={15} className="shrink-0" />
+          <span className="truncate">Danh sách</span>
+        </Link>
+
+        <ToolbarButton onClick={onLocateMe} icon={LocateFixed}>
+          <span className={isLocating ? "animate-pulse" : ""}>Vị trí tôi</span>
+        </ToolbarButton>
+
+        <ToolbarButton onClick={onResetVietnam} icon={Compass}>
+          Việt Nam
+        </ToolbarButton>
+      </div>
+
+      <div className="flex flex-col gap-3 lg:hidden">
+        <div className="relative min-w-0">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search size={15} className="text-slate-400" />
+          </div>
+
+          <input
+            type="text"
+            value={searchValue}
+            onChange={onSearchChange}
+            placeholder="Tìm dự án, địa điểm, organizer..."
+            className="h-11 w-full rounded-2xl border border-amber-100 bg-white/95 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+          />
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <CustomSelect
             value={filters.category}
             onChange={onCategoryChange}
             options={CATEGORY_OPTIONS}
+            icon={Layers}
+            placeholder="Danh mục"
           />
 
           <CustomSelect
             value={filters.organizerScope}
             onChange={onOrganizerScopeChange}
             options={ORGANIZER_SCOPE_OPTIONS}
+            icon={Users}
+            placeholder="Organizer"
           />
+        </div>
+
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <ToolbarButton onClick={onLocateMe} icon={LocateFixed}>
+            <span className={isLocating ? "animate-pulse" : ""}>Vị trí tôi</span>
+          </ToolbarButton>
+
+          <ToolbarButton onClick={onResetVietnam} icon={Compass}>
+            Việt Nam
+          </ToolbarButton>
+
+          <Link
+            to="/projects"
+            className="inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-2xl bg-[#FBBF24] px-4 text-sm font-bold text-slate-900 transition hover:bg-[#F59E0B]"
+          >
+            <List size={15} className="shrink-0" />
+            <span className="truncate">Danh sách</span>
+          </Link>
         </div>
       </div>
     </div>
@@ -213,7 +314,6 @@ function ProjectMapToolbarComponent({
 const ProjectMapToolbar = memo(
   ProjectMapToolbarComponent,
   (prevProps, nextProps) =>
-    prevProps.summaryText === nextProps.summaryText &&
     prevProps.searchValue === nextProps.searchValue &&
     prevProps.filters === nextProps.filters &&
     prevProps.onSearchChange === nextProps.onSearchChange &&

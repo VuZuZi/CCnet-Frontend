@@ -1,152 +1,86 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { Layers3 } from "lucide-react";
+import { memo, useMemo } from "react";
+import { ChevronLeft, Layers3 } from "lucide-react";
 
 import ProjectMapProjectCard from "./ProjectMapProjectCard";
-
-const ITEM_HEIGHT = 272;
-const OVERSCAN = 3;
 
 function ProjectMapSidebarComponent({
   panelProjects,
   activeProjectId,
   onProjectSelect,
   isLoading,
-  isFetching: _isFetching,
+  summaryText = "",
+  isOpen = true,
+  onToggle,
 }) {
-  const scrollRef = useRef(null);
-  const [viewportHeight, setViewportHeight] = useState(420);
-  const [scrollTop, setScrollTop] = useState(0);
-
   const items = useMemo(
     () => (Array.isArray(panelProjects) ? panelProjects : []),
     [panelProjects]
   );
 
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (!element || typeof ResizeObserver === "undefined") return;
-
-    const updateHeight = () => {
-      setViewportHeight(Math.max(240, Math.floor(element.clientHeight)));
-    };
-
-    updateHeight();
-
-    const observer = new ResizeObserver(() => {
-      updateHeight();
-    });
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const activeIndex = items.findIndex(
-      (project) => project?.projectId === activeProjectId
-    );
-
-    if (activeIndex < 0 || !scrollRef.current) return;
-
-    const container = scrollRef.current;
-    const itemTop = activeIndex * ITEM_HEIGHT;
-    const itemBottom = itemTop + ITEM_HEIGHT;
-    const visibleTop = container.scrollTop;
-    const visibleBottom = visibleTop + container.clientHeight;
-
-    if (itemTop < visibleTop) {
-      container.scrollTo({
-        top: itemTop,
-        behavior: "smooth",
-      });
-      return;
-    }
-
-    if (itemBottom > visibleBottom) {
-      container.scrollTo({
-        top: itemBottom - container.clientHeight,
-        behavior: "smooth",
-      });
-    }
-  }, [activeProjectId, items]);
-
-  const totalHeight = items.length * ITEM_HEIGHT;
-
-  const startIndex = Math.max(0, Math.floor(scrollTop / ITEM_HEIGHT) - OVERSCAN);
-  const endIndex = Math.min(
-    items.length,
-    Math.ceil((scrollTop + viewportHeight) / ITEM_HEIGHT) + OVERSCAN
-  );
-
-  const virtualItems = useMemo(
-    () => items.slice(startIndex, endIndex),
-    [items, startIndex, endIndex]
-  );
-
-  const offsetY = startIndex * ITEM_HEIGHT;
+  if (!isOpen) return null;
 
   return (
-    <aside className="flex h-full min-h-0 flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white/95 shadow-[0_16px_40px_rgba(15,23,42,0.08)] backdrop-blur-xl">
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="flex flex-shrink-0 items-center border-b border-slate-100 px-4 pb-2.5 pt-3">
-          <div className="flex items-center gap-2">
-            <Layers3 size={16} className="text-amber-500" />
-            <h2 className="text-sm font-black uppercase tracking-wide text-slate-900">
-              Dự án trong vùng đang xem
-            </h2>
+    <aside className="pointer-events-auto absolute left-5 top-[92px] bottom-5 z-[2200] flex w-[360px] min-h-0 flex-col overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+      <div className="flex items-center justify-between border-b border-slate-100 px-5 pb-4 pt-5">
+        <div className="min-w-0">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+              <Layers3 size={18} />
+            </div>
+
+            <div className="min-w-0">
+              <h2 className="truncate text-sm font-bold text-slate-900">
+                Dự án trong vùng đang xem
+              </h2>
+              <p className="mt-1 truncate text-xs text-slate-500">
+                {summaryText || "Chọn một dự án để định vị nhanh trên bản đồ"}
+              </p>
+            </div>
           </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden px-0 pb-3 pt-3">
-          {isLoading ? (
-            <div className="space-y-3 px-3">
-              {Array.from({ length: 4 }).map((_, index) => (
-                <div
-                  key={index}
-                  className="h-40 animate-pulse rounded-3xl bg-slate-100"
-                />
-              ))}
-            </div>
-          ) : items.length === 0 ? (
-            <div className="px-3">
-              <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center">
-                <p className="text-sm font-medium text-slate-500">
-                  Không có dự án nào phù hợp trong vùng bản đồ hiện tại.
-                </p>
-                <p className="mt-2 text-xs text-slate-400">
-                  Hãy thử thay đổi từ khóa tìm kiếm, bộ lọc hoặc kéo bản đồ sang khu vực khác.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div
-              ref={scrollRef}
-              className="h-full overflow-y-auto px-0"
-              onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
-            >
+        <button
+          type="button"
+          onClick={onToggle}
+          className="ml-3 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
+          aria-label="Đóng danh sách"
+        >
+          <ChevronLeft size={18} />
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-1 py-3">
+        {isLoading ? (
+          <div className="space-y-3 px-3">
+            {Array.from({ length: 4 }).map((_, index) => (
               <div
-                className="relative w-full"
-                style={{ height: `${totalHeight}px` }}
-              >
-                <div
-                  className="absolute left-0 top-0 w-full"
-                  style={{ transform: `translateY(${offsetY}px)` }}
-                >
-                  {virtualItems.map((project) => (
-                    <ProjectMapProjectCard
-                      key={project.projectId}
-                      project={project}
-                      isActive={activeProjectId === project.projectId}
-                      onClick={onProjectSelect}
-                    />
-                  ))}
-                </div>
-              </div>
+                key={index}
+                className="h-[248px] animate-pulse rounded-[28px] bg-slate-100"
+              />
+            ))}
+          </div>
+        ) : items.length === 0 ? (
+          <div className="px-4">
+            <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center">
+              <p className="text-sm font-medium text-slate-500">
+                Không có dự án nào phù hợp trong vùng bản đồ hiện tại.
+              </p>
+              <p className="mt-2 text-xs text-slate-400">
+                Hãy thử thay đổi từ khóa, bộ lọc hoặc kéo bản đồ sang khu vực
+                khác.
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          items.map((project) => (
+            <ProjectMapProjectCard
+              key={project.projectId}
+              project={project}
+              isActive={activeProjectId === project.projectId}
+              onClick={onProjectSelect}
+            />
+          ))
+        )}
       </div>
     </aside>
   );
@@ -159,7 +93,9 @@ const ProjectMapSidebar = memo(
     prevProps.activeProjectId === nextProps.activeProjectId &&
     prevProps.onProjectSelect === nextProps.onProjectSelect &&
     prevProps.isLoading === nextProps.isLoading &&
-    prevProps.isFetching === nextProps.isFetching
+    prevProps.summaryText === nextProps.summaryText &&
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.onToggle === nextProps.onToggle
 );
 
 export default ProjectMapSidebar;
