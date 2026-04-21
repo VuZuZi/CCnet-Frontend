@@ -5,6 +5,8 @@ export const adminAPI = {
 
   getUsers: (params = {}) => httpClient.get("/admin/users", { params }),
 
+  getUserDetail: (userId) => httpClient.get(`/admin/users/${userId}`),
+
   toggleBan: (userId, payload = {}) =>
     httpClient.patch(`/admin/users/${userId}/ban`, payload),
 
@@ -18,6 +20,8 @@ export const adminAPI = {
     httpClient.get("/admin/action-logs", { params }),
 
   getProjects: (params = {}) => httpClient.get("/admin/projects", { params }),
+
+  getProjectDetail: (id) => httpClient.get(`/admin/projects/${id}`),
 
   updateProjectStatus: (id, payload) =>
     httpClient.patch(`/admin/projects/${id}/status`, payload),

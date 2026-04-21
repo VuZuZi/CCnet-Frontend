@@ -28,6 +28,7 @@ const UserManagement = () => {
     openBanModal,
     closeModal,
     handleConfirmAction,
+    handleLoadUserDetail,
     pendingBanUserId,
     confirmState,
     modalUser,
@@ -75,6 +76,7 @@ const UserManagement = () => {
         open={Boolean(selectedUser)}
         user={selectedUser}
         onClose={() => setSelectedUser(null)}
+        loadUserDetail={handleLoadUserDetail}
       />
 
       <UserBanModal
