@@ -29,7 +29,8 @@ const mediaLikeSchema = z.any();
 
 const hasMediaLike = (item) => {
   if (!item) return false;
-  return Boolean(item?._id || (item?.url && item?.publicId) || item?.file);
+  if (typeof item === 'string') return item.length > 0;
+  return Boolean(item?._id || (item?.url && item?.publicId) || item?.file || item?.url);
 };
 
 const dateOrEmptySchema = z.coerce.date().optional().or(z.literal(""));
@@ -96,9 +97,15 @@ const validateProjectDateRange = (startDate, endDate, ctx, tierMaxDurationDays) 
 };
 
 const validateMinimumMedia = (coverMedia, documents, ctx, message) => {
-  const totalMedia =
-    (coverMedia?.filter(hasMediaLike).length || 0) +
-    (documents?.filter(hasMediaLike).length || 0);
+  let coverCount = 0;
+  if (Array.isArray(coverMedia)) {
+    coverCount = coverMedia.filter(hasMediaLike).length;
+  } else if (hasMediaLike(coverMedia)) {
+    coverCount = 1;
+  }
+
+  const docCount = Array.isArray(documents) ? documents.filter(hasMediaLike).length : 0;
+  const totalMedia = coverCount + docCount;
 
   if (totalMedia < 3) {
     ctx.addIssue({
@@ -305,7 +312,7 @@ export const draftStep1Schema = z.object({
       details: z.string().optional().default(""),
     })
     .optional(),
-  coverMedia: z.array(mediaLikeSchema).optional().default([]),
+  coverMedia: z.any().optional().default([]),
   documents: z.array(mediaLikeSchema).optional().default([]),
 });
 
@@ -351,7 +358,7 @@ export const strictStep1Schema = (tierMaxDurationDays) =>
       beneficiaryInfo: z.object({
         details: z.string().min(10, "Vui lòng mô tả rõ người thụ hưởng"),
       }),
-      coverMedia: z.array(mediaLikeSchema).default([]),
+      coverMedia: z.any().default([]),
       documents: z.array(mediaLikeSchema).default([]),
     })
     .superRefine((data, ctx) => {
@@ -469,7 +476,7 @@ export const createProjectSubmitSchema = (
       }),
       startDate: z.coerce.date(),
       endDate: z.coerce.date(),
-      coverMedia: z.array(mediaLikeSchema).default([]),
+      coverMedia: z.any().default([]),
       documents: z.array(mediaLikeSchema).default([]),
       targetAmount: z.coerce.number().optional().default(0),
       mvpAmount: z.coerce.number().optional().default(0),
