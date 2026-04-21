@@ -17,6 +17,7 @@ export const PROJECT_STATUS = {
     FAILED_FUNDING: 'FAILED_FUNDING',
     
     EXECUTING: 'EXECUTING',
+    UPDATING: 'UPDATING',
     PAUSED: 'PAUSED',
     
     CANCELLATION_PENDING: 'CANCELLATION_PENDING',
@@ -52,6 +53,7 @@ export const PROJECT_STATUS_STYLES = {
     [PROJECT_STATUS.ADJUSTMENT_REQUIRED]: 'bg-orange-100 text-orange-700 border-orange-200',
     [PROJECT_STATUS.FAILED_FUNDING]: 'bg-stone-100 text-stone-700 border-stone-200',
     [PROJECT_STATUS.EXECUTING]: 'bg-emerald-100 text-emerald-700 border-emerald-200',
+    [PROJECT_STATUS.UPDATING]: 'bg-amber-100 text-amber-800 border-amber-200',
     [PROJECT_STATUS.PAUSED]: 'bg-yellow-100 text-yellow-800 border-yellow-200',
     [PROJECT_STATUS.CANCELLATION_PENDING]: 'bg-rose-100 text-rose-700 border-rose-200 animate-pulse',
     [PROJECT_STATUS.CANCELLED_FRAUD]: 'bg-red-600 text-white border-red-700',

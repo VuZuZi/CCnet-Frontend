@@ -86,6 +86,7 @@ const sanitizeMilestones = (milestones) => {
 
   return milestones
     .map((milestone) => ({
+      milestoneId: milestone?.milestoneId || undefined,
       title: String(milestone?.title || "").trim(),
       description: String(milestone?.description || "").trim(),
       targetAmount: Number(milestone?.targetAmount || 0),
@@ -126,6 +127,10 @@ const prepareProjectPayload = (data = {}) => {
 
   return removeUndefinedDeep(payload);
 };
+
+const prepareUpdatingPayload = (data = {}) => ({
+  milestones: sanitizeMilestones(data?.milestones) || [],
+});
 
 const getData = (response) => response.data?.data;
 
@@ -178,6 +183,24 @@ export const projectAPI = {
 
   async getDraftDetail(id) {
     const response = await httpClient.get(`/project/${id}/draft`);
+    return getData(response);
+  },
+
+  async getUpdatingDetail(id) {
+    const response = await httpClient.get(`/project/${id}/updating`);
+    return getData(response);
+  },
+
+  async updateUpdating({ id, data }) {
+    const response = await httpClient.put(
+      `/project/${id}/updating`,
+      prepareUpdatingPayload(data),
+    );
+    return getData(response);
+  },
+
+  async confirmUpdating(id) {
+    const response = await httpClient.post(`/project/${id}/updating/confirm`);
     return getData(response);
   },
 

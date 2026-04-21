@@ -131,6 +131,12 @@ const CreateProjectPage = lazy(() =>
   })),
 );
 
+const ProjectUpdatingMilestonesPage = lazy(() =>
+  import("@/features/project/pages/ProjectUpdatingMilestonesPage").then((m) => ({
+    default: m.ProjectUpdatingMilestonesPage || m.default,
+  })),
+);
+
 const OrganizerWorkspacePage = lazy(() =>
   import("@/features/project/pages/OrganizerWorkspacePage").then((m) => ({
     default: m.OrganizerWorkspacePage || m.default,
@@ -261,6 +267,14 @@ export const router = createBrowserRouter([
             element: (
               <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
                 {withSuspense(CreateProjectPage)}
+              </ProtectedRoute>
+            ),
+          },
+          {
+            path: ":id/updating",
+            element: (
+              <ProtectedRoute allowedRoles={[ROLES.ORGANIZER, "organizer"]}>
+                {withSuspense(ProjectUpdatingMilestonesPage)}
               </ProtectedRoute>
             ),
           },
