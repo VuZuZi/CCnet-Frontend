@@ -28,7 +28,6 @@ export const usePosts = (limit = 10, feedType = "for-you", options = {}) => {
     initialPageParam: null,
 
     getNextPageParam: (lastPage) => {
-      console.log("Dữ liệu trang cuối:", lastPage);
       if (lastPage.message?.hasMore === false) return undefined;
       return lastPage.message?.nextCursor || undefined;
     },
