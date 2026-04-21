@@ -6,6 +6,7 @@ import { useProjectDetail } from "../hooks/useProjectQueries";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import { useConversations } from "@/features/chat/hooks/conversations/useConversations";
 import { useVolunteerQueries } from "@/features/volunteer/hooks/useVolunteerQueries.js";
+import { useMyProjectReview } from "@/features/volunteer/hooks/useVolunteerEngagementQueries.js";
 
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import { ProjectCover } from "../components/detail/ProjectCover";
@@ -32,6 +33,7 @@ function normalizeProjectTab(tabValue, isOrganizer) {
 
   if (raw === "financials") return "financials";
   if (raw === "community") return "community";
+  if (raw === "milestones") return "milestones";
   if (raw === "story") return "story";
 
   return "story";
@@ -43,6 +45,7 @@ function normalizeVolunteerSubTab(subTabValue) {
   if (raw === "approved") return "approved";
   if (raw === "rejected") return "rejected";
   if (raw === "withdraw" || raw === "withdraw_requested") return "withdraw";
+  if (raw === "review") return "review";
 
   return "pending";
 }
@@ -70,8 +73,12 @@ function extractProjectApplicationStatus(project) {
     project?.volunteerStatus,
   ];
 
-  const matched = candidates.find((value) => value !== null && value !== undefined);
-  return String(matched || "").trim().toUpperCase();
+  const matched = candidates.find(
+    (value) => value !== null && value !== undefined
+  );
+  return String(matched || "")
+    .trim()
+    .toUpperCase();
 }
 
 export function ProjectDetailPage() {
@@ -96,11 +103,10 @@ export function ProjectDetailPage() {
     currentUser?.userId || currentUser?._id || currentUser?.id || "";
 
   const organizerId =
-  project?.organizer?._id ||
-  project?.organizer?.id ||
-  project?.organizerId?._id ||
-  project?.organizerId ||
-  "";
+    project?.organizerId?._id ||
+    project?.organizerId?.id ||
+    project?.organizerId ||
+    "";
 
   const { useApplicationStatus } = useVolunteerQueries();
   const {
@@ -121,9 +127,9 @@ export function ProjectDetailPage() {
 
   const isOrganizer = Boolean(
     currentUser &&
-    project &&
-    String(currentUserId) &&
-    String(currentUserId) === String(organizerId)
+      project &&
+      String(currentUserId) &&
+      String(currentUserId) === String(organizerId)
   );
 
   const projectLevelApplicationStatus = extractProjectApplicationStatus(project);
@@ -136,9 +142,16 @@ export function ProjectDetailPage() {
 
   const isVolunteerMember = Boolean(
     currentUser &&
-    project &&
-    !isOrganizer &&
-    VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus)
+      project &&
+      !isOrganizer &&
+      VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus)
+  );
+
+  const { data: myReview, isFetching: isFetchingMyReview } = useMyProjectReview(
+    project?._id,
+    {
+      enabled: Boolean(project?._id && isVolunteerMember),
+    }
   );
 
   useEffect(() => {
@@ -228,6 +241,8 @@ export function ProjectDetailPage() {
         nextParams.set("tab", "financials");
       } else if (nextTab === "community") {
         nextParams.set("tab", "community");
+      } else if (nextTab === "milestones") {
+        nextParams.set("tab", "milestones");
       } else {
         nextParams.set("tab", "story");
       }
@@ -256,6 +271,7 @@ export function ProjectDetailPage() {
           <div ref={volunteerManagerRef}>
             <VolunteerManager
               projectId={project._id}
+              projectStatus={project.status}
               initialSubTab={activeSubTab}
               highlightedApplicationId={applicationIdFromQuery}
             />
@@ -267,13 +283,10 @@ export function ProjectDetailPage() {
 
       case "community":
         return (
-          <ProjectCommunityFeed
-            project={project}
-            isOrganizer={isOrganizer}
-          />
+          <ProjectCommunityFeed project={project} isOrganizer={isOrganizer} />
         );
 
-      case 'milestones':
+      case "milestones":
         return <ProjectMilestonesTab project={project} isOrganizer={isOrganizer} />;
 
       default:
@@ -347,6 +360,7 @@ export function ProjectDetailPage() {
                 project={project}
                 projectConversation={projectConversation}
                 onOpenProjectGroup={handleOpenProjectGroup}
+                onManageVolunteers={() => handleNavigateToVolunteerTab("pending")}
               />
             ) : isVolunteerMember ? (
               <SidebarVolunteer
@@ -357,6 +371,8 @@ export function ProjectDetailPage() {
                 onOpenFinancialsTab={handleOpenFinancialsTab}
                 applicationStatus={effectiveApplicationStatus}
                 isCheckingApplication={isCheckingApplication}
+                myReview={myReview}
+                isFetchingMyReview={isFetchingMyReview}
               />
             ) : (
               <SidebarPublic project={project} />

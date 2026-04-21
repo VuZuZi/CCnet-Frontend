@@ -1,31 +1,34 @@
 import { useQuery } from "@tanstack/react-query";
-import { volunteerEngagementAPI } from "../api/volunteerEngagementAPI";
+import { volunteerEngagementAPI } from "../api/volunteerEngagementAPI.js";
 
 export const volunteerEngagementQueryKeys = {
-  attendance: (projectId, milestoneId) => [
+  projectReviews: (projectId) => [
     "volunteer-engagement",
-    "attendance",
+    "project-reviews",
     projectId,
-    milestoneId,
   ],
-  reviews: (projectId, milestoneId) => [
+  myProjectReview: (projectId) => [
     "volunteer-engagement",
-    "reviews",
+    "my-project-review",
     projectId,
-    milestoneId,
   ],
 };
 
-export const useAttendanceList = (projectId, milestoneId) =>
+export const useProjectReviews = (projectId, options = {}) =>
   useQuery({
-    queryKey: volunteerEngagementQueryKeys.attendance(projectId, milestoneId),
-    queryFn: () => volunteerEngagementAPI.getAttendanceList(projectId, milestoneId),
-    enabled: Boolean(projectId && milestoneId),
+    queryKey: volunteerEngagementQueryKeys.projectReviews(projectId),
+    queryFn: () => volunteerEngagementAPI.getProjectReviews(projectId),
+    enabled: Boolean(projectId) && (options.enabled ?? true),
+    ...options,
   });
 
-export const useReviewList = (projectId, milestoneId) =>
+export const useMyProjectReview = (projectId, options = {}) =>
   useQuery({
-    queryKey: volunteerEngagementQueryKeys.reviews(projectId, milestoneId),
-    queryFn: () => volunteerEngagementAPI.getReviewList(projectId, milestoneId),
-    enabled: Boolean(projectId && milestoneId),
+    queryKey: volunteerEngagementQueryKeys.myProjectReview(projectId),
+    queryFn: async () => {
+      const result = await volunteerEngagementAPI.getMyProjectReview(projectId);
+      return result?.review ?? result ?? null;
+    },
+    enabled: Boolean(projectId) && (options.enabled ?? true),
+    ...options,
   });

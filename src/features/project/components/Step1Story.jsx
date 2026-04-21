@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import DOMPurify from 'dompurify';
@@ -20,12 +20,30 @@ const formatDateForInput = (isoString) => {
   return new Date(isoString).toISOString().split('T')[0];
 };
 
+const getTodayInputValue = () => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const local = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
+};
+
+const addDaysToInputDate = (dateString, days) => {
+  if (!dateString) return '';
+  const date = new Date(`${dateString}T00:00:00`);
+  date.setDate(date.getDate() + days);
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().split('T')[0];
+};
+
 const getTierLimits = (tier) => {
   switch (tier) {
-    case 3: return { maxDurationDays: 90 };
-    case 2: return { maxDurationDays: 60 };
+    case 3:
+      return { maxDurationDays: 90 };
+    case 2:
+      return { maxDurationDays: 60 };
     case 1:
-    default: return { maxDurationDays: 30 };
+    default:
+      return { maxDurationDays: 30 };
   }
 };
 
@@ -56,10 +74,15 @@ export default function Step1Story() {
     setProjectId
   } = useProjectDraftStore();
 
-  const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
-  const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
-
-  const { register, handleSubmit, control, watch, setValue, getValues, formState: { errors } } = useForm({
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors }
+  } = useForm({
     resolver: zodResolver(strictStep1Schema(maxDurationDays)),
     defaultValues: {
       projectType: formData.projectType || 'FUNDED',
@@ -75,11 +98,32 @@ export default function Step1Story() {
     }
   });
 
+  const { mutateAsync: createDraft, isPending: isCreating } = useCreateDraftProject();
+  const { mutateAsync: updateDraft, isPending: isUpdating } = useUpdateDraftProject();
+
   const isPending = isCreating || isUpdating;
   const isSubmitDisabled = isPending || isMediaUploading;
 
   const projectTypeValue = watch('projectType');
   const titleValue = watch('title', '');
+  const startDateValue = watch('startDate');
+  const endDateValue = watch('endDate');
+
+  const todayInputValue = useMemo(() => getTodayInputValue(), []);
+
+  const endDateMin = useMemo(() => {
+    if (!startDateValue) return todayInputValue;
+    return startDateValue < todayInputValue ? todayInputValue : startDateValue;
+  }, [startDateValue, todayInputValue]);
+
+  const startDateMax = useMemo(() => {
+    return addDaysToInputDate(todayInputValue, maxDurationDays);
+  }, [todayInputValue, maxDurationDays]);
+
+  const endDateMax = useMemo(() => {
+    if (!startDateValue) return '';
+    return addDaysToInputDate(startDateValue, maxDurationDays);
+  }, [startDateValue, maxDurationDays]);
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -92,10 +136,41 @@ export default function Step1Story() {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [isMediaUploading, isPending]);
 
+  useEffect(() => {
+    if (!startDateValue) return;
+
+    if (startDateValue < todayInputValue) {
+      setValue('startDate', todayInputValue, { shouldValidate: true, shouldDirty: true });
+      return;
+    }
+
+    if (startDateMax && startDateValue > startDateMax) {
+      setValue('startDate', startDateMax, { shouldValidate: true, shouldDirty: true });
+      return;
+    }
+
+    if (endDateValue) {
+      const invalidMin = endDateValue < endDateMin;
+      const invalidMax = endDateMax && endDateValue > endDateMax;
+
+      if (invalidMin || invalidMax) {
+        setValue('endDate', '', { shouldValidate: true, shouldDirty: true });
+      }
+    }
+  }, [
+    startDateValue,
+    endDateValue,
+    todayInputValue,
+    endDateMin,
+    endDateMax,
+    startDateMax,
+    setValue
+  ]);
+
   const handleTypeChange = (e) => {
     const newType = e.target.value;
     const currentType = getValues('projectType');
-    const hasBudgetData = formData?.targetAmount > 0 || (formData?.milestones?.some(m => m.targetAmount > 0));
+    const hasBudgetData = formData?.targetAmount > 0 || (formData?.milestones?.some((m) => m.targetAmount > 0));
 
     if (currentType === 'FUNDED' && newType === 'VOLUNTEER_ONLY' && hasBudgetData) {
       setPendingType(newType);
@@ -112,7 +187,7 @@ export default function Step1Story() {
         targetAmount: 0,
         mvpAmount: 0,
         budgetBreakdown: [],
-        milestones: formData?.milestones?.map(m => ({ ...m, targetAmount: 0 })) || []
+        milestones: formData?.milestones?.map((m) => ({ ...m, targetAmount: 0 })) || []
       });
     }
     setIsTypeConfirmModalOpen(false);
@@ -155,7 +230,7 @@ export default function Step1Story() {
         navigate('/projects');
       }
     } catch (error) {
-      devConfig.error("[CTO Log] Save Step 1 Failed:", error);
+      devConfig.error('[CTO Log] Save Step 1 Failed:', error);
     }
   };
 
@@ -220,15 +295,17 @@ export default function Step1Story() {
   };
 
   return (
-    <form onSubmit={handleNextStep} className="pb-32 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <fieldset disabled={isSubmitDisabled} className="grid grid-cols-1 lg:grid-cols-12 gap-8 group transition-opacity duration-300 disabled:opacity-60 disabled:cursor-not-allowed">
-
-        <div className="lg:col-span-7 space-y-6">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-6">
+    <form onSubmit={handleNextStep} className="animate-in fade-in slide-in-from-bottom-4 pb-32 duration-500">
+      <fieldset
+        disabled={isSubmitDisabled}
+        className="group grid grid-cols-1 gap-8 transition-opacity duration-300 disabled:cursor-not-allowed disabled:opacity-60 lg:grid-cols-12"
+      >
+        <div className="space-y-6 lg:col-span-7">
+          <div className="space-y-6 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
             <div>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">Loại dự án</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${projectTypeValue === 'FUNDED' ? 'border-primary bg-primary/5' : 'border-slate-200 hover:border-slate-300'}`}>
+              <h2 className="mb-4 text-xl font-bold text-slate-900">Loại dự án</h2>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <label className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${projectTypeValue === 'FUNDED' ? 'border-primary bg-primary/5' : 'border-slate-200 hover:border-slate-300'}`}>
                   <input
                     type="radio"
                     value="FUNDED"
@@ -238,10 +315,10 @@ export default function Step1Story() {
                     className="sr-only"
                   />
                   <div className="font-bold text-slate-900">Dự án gây quỹ</div>
-                  <p className="text-sm text-slate-500 mt-1">Gây quỹ và tuyển tình nguyện viên.</p>
+                  <p className="mt-1 text-sm text-slate-500">Gây quỹ và tuyển tình nguyện viên.</p>
                 </label>
 
-                <label className={`border-2 rounded-xl p-4 cursor-pointer transition-all ${projectTypeValue === 'VOLUNTEER_ONLY' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}>
+                <label className={`cursor-pointer rounded-xl border-2 p-4 transition-all ${projectTypeValue === 'VOLUNTEER_ONLY' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-200 hover:border-slate-300'}`}>
                   <input
                     type="radio"
                     value="VOLUNTEER_ONLY"
@@ -251,10 +328,10 @@ export default function Step1Story() {
                     className="sr-only"
                   />
                   <div className="font-bold text-slate-900">Chỉ tình nguyện viên</div>
-                  <p className="text-sm text-slate-500 mt-1">Không gây quỹ, chỉ cần nguồn lực con người.</p>
+                  <p className="mt-1 text-sm text-slate-500">Không gây quỹ, chỉ cần nguồn lực con người.</p>
                 </label>
               </div>
-              {errors.projectType && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.projectType.message}</p>}
+              {errors.projectType && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.projectType.message}</p>}
             </div>
 
             <hr className="border-slate-100" />
@@ -262,7 +339,7 @@ export default function Step1Story() {
             <h2 className="text-xl font-bold text-slate-900">Thông tin cơ bản</h2>
 
             <div>
-              <div className="flex justify-between mb-2">
+              <div className="mb-2 flex justify-between">
                 <label className="block text-sm font-bold text-slate-700">Tên dự án</label>
                 <span className={`text-xs font-medium ${titleValue.length > 100 ? 'text-red-500' : 'text-slate-500'}`}>
                   {titleValue.length}/100
@@ -270,20 +347,18 @@ export default function Step1Story() {
               </div>
               <input
                 {...register('title')}
-                className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900 placeholder-slate-400
-                    ${errors.title ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
+                className={`w-full rounded-xl border bg-slate-50 p-3 text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 ${errors.title ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary'}`}
                 placeholder="Ví dụ: Xây cầu chống lũ tại bản Pa Tần"
               />
-              {errors.title && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.title.message}</p>}
+              {errors.title && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.title.message}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Danh mục</label>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Danh mục</label>
                 <select
                   {...register('category')}
-                  className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900
-                      ${errors.category ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
+                  className={`w-full rounded-xl border bg-slate-50 p-3 text-slate-900 shadow-sm outline-none transition-all ${errors.category ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary'}`}
                 >
                   <option value="">Chọn danh mục</option>
                   <option value="Y_TE">Y tế</option>
@@ -293,16 +368,16 @@ export default function Step1Story() {
                   <option value="MOI_TRUONG">Bảo vệ môi trường</option>
                   <option value="KHAC">Khác</option>
                 </select>
-                {errors.category && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.category.message}</p>}
+                {errors.category && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.category.message}</p>}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Địa điểm</label>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Địa điểm</label>
                 <Controller
                   name="location"
                   control={control}
                   render={({ field }) => (
-                    <div className={errors.location?.address || errors.location ? 'ring-2 ring-red-200 rounded-xl' : ''}>
+                    <div className={errors.location?.address || errors.location ? 'rounded-xl ring-2 ring-red-200' : ''}>
                       <LocationPicker
                         value={field.value}
                         onChange={field.onChange}
@@ -312,55 +387,73 @@ export default function Step1Story() {
                   )}
                 />
                 {(errors.location?.address || errors.location) && (
-                  <p className="text-red-500 text-sm mt-1.5 font-medium">
+                  <p className="mt-1.5 text-sm font-medium text-red-500">
                     {errors.location?.address?.message || errors.location?.message}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+            <div className="grid grid-cols-1 gap-6 pt-2 md:grid-cols-2">
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Ngày bắt đầu dự kiến</label>
-                <input
-                  type="date"
-                  {...register('startDate')}
-                  className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900
-                      ${errors.startDate ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
-                />
-                {errors.startDate && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.startDate.message}</p>}
-              </div>
+  <label className="mb-2 block text-sm font-bold text-slate-700">Ngày bắt đầu dự kiến</label>
+  <input
+    type="date"
+    min={todayInputValue}
+    max={startDateMax}
+    {...register('startDate')}
+    className={`w-full rounded-2xl border bg-gradient-to-b from-white to-slate-50 px-4 py-3.5 text-slate-900 shadow-sm outline-none transition-all [color-scheme:light] ${
+      errors.startDate
+        ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+        : 'border-slate-200 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-amber-100'
+    }`}
+  />
+  <p className="mt-2 text-xs text-slate-500">
+    Chỉ được chọn từ hôm nay đến tối đa {maxDurationDays} ngày tiếp theo.
+  </p>
+  {errors.startDate && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.startDate.message}</p>}
+</div>
 
               <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2">Ngày kết thúc dự kiến</label>
-                <input
-                  type="date"
-                  {...register('endDate')}
-                  className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900
-                      ${errors.endDate ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
-                />
-                {errors.endDate && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.endDate.message}</p>}
-              </div>
+  <label className="mb-2 block text-sm font-bold text-slate-700">Ngày kết thúc dự kiến</label>
+  <input
+    type="date"
+    min={endDateMin}
+    max={endDateMax || undefined}
+    disabled={!startDateValue}
+    {...register('endDate')}
+    className={`w-full rounded-2xl border bg-gradient-to-b from-white to-slate-50 px-4 py-3.5 text-slate-900 shadow-sm outline-none transition-all [color-scheme:light] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 ${
+      errors.endDate
+        ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+        : 'border-slate-200 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-amber-100'
+    }`}
+  />
+  <p className="mt-2 text-xs text-slate-500">
+    {!startDateValue
+      ? 'Hãy chọn ngày bắt đầu trước.'
+      : `Chỉ được chọn từ ngày bắt đầu đến tối đa ${maxDurationDays} ngày sau ngày bắt đầu.`}
+  </p>
+  {errors.endDate && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.endDate.message}</p>}
+</div>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+          <div className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold text-slate-900">Câu chuyện & đối tượng thụ hưởng</h2>
 
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">Mô tả đối tượng thụ hưởng</label>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Mô tả đối tượng thụ hưởng</label>
               <textarea
                 {...register('beneficiaryInfo.details')}
-                className={`w-full rounded-xl p-3 border outline-none transition-all shadow-sm bg-slate-50 text-slate-900 placeholder-slate-400 min-h-[100px] resize-y
-                    ${errors.beneficiaryInfo?.details ? 'border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:ring-2 focus:ring-primary focus:border-primary'}`}
+                className={`min-h-[100px] w-full resize-y rounded-xl border bg-slate-50 p-3 text-slate-900 shadow-sm outline-none transition-all placeholder:text-slate-400 ${errors.beneficiaryInfo?.details ? 'border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-200' : 'border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary'}`}
                 placeholder="Ai sẽ nhận được hỗ trợ từ dự án này? Khoảng bao nhiêu người?"
               />
-              {errors.beneficiaryInfo?.details && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.beneficiaryInfo.details.message}</p>}
+              {errors.beneficiaryInfo?.details && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.beneficiaryInfo.details.message}</p>}
             </div>
 
             <div className="pt-2">
-              <label className="block text-sm font-bold text-slate-700 mb-2">Câu chuyện chi tiết</label>
-              <div className={errors.description ? 'ring-2 ring-red-200 rounded-xl' : ''}>
+              <label className="mb-2 block text-sm font-bold text-slate-700">Câu chuyện chi tiết</label>
+              <div className={errors.description ? 'rounded-xl ring-2 ring-red-200' : ''}>
                 <Controller
                   name="description"
                   control={control}
@@ -369,23 +462,25 @@ export default function Step1Story() {
                   )}
                 />
               </div>
-              {errors.description && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.description.message}</p>}
+              {errors.description && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.description.message}</p>}
             </div>
           </div>
         </div>
 
-        <div className="lg:col-span-5 space-y-6">
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 flex gap-3 items-start shadow-sm">
-            <div className="text-amber-600 flex-shrink-0 mt-0.5">
+        <div className="space-y-6 lg:col-span-5">
+          <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 shadow-sm">
+            <div className="mt-0.5 flex-shrink-0 text-amber-600">
               <Shield size={20} />
             </div>
             <div>
-              <h4 className="font-bold text-amber-800 text-sm">Kiểm tra minh bạch</h4>
-              <p className="text-sm text-amber-700 mt-1">Hệ thống AI sẽ tự động quét tính nguyên bản của hình ảnh. Vui lòng sử dụng ảnh thật.</p>
+              <h4 className="text-sm font-bold text-amber-800">Kiểm tra minh bạch</h4>
+              <p className="mt-1 text-sm text-amber-700">
+                Hệ thống AI sẽ tự động quét tính nguyên bản của hình ảnh. Vui lòng sử dụng ảnh thật.
+              </p>
             </div>
           </div>
 
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+          <div className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold text-slate-900">Ảnh / video đại diện dự án</h2>
             <Controller
               name="coverMedia"
@@ -405,14 +500,16 @@ export default function Step1Story() {
             />
           </div>
 
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-100 shadow-sm space-y-4">
+          <div className="space-y-4 rounded-3xl border border-slate-100 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold text-slate-900">Tài liệu & giấy tờ</h2>
-            <p className="text-sm text-slate-500">Tải lên báo giá, giấy phép hoặc giấy xác nhận địa phương để tăng độ tin cậy.</p>
+            <p className="text-sm text-slate-500">
+              Tải lên báo giá, giấy phép hoặc giấy xác nhận địa phương để tăng độ tin cậy.
+            </p>
             <Controller
               name="documents"
               control={control}
               render={({ field }) => (
-                <div className={errors.documents ? 'ring-2 ring-red-200 rounded-xl' : ''}>
+                <div className={errors.documents ? 'rounded-xl ring-2 ring-red-200' : ''}>
                   <MediaDropzone
                     value={field.value}
                     onChange={field.onChange}
@@ -426,19 +523,18 @@ export default function Step1Story() {
                 </div>
               )}
             />
-            {errors.documents && <p className="text-red-500 text-sm mt-1.5 font-medium">{errors.documents.message}</p>}
+            {errors.documents && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.documents.message}</p>}
           </div>
         </div>
-
       </fieldset>
 
-      <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="fixed bottom-0 left-0 z-40 w-full border-t border-slate-200 bg-white/95 px-4 py-4 backdrop-blur-md sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 sm:flex-row">
           <button
             type="button"
             onClick={openSaveModal}
             disabled={isSubmitDisabled}
-            className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 font-bold text-slate-700 border-2 border-slate-200 rounded-xl hover:bg-slate-50 transition-colors shadow-sm disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-slate-200 px-6 py-3 font-bold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 disabled:opacity-50 sm:w-auto"
           >
             <Save size={18} /> {isMediaUploading ? 'Đang tải tệp...' : 'Lưu bản nháp và thoát'}
           </button>
@@ -446,11 +542,10 @@ export default function Step1Story() {
           <button
             type="submit"
             disabled={isSubmitDisabled}
-            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-3 font-bold rounded-xl transition-all shadow-sm
-              ${isSubmitDisabled ? 'bg-slate-400 text-white cursor-not-allowed' : 'bg-primary hover:bg-primary-hover text-white shadow-lg shadow-yellow-500/20'}`}
+            className={`flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3 font-bold shadow-sm transition-all sm:w-auto ${isSubmitDisabled ? 'cursor-not-allowed bg-slate-400 text-white' : 'bg-primary text-white shadow-lg shadow-yellow-500/20 hover:bg-primary-hover'}`}
           >
             {isPending && <Loader2 className="animate-spin" size={20} />}
-            {isMediaUploading ? 'Vui lòng đợi ảnh tải lên...' : (isPending ? 'Đang xử lý...' : 'Tiếp theo: Ngân sách & nhân sự')}
+            {isMediaUploading ? 'Vui lòng đợi ảnh tải lên...' : isPending ? 'Đang xử lý...' : 'Tiếp theo: Ngân sách & nhân sự'}
             {!isSubmitDisabled && !isMediaUploading && <ArrowRight size={20} />}
           </button>
         </div>
@@ -512,14 +607,14 @@ export default function Step1Story() {
       )}
 
       {isTypeConfirmModalOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+        <div className="animate-in fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm duration-200">
+          <div className="w-full max-w-md space-y-4 rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <AlertCircle className="text-red-600" size={24} />
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900">Xóa dữ liệu tài chính?</h3>
-              <p className="text-sm text-slate-500 mt-2">
+              <p className="mt-2 text-sm text-slate-500">
                 Việc chuyển sang <b>Dự án tình nguyện</b> sẽ xóa toàn bộ kế hoạch ngân sách đã lập ở bước sau. Hành động này không thể hoàn tác.
               </p>
             </div>
@@ -527,14 +622,14 @@ export default function Step1Story() {
               <button
                 type="button"
                 onClick={() => setIsTypeConfirmModalOpen(false)}
-                className="flex-1 px-4 py-2.5 font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200"
+                className="flex-1 rounded-xl bg-slate-100 px-4 py-2.5 font-bold text-slate-700 hover:bg-slate-200"
               >
                 Hủy
               </button>
               <button
                 type="button"
                 onClick={confirmChangeType}
-                className="flex-1 px-4 py-2.5 font-bold text-white bg-red-600 rounded-xl hover:bg-red-700"
+                className="flex-1 rounded-xl bg-red-600 px-4 py-2.5 font-bold text-white hover:bg-red-700"
               >
                 Xác nhận xóa
               </button>

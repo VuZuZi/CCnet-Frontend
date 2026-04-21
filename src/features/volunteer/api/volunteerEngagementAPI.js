@@ -1,50 +1,29 @@
-import httpClient from "@/shared/lib/httpClient";
-
-const unwrap = (response) => response?.data?.data;
+import httpClient from "../../../shared/lib/httpClient.js";
 
 export const volunteerEngagementAPI = {
-  async getAttendanceList(projectId, milestoneId) {
+  getProjectReviews: async (projectId) => {
     const response = await httpClient.get(
-      `/volunteer-engagement/projects/${projectId}/milestones/${milestoneId}/attendance`
+      `/volunteer-engagement/projects/${projectId}/reviews`,
     );
-    return unwrap(response);
+    return response?.data?.data || response?.data || [];
   },
 
-  async bootstrapAttendance(projectId, milestoneId) {
-    const response = await httpClient.post(
-      `/volunteer-engagement/projects/${projectId}/milestones/${milestoneId}/attendance/bootstrap`
-    );
-    return unwrap(response);
-  },
-
-  async updateAttendance(attendanceId, payload) {
-    const response = await httpClient.patch(
-      `/volunteer-engagement/attendance/${attendanceId}`,
-      payload
-    );
-    return unwrap(response);
-  },
-
-  async getReviewList(projectId, milestoneId) {
+  getMyProjectReview: async (projectId) => {
     const response = await httpClient.get(
-      `/volunteer-engagement/projects/${projectId}/milestones/${milestoneId}/reviews`
+      `/volunteer-engagement/projects/${projectId}/my-review`,
     );
-    return unwrap(response);
+    return response?.data?.data || response?.data || null;
   },
 
-  async bootstrapReviews(projectId, milestoneId) {
-    const response = await httpClient.post(
-      `/volunteer-engagement/projects/${projectId}/milestones/${milestoneId}/reviews/bootstrap`
-    );
-    return unwrap(response);
-  },
-
-  async submitReview(reviewId, payload) {
+  submitReview: async ({ reviewId, score, comment }) => {
     const response = await httpClient.patch(
       `/volunteer-engagement/reviews/${reviewId}`,
-      payload
+      {
+        score,
+        comment,
+      },
     );
-    return unwrap(response);
+    return response?.data?.data || response?.data;
   },
 };
 
