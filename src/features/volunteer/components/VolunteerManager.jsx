@@ -14,6 +14,8 @@ import {
   Info,
   ShieldCheck,
   LogOut,
+  ClipboardCheck,
+  Star,
 } from "lucide-react";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -21,8 +23,15 @@ import { useNavigate } from "react-router-dom";
 
 import { useVolunteerQueries } from "@/features/volunteer/hooks/useVolunteerQueries.js";
 import { useVolunteerMutations } from "@/features/volunteer/hooks/useVolunteerMutations.js";
+import {
+  useAttendanceList,
+  useReviewList,
+} from "@/features/volunteer/hooks/useVolunteerEngagementQueries.js";
+import { useVolunteerEngagementMutations } from "@/features/volunteer/hooks/useVolunteerEngagementMutations.js";
 import { useCreateConversation } from "@/features/chat/hooks/conversations/useCreateConversation";
 import { useToast } from "@/shared/contexts/ToastContext";
+
+const DEFAULT_MILESTONE_ID = "default";
 
 export const VolunteerManager = ({
   projectId,
@@ -36,6 +45,10 @@ export const VolunteerManager = ({
   const [restoreTarget, setRestoreTarget] = useState(null);
   const [approveWithdrawTarget, setApproveWithdrawTarget] = useState(null);
   const [rejectWithdrawTarget, setRejectWithdrawTarget] = useState(null);
+
+  const [attendanceTarget, setAttendanceTarget] = useState(null);
+  const [attendanceStatusTarget, setAttendanceStatusTarget] = useState("ATTENDED");
+  const [reviewTarget, setReviewTarget] = useState(null);
 
   const cardRefs = useRef({});
 
@@ -54,6 +67,18 @@ export const VolunteerManager = ({
     useProjectApplications(projectId, "WITHDRAW_REQUESTED");
 
   const {
+    data: attendanceResult,
+    isLoading: attendanceLoading,
+    refetch: refetchAttendance,
+  } = useAttendanceList(projectId, DEFAULT_MILESTONE_ID);
+
+  const {
+    data: reviewResult,
+    isLoading: reviewLoading,
+    refetch: refetchReviews,
+  } = useReviewList(projectId, DEFAULT_MILESTONE_ID);
+
+  const {
     approveApplication,
     rejectApplication,
     restoreApplication,
@@ -66,6 +91,17 @@ export const VolunteerManager = ({
     isRejectingWithdraw,
   } = useVolunteerMutations();
 
+  const {
+    bootstrapAttendance,
+    updateAttendance,
+    bootstrapReviews,
+    submitReview,
+    isBootstrappingAttendance,
+    isUpdatingAttendance,
+    isBootstrappingReviews,
+    isSubmittingReview,
+  } = useVolunteerEngagementMutations();
+
   const { createConversationAsync, isLoading: isCreatingConversation } =
     useCreateConversation();
 
@@ -75,7 +111,11 @@ export const VolunteerManager = ({
     isRestoring ||
     isApprovingWithdraw ||
     isRejectingWithdraw ||
-    isCreatingConversation;
+    isCreatingConversation ||
+    isBootstrappingAttendance ||
+    isUpdatingAttendance ||
+    isBootstrappingReviews ||
+    isSubmittingReview;
 
   useEffect(() => {
     setActiveSubTab(initialSubTab || "pending");
@@ -89,10 +129,23 @@ export const VolunteerManager = ({
     return [];
   };
 
+  const getItemsArray = (result) => {
+    if (!result) return [];
+    if (Array.isArray(result)) return result;
+    if (Array.isArray(result.items)) return result.items;
+    if (Array.isArray(result.data)) return result.data;
+    if (Array.isArray(result?.data?.items)) return result.data.items;
+    if (Array.isArray(result?.data?.data)) return result.data.data;
+    return [];
+  };
+
   const pendingApps = getApplicationsArray(pendingResult);
   const approvedApps = getApplicationsArray(approvedResult);
   const rejectedApps = getApplicationsArray(rejectedResult);
   const withdrawApps = getApplicationsArray(withdrawResult);
+
+  const attendanceItems = getItemsArray(attendanceResult);
+  const reviewItems = getItemsArray(reviewResult);
 
   const applications = useMemo(() => {
     switch (activeSubTab) {
@@ -119,6 +172,10 @@ export const VolunteerManager = ({
         return rejectedLoading;
       case "withdraw":
         return withdrawLoading;
+      case "attendance":
+        return attendanceLoading;
+      case "review":
+        return reviewLoading;
       default:
         return false;
     }
@@ -128,6 +185,8 @@ export const VolunteerManager = ({
     approvedLoading,
     rejectedLoading,
     withdrawLoading,
+    attendanceLoading,
+    reviewLoading,
   ]);
 
   useEffect(() => {
@@ -256,6 +315,85 @@ export const VolunteerManager = ({
     }
   };
 
+  const handleBootstrapAttendance = async () => {
+    try {
+      await bootstrapAttendance(projectId, DEFAULT_MILESTONE_ID);
+      await refetchAttendance();
+      toast.success("Đã khởi tạo danh sách chấm công");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Không thể khởi tạo danh sách chấm công",
+      );
+    }
+  };
+
+  const handleAttendanceConfirm = async (note = "") => {
+    if (!attendanceTarget?._id) return;
+
+    try {
+      await updateAttendance(
+        projectId,
+        DEFAULT_MILESTONE_ID,
+        attendanceTarget._id,
+        {
+          status: attendanceStatusTarget,
+          note,
+        },
+      );
+      await refetchAttendance();
+      setAttendanceTarget(null);
+      toast.success(
+        attendanceStatusTarget === "ATTENDED"
+          ? "Đã xác nhận tham gia"
+          : "Đã đánh dấu vắng mặt",
+      );
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Cập nhật chấm công thất bại",
+      );
+    }
+  };
+
+  const handleBootstrapReviews = async () => {
+    try {
+      await bootstrapReviews(projectId, DEFAULT_MILESTONE_ID);
+      await refetchReviews();
+      toast.success("Đã khởi tạo danh sách đánh giá");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Không thể khởi tạo danh sách đánh giá",
+      );
+    }
+  };
+
+  const handleSubmitReview = async ({ score, comment }) => {
+    if (!reviewTarget?._id) return;
+
+    try {
+      await submitReview(
+        projectId,
+        DEFAULT_MILESTONE_ID,
+        reviewTarget._id,
+        { score, comment },
+      );
+      await refetchReviews();
+      setReviewTarget(null);
+      toast.success("Đánh giá volunteer thành công");
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Đánh giá volunteer thất bại",
+      );
+    }
+  };
+
   const tabs = [
     {
       id: "pending",
@@ -274,6 +412,24 @@ export const VolunteerManager = ({
       activeClass:
         "bg-emerald-50 text-emerald-800 border-emerald-200 shadow-[0_8px_18px_rgba(16,185,129,0.12)]",
       badgeActiveClass: "bg-emerald-200 text-emerald-900",
+    },
+    {
+      id: "attendance",
+      label: "Chấm công",
+      count: attendanceItems.length,
+      icon: ClipboardCheck,
+      activeClass:
+        "bg-sky-50 text-sky-800 border-sky-200 shadow-[0_8px_18px_rgba(14,165,233,0.12)]",
+      badgeActiveClass: "bg-sky-200 text-sky-900",
+    },
+    {
+      id: "review",
+      label: "Đánh giá",
+      count: reviewItems.length,
+      icon: Star,
+      activeClass:
+        "bg-violet-50 text-violet-800 border-violet-200 shadow-[0_8px_18px_rgba(139,92,246,0.12)]",
+      badgeActiveClass: "bg-violet-200 text-violet-900",
     },
     {
       id: "withdraw",
@@ -342,12 +498,68 @@ export const VolunteerManager = ({
     }
   };
 
+  const getAttendanceStatusConfig = (status) => {
+    switch (status) {
+      case "ATTENDED":
+        return {
+          wrapper:
+            "border-emerald-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F3FFF8_100%)]",
+          badge: "bg-emerald-100 text-emerald-800",
+          label: "Đã tham gia",
+        };
+      case "ABSENT":
+        return {
+          wrapper:
+            "border-rose-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#FFF6F7_100%)]",
+          badge: "bg-rose-100 text-rose-800",
+          label: "Vắng mặt",
+        };
+      default:
+        return {
+          wrapper:
+            "border-sky-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F4FBFF_100%)]",
+          badge: "bg-sky-100 text-sky-800",
+          label: "Chờ xác nhận",
+        };
+    }
+  };
+
+  const getReviewStatusConfig = (status) => {
+    switch (status) {
+      case "REVIEWED":
+        return {
+          wrapper:
+            "border-violet-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#FAF7FF_100%)]",
+          badge: "bg-violet-100 text-violet-800",
+          label: "Đã đánh giá",
+        };
+      case "AUTO_MAXED":
+        return {
+          wrapper:
+            "border-amber-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#FFF8EF_100%)]",
+          badge: "bg-amber-100 text-amber-800",
+          label: "Tự động tối đa",
+        };
+      default:
+        return {
+          wrapper:
+            "border-slate-200 bg-[linear-gradient(180deg,#FFFFFF_0%,#F8FAFC_100%)]",
+          badge: "bg-slate-100 text-slate-700",
+          label: "Chờ đánh giá",
+        };
+    }
+  };
+
   const getEmptyMessage = () => {
     switch (activeSubTab) {
       case "pending":
         return "Hiện không có đơn đăng ký nào đang chờ.";
       case "approved":
         return "Hiện chưa có thành viên nào được duyệt tham gia.";
+      case "attendance":
+        return "Chưa có dữ liệu chấm công. Hãy khởi tạo danh sách chấm công trước.";
+      case "review":
+        return "Chưa có dữ liệu đánh giá. Hãy khởi tạo danh sách đánh giá trước.";
       case "withdraw":
         return "Hiện không có yêu cầu xin rút nào.";
       case "rejected":
@@ -355,6 +567,498 @@ export const VolunteerManager = ({
       default:
         return "Chưa có dữ liệu.";
     }
+  };
+
+  const renderApplicationCards = () => {
+    return applications.length === 0 ? (
+      <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center">
+        <p className="text-slate-500">{getEmptyMessage()}</p>
+      </div>
+    ) : (
+      applications.map((app) => {
+        const statusConfig = getStatusConfig(app.status);
+        const volunteer = app.volunteerId || {};
+        const volunteerId = volunteer?._id || volunteer?.id || null;
+        const isHighlighted =
+          highlightedApplicationId &&
+          String(app?._id || "") === String(highlightedApplicationId);
+
+        return (
+          <div
+            key={app._id}
+            ref={(el) => {
+              cardRefs.current[String(app._id)] = el;
+            }}
+            className={`rounded-[28px] border p-6 shadow-sm transition-all ${
+              statusConfig.wrapper
+            } ${
+              isHighlighted ? "ring-2 ring-amber-200 border-amber-400" : ""
+            }`}
+          >
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                  <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    {volunteer?.avatar ? (
+                      <img
+                        src={volunteer.avatar}
+                        alt={volunteer?.fullName || "Tình nguyện viên"}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center bg-[#FFF8DC] text-xl font-black text-[#B45309]">
+                        {volunteer?.fullName?.charAt(0) || "T"}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="min-w-0 flex-1 space-y-3">
+                    <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                      <div className="min-w-0">
+                        <h3 className="truncate text-lg font-black text-slate-900">
+                          {volunteer?.fullName || "Tình nguyện viên"}
+                        </h3>
+
+                        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                          <span className="inline-flex items-center gap-1.5">
+                            <CalendarDays className="h-4 w-4" />
+                            Nộp đơn{" "}
+                            {app.createdAt
+                              ? format(new Date(app.createdAt), "dd/MM/yyyy", {
+                                  locale: vi,
+                                })
+                              : "--/--/----"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div
+                        className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold ${statusConfig.badge}`}
+                      >
+                        {statusConfig.label}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">
+                        <Briefcase className="h-3.5 w-3.5" />
+                        {app.skills || "Chưa cập nhật vai trò"}
+                      </span>
+
+                      <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">
+                        <Clock className="h-3.5 w-3.5" />
+                        {app.availability || "Chưa cập nhật thời gian"}
+                      </span>
+
+                      {app.status === "APPROVED" ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
+                          <ShieldCheck className="h-3.5 w-3.5" />
+                          Đang tham gia dự án
+                        </span>
+                      ) : null}
+
+                      {app.status === "WITHDRAW_REQUESTED" ? (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
+                          <LogOut className="h-3.5 w-3.5" />
+                          Đang chờ ban tổ chức phản hồi
+                        </span>
+                      ) : null}
+                    </div>
+
+                    <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4">
+                      <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                        <Info className="h-3.5 w-3.5" />
+                        Lý do / giới thiệu
+                      </div>
+                      <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
+                        {app.motivation || "Chưa có nội dung giới thiệu."}
+                      </p>
+                    </div>
+
+                    {app.rejectReason ? (
+                      <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
+                        <div className="text-xs font-bold uppercase tracking-[0.12em] text-rose-500">
+                          Lý do từ chối
+                        </div>
+                        <p className="mt-2 whitespace-pre-wrap break-words text-sm text-rose-700 [overflow-wrap:anywhere]">
+                          {app.rejectReason}
+                        </p>
+                      </div>
+                    ) : null}
+
+                    {app.status === "WITHDRAW_REQUESTED" && app.withdrawReason ? (
+                      <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                        <div className="text-xs font-bold uppercase tracking-[0.12em] text-amber-600">
+                          Lý do xin rút
+                        </div>
+                        <p className="mt-2 whitespace-pre-wrap break-words text-sm text-amber-900 [overflow-wrap:anywhere]">
+                          {app.withdrawReason}
+                        </p>
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex w-full flex-col gap-2 lg:w-[210px]">
+                <button
+                  onClick={() => handleMessageVolunteer(volunteerId)}
+                  disabled={isUpdating || !volunteerId}
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Nhắn tin
+                </button>
+
+                {activeSubTab === "pending" ? (
+                  <>
+                    <button
+                      onClick={() => setApproveTarget(app)}
+                      disabled={isUpdating}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Duyệt đơn
+                    </button>
+
+                    <button
+                      onClick={() => setRejectTarget(app)}
+                      disabled={isUpdating}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-rose-600 disabled:opacity-50"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Từ chối
+                    </button>
+                  </>
+                ) : null}
+
+                {activeSubTab === "withdraw" ? (
+                  <>
+                    <button
+                      onClick={() => setApproveWithdrawTarget(app)}
+                      disabled={isUpdating}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-bold text-slate-900 transition hover:bg-amber-600 disabled:opacity-50"
+                    >
+                      <CheckCircle className="h-4 w-4" />
+                      Đồng ý rút
+                    </button>
+
+                    <button
+                      onClick={() => setRejectWithdrawTarget(app)}
+                      disabled={isUpdating}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-800 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-900 disabled:opacity-50"
+                    >
+                      <XCircle className="h-4 w-4" />
+                      Từ chối rút
+                    </button>
+                  </>
+                ) : null}
+
+                {activeSubTab === "rejected" ? (
+                  <button
+                    onClick={() => setRestoreTarget(app)}
+                    disabled={isUpdating}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-600 disabled:opacity-50"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Khôi phục
+                  </button>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        );
+      })
+    );
+  };
+
+  const renderAttendanceCards = () => {
+    return attendanceItems.length === 0 ? (
+      <div className="space-y-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center">
+          <p className="text-slate-500">{getEmptyMessage()}</p>
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleBootstrapAttendance}
+            disabled={isUpdating}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sky-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-sky-600 disabled:opacity-50"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            Khởi tạo chấm công
+          </button>
+        </div>
+      </div>
+    ) : (
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleBootstrapAttendance}
+            disabled={isUpdating}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-3 text-sm font-bold text-sky-800 transition hover:bg-sky-100 disabled:opacity-50"
+          >
+            <ClipboardCheck className="h-4 w-4" />
+            Đồng bộ lại chấm công
+          </button>
+        </div>
+
+        {attendanceItems.map((item) => {
+          const config = getAttendanceStatusConfig(item.status);
+          const volunteer = item.volunteerId || {};
+          const volunteerId = volunteer?._id || volunteer?.id || null;
+
+          return (
+            <div
+              key={item._id}
+              className={`rounded-[28px] border p-6 shadow-sm transition-all ${config.wrapper}`}
+            >
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      {volunteer?.avatar ? (
+                        <img
+                          src={volunteer.avatar}
+                          alt={volunteer?.fullName || "Tình nguyện viên"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-[#EFF6FF] text-xl font-black text-sky-700">
+                          {volunteer?.fullName?.charAt(0) || "T"}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0">
+                          <h3 className="truncate text-lg font-black text-slate-900">
+                            {volunteer?.fullName || "Tình nguyện viên"}
+                          </h3>
+                          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                            <span className="inline-flex items-center gap-1.5">
+                              <CalendarDays className="h-4 w-4" />
+                              Cập nhật{" "}
+                              {item.updatedAt
+                                ? format(new Date(item.updatedAt), "dd/MM/yyyy", {
+                                    locale: vi,
+                                  })
+                                : "--/--/----"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold ${config.badge}`}
+                        >
+                          {config.label}
+                        </div>
+                      </div>
+
+                      {item.note ? (
+                        <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4">
+                          <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                            <Info className="h-3.5 w-3.5" />
+                            Ghi chú
+                          </div>
+                          <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
+                            {item.note}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex w-full flex-col gap-2 lg:w-[210px]">
+                  <button
+                    onClick={() => handleMessageVolunteer(volunteerId)}
+                    disabled={isUpdating || !volunteerId}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Nhắn tin
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setAttendanceStatusTarget("ATTENDED");
+                      setAttendanceTarget(item);
+                    }}
+                    disabled={isUpdating}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50"
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Xác nhận tham gia
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setAttendanceStatusTarget("ABSENT");
+                      setAttendanceTarget(item);
+                    }}
+                    disabled={isUpdating}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-rose-600 disabled:opacity-50"
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Đánh dấu vắng mặt
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderReviewCards = () => {
+    return reviewItems.length === 0 ? (
+      <div className="space-y-4">
+        <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center">
+          <p className="text-slate-500">{getEmptyMessage()}</p>
+        </div>
+
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleBootstrapReviews}
+            disabled={isUpdating}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl bg-violet-500 px-5 py-3 text-sm font-bold text-white transition hover:bg-violet-600 disabled:opacity-50"
+          >
+            <Star className="h-4 w-4" />
+            Khởi tạo đánh giá
+          </button>
+        </div>
+      </div>
+    ) : (
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <button
+            type="button"
+            onClick={handleBootstrapReviews}
+            disabled={isUpdating}
+            className="inline-flex items-center justify-center gap-2 rounded-2xl border border-violet-200 bg-violet-50 px-5 py-3 text-sm font-bold text-violet-800 transition hover:bg-violet-100 disabled:opacity-50"
+          >
+            <Star className="h-4 w-4" />
+            Đồng bộ lại đánh giá
+          </button>
+        </div>
+
+        {reviewItems.map((item) => {
+          const config = getReviewStatusConfig(item.status);
+          const volunteer = item.volunteerId || {};
+          const volunteerId = volunteer?._id || volunteer?.id || null;
+
+          return (
+            <div
+              key={item._id}
+              className={`rounded-[28px] border p-6 shadow-sm transition-all ${config.wrapper}`}
+            >
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                      {volunteer?.avatar ? (
+                        <img
+                          src={volunteer.avatar}
+                          alt={volunteer?.fullName || "Tình nguyện viên"}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-[#F5F3FF] text-xl font-black text-violet-700">
+                          {volunteer?.fullName?.charAt(0) || "T"}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1 space-y-3">
+                      <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                        <div className="min-w-0">
+                          <h3 className="truncate text-lg font-black text-slate-900">
+                            {volunteer?.fullName || "Tình nguyện viên"}
+                          </h3>
+
+                          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+                            <span className="inline-flex items-center gap-1.5">
+                              <Clock className="h-4 w-4" />
+                              Hạn đánh giá{" "}
+                              {item.deadlineAt
+                                ? format(new Date(item.deadlineAt), "dd/MM/yyyy HH:mm", {
+                                    locale: vi,
+                                  })
+                                : "--/--/----"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div
+                          className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold ${config.badge}`}
+                        >
+                          {config.label}
+                        </div>
+                      </div>
+
+                      {typeof item.score === "number" ? (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-bold text-yellow-800">
+                            <Star className="h-3.5 w-3.5" />
+                            Điểm: {item.score}/5
+                          </span>
+
+                          {item.reviewSource ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">
+                              Nguồn: {item.reviewSource}
+                            </span>
+                          ) : null}
+                        </div>
+                      ) : null}
+
+                      {item.comment ? (
+                        <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4">
+                          <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                            <Info className="h-3.5 w-3.5" />
+                            Nhận xét
+                          </div>
+                          <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
+                            {item.comment}
+                          </p>
+                        </div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex w-full flex-col gap-2 lg:w-[210px]">
+                  <button
+                    onClick={() => handleMessageVolunteer(volunteerId)}
+                    disabled={isUpdating || !volunteerId}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                    Nhắn tin
+                  </button>
+
+                  {item.status === "PENDING" ? (
+                    <button
+                      onClick={() => setReviewTarget(item)}
+                      disabled={isUpdating}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-violet-600 disabled:opacity-50"
+                    >
+                      <Star className="h-4 w-4" />
+                      Đánh giá ngay
+                    </button>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -405,211 +1109,13 @@ export const VolunteerManager = ({
         </div>
 
         <div className="space-y-4">
-          {applications.length === 0 ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center">
-              <p className="text-slate-500">{getEmptyMessage()}</p>
-            </div>
-          ) : (
-            applications.map((app) => {
-              const statusConfig = getStatusConfig(app.status);
-              const volunteer = app.volunteerId || {};
-              const volunteerId = volunteer?._id || volunteer?.id || null;
-              const isHighlighted =
-                highlightedApplicationId &&
-                String(app?._id || "") === String(highlightedApplicationId);
+          {["pending", "approved", "withdraw", "rejected"].includes(activeSubTab)
+            ? renderApplicationCards()
+            : null}
 
-              return (
-                <div
-                  key={app._id}
-                  ref={(el) => {
-                    cardRefs.current[String(app._id)] = el;
-                  }}
-                  className={`rounded-[28px] border p-6 shadow-sm transition-all ${
-                    statusConfig.wrapper
-                  } ${
-                    isHighlighted
-                      ? "ring-2 ring-amber-200 border-amber-400"
-                      : ""
-                  }`}
-                >
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="min-w-0 flex-1">
-                      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                        <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-                          {volunteer?.avatar ? (
-                            <img
-                              src={volunteer.avatar}
-                              alt={volunteer?.fullName || "Tình nguyện viên"}
-                              className="h-full w-full object-cover"
-                            />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-[#FFF8DC] text-xl font-black text-[#B45309]">
-                              {volunteer?.fullName?.charAt(0) || "T"}
-                            </div>
-                          )}
-                        </div>
+          {activeSubTab === "attendance" ? renderAttendanceCards() : null}
 
-                        <div className="min-w-0 flex-1 space-y-3">
-                          <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
-                            <div className="min-w-0">
-                              <h3 className="truncate text-lg font-black text-slate-900">
-                                {volunteer?.fullName || "Tình nguyện viên"}
-                              </h3>
-
-                              <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-                                <span className="inline-flex items-center gap-1.5">
-                                  <CalendarDays className="h-4 w-4" />
-                                  Nộp đơn{" "}
-                                  {app.createdAt
-                                    ? format(
-                                        new Date(app.createdAt),
-                                        "dd/MM/yyyy",
-                                        { locale: vi },
-                                      )
-                                    : "--/--/----"}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div
-                              className={`inline-flex w-fit items-center rounded-full px-3 py-1 text-xs font-bold ${statusConfig.badge}`}
-                            >
-                              {statusConfig.label}
-                            </div>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">
-                              <Briefcase className="h-3.5 w-3.5" />
-                              {app.skills || "Chưa cập nhật vai trò"}
-                            </span>
-
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">
-                              <Clock className="h-3.5 w-3.5" />
-                              {app.availability || "Chưa cập nhật thời gian"}
-                            </span>
-
-                            {app.status === "APPROVED" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-700">
-                                <ShieldCheck className="h-3.5 w-3.5" />
-                                Đang tham gia dự án
-                              </span>
-                            ) : null}
-
-                            {app.status === "WITHDRAW_REQUESTED" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-700">
-                                <LogOut className="h-3.5 w-3.5" />
-                                Đang chờ ban tổ chức phản hồi
-                              </span>
-                            ) : null}
-                          </div>
-
-                          <div className="rounded-2xl border border-slate-200/80 bg-white/80 p-4">
-                            <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
-                              <Info className="h-3.5 w-3.5" />
-                              Lý do / giới thiệu
-                            </div>
-                            <p className="whitespace-pre-wrap break-words text-sm leading-6 text-slate-700 [overflow-wrap:anywhere]">
-                              {app.motivation || "Chưa có nội dung giới thiệu."}
-                            </p>
-                          </div>
-
-                          {app.rejectReason ? (
-                            <div className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
-                              <div className="text-xs font-bold uppercase tracking-[0.12em] text-rose-500">
-                                Lý do từ chối
-                              </div>
-                              <p className="mt-2 whitespace-pre-wrap break-words text-sm text-rose-700 [overflow-wrap:anywhere]">
-                                {app.rejectReason}
-                              </p>
-                            </div>
-                          ) : null}
-
-                          {app.status === "WITHDRAW_REQUESTED" &&
-                          app.withdrawReason ? (
-                            <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                              <div className="text-xs font-bold uppercase tracking-[0.12em] text-amber-600">
-                                Lý do xin rút
-                              </div>
-                              <p className="mt-2 whitespace-pre-wrap break-words text-sm text-amber-900 [overflow-wrap:anywhere]">
-                                {app.withdrawReason}
-                              </p>
-                            </div>
-                          ) : null}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex w-full flex-col gap-2 lg:w-[210px]">
-                      <button
-                        onClick={() => handleMessageVolunteer(volunteerId)}
-                        disabled={isUpdating || !volunteerId}
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:opacity-50"
-                      >
-                        <MessageCircle className="h-4 w-4" />
-                        Nhắn tin
-                      </button>
-
-                      {activeSubTab === "pending" ? (
-                        <>
-                          <button
-                            onClick={() => setApproveTarget(app)}
-                            disabled={isUpdating}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                            Duyệt đơn
-                          </button>
-
-                          <button
-                            onClick={() => setRejectTarget(app)}
-                            disabled={isUpdating}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-rose-600 disabled:opacity-50"
-                          >
-                            <XCircle className="h-4 w-4" />
-                            Từ chối
-                          </button>
-                        </>
-                      ) : null}
-
-                      {activeSubTab === "withdraw" ? (
-                        <>
-                          <button
-                            onClick={() => setApproveWithdrawTarget(app)}
-                            disabled={isUpdating}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-bold text-slate-900 transition hover:bg-amber-600 disabled:opacity-50"
-                          >
-                            <CheckCircle className="h-4 w-4" />
-                            Đồng ý rút
-                          </button>
-
-                          <button
-                            onClick={() => setRejectWithdrawTarget(app)}
-                            disabled={isUpdating}
-                            className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-800 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-900 disabled:opacity-50"
-                          >
-                            <XCircle className="h-4 w-4" />
-                            Từ chối rút
-                          </button>
-                        </>
-                      ) : null}
-
-                      {activeSubTab === "rejected" ? (
-                        <button
-                          onClick={() => setRestoreTarget(app)}
-                          disabled={isUpdating}
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-blue-500 px-4 py-3 text-sm font-bold text-white transition hover:bg-blue-600 disabled:opacity-50"
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                          Khôi phục
-                        </button>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-              );
-            })
-          )}
+          {activeSubTab === "review" ? renderReviewCards() : null}
         </div>
       </div>
 
@@ -671,6 +1177,39 @@ export const VolunteerManager = ({
         onClose={() => setRejectWithdrawTarget(null)}
         onSubmit={handleRejectWithdrawConfirm}
       />
+
+      <AttendanceActionModal
+        open={Boolean(attendanceTarget)}
+        title={
+          attendanceStatusTarget === "ATTENDED"
+            ? "Xác nhận tham gia"
+            : "Đánh dấu vắng mặt"
+        }
+        description={`Xác nhận cập nhật trạng thái cho ${
+          attendanceTarget?.volunteerId?.fullName || "tình nguyện viên"
+        }?`}
+        confirmText={
+          attendanceStatusTarget === "ATTENDED"
+            ? "Xác nhận tham gia"
+            : "Xác nhận vắng mặt"
+        }
+        confirmClassName={
+          attendanceStatusTarget === "ATTENDED"
+            ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+            : "bg-rose-600 hover:bg-rose-700 text-white"
+        }
+        isPending={isUpdatingAttendance}
+        onClose={() => setAttendanceTarget(null)}
+        onSubmit={handleAttendanceConfirm}
+      />
+
+      <ReviewVolunteerModal
+        open={Boolean(reviewTarget)}
+        volunteerName={reviewTarget?.volunteerId?.fullName || "Tình nguyện viên"}
+        isPending={isSubmittingReview}
+        onClose={() => setReviewTarget(null)}
+        onSubmit={handleSubmitReview}
+      />
     </>
   );
 };
@@ -730,6 +1269,62 @@ const ConfirmActionModal = ({
 
         <button
           onClick={onConfirm}
+          disabled={isPending}
+          className={`flex-1 rounded-lg px-4 py-2 font-medium disabled:opacity-50 ${confirmClassName}`}
+        >
+          {isPending ? "Đang xử lý..." : confirmText}
+        </button>
+      </div>
+    </BaseModal>
+  );
+};
+
+const AttendanceActionModal = ({
+  open,
+  title,
+  description,
+  confirmText,
+  confirmClassName,
+  isPending,
+  onClose,
+  onSubmit,
+}) => {
+  const [note, setNote] = useState("");
+
+  const handleClose = () => {
+    setNote("");
+    onClose();
+  };
+
+  const handleSubmit = async () => {
+    await onSubmit(note.trim());
+    setNote("");
+  };
+
+  return (
+    <BaseModal open={open} onClose={handleClose}>
+      <ModalHeader title={title} onClose={handleClose} />
+      <p className="mb-4 text-gray-600">{description}</p>
+
+      <textarea
+        value={note}
+        onChange={(e) => setNote(e.target.value)}
+        rows={4}
+        placeholder="Ghi chú (không bắt buộc)..."
+        className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800 outline-none focus:border-sky-400 focus:ring-2 focus:ring-sky-100"
+      />
+
+      <div className="mt-4 flex gap-3">
+        <button
+          onClick={handleClose}
+          disabled={isPending}
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Hủy
+        </button>
+
+        <button
+          onClick={handleSubmit}
           disabled={isPending}
           className={`flex-1 rounded-lg px-4 py-2 font-medium disabled:opacity-50 ${confirmClassName}`}
         >
@@ -846,6 +1441,84 @@ const RejectWithdrawModal = ({
           className="flex-1 rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-black disabled:opacity-50"
         >
           {isPending ? "Đang xử lý..." : "Xác nhận từ chối"}
+        </button>
+      </div>
+    </BaseModal>
+  );
+};
+
+const ReviewVolunteerModal = ({
+  open,
+  volunteerName,
+  isPending,
+  onClose,
+  onSubmit,
+}) => {
+  const [score, setScore] = useState(5);
+  const [comment, setComment] = useState("");
+
+  const handleClose = () => {
+    setScore(5);
+    setComment("");
+    onClose();
+  };
+
+  const handleSubmit = async () => {
+    await onSubmit({ score: Number(score), comment: comment.trim() });
+    setScore(5);
+    setComment("");
+  };
+
+  return (
+    <BaseModal open={open} onClose={handleClose}>
+      <ModalHeader title="Đánh giá tình nguyện viên" onClose={handleClose} />
+
+      <p className="mb-4 text-gray-600">
+        Gửi đánh giá cho {volunteerName}.
+      </p>
+
+      <div className="space-y-4">
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Điểm đánh giá (1 - 5)
+          </label>
+          <input
+            type="number"
+            min={1}
+            max={5}
+            value={score}
+            onChange={(e) => setScore(e.target.value)}
+            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          />
+        </div>
+
+        <div>
+          <label className="mb-2 block text-sm font-semibold text-slate-700">
+            Nhận xét
+          </label>
+          <textarea
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            rows={5}
+            placeholder="Nhập nhận xét..."
+            className="w-full rounded-xl border border-gray-300 px-4 py-3 text-sm text-gray-800 outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100"
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 flex gap-3">
+        <button
+          onClick={handleClose}
+          className="flex-1 rounded-lg border border-gray-300 px-4 py-2 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Hủy
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isPending || Number(score) < 1 || Number(score) > 5}
+          className="flex-1 rounded-lg bg-violet-600 px-4 py-2 font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+        >
+          {isPending ? "Đang xử lý..." : "Gửi đánh giá"}
         </button>
       </div>
     </BaseModal>

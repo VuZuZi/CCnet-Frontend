@@ -96,10 +96,11 @@ export function ProjectDetailPage() {
     currentUser?.userId || currentUser?._id || currentUser?.id || "";
 
   const organizerId =
-    project?.organizerId?._id ||
-    project?.organizerId?.id ||
-    project?.organizerId ||
-    "";
+  project?.organizer?._id ||
+  project?.organizer?.id ||
+  project?.organizerId?._id ||
+  project?.organizerId ||
+  "";
 
   const { useApplicationStatus } = useVolunteerQueries();
   const {
