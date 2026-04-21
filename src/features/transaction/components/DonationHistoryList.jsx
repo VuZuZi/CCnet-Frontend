@@ -68,7 +68,7 @@ export function DonationHistoryList() {
                     </button>
                 </div>
             ) : (
-                <div className="grid gap-4">
+                <div className="grid gap-4 w-full max-w-full">
                     {donations.map((tx) => {
                         const isRefunded = tx.status === 'REFUNDED' || tx.refundRequest?.status === 'COMPLETED';
                         const isRefundPending = tx.refundRequest?.status === 'PENDING';
@@ -78,20 +78,20 @@ export function DonationHistoryList() {
                         return (
                             <div
                                 key={tx._id}
-                                className={`group relative bg-white border p-6 rounded-[32px] transition-all hover:shadow-md ${isRefunded ? 'opacity-75 border-slate-100' : 'border-slate-200'}`}
+                                className={`group relative bg-white border p-4 sm:p-6 rounded-[32px] transition-all hover:shadow-md w-full max-w-full overflow-hidden ${isRefunded ? 'opacity-75 border-slate-100' : 'border-slate-200'}`}
                             >
-                                <div className="flex flex-col md:flex-row justify-between gap-4">
-                                    <div className="flex-1 space-y-3">
+                                <div className="flex flex-col md:flex-row justify-between gap-4 w-full overflow-hidden">
+                                    <div className="flex-1 min-w-0 space-y-3 w-full">
                                         <div className="flex items-center gap-2">
                                             <span className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase ${isRefunded ? 'bg-slate-100 text-slate-500' : isRefundPending ? 'bg-amber-50 text-amber-700' : isRefundRejected ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>
                                                 {isRefunded ? 'Đã hoàn tiền' : isRefundPending ? 'Chờ duyệt hoàn tiền' : isRefundRejected ? 'Hoàn tiền bị từ chối' : 'Thành công'}
                                             </span>
-                                            <span className="text-xs text-slate-400 font-medium italic">
+                                            <span className="text-xs text-slate-400 font-medium italic truncate max-w-[150px]" title={tx.bankTransactionRef || tx._id}>
                                                 ID: {tx.bankTransactionRef || tx._id.slice(-8).toUpperCase()}
                                             </span>
                                         </div>
 
-                                        <h3 className="font-extrabold text-slate-900 text-lg leading-tight hover:text-amber-600 transition-colors cursor-pointer">
+                                        <h3 className="font-extrabold text-slate-900 text-lg leading-tight hover:text-amber-600 transition-colors cursor-pointer truncate" title={tx.projectId?.title}>
                                             {tx.projectId?.title || 'Dự án không xác định'}
                                         </h3>
 
@@ -105,7 +105,7 @@ export function DonationHistoryList() {
                                         <div className="pt-2 flex flex-col gap-2">
                                             {tx.message && (
                                                 <div className="relative pl-4 border-l-4 border-amber-200 py-1">
-                                                    <p className="text-sm text-slate-600 italic font-medium leading-relaxed">
+                                                    <p className="text-sm text-slate-600 italic font-medium leading-relaxed break-words">
                                                         "{tx.message}"
                                                     </p>
                                                 </div>

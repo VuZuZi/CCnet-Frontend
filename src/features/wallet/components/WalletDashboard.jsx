@@ -71,7 +71,10 @@ export function WalletDashboard() {
                                         <div>
                                             <p className="font-bold text-slate-900">
                                                 {tx.type === 'WALLET_WITHDRAWAL' ? 'Rút tiền' :
-                                                    tx.type === 'USER_REFUND_REQUEST' ? 'Hoàn tiền ủng hộ' : tx.type}
+                                                 tx.type === 'USER_REFUND_REQUEST' ? 'Hoàn tiền ủng hộ' :
+                                                 tx.type === 'DONATION_FROM_WALLET' ? 'Ủng hộ dự án từ Ví' :
+                                                 tx.type === 'WALLET_DEPOSIT' ? 'Nạp tiền vào ví' :
+                                                 tx.type === 'DONATION' ? 'Ủng hộ dự án' : tx.type}
                                             </p>
                                             <p className="text-xs text-slate-500">
                                                 {format(new Date(tx.createdAt), 'dd/MM/yyyy HH:mm')}

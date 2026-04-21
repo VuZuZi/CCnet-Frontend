@@ -8,7 +8,7 @@ import { useHybridUploader } from '@/shared/hooks/useHybridUploader';
 import { UploadCloud, Image as ImageIcon, Loader2, X, AlertTriangle } from 'lucide-react';
 
 const claimSchema = z.object({
-    amount: z.coerce.number().min(5000, "Số tiền không hợp lệ (Tối thiểu 5.000đ)"),
+    amount: z.coerce.number().min(2000, "Số tiền không hợp lệ (Tối thiểu 2.000đ)"),
     bankTransactionRef: z.string().trim().min(1, "Vui lòng nhập mã giao dịch / nội dung").max(100, "Mã quá dài"),
     proofImageUrl: z.string().url("Vui lòng tải lên hình ảnh biên lai rõ nét")
 });

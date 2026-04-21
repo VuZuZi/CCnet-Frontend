@@ -224,7 +224,6 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
                             <ShieldCheck className="mt-0.5 flex-shrink-0 text-amber-600" size={20} />
                             <div>
                                 <p className="text-sm font-bold text-amber-900">Mọi đóng góp đều được bảo vệ qua tài khoản Ký quỹ</p>
-                                <p className="mt-1 line-clamp-1 text-s text-amber-700">Chiến Dịch: {projectTitle}</p>
                             </div>
                         </div>
 

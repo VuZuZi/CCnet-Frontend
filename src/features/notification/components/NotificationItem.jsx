@@ -72,6 +72,13 @@ function getTypeIcon(type) {
     case 'volunteer_withdraw_rejected':
       return Bell;
 
+    case 'refund_request_submitted':
+    case 'transaction_refunded':
+    case 'refund_request_rejected':
+    case 'transaction_failed':
+    case 'donation_successful':
+      return CircleCheckBig;
+
     default:
       return Bell;
   }
@@ -132,6 +139,13 @@ function getTypeLabel(type) {
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
       return 'Tình nguyện viên';
+
+    case 'refund_request_submitted':
+    case 'transaction_refunded':
+    case 'refund_request_rejected':
+    case 'transaction_failed':
+    case 'donation_successful':
+      return 'Giao dịch';
 
     default:
       return 'Thông báo';

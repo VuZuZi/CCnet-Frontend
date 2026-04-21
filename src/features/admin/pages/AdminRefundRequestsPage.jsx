@@ -125,7 +125,7 @@ export default function AdminRefundRequestsPage() {
               return (
                 <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div className="space-y-2">
+                    <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${statusClass}`}>
                           {item.status}
@@ -133,7 +133,9 @@ export default function AdminRefundRequestsPage() {
                         <span className="text-xs text-slate-500">Request #{String(item.id).slice(-8).toUpperCase()}</span>
                       </div>
 
-                      <h3 className="text-base font-extrabold text-slate-900">{item.project?.title || 'Dự án không xác định'}</h3>
+                      <h3 className="text-base font-extrabold text-slate-900 truncate" title={item.project?.title}>
+                        {item.project?.title || 'Dự án không xác định'}
+                      </h3>
 
                       <div className="text-sm text-slate-600">
                         <p>Người gửi: <b>{item.donor?.fullName || 'Không xác định'}</b> ({item.donor?.email || '---'})</p>
