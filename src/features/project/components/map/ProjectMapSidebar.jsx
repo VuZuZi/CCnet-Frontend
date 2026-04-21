@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react";
-import { ChevronLeft, Layers3 } from "lucide-react";
+import { Layers3 } from "lucide-react";
 
 import ProjectMapProjectCard from "./ProjectMapProjectCard";
 
@@ -10,7 +10,6 @@ function ProjectMapSidebarComponent({
   isLoading,
   summaryText = "",
   isOpen = true,
-  onToggle,
 }) {
   const items = useMemo(
     () => (Array.isArray(panelProjects) ? panelProjects : []),
@@ -21,7 +20,7 @@ function ProjectMapSidebarComponent({
 
   return (
     <aside className="pointer-events-auto absolute left-5 top-[92px] bottom-5 z-[2200] flex w-[360px] min-h-0 flex-col overflow-hidden rounded-[30px] border border-white/80 bg-white/92 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
-      <div className="flex items-center justify-between border-b border-slate-100 px-5 pb-4 pt-5">
+      <div className="flex items-center border-b border-slate-100 px-5 pb-4 pt-5">
         <div className="min-w-0">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
@@ -38,15 +37,6 @@ function ProjectMapSidebarComponent({
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={onToggle}
-          className="ml-3 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:bg-slate-50"
-          aria-label="Đóng danh sách"
-        >
-          <ChevronLeft size={18} />
-        </button>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-1 py-3">
@@ -94,8 +84,7 @@ const ProjectMapSidebar = memo(
     prevProps.onProjectSelect === nextProps.onProjectSelect &&
     prevProps.isLoading === nextProps.isLoading &&
     prevProps.summaryText === nextProps.summaryText &&
-    prevProps.isOpen === nextProps.isOpen &&
-    prevProps.onToggle === nextProps.onToggle
+    prevProps.isOpen === nextProps.isOpen
 );
 
 export default ProjectMapSidebar;
