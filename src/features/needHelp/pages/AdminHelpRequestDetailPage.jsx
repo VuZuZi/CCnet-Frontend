@@ -22,8 +22,8 @@ function AdminDetailHeader({ title }) {
   return (
     <section className="overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_24px_55px_-36px_rgba(15,23,42,0.2)]">
       <div className="px-6 py-7 sm:px-8">
-        <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-          <div className="max-w-3xl">
+        <div className="flex min-w-0 flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0 max-w-3xl">
             <Link
               to="/admin/need-help"
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-700 transition-colors hover:bg-slate-100"
@@ -37,22 +37,25 @@ function AdminDetailHeader({ title }) {
               Kiểm duyệt chi tiết của Admin
             </div>
 
-            <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">
+            <h1 className="mt-4 break-words text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">
               Chi tiết yêu cầu
             </h1>
 
-            <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-              Kiểm duyệt bối cảnh yêu cầu, kiểm tra sẵn sàng hỗ trợ và tiến hành điều chỉnh 
+            <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-slate-500 sm:text-base">
+              Kiểm duyệt bối cảnh yêu cầu, kiểm tra sẵn sàng hỗ trợ và tiến hành điều chỉnh
               từ một không gian làm việc admin rõ ràng hơn.
             </p>
           </div>
 
-          <div className="max-w-md rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4 shadow-sm">
+          <div className="min-w-0 max-w-md rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4 shadow-sm xl:w-full xl:max-w-md">
             <div className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
               <Sparkles size={13} />
               Yêu cầu hiện tại
             </div>
-            <p className="mt-2 break-words text-base font-semibold text-slate-900">
+            <p
+              className="mt-2 min-w-0 break-all text-base font-semibold text-slate-900"
+              style={{ overflowWrap: 'anywhere' }}
+            >
               {title || 'Yêu cầu không có tiêu đề'}
             </p>
           </div>
@@ -109,36 +112,39 @@ function AdminModerationPanel({ helpRequest }) {
   };
 
   return (
-    <section className="rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div className="max-w-3xl">
+    <section className="overflow-hidden rounded-[24px] border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
+      <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 max-w-3xl">
           <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
             <ShieldCheck size={13} />
             Kiểm duyệt
           </div>
 
-          <h2 className="mt-3 text-lg font-bold tracking-tight text-slate-900">
+          <h2 className="mt-3 break-words text-lg font-bold tracking-tight text-slate-900">
             Quyết định xác minh
           </h2>
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
+          <p className="mt-1 break-words text-sm leading-6 text-slate-500">
             {getModerationStatusMessage(helpRequest?.status)}
           </p>
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+        <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
           <div className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
             Trạng thái hiện tại
           </div>
-          <p className="mt-1 text-sm font-semibold text-slate-900">
+          <p
+            className="mt-1 min-w-0 break-all text-sm font-semibold text-slate-900"
+            style={{ overflowWrap: 'anywhere' }}
+          >
             {helpRequest?.status || 'Không xác định'}
           </p>
         </div>
       </div>
 
       {isPendingReview ? (
-        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_auto]">
-          <div className="rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
+        <div className="mt-5 grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px]">
+          <div className="min-w-0 rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-4">
             <label className="block text-sm font-bold text-slate-700">
               Lý do từ chối
             </label>
@@ -227,7 +233,7 @@ export function AdminHelpRequestDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="min-w-0 space-y-6 overflow-x-hidden">
       <AdminDetailHeader title={helpRequest.title} />
       <AdminModerationPanel helpRequest={helpRequest} />
       <AdminAssignmentPanel helpRequest={helpRequest} />

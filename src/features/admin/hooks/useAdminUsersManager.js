@@ -11,6 +11,13 @@ import {
   buildVisiblePages,
 } from "../utils/adminUser.utils";
 
+function normalizeUserDetailResponse(response) {
+  if (!response) return null;
+  if (response?.data?.data) return response.data.data;
+  if (response?.data) return response.data;
+  return response;
+}
+
 export function useAdminUsersManager() {
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -118,6 +125,18 @@ export function useAdminUsersManager() {
     });
   };
 
+  const handleLoadUserDetail = async (userId) => {
+    const response = await adminAPI.getUserDetail(userId);
+    const detailUser = normalizeUserDetailResponse(response);
+
+    return detailUser
+      ? {
+          ...detailUser,
+          normalizedStatus: normalizeUserStatus(detailUser),
+        }
+      : null;
+  };
+
   const handleConfirmAction = async () => {
     const user = confirmState.user;
 
@@ -223,6 +242,7 @@ export function useAdminUsersManager() {
     openBanModal,
     closeModal,
     handleConfirmAction,
+    handleLoadUserDetail,
     pendingBanUserId,
     confirmState,
     modalUser,
