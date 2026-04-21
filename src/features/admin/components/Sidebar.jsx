@@ -8,6 +8,7 @@ import {
   ShieldCheck,
   HeartHandshake,
   Bell,
+  Landmark
 } from "lucide-react";
 
 const MENU_ITEMS = [
@@ -59,6 +60,13 @@ const MENU_ITEMS = [
     icon: Flag,
     end: false,
     matchPaths: ["/admin/reports"],
+  },
+{
+    path: "/admin/finance",
+    label: "Sổ cái & Nghiệm thu",
+    icon: Landmark,
+    end: false,
+    matchPaths: ["/admin/finance"],
   },
 ];
 

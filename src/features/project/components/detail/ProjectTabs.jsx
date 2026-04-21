@@ -4,36 +4,27 @@ import {
   Users,
   Wallet,
   BriefcaseBusiness,
+  ClipboardCheck
 } from 'lucide-react';
 
 function getProjectTabs({ isOrganizer, projectType }) {
   const tabs = [
-    {
-      key: 'story',
-      label: 'Câu chuyện',
-      icon: BookOpen,
-    },
-    {
-      key: 'community',
-      label: 'Cộng đồng',
-      icon: Users,
-    },
+    { key: 'story', label: 'Câu chuyện', icon: BookOpen },
+    { key: 'community', label: 'Cộng đồng', icon: Users },
   ];
 
+  tabs.push({
+    key: 'milestones',
+    label: 'Tiến độ & Nghiệm thu',
+    icon: ClipboardCheck,
+  });
+
   if (projectType === 'FUNDED' || !projectType) {
-    tabs.push({
-      key: 'financials',
-      label: 'Quản lý tài chính',
-      icon: Wallet,
-    });
+    tabs.push({ key: 'financials', label: 'Quản lý tài chính', icon: Wallet });
   }
 
   if (isOrganizer) {
-    tabs.push({
-      key: 'volunteer',
-      label: 'Quản lý tình nguyện viên',
-      icon: BriefcaseBusiness,
-    });
+    tabs.push({ key: 'volunteer', label: 'Quản lý tình nguyện viên', icon: BriefcaseBusiness });
   }
 
   return tabs;
