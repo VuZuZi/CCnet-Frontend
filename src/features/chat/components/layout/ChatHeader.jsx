@@ -195,22 +195,6 @@ export default function ChatHeader({
                     </div>
                   </div>
                 </button>
-
-                {isGroup ? (
-                  <button
-                    type="button"
-                    onClick={handleOpenManageGroup}
-                    className="mt-1 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-amber-50 hover:text-amber-800"
-                  >
-                    <Settings className="h-4 w-4 text-amber-600" />
-                    <div className="flex-1">
-                      <div>Quản lý nhóm</div>
-                      <div className="text-xs text-slate-400">
-                        Thành viên, tên nhóm, ảnh đại diện
-                      </div>
-                    </div>
-                  </button>
-                ) : null}
               </div>
             ) : null}
           </div>

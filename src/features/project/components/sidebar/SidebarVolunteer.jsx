@@ -97,7 +97,7 @@ export function SidebarVolunteer({
     project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
   const targetAmount = project?.targetAmount ?? 1;
   const progressPercent = Math.min(
-    Math.round((availableBalance / targetAmount) * 100),
+    Math.round((availableBalance / Math.max(targetAmount, 1)) * 100),
     100
   );
 
@@ -205,51 +205,49 @@ export function SidebarVolunteer({
         </div>
       </div>
 
-      <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
-        <div className="mb-3">
-          <p className="text-sm font-bold text-slate-900">Đánh giá của bạn</p>
-          <p className="mt-1 text-xs text-slate-500">
-            Xem đánh giá mà người tổ chức đã gửi cho phần tham gia của bạn.
-          </p>
-        </div>
-
-        {isFetchingMyReview ? (
-          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
-            Đang tải đánh giá...
-          </div>
-        ) : hasReview ? (
-          <div className="rounded-2xl border border-amber-200 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-1.5">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    className={`h-4 w-4 ${
-                      reviewScore >= star
-                        ? "fill-amber-400 text-amber-400"
-                        : "text-slate-300"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {reviewedAtText ? (
-                <span className="text-xs font-medium text-slate-500">
-                  {reviewedAtText}
-                </span>
-              ) : null}
-            </div>
-
-            <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
-              {reviewComment}
+      {isCompletedProject && hasReview ? (
+        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-3">
+            <p className="text-sm font-bold text-slate-900">Đánh giá của bạn</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Xem đánh giá mà người tổ chức đã gửi cho phần tham gia của bạn.
             </p>
           </div>
-        ) : (
-          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
-            Chưa có đánh giá nào cho phần tham gia của bạn trong dự án này.
-          </div>
-        )}
-      </div>
+
+          {isFetchingMyReview ? (
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
+              Đang tải đánh giá...
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-amber-200 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-4 w-4 ${
+                        reviewScore >= star
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {reviewedAtText ? (
+                  <span className="text-xs font-medium text-slate-500">
+                    {reviewedAtText}
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                {reviewComment}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : null}
 
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">

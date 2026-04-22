@@ -5,7 +5,10 @@ import { useConversationRead } from '@/features/chat/hooks/messages/useConversat
 import { usePinnedMessages } from '@/features/chat/hooks/messages/usePinnedMessages';
 import { useUnpinMessage } from '@/features/chat/hooks/messages/useUnpinMessage';
 import { useChatStore, chatSelectors } from '@/features/chat/stores/useChatStore';
-import { getConversationTitle, getConversationSubtitle } from '@/features/chat/utils/conversation';
+import {
+  getConversationTitle,
+  getConversationSubtitle,
+} from '@/features/chat/utils/conversation';
 import MessageList from './MessageList';
 import MessageComposer from './MessageComposer';
 import PinnedMessagesDrawer from '../message/PinnedMessagesDrawer';
@@ -21,14 +24,16 @@ export default function ConversationView({
   const [jumpToMessageId, setJumpToMessageId] = useState('');
 
   const user = useAuthStore(authSelectors.user);
-  const myId = user?.userId || user?._id || user?.id;
+  const myId = user?.userId || user?._id || user?.id || '';
 
-  const { conversations } = useConversations();
+  const { conversations = [] } = useConversations();
   const { handleComposerFocus } = useConversationRead(conversationId);
-  const { pinnedMessages } = usePinnedMessages(conversationId);
+  const { pinnedMessages = [] } = usePinnedMessages(conversationId);
   const { unpinMessageAsync } = useUnpinMessage(conversationId);
 
-  const pinnedPanelOpen = useChatStore(chatSelectors.pinnedPanelOpen(conversationId));
+  const pinnedPanelOpen = useChatStore(
+    chatSelectors.pinnedPanelOpen(conversationId)
+  );
   const openPinnedPanel = useChatStore((state) => state.openPinnedPanel);
   const closePinnedPanel = useChatStore((state) => state.closePinnedPanel);
 
@@ -55,6 +60,7 @@ export default function ConversationView({
   const handleUnpin = useCallback(
     async (messageId) => {
       if (!messageId) return;
+
       try {
         await unpinMessageAsync({ messageId });
       } catch (error) {
@@ -92,7 +98,9 @@ export default function ConversationView({
             title,
             subtitle,
             pinnedMessages,
-            pinnedCount: Array.isArray(pinnedMessages) ? pinnedMessages.length : 0,
+            pinnedCount: Array.isArray(pinnedMessages)
+              ? pinnedMessages.length
+              : 0,
             onOpenPinnedMessages: handleOpenPinnedPanel,
             onOpenFullPage,
           })
@@ -119,7 +127,7 @@ export default function ConversationView({
       >
         <MessageComposer
           conversationId={conversationId}
-          onSent={() => setScrollSignal((v) => v + 1)}
+          onSent={() => setScrollSignal((value) => value + 1)}
           onComposerFocus={handleFocusAndRead}
         />
       </div>
