@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Activity, Flag, ShieldAlert, Sparkles } from "lucide-react";
 
 import StatCard from "../components/StatCard";
 import ActivityTable from "../components/ActivityTable";
@@ -8,8 +9,14 @@ import { useAdminDashboard } from "../hooks/useAdminDashboard";
 const getPendingReports = (reports) => {
   if (!Array.isArray(reports)) return [];
   return reports.filter(
-    (report) => String(report?.status || "").toLowerCase() === "pending"
+    (report) => String(report?.status || "").toLowerCase() === "pending",
   );
+};
+
+const formatNumber = (value) => {
+  const num = Number(value || 0);
+  if (!Number.isFinite(num)) return "0";
+  return num.toLocaleString("vi-VN");
 };
 
 const AdminDashboard = () => {
@@ -43,84 +50,108 @@ const AdminDashboard = () => {
 
   const isRefreshing = isStatsFetching || isReportsFetching;
 
+  const totalUsers = stats?.users?.total || 0;
+  const bannedUsers = stats?.users?.banned || 0;
+  const totalProjects = stats?.projects?.total || 0;
+  const totalReports = stats?.reports?.total || 0;
+  const totalWalletBalance = stats?.finance?.globalProjectWalletBalance || 0;
+  const pendingRefunds =
+    stats?.refunds?.byStatus?.find((item) => item._id === "PENDING")?.count || 0;
+
   return (
     <div className="space-y-8">
-      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">
-              Bảng điều khiển Quản trị
-            </h1>
-            <p className="mt-1 text-sm text-slate-500">
-              Tổng quan về người dùng, dự án, báo cáo và hoạt động kiểm duyệt gần đây.
-            </p>
-          </div>
 
-          {isRefreshing ? (
-            <div className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">
-              Đang làm mới...
-            </div>
-          ) : null}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         <StatCard
           title="Tổng người dùng"
-          value={stats?.users?.total || 0}
+          value={totalUsers}
           icon="group"
         />
 
         <StatCard
           title="Người dùng bị khóa"
-          value={stats?.users?.banned || 0}
+          value={bannedUsers}
           icon="block"
         />
 
         <StatCard
           title="Tổng số dự án"
-          value={stats?.projects?.total || 0}
+          value={totalProjects}
           icon="rocket"
         />
 
         <StatCard
           title="Tổng số báo cáo"
-          value={stats?.reports?.total || 0}
+          value={totalReports}
           icon="flag"
         />
 
         <StatCard
-          title="Số dư ví tổng (tất cả dự án)"
-          value={`${Number(stats?.finance?.globalProjectWalletBalance || 0).toLocaleString('vi-VN')} đ`}
+          title="Số dư ví tổng"
+          value={`${formatNumber(totalWalletBalance)} đ`}
           icon="wallet"
         />
 
         <StatCard
-          title="Yêu cầu hoàn tiền chờ duyệt"
-          value={
-            stats?.refunds?.byStatus?.find((item) => item._id === 'PENDING')?.count ||
-            0
-          }
+          title="Hoàn tiền chờ duyệt"
+          value={pendingRefunds}
           icon="refresh"
         />
-      </div>
+      </section>
 
-      <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm md:p-6">
-        <div className="mb-4 flex flex-col gap-1">
-          <h2 className="text-lg font-black text-slate-900">Báo cáo gần đây</h2>
-          <p className="text-sm text-slate-500">
-            Các báo cáo đang chờ xử lý cần được kiểm duyệt.
-          </p>
+      <section className="overflow-hidden rounded-[32px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] shadow-[0_16px_45px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-amber-100 px-5 py-5 md:px-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.1em] text-amber-800">
+                <Flag size={13} />
+                Moderation Queue
+              </div>
+
+              <h2 className="mt-3 text-xl font-black text-slate-900">
+                Báo cáo gần đây
+              </h2>
+
+              <p className="mt-1 text-sm leading-6 text-slate-500">
+                Danh sách các báo cáo đang chờ xử lý để quản trị viên kiểm duyệt
+                nhanh và chính xác hơn.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 sm:w-auto">
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-slate-500">
+                  Chờ xử lý
+                </p>
+                <p className="mt-1 text-2xl font-black text-slate-900">
+                  {formatNumber(pendingReports.length)}
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-slate-500">
+                  Trạng thái tải
+                </p>
+                <p className="mt-1 text-sm font-black text-amber-800">
+                  {loading ? "Đang tải" : "Sẵn sàng"}
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <ActivityTable
-          activities={pendingReports}
-          loading={loading}
-          onAction={handleActionClick}
-          onProjectStatusChange={updateProjectStatus}
-          onUserBanToggle={toggleBanUser}
-        />
-      </div>
+        <div className="p-4 md:p-6">
+          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+            <ActivityTable
+              activities={pendingReports}
+              loading={loading}
+              onAction={handleActionClick}
+              onProjectStatusChange={updateProjectStatus}
+              onUserBanToggle={toggleBanUser}
+            />
+          </div>
+        </div>
+      </section>
 
       <ReportModal
         isOpen={Boolean(selectedReport)}

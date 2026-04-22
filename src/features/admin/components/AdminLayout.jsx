@@ -74,10 +74,6 @@ export function AdminLayout() {
                   strokeWidth={2.2}
                   className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
                 />
-                <input
-                  placeholder="Tìm kiếm module, hành động, nhật ký..."
-                  className="h-11 w-[300px] rounded-xl border border-slate-200 bg-white pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
-                />
               </div>
 
               <NavbarNotificationAction />

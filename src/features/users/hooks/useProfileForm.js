@@ -51,6 +51,28 @@ function normalizeLocationForApi(location) {
     return undefined;
   }
 
+  if (
+    Array.isArray(location.coordinates) &&
+    location.coordinates.length === 2 &&
+    Number.isFinite(Number(location.coordinates[0])) &&
+    Number.isFinite(Number(location.coordinates[1]))
+  ) {
+    const lng = Number(location.coordinates[0]);
+    const lat = Number(location.coordinates[1]);
+    const address =
+      typeof location.address === "string" ? location.address.trim() : "";
+
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !address) {
+      return undefined;
+    }
+
+    return {
+      type: "Point",
+      coordinates: [lng, lat],
+      address,
+    };
+  }
+
   const lat = Number(location.lat);
   const lng = Number(location.lng);
   const address =

@@ -16,6 +16,7 @@ export function SidebarOrganizer({
   project,
   projectConversation,
   onOpenProjectGroup,
+  onManageVolunteers,
 }) {
   const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
   const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
@@ -25,7 +26,7 @@ export function SidebarOrganizer({
   const targetAmount = project?.targetAmount ?? 1;
   const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
   const progressPercent = Math.min(
-    Math.round((availableBalance / targetAmount) * 100),
+    Math.round((availableBalance / Math.max(targetAmount, 1)) * 100),
     100
   );
 
@@ -130,7 +131,7 @@ export function SidebarOrganizer({
         </div>
       ) : null}
 
-      {!isFunded ? (
+      {isVolunteerOnly ? (
         <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -167,6 +168,24 @@ export function SidebarOrganizer({
           </Link>
         </div>
       ) : null}
+
+      <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+        <div className="mb-3">
+          <p className="text-sm font-bold text-slate-900">Đơn tình nguyện</p>
+          <p className="mt-1 text-xs text-slate-500">
+            Xem nhanh các đơn đang chờ duyệt và quản lý tình nguyện viên của dự án.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onManageVolunteers}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3.5 text-sm font-bold text-amber-900 transition hover:border-amber-300 hover:bg-amber-100"
+        >
+          <Users className="h-4 w-4" />
+          {isLoading ? 'Đang tải...' : `Quản lý volunteer${pendingAppsCount > 0 ? ` (${pendingAppsCount})` : ''}`}
+        </button>
+      </div>
 
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">

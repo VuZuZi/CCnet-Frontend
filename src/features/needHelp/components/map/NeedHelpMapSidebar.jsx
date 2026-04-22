@@ -1,9 +1,6 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useMemo } from 'react';
+import { MapPinned } from 'lucide-react';
 import NeedHelpMapCard from './NeedHelpMapCard';
-import {
-  NEED_HELP_SIDEBAR_ITEM_HEIGHT,
-  NEED_HELP_SIDEBAR_OVERSCAN,
-} from '../../utils/helpRequestMap.utils';
 
 function NeedHelpMapSidebarComponent({
   visibleItems,
@@ -11,73 +8,42 @@ function NeedHelpMapSidebarComponent({
   onItemSelect,
   isLoading,
   summaryText = '',
+  isOpen = true,
 }) {
-  const scrollRef = useRef(null);
-  const [viewportHeight, setViewportHeight] = useState(420);
-  const [scrollTop, setScrollTop] = useState(0);
-
   const items = useMemo(
     () => (Array.isArray(visibleItems) ? visibleItems : []),
     [visibleItems]
   );
 
-  useEffect(() => {
-    const element = scrollRef.current;
-    if (!element || typeof ResizeObserver === 'undefined') return;
-
-    const updateHeight = () => {
-      setViewportHeight(Math.max(260, Math.floor(element.clientHeight)));
-    };
-
-    updateHeight();
-
-    const observer = new ResizeObserver(updateHeight);
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    setScrollTop(0);
-    if (scrollRef.current) scrollRef.current.scrollTop = 0;
-  }, [items]);
-
-  const totalHeight = items.length * NEED_HELP_SIDEBAR_ITEM_HEIGHT;
-
-  const startIndex = Math.max(
-    0,
-    Math.floor(scrollTop / NEED_HELP_SIDEBAR_ITEM_HEIGHT) - NEED_HELP_SIDEBAR_OVERSCAN
-  );
-
-  const endIndex = Math.min(
-    items.length,
-    Math.ceil((scrollTop + viewportHeight) / NEED_HELP_SIDEBAR_ITEM_HEIGHT) +
-      NEED_HELP_SIDEBAR_OVERSCAN
-  );
-
-  const virtualItems = useMemo(
-    () => items.slice(startIndex, endIndex),
-    [items, startIndex, endIndex]
-  );
-
-  const offsetY = startIndex * NEED_HELP_SIDEBAR_ITEM_HEIGHT;
+  if (!isOpen) return null;
 
   return (
-    <aside className="flex h-full flex-col rounded-[32px] border border-slate-200/80 bg-white shadow-[0_24px_70px_rgba(15,23,42,0.08)]">
+    <aside className="pointer-events-auto absolute left-5 top-[128px] bottom-5 z-[2200] flex w-[360px] min-h-0 flex-col overflow-hidden rounded-[30px] border border-white/80 bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
       <div className="border-b border-slate-100 px-5 pb-4 pt-5">
-        <h2 className="text-sm font-bold text-slate-900">
-          Yêu cầu trong vùng đang xem
-        </h2>
-        <p className="mt-1 text-xs text-slate-500">
-          {summaryText || 'Chọn một mục để định vị nhanh trên bản đồ'}
-        </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
+            <MapPinned size={18} />
+          </div>
+
+          <div className="min-w-0">
+            <h2 className="truncate text-sm font-bold text-slate-900">
+              Yêu cầu trong vùng đang xem
+            </h2>
+            <p className="mt-1 truncate text-xs text-slate-500">
+              {summaryText || 'Chọn một mục để định vị nhanh trên bản đồ'}
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="flex-1 overflow-hidden px-0 pb-3 pt-3">
+      <div className="min-h-0 flex-1 overflow-y-auto px-1 py-3">
         {isLoading ? (
-          <div className="space-y-3 px-4">
+          <div className="space-y-3 px-3">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-[220px] animate-pulse rounded-[28px] bg-slate-100" />
+              <div
+                key={i}
+                className="h-[220px] animate-pulse rounded-[28px] bg-slate-100"
+              />
             ))}
           </div>
         ) : items.length === 0 ? (
@@ -92,27 +58,14 @@ function NeedHelpMapSidebarComponent({
             </div>
           </div>
         ) : (
-          <div
-            ref={scrollRef}
-            className="h-full overflow-y-auto"
-            onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}
-          >
-            <div className="relative w-full" style={{ height: totalHeight }}>
-              <div
-                className="absolute left-0 top-0 w-full"
-                style={{ transform: `translateY(${offsetY}px)` }}
-              >
-                {virtualItems.map((item) => (
-                  <NeedHelpMapCard
-                    key={item.id}
-                    item={item}
-                    isActive={activeItemId === item.id}
-                    onClick={onItemSelect}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          items.map((item) => (
+            <NeedHelpMapCard
+              key={item.id}
+              item={item}
+              isActive={activeItemId === item.id}
+              onClick={onItemSelect}
+            />
+          ))
         )}
       </div>
     </aside>

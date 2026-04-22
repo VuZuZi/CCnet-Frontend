@@ -9,6 +9,7 @@ import {
   Wallet,
   Clock3,
   Send,
+  Star,
 } from "lucide-react";
 import { ApplyVolunteerButton } from "@/features/volunteer/components/ApplyVolunteerButton";
 
@@ -28,6 +29,16 @@ function formatDateRange(startDate, endDate) {
   };
 
   return `${formatValue(startDate)} - ${formatValue(endDate)}`;
+}
+
+function formatDateTime(value) {
+  if (!value) return null;
+
+  try {
+    return new Date(value).toLocaleString("vi-VN");
+  } catch {
+    return null;
+  }
 }
 
 function getVolunteerStatusMeta(status) {
@@ -59,6 +70,12 @@ function getVolunteerStatusMeta(status) {
   }
 }
 
+const COMPLETED_PROJECT_STATUSES = new Set([
+  "COMPLETED",
+  "COMPLETED_SUCCESSFULLY",
+  "COMPLETED_PARTIAL",
+]);
+
 export function SidebarVolunteer({
   project,
   projectConversation,
@@ -67,14 +84,20 @@ export function SidebarVolunteer({
   onOpenFinancialsTab,
   applicationStatus,
   isCheckingApplication = false,
+  myReview = null,
+  isFetchingMyReview = false,
 }) {
   const isFunded = project?.projectType === "FUNDED" || !project?.projectType;
+
+  const normalizedProjectStatus = String(project?.status || "").toUpperCase();
+  const isCompletedProject =
+    COMPLETED_PROJECT_STATUSES.has(normalizedProjectStatus);
 
   const availableBalance =
     project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
   const targetAmount = project?.targetAmount ?? 1;
   const progressPercent = Math.min(
-    Math.round((availableBalance / targetAmount) * 100),
+    Math.round((availableBalance / Math.max(targetAmount, 1)) * 100),
     100
   );
 
@@ -83,6 +106,13 @@ export function SidebarVolunteer({
 
   const hasProjectGroup = Boolean(projectConversation?._id);
   const statusMeta = getVolunteerStatusMeta(applicationStatus);
+
+  const hasReview = Boolean(myReview);
+  const reviewedAtText = formatDateTime(myReview?.reviewedAt);
+  const reviewScore = Number(myReview?.score || 0);
+  const reviewComment =
+    myReview?.comment ||
+    "Bạn đã hoàn thành tốt vai trò tình nguyện viên trong dự án.";
 
   return (
     <div className="flex flex-col gap-6 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(15,23,42,0.08)] sm:p-8">
@@ -175,20 +205,72 @@ export function SidebarVolunteer({
         </div>
       </div>
 
+      {isCompletedProject && hasReview ? (
+        <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-3">
+            <p className="text-sm font-bold text-slate-900">Đánh giá của bạn</p>
+            <p className="mt-1 text-xs text-slate-500">
+              Xem đánh giá mà người tổ chức đã gửi cho phần tham gia của bạn.
+            </p>
+          </div>
+
+          {isFetchingMyReview ? (
+            <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
+              Đang tải đánh giá...
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-amber-200 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`h-4 w-4 ${
+                        reviewScore >= star
+                          ? "fill-amber-400 text-amber-400"
+                          : "text-slate-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {reviewedAtText ? (
+                  <span className="text-xs font-medium text-slate-500">
+                    {reviewedAtText}
+                  </span>
+                ) : null}
+              </div>
+
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+                {reviewComment}
+              </p>
+            </div>
+          )}
+        </div>
+      ) : null}
+
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">
           <p className="text-sm font-bold text-slate-900">Hành động của bạn</p>
           <p className="mt-1 text-xs text-slate-500">
-            Quản lý trạng thái tham gia hoặc gửi yêu cầu xin rút khỏi dự án.
+            {isCompletedProject
+              ? "Dự án đã hoàn thành nên bạn không thể gửi yêu cầu xin rút khỏi dự án."
+              : "Quản lý trạng thái tham gia hoặc gửi yêu cầu xin rút khỏi dự án."}
           </p>
         </div>
 
-        <ApplyVolunteerButton
-          project={project}
-          projectId={project?._id || project?.id}
-          projectName={project?.title || project?.name || ""}
-          className="bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] text-slate-900 hover:bg-[linear-gradient(135deg,#FFCA28_0%,#FFB300_100%)] shadow-[0_14px_30px_rgba(255,193,7,0.28)] hover:shadow-[0_18px_36px_rgba(255,179,0,0.34)]"
-        />
+        {!isCompletedProject ? (
+          <ApplyVolunteerButton
+            project={project}
+            projectId={project?._id || project?.id}
+            projectName={project?.title || project?.name || ""}
+            className="bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] text-slate-900 hover:bg-[linear-gradient(135deg,#FFCA28_0%,#FFB300_100%)] shadow-[0_14px_30px_rgba(255,193,7,0.28)] hover:shadow-[0_18px_36px_rgba(255,179,0,0.34)]"
+          />
+        ) : (
+          <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm text-slate-500">
+            Dự án đã hoàn thành.
+          </div>
+        )}
       </div>
 
       {isFunded ? (

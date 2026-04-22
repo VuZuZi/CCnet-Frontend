@@ -17,12 +17,12 @@ export function TabStory({ project }) {
         </div>
 
         <div
-          className={`relative rounded-2xl bg-slate-50/70 p-4 transition-all duration-300 sm:p-6 ${
-            !isExpanded ? "max-h-[540px] overflow-hidden" : ""
+          className={`relative min-w-0 overflow-hidden rounded-2xl bg-slate-50/70 p-4 transition-all duration-300 sm:p-6 ${
+            !isExpanded ? "max-h-[540px]" : ""
           }`}
         >
           <div
-            className="prose prose-slate max-w-none text-[15px] leading-7 text-slate-700"
+            className="prose prose-slate max-w-none text-[15px] leading-7 text-slate-700 [&_*]:max-w-full [&_*]:break-words [&_*]:whitespace-pre-wrap [&_*]:[overflow-wrap:anywhere] [&_img]:h-auto [&_img]:max-w-full [&_table]:block [&_table]:w-full [&_table]:overflow-x-auto"
             dangerouslySetInnerHTML={{
               __html: project?.description || EMPTY_STORY_HTML,
             }}
@@ -35,6 +35,7 @@ export function TabStory({ project }) {
 
         <div className="mt-5 flex justify-center">
           <button
+            type="button"
             onClick={() => setIsExpanded((prev) => !prev)}
             className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
           >
@@ -50,3 +51,5 @@ export function TabStory({ project }) {
     </div>
   );
 }
+
+export default TabStory;

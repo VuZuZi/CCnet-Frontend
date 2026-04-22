@@ -6,6 +6,7 @@ import { useProjectDetail } from "../hooks/useProjectQueries";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
 import { useConversations } from "@/features/chat/hooks/conversations/useConversations";
 import { useVolunteerQueries } from "@/features/volunteer/hooks/useVolunteerQueries.js";
+import { useMyProjectReview } from "@/features/volunteer/hooks/useVolunteerEngagementQueries.js";
 
 import { PageLoader } from "@/shared/components/ui/PageLoader";
 import { ProjectCover } from "../components/detail/ProjectCover";
@@ -20,8 +21,25 @@ import { VolunteerManager } from "@/features/volunteer/components/VolunteerManag
 import { ProjectCommunityFeed } from "@/features/project/components/community-feed/ProjectCommunityFeed";
 import { ProjectMilestonesTab } from "@/features/evidence/components/ProjectMilestonesTab";
 
-const PROJECT_GROUP_OPENABLE_STATUSES = ["ACTIVE", "EXECUTING", "PAUSED", "UPDATING"];
-const VOLUNTEER_MEMBER_STATUSES = new Set(["APPROVED", "WITHDRAW_REQUESTED"]);
+const PROJECT_GROUP_OPENABLE_STATUSES = [
+  "ACTIVE",
+  "EXECUTING",
+  "PAUSED",
+  "UPDATING",
+  "RECRUITING",
+  "COMPLETED",
+  "FINISHED",
+];
+
+const VOLUNTEER_MEMBER_STATUSES = new Set([
+  "APPROVED",
+  "WITHDRAW_REQUESTED",
+  "COMPLETED",
+  "FINISHED",
+  "REVIEW_PENDING",
+  "REVIEWED",
+  "EVALUATED",
+]);
 
 function normalizeProjectTab(tabValue, isOrganizer) {
   const raw = String(tabValue || "").trim().toLowerCase();
@@ -32,6 +50,7 @@ function normalizeProjectTab(tabValue, isOrganizer) {
 
   if (raw === "financials") return "financials";
   if (raw === "community") return "community";
+  if (raw === "milestones") return "milestones";
   if (raw === "story") return "story";
 
   return "story";
@@ -43,6 +62,7 @@ function normalizeVolunteerSubTab(subTabValue) {
   if (raw === "approved") return "approved";
   if (raw === "rejected") return "rejected";
   if (raw === "withdraw" || raw === "withdraw_requested") return "withdraw";
+  if (raw === "review") return "review";
 
   return "pending";
 }
@@ -70,8 +90,31 @@ function extractProjectApplicationStatus(project) {
     project?.volunteerStatus,
   ];
 
-  const matched = candidates.find((value) => value !== null && value !== undefined);
-  return String(matched || "").trim().toUpperCase();
+  const matched = candidates.find(
+    (value) => value !== null && value !== undefined
+  );
+
+  return String(matched || "")
+    .trim()
+    .toUpperCase();
+}
+
+function extractReviewState({ myReview, project }) {
+  const candidates = [
+    myReview?.status,
+    myReview?.reviewStatus,
+    project?.currentUserParticipation?.reviewStatus,
+    project?.currentUserVolunteer?.reviewStatus,
+    project?.myVolunteerApplication?.reviewStatus,
+  ];
+
+  const matched = candidates.find(
+    (value) => value !== null && value !== undefined && String(value).trim()
+  );
+
+  return String(matched || "")
+    .trim()
+    .toUpperCase();
 }
 
 export function ProjectDetailPage() {
@@ -120,9 +163,9 @@ export function ProjectDetailPage() {
 
   const isOrganizer = Boolean(
     currentUser &&
-    project &&
-    String(currentUserId) &&
-    String(currentUserId) === String(organizerId)
+      project &&
+      String(currentUserId) &&
+      String(currentUserId) === String(organizerId)
   );
 
   const projectLevelApplicationStatus = extractProjectApplicationStatus(project);
@@ -133,11 +176,24 @@ export function ProjectDetailPage() {
   const effectiveApplicationStatus =
     queryLevelApplicationStatus || projectLevelApplicationStatus;
 
+  const { data: myReview, isFetching: isFetchingMyReview } = useMyProjectReview(
+    project?._id,
+    {
+      enabled: Boolean(project?._id && currentUserId && !isOrganizer),
+    }
+  );
+
+  const effectiveReviewStatus = extractReviewState({ myReview, project });
+
   const isVolunteerMember = Boolean(
     currentUser &&
-    project &&
-    !isOrganizer &&
-    VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus)
+      project &&
+      !isOrganizer &&
+      (
+        VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus) ||
+        Boolean(effectiveReviewStatus) ||
+        Boolean(myReview)
+      )
   );
 
   useEffect(() => {
@@ -227,6 +283,8 @@ export function ProjectDetailPage() {
         nextParams.set("tab", "financials");
       } else if (nextTab === "community") {
         nextParams.set("tab", "community");
+      } else if (nextTab === "milestones") {
+        nextParams.set("tab", "milestones");
       } else {
         nextParams.set("tab", "story");
       }
@@ -237,7 +295,7 @@ export function ProjectDetailPage() {
   };
 
   const canOpenProjectGroup =
-    PROJECT_GROUP_OPENABLE_STATUSES.includes(String(project?.status || "")) &&
+    PROJECT_GROUP_OPENABLE_STATUSES.includes(String(project?.status || "").toUpperCase()) &&
     Boolean(projectConversation?._id);
 
   const handleOpenProjectGroup = () => {
@@ -255,6 +313,7 @@ export function ProjectDetailPage() {
           <div ref={volunteerManagerRef}>
             <VolunteerManager
               projectId={project._id}
+              projectStatus={project.status}
               initialSubTab={activeSubTab}
               highlightedApplicationId={applicationIdFromQuery}
             />
@@ -266,14 +325,13 @@ export function ProjectDetailPage() {
 
       case "community":
         return (
-          <ProjectCommunityFeed
-            project={project}
-            isOrganizer={isOrganizer}
-          />
+          <ProjectCommunityFeed project={project} isOrganizer={isOrganizer} />
         );
 
-      case 'milestones':
-        return <ProjectMilestonesTab project={project} isOrganizer={isOrganizer} />;
+      case "milestones":
+        return (
+          <ProjectMilestonesTab project={project} isOrganizer={isOrganizer} />
+        );
 
       default:
         return null;
@@ -346,6 +404,7 @@ export function ProjectDetailPage() {
                 project={project}
                 projectConversation={projectConversation}
                 onOpenProjectGroup={handleOpenProjectGroup}
+                onManageVolunteers={() => handleNavigateToVolunteerTab("pending")}
               />
             ) : isVolunteerMember ? (
               <SidebarVolunteer
@@ -355,7 +414,10 @@ export function ProjectDetailPage() {
                 onOpenCommunityTab={handleOpenCommunityTab}
                 onOpenFinancialsTab={handleOpenFinancialsTab}
                 applicationStatus={effectiveApplicationStatus}
+                reviewStatus={effectiveReviewStatus}
                 isCheckingApplication={isCheckingApplication}
+                myReview={myReview}
+                isFetchingMyReview={isFetchingMyReview}
               />
             ) : (
               <SidebarPublic project={project} />
