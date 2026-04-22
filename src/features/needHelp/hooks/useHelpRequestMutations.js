@@ -98,30 +98,6 @@ export const useCompleteHelpRequest = () => {
   });
 };
 
-export const useVerifyHelpRequest = () => {
-  const toast = useToast();
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: helpRequestAPI.verify,
-    onSuccess: (data, variables) => {
-      toast.success(
-        variables?.approved
-          ? 'Xác minh yêu cầu trợ giúp thành công!'
-          : 'Từ chối yêu cầu trợ giúp thành công!'
-      );
-
-      invalidateAllHelpRequestQueries(queryClient);
-      queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
-      queryClient.invalidateQueries({
-        queryKey: HELP_REQUEST_KEYS.asProject(data._id),
-        exact: true,
-      });
-    },
-    onError: (error) => toast.error(getErrorMessage(error)),
-  });
-};
-
 export const useAssignOrganizer = () => {
   const toast = useToast();
   const queryClient = useQueryClient();

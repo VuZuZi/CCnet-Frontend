@@ -34,7 +34,6 @@ export function HelpRequestVerification({ helpRequest }) {
     contactPhone,
     contactEmail,
     evidences = [],
-    status,
   } = helpRequest;
 
   const organizer = getPopulatedEntity(assignedOrganizerId);
@@ -65,8 +64,6 @@ export function HelpRequestVerification({ helpRequest }) {
                 {organizer.email || 'Thông tin liên hệ organizer có trong hồ sơ.'}
               </p>
             </>
-          ) : status === 'PENDING' ? (
-            <p className="text-slate-500">Không thể giao organizer trước khi xác minh.</p>
           ) : (
             <p className="text-slate-500">Chưa có organizer nào được giao.</p>
           )}

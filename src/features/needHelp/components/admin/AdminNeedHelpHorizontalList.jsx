@@ -26,24 +26,6 @@ const CATEGORY_LABELS = {
   KHAC: 'Khác',
 };
 
-const STATUS_LABELS = {
-  PENDING: 'Chờ kiểm duyệt',
-  VERIFIED: 'Đã xác minh',
-  IN_PROGRESS: 'Đang xử lý',
-  COMPLETED: 'Hoàn thành',
-  REJECTED: 'Bị từ chối',
-  CANCELLED: 'Đã hủy',
-};
-
-const STATUS_STYLES = {
-  PENDING: 'bg-amber-100 text-amber-800 border border-amber-200',
-  VERIFIED: 'bg-sky-100 text-sky-700 border border-sky-200',
-  IN_PROGRESS: 'bg-violet-100 text-violet-700 border border-violet-200',
-  COMPLETED: 'bg-emerald-100 text-emerald-700 border border-emerald-200',
-  REJECTED: 'bg-rose-100 text-rose-700 border border-rose-200',
-  CANCELLED: 'bg-slate-100 text-slate-500 border border-slate-200',
-};
-
 function getInitials(name = '') {
   return (
     name
@@ -107,8 +89,6 @@ function RequestCard({ item }) {
   const categoryLabel = CATEGORY_LABELS[item.category] || 'Khác';
   const requesterName = item.requesterId?.fullName || 'Ẩn danh';
   const coverImage = item.evidences?.[0]?.url;
-  const statusClassName = STATUS_STYLES[item.status] || STATUS_STYLES.PENDING;
-  const statusLabel = STATUS_LABELS[item.status] || 'Chờ kiểm duyệt';
 
   return (
     <article className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_10px_22px_-22px_rgba(15,23,42,0.24)] transition-all duration-200 hover:-translate-y-0.5 hover:border-amber-200 hover:shadow-[0_16px_30px_-24px_rgba(15,23,42,0.3)]">
@@ -139,13 +119,6 @@ function RequestCard({ item }) {
             </span>
           </div>
 
-          <div className="absolute bottom-3 left-3 z-10">
-            <span
-              className={`inline-flex rounded-full px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${statusClassName}`}
-            >
-              {statusLabel}
-            </span>
-          </div>
         </div>
 
         <div className="p-4 sm:p-5">
@@ -165,7 +138,7 @@ function RequestCard({ item }) {
                 to={detailPath}
                 className="inline-flex shrink-0 items-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400"
               >
-                Kiểm duyệt
+                Xem chi tiết
                 <ArrowRight size={16} />
               </Link>
             </div>

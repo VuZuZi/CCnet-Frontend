@@ -333,7 +333,7 @@ export function CreateHelpRequestPage() {
             Gửi yêu cầu trợ giúp
           </Button>
           <p className="text-xs text-slate-400">
-            Yêu cầu của bạn sẽ được kiểm duyệt trước khi công bố.
+            Yêu cầu của bạn sẽ được hiển thị ngay sau khi tạo thành công.
           </p>
         </div>
       </form>

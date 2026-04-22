@@ -452,11 +452,6 @@ function OrganizerNeedHelpAction({ user }) {
     };
   }, [isOpen]);
 
-  if (!isOrganizer) return null;
-
-  const suggestedItems = data?.data || [];
-  const hasItems = suggestedItems.length > 0;
-
   const panelStyle = useMemo(() => {
     if (!anchorRect) return undefined;
 
@@ -467,6 +462,11 @@ function OrganizerNeedHelpAction({ user }) {
       zIndex: 5000,
     };
   }, [anchorRect]);
+
+  if (!isOrganizer) return null;
+
+  const suggestedItems = data?.data || [];
+  const hasItems = suggestedItems.length > 0;
 
   return (
     <>

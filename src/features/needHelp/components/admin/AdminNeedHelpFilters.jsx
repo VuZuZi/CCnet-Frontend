@@ -1,15 +1,5 @@
 import { Search, SlidersHorizontal, ShieldAlert, RotateCcw } from 'lucide-react';
 
-const STATUS_OPTIONS = [
-  { value: '', label: 'Tất cả trạng thái' },
-  { value: 'PENDING', label: 'Đang chờ' },
-  { value: 'VERIFIED', label: 'Đã xác minh' },
-  { value: 'IN_PROGRESS', label: 'Đang xử lý' },
-  { value: 'COMPLETED', label: 'Hoàn thành' },
-  { value: 'REJECTED', label: 'Bị từ chối' },
-  { value: 'CANCELLED', label: 'Đã hủy' },
-];
-
 const URGENCY_OPTIONS = [
   { value: '', label: 'Tất cả mức độ khẩn cấp' },
   { value: 'LOW', label: 'Thấp' },
@@ -27,13 +17,12 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
     });
   };
 
-  const hasActiveFilters = Boolean(filters.search || filters.status || filters.urgencyLevel);
+  const hasActiveFilters = Boolean(filters.search || filters.urgencyLevel);
 
   const handleReset = () => {
     onChange({
       ...filters,
       search: '',
-      status: '',
       urgencyLevel: '',
       page: 1,
     });
@@ -56,7 +45,7 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
       </div>
 
       <div className="bg-white px-6 py-5 sm:px-8">
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(220px,0.75fr)_minmax(220px,0.75fr)_auto]">
+        <div className="grid grid-cols-1 gap-3 xl:grid-cols-[minmax(0,1.7fr)_minmax(220px,0.9fr)_auto]">
           <label className="relative block">
             <Search
               size={17}
@@ -69,24 +58,6 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
               className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
             />
           </label>
-
-          <div className="relative">
-            <ShieldAlert
-              size={16}
-              className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-            <select
-              value={filters.status}
-              onChange={handleChange('status')}
-              className="h-12 w-full appearance-none rounded-2xl border border-slate-200 bg-slate-50 px-4 pl-11 pr-10 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
-            >
-              {STATUS_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
 
           <div className="relative">
             <ShieldAlert

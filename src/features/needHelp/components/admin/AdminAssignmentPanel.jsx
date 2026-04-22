@@ -4,8 +4,6 @@ import { ArrowRight, ShieldCheck, UserRound } from 'lucide-react';
 import { useAssignOrganizer } from '../../hooks/useHelpRequestMutations';
 import { OrganizerSuggestionModal } from './OrganizerSuggestionModal';
 
-const ASSIGNABLE_STATUSES = ['VERIFIED', 'IN_PROGRESS'];
-
 export function AdminAssignmentPanel({ helpRequest }) {
   const [isOpen, setIsOpen] = useState(false);
   const assignMutation = useAssignOrganizer();
@@ -20,11 +18,10 @@ export function AdminAssignmentPanel({ helpRequest }) {
   };
 
   const assignedName = helpRequest?.assignedOrganizerId?.fullName;
-  const isAssignable = ASSIGNABLE_STATUSES.includes(helpRequest?.status);
   const buttonLabel = assignedName ? 'Giao lại' : 'Giao organizer';
 
   const handleOpenModal = () => {
-    if (!isAssignable || assignMutation.isPending) {
+    if (assignMutation.isPending) {
       return;
     }
     setIsOpen(true);
@@ -46,12 +43,6 @@ export function AdminAssignmentPanel({ helpRequest }) {
           <p className="mt-1 text-sm leading-6 text-slate-500">
             Giao yêu cầu này cho organizer phù hợp dựa trên mức độ liên quan và vị trí.
           </p>
-
-          {!isAssignable ? (
-            <p className="mt-2 text-sm font-medium text-amber-700">
-              Hãy xác minh yêu cầu này trước khi giao cho organizer.
-            </p>
-          ) : null}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -68,7 +59,7 @@ export function AdminAssignmentPanel({ helpRequest }) {
           <button
             type="button"
             onClick={handleOpenModal}
-            disabled={!isAssignable || assignMutation.isPending}
+            disabled={assignMutation.isPending}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {buttonLabel}

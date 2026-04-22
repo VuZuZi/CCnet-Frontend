@@ -12,6 +12,7 @@ import {
 export function OrganizerRequestBankSection({
   control,
   register,
+  setValue,
   errors,
   bankProof,
   banks,
@@ -32,7 +33,19 @@ export function OrganizerRequestBankSection({
             render={({ field }) => (
               <BankAutocomplete
                 value={field.value || ""}
-                onChange={field.onChange}
+                onChange={(nextValue) => {
+                  field.onChange(nextValue);
+                  setValue("bankBin", "", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }}
+                onSelectBank={(bank) => {
+                  setValue("bankBin", bank?.bin || "", {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  });
+                }}
                 banks={banks}
                 isLoading={isBanksLoading}
                 error={errors.bankName?.message}
