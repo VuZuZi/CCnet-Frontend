@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { formatProjectCurrencyVND } from '@/features/project/utils/projectDisplay.utils';
 import { SubmitEvidenceModal } from './SubmitEvidenceModal';
 import { RequestDisbursementModal } from '@/features/disbursement/components/RequestDisbursementModal';
@@ -21,7 +20,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
 
     return (
         <div className="space-y-8 p-2 sm:p-6">
-            {/* Header Tổng quan minh bạch */}
+            {/* Header Tổng quan minh bạch - Đã map với DTO financialOverview mới */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-[28px] bg-slate-900 p-6 text-white shadow-xl">
                 <div>
                     <h3 className="text-lg font-black uppercase tracking-tight">Sổ Cái Minh Bạch</h3>
@@ -29,19 +28,26 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                         {isVolunteerOnly ? 'Theo dõi Lộ trình và Bằng chứng thực tế' : 'Mô hình Tạm ứng cuốn chiếu: Rút tiền -> Thực thi -> Nghiệm thu'}
                     </p>
                 </div>
-                {!isVolunteerOnly && (
-                    <div className="flex gap-4">
+                {!isVolunteerOnly && project?.financialOverview && (
+                    <div className="flex flex-wrap gap-4 md:gap-6 mt-4 md:mt-0 rounded-2xl bg-slate-800/50 p-4 border border-slate-700/50">
                         <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">Đã giải ngân</p>
-                            <p className="text-sm font-black text-emerald-400">
-                                {formatProjectCurrencyVND(project?.financialDetail?.totalDisbursed || 0)}
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">Khả dụng (Available)</p>
+                            <p className="text-sm font-black text-blue-400">
+                                {formatProjectCurrencyVND(project.financialOverview.withdrawableBalance)}
                             </p>
                         </div>
-                        <div className="h-10 w-px bg-white/10" />
+                        <div className="h-10 w-px bg-white/10 hidden sm:block" />
                         <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">Số dư Escrow</p>
-                            <p className="text-sm font-black text-blue-400">
-                                {formatProjectCurrencyVND(project?.financialDetail?.availableBalance || 0)}
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">Đang chờ (Pending)</p>
+                            <p className="text-sm font-black text-amber-400">
+                                {formatProjectCurrencyVND(project.financialOverview.pendingDisbursement)}
+                            </p>
+                        </div>
+                        <div className="h-10 w-px bg-white/10 hidden sm:block" />
+                        <div className="text-right">
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">Đã nhận (Disbursed)</p>
+                            <p className="text-sm font-black text-emerald-400">
+                                {formatProjectCurrencyVND(project.financialOverview.totalDisbursed)}
                             </p>
                         </div>
                     </div>
@@ -50,13 +56,18 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
 
             <div className="relative space-y-12 before:absolute before:left-[23px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-slate-100 sm:before:left-[31px]">
                 {milestones.map((ms, idx) => {
-                    // --- LOGIC TẠM ỨNG CUỐN CHIẾU ---
-                    // Mốc 1 (idx === 0) luôn sẵn sàng nếu dự án đang chạy.
-                    // Mốc N (idx > 0) chỉ sẵn sàng khi Mốc N-1 đã nghiệm thu xong (APPROVED).
                     const previousMilestone = idx > 0 ? milestones[idx - 1] : null;
-                    const isPreviousMilestoneApproved = previousMilestone?.evidenceStatus === 'APPROVED';
-                    
-                    const canRequestDisbursement = isProjectExecuting && (idx === 0 || isPreviousMilestoneApproved);
+                    const isPreviousMilestoneCompleted = previousMilestone?.status === 'COMPLETED';
+                    const isCurrentMilestonePending = ms?.status === 'PENDING';
+                    const requiredDisbursementAmount = Number(
+                        ms?.requiredDisbursementAmount ?? ms?.targetAmount ?? 0
+                    );
+                    const hasBudget = requiredDisbursementAmount > 0;
+                    const canRequestDisbursement =
+                        hasBudget &&
+                        isProjectExecuting &&
+                        isCurrentMilestonePending &&
+                        (idx === 0 || isPreviousMilestoneCompleted);
 
                     return (
                         <MilestoneLedgerItem 
@@ -66,6 +77,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                             isOrganizer={isOrganizer}
                             isVolunteerOnly={isVolunteerOnly}
                             canRequestDisbursement={canRequestDisbursement}
+                            isProjectExecuting={isProjectExecuting}
                             onNopNghiemThu={() => setSelectedMilestone(ms)}
                             onYeuCauGiaiNgan={() => setDisbursementTarget(ms)}
                             onCuuHo={() => setRescueTarget(ms)}
@@ -74,10 +86,10 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                 })}
             </div>
 
-            {/* Modals Layer */}
+            {/* Modals Layer - Truyền full project xuống */}
             {selectedMilestone && (
                 <SubmitEvidenceModal
-                    projectId={project._id}
+                    project={project}
                     milestone={selectedMilestone}
                     onClose={() => setSelectedMilestone(null)}
                 />
@@ -85,7 +97,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
 
             {disbursementTarget && (
                 <RequestDisbursementModal
-                    projectId={project._id}
+                    project={project}
                     milestone={disbursementTarget}
                     onClose={() => setDisbursementTarget(null)}
                 />
@@ -102,16 +114,23 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
 }
 
 // --- Sub-component cho từng dòng Sổ cái ---
-function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canRequestDisbursement, onNopNghiemThu, onYeuCauGiaiNgan, onCuuHo }) {
+function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canRequestDisbursement, isProjectExecuting, onNopNghiemThu, onYeuCauGiaiNgan, onCuuHo }) {
     const isCompleted = ms.status === 'COMPLETED';
-    const isProcessing = ms.status === 'PROCESSING';
+    const requiredDisbursementAmount = Number(
+        ms?.requiredDisbursementAmount ?? ms?.targetAmount ?? 0
+    );
+    const isDisbursementRequired = !isVolunteerOnly && requiredDisbursementAmount > 0;
     
     // Mapping trạng thái thực tế
     const evStatus = ms.evidenceStatus || 'NOT_SUBMITTED';
     const disStatus = ms.disbursementStatus || 'NOT_STARTED';
     
-    const hasDisbursement = disStatus !== 'NOT_STARTED';
+    const hasActiveDisbursement = ['PENDING', 'APPROVED_PENDING_TRANSFER', 'COMPLETED', 'HOLD'].includes(disStatus);
     const isDisbursementCompleted = disStatus === 'COMPLETED';
+    const canSubmitEvidence =
+        isOrganizer &&
+        (evStatus === 'NOT_SUBMITTED' || evStatus === 'REVISION_REQUESTED') &&
+        (isVolunteerOnly || !isDisbursementRequired || isDisbursementCompleted);
 
     return (
         <div className="relative flex gap-6 pl-0 sm:pl-2 animate-in slide-in-from-left-4 duration-500">
@@ -140,7 +159,7 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
 
                 <div className={clsx("grid gap-3", isVolunteerOnly ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2")}>
                     
-                    {/* Block: Dòng tiền (Rút tiền trước) - Đảo vị trí lên trước Evidence cho đúng luồng */}
+                    {/* Block: Dòng tiền (Rút tiền trước) */}
                     {!isVolunteerOnly && (
                         <div className={clsx(
                             "rounded-2xl border p-4 transition-all",
@@ -155,14 +174,24 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
 
                             <div className="flex gap-2">
                                 {/* Khóa liên động (Interlock) cho nút Rút Tiền */}
-                                {isOrganizer && !hasDisbursement && (
+                                {isOrganizer && !isDisbursementRequired && (
+                                    <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-tight cursor-default">
+                                        Mốc 0đ không cần yêu cầu giải ngân
+                                    </div>
+                                )}
+
+                                {isOrganizer && isDisbursementRequired && !hasActiveDisbursement && (
                                     canRequestDisbursement ? (
-                                        <button onClick={onYeuCauGiaiNgan} className="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-md">
+                                        <button onClick={onYeuCauGiaiNgan} className="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-md transition-colors">
                                             Yêu cầu rút tiền
                                         </button>
                                     ) : (
                                         <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-tight cursor-not-allowed">
-                                            <Lock size={12} /> Chờ mốc trước nghiệm thu
+                                            <Lock size={12} /> 
+                                            {!isProjectExecuting 
+                                                ? 'Chờ dự án sang Thực thi' 
+                                                : 'Chờ mốc trước nghiệm thu'
+                                            }
                                         </div>
                                     )
                                 )}
@@ -187,14 +216,14 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                         </div>
                         
                         {/* Organizer chỉ được nộp bằng chứng khi (Đã nhận được tiền HOẶC là dự án tình nguyện) và đang ở trạng thái cho phép nộp */}
-                        {isOrganizer && (isDisbursementCompleted || isVolunteerOnly) && (evStatus === 'NOT_SUBMITTED' || evStatus === 'REVISION_REQUESTED') && (
+                        {canSubmitEvidence && (
                             <button onClick={onNopNghiemThu} className="w-full py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
                                 {evStatus === 'REVISION_REQUESTED' ? 'Nộp lại báo cáo' : 'Nộp báo cáo + Hóa đơn'}
                             </button>
                         )}
                         {/* Block hiển thị nếu chưa nhận được tiền */}
-                         {isOrganizer && !isVolunteerOnly && !isDisbursementCompleted && evStatus === 'NOT_SUBMITTED' && (
-                            <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-transparent text-slate-400 text-[10px] italic">
+                         {isOrganizer && isDisbursementRequired && !isDisbursementCompleted && evStatus === 'NOT_SUBMITTED' && (
+                            <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-transparent text-slate-400 text-[10px] italic cursor-default">
                                 Chỉ nộp khi đã nhận tạm ứng
                             </div>
                         )}

@@ -5,6 +5,28 @@ import { devConfig } from "@/config/app.config";
 
 const MAX_SMART_UPLOAD_SIZE = 5 * 1024 * 1024;
 
+const getCurrentPosition = () => {
+    return new Promise((resolve) => {
+        if (!navigator.geolocation) {
+            resolve(null);
+            return;
+        }
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                resolve({
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                });
+            },
+            (error) => {
+                devConfig.log("[GPS Warning] Lấy tọa độ thất bại, fallback dùng EXIF (nếu có):", error.message);
+                resolve(null);
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
+    });
+};
+
 export function useHybridUploader() {
     const [isUploading, setIsUploading] = useState(false);
     const [progress, setProgress] = useState(0);
@@ -18,7 +40,7 @@ export function useHybridUploader() {
         }
     }, []);
 
-    const upload = useCallback(async (file, folderContext = "organizer_kyc") => {
+    const upload = useCallback(async (file, folderContext = "organizer_kyc", isCamera = false) => {
         if (!file || isUploading) return null;
 
         setIsUploading(true);
@@ -28,13 +50,23 @@ export function useHybridUploader() {
         abortControllerRef.current = new AbortController();
         const signal = abortControllerRef.current.signal;
 
+        let location = null;
+        if (isCamera) {
+            location = await getCurrentPosition();
+        }
+
         const isImage = file.type.startsWith("image/");
         const isSmallFile = file.size <= MAX_SMART_UPLOAD_SIZE;
 
         try {
             if (isImage && isSmallFile) {
                 setProgress(50);
-                const mediaRes = await mediaAPI.uploadSmart(file, { signal });
+                const mediaRes = await mediaAPI.uploadSmart(file, { 
+                    signal,
+                    context: folderContext,
+                    lat: location?.lat,
+                    lng: location?.lng
+                });
                 setProgress(100);
 
                 return {
@@ -43,6 +75,7 @@ export function useHybridUploader() {
                     mimeType: mediaRes.mimetype,
                     size: mediaRes.size,
                     url: mediaRes.url,
+                    isCamera
                 };
             }
 
@@ -86,6 +119,7 @@ export function useHybridUploader() {
                 mimeType: syncedMedia.mimetype,
                 size: syncedMedia.size,
                 url: syncedMedia.url || cloudRes.data.secure_url,
+                isCamera
             };
 
         } catch (err) {
@@ -101,7 +135,7 @@ export function useHybridUploader() {
             throw new Error(errorMessage);
         } finally {
             setIsUploading(false);
-            abortControllerRef.current = null; // Dọn dẹp RAM
+            abortControllerRef.current = null;
         }
     }, [isUploading]);
 

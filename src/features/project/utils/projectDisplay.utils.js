@@ -176,8 +176,9 @@ export const getProjectMode = (project) => {
 };
 
 export const getProjectFundingStats = (project) => {
-  const currentAmount = safeProjectNumber(
-    project?.financialDetail?.availableBalance ??
+  const raisedAmount = safeProjectNumber(
+    project?.financialOverview?.totalRaised ??
+      project?.financialDetail?.totalRaised ??
       project?.currentAmount ??
       project?.stats?.raisedAmount ??
       project?.stats?.currentAmount ??
@@ -190,16 +191,16 @@ export const getProjectFundingStats = (project) => {
 
   const fundingPercent =
     targetAmount > 0
-      ? Math.min(Math.round((currentAmount / targetAmount) * 100), 100)
+      ? Math.min(Math.round((raisedAmount / targetAmount) * 100), 100)
       : 0;
 
   return {
-    currentAmount,
+    currentAmount: raisedAmount,
     targetAmount,
     fundingPercent,
-    raisedAmount: currentAmount,
+    raisedAmount,
     percent: fundingPercent,
-    isComplete: targetAmount > 0 && currentAmount >= targetAmount,
+    isComplete: targetAmount > 0 && raisedAmount >= targetAmount,
   };
 };
 

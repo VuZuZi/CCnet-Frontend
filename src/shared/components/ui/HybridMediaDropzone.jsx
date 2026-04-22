@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Camera, Image as ImageIcon, X, Loader2, UploadCloud, CheckCircle2 } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Loader2, UploadCloud } from 'lucide-react';
 import { useHybridUploader } from '@/shared/hooks/useHybridUploader';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { devConfig } from '@/config/app.config';
@@ -10,13 +10,15 @@ export function HybridMediaDropzone({
     onChange,
     requireCamera = true,
     maxFiles = 10,
-    context = 'project_evidence'
+    context = 'project_evidence',
+    mode = 'hybrid' // 'hybrid' | 'upload_only'
 }) {
     const { upload, isUploading, progress } = useHybridUploader();
     const toast = useToast();
     const fileInputRef = useRef(null);
     const [isCameraPhoto, setIsCameraPhoto] = useState(false);
 
+    const isHybrid = mode === 'hybrid';
     const cameraPhotosCount = value.filter(m => m.isCamera).length;
 
     const handleFileChange = useCallback(async (e, source = 'gallery') => {
@@ -30,7 +32,7 @@ export function HybridMediaDropzone({
 
         for (const file of files) {
             try {
-                const result = await upload(file, context);
+                const result = await upload(file, context, source === 'camera');
 
                 if (result) {
                     const newMedia = {
@@ -44,6 +46,7 @@ export function HybridMediaDropzone({
                     }
                 }
             } catch (err) {
+                // Error is handled inside useHybridUploader
             }
         }
 
@@ -63,39 +66,44 @@ export function HybridMediaDropzone({
 
     return (
         <div className="space-y-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                    type="button"
-                    onClick={triggerCamera}
-                    disabled={isUploading}
-                    className={clsx(
-                        "flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-4 transition-all",
-                        requireCamera && cameraPhotosCount === 0
-                            ? "border-amber-300 bg-amber-50 text-amber-700 animate-pulse"
-                            : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                    )}
-                >
-                    {isUploading && isCameraPhoto ? (
-                        <Loader2 className="h-5 w-5 animate-spin" />
-                    ) : (
-                        <Camera className="h-5 w-5" />
-                    )}
-                    <div className="text-left">
-                        <p className="text-sm font-bold">Chụp ảnh hiện trường</p>
-                        <p className="text-[10px] opacity-80 uppercase tracking-tight">Bắt buộc - Có GPS</p>
-                    </div>
-                </button>
+            <div className={clsx("grid gap-3", isHybrid ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+                {isHybrid && (
+                    <button
+                        type="button"
+                        onClick={triggerCamera}
+                        disabled={isUploading}
+                        className={clsx(
+                            "flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed p-4 transition-all min-h-[100px]",
+                            requireCamera && cameraPhotosCount === 0
+                                ? "border-amber-300 bg-amber-50 text-amber-700 animate-pulse"
+                                : "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                        )}
+                    >
+                        {isUploading && isCameraPhoto ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                        ) : (
+                            <Camera className="h-5 w-5" />
+                        )}
+                        <div className="text-left">
+                            <p className="text-sm font-bold">Chụp ảnh hiện trường</p>
+                            <p className="text-[10px] opacity-80 uppercase tracking-tight">Bắt buộc - Có GPS</p>
+                        </div>
+                    </button>
+                )}
 
                 <div className="relative">
                     <input
                         type="file"
                         multiple
                         accept="image/*,application/pdf"
-                        className="absolute inset-0 cursor-pointer opacity-0"
+                        className="absolute inset-0 cursor-pointer opacity-0 z-10"
                         onChange={(e) => handleFileChange(e, 'gallery')}
                         disabled={isUploading}
                     />
-                    <div className="flex h-full items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-4 text-slate-600 transition-all hover:bg-slate-100">
+                    <div className={clsx(
+                        "flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 p-4 text-slate-600 transition-all hover:bg-slate-100",
+                        isHybrid ? "h-full min-h-[100px]" : "min-h-[120px]"
+                    )}>
                         {isUploading && !isCameraPhoto ? (
                             <Loader2 className="h-5 w-5 animate-spin" />
                         ) : (
@@ -109,14 +117,16 @@ export function HybridMediaDropzone({
                 </div>
             </div>
 
-            <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={(e) => handleFileChange(e, 'camera')}
-            />
+            {isHybrid && (
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    capture="environment"
+                    className="hidden"
+                    onChange={(e) => handleFileChange(e, 'camera')}
+                />
+            )}
 
             {isUploading && (
                 <div className="overflow-hidden rounded-full bg-slate-100">
@@ -157,7 +167,7 @@ export function HybridMediaDropzone({
                 </div>
             )}
 
-            {requireCamera && cameraPhotosCount === 0 && (
+            {isHybrid && requireCamera && cameraPhotosCount === 0 && (
                 <div className="flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-700 border border-amber-100">
                     <Camera size={14} className="flex-shrink-0" />
                     <span>Hệ thống yêu cầu ít nhất 01 ảnh chụp trực tiếp tại hiện trường để xác thực tọa độ GPS.</span>

@@ -24,8 +24,16 @@ export const getSidebarProjectStats = (project) => {
   const isFunded = project?.projectType === "FUNDED" || !project?.projectType;
   const isFundingPhase = String(project?.status || "").toUpperCase() === "FUNDING";
 
-  const availableBalance = Number(
-    project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0,
+  const availableBalance = Number(project?.financialDetail?.availableBalance ?? 0);
+  const pendingDisbursement = Number(project?.financialDetail?.pendingDisbursement ?? 0);
+  const escrowBalance = Number(
+    project?.financialDetail?.escrowBalance ?? availableBalance + pendingDisbursement,
+  );
+  const raisedAmount = Number(
+    project?.financialOverview?.totalRaised ??
+      project?.financialDetail?.totalRaised ??
+      project?.currentAmount ??
+      0,
   );
 
   const targetAmount = Number(project?.targetAmount ?? 0);
@@ -33,7 +41,7 @@ export const getSidebarProjectStats = (project) => {
 
   const progressPercent =
     targetAmount > 0
-      ? Math.min(Math.round((availableBalance / targetAmount) * 100), 100)
+      ? Math.min(Math.round((raisedAmount / targetAmount) * 100), 100)
       : 0;
 
   const currentVolunteers = Number(project?.stats?.currentVolunteers ?? 0);
@@ -55,7 +63,10 @@ export const getSidebarProjectStats = (project) => {
     isVolunteerOnly,
     isFunded,
     isFundingPhase,
-    availableBalance,
+    availableBalance: raisedAmount,
+    raisedAmount,
+    escrowBalance,
+    pendingDisbursement,
     targetAmount,
     pendingRefunds,
     progressPercent,

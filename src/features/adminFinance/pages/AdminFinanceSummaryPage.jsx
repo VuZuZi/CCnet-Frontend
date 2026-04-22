@@ -38,10 +38,15 @@ export default function AdminFinanceSummaryPage() {
                     <tbody className="divide-y divide-slate-50">
                         {projects.map(proj => (
                             <tr key={proj._id} className="hover:bg-slate-50/50 transition-colors group">
-                                <td className="px-6 py-5">
-                                    <p className="text-sm font-bold text-slate-900">{proj.title}</p>
-                                    <span className="text-[10px] font-medium text-slate-400 uppercase">{proj.status}</span>
-                                </td>
+                               <td className="px-6 py-5 max-w-[200px] sm:max-w-[300px]">
+    <p 
+        className="text-sm font-bold text-slate-900 truncate" 
+        title={proj.title}
+    >
+        {proj.title}
+    </p>
+    <span className="text-[10px] font-medium text-slate-400 uppercase">{proj.status}</span>
+</td>
                                 <td className="px-6 py-5 text-sm font-black text-slate-700">
                                     {formatProjectCurrencyVND(proj.escrowBalance)}
                                 </td>

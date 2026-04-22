@@ -7,85 +7,94 @@ import { formatProjectCurrencyVND } from '@/features/project/utils/projectDispla
 import { ShieldCheck, XCircle, Loader2, Info, FileText } from 'lucide-react';
 import clsx from 'clsx';
 
-export function AdminDisbursementReviewModal({ requestId, onClose }) {
-    // Đã đổi alias để không bị nhầm lẫn giữa API Envelope và Object thực tế
+// Thêm onSuccess vào props
+export function AdminDisbursementReviewModal({ requestId, onClose, onSuccess }) {
     const { data: responseData, isLoading } = useDisbursementDetail(requestId);
-    const { mutate: approve, isPending } = useApproveDisbursementMutation();
+    
+    // Inject options vào mutation để gọi callback khi approve thành công
+    const { mutate: approve, isPending } = useApproveDisbursementMutation({
+        onSuccess: () => {
+            if (onSuccess) onSuccess();
+        }
+    });
+    
     const [note, setNote] = useState('');
 
     if (isLoading) {
         return (
             <Modal open onClose={onClose} title="Xử lý yêu cầu giải ngân">
-                <div className="p-20 flex justify-center"><Loader2 className="animate-spin text-slate-400" size={32} /></div>
+                <div className="p-20 flex justify-center">
+                    <Loader2 className="animate-spin text-slate-400" size={32} />
+                </div>
             </Modal>
         );
     }
 
-    // Bóc tách chính xác lớp "request" từ API Envelope, fallback dự phòng nếu BE đổi cấu trúc
     const request = responseData?.request || responseData;
-    const paymentInfo = responseData?.paymentInfo; // [BỔ SUNG] Bóc tách paymentInfo
+    const paymentInfo = responseData?.paymentInfo;
 
     if (!request) return null;
 
-    const handleAction = (decision) => {
-        approve({ id: requestId, payload: { decision, note } });
-    };
+    const isPendingApproval = request.status === 'PENDING';
+    const isPendingTransfer = request.status === 'APPROVED_PENDING_TRANSFER';
+    const isCompleted = request.status === 'COMPLETED';
 
-    // Phân rã State an toàn (Optional Chaining)
-    const currentStatus = request?.status || 'UNKNOWN';
-    const isPendingStatus = currentStatus === 'PENDING';
-    const isPendingTransfer = currentStatus === 'APPROVED_PENDING_TRANSFER';
-    const isCompleted = currentStatus === 'COMPLETED';
+    const handleAction = (decision) => {
+        approve(
+            { id: request._id, payload: { decision, note } },
+            {
+                onSuccess: () => {
+                    // Nếu Reject thì đóng modal luôn, nếu Approve thì để Modal hiện QR
+                    if (decision === 'REJECTED') {
+                        onClose();
+                    }
+                }
+            }
+        );
+    };
 
     return (
         <Modal open onClose={onClose} title="Xử lý yêu cầu giải ngân" size="max-w-2xl">
             <div className="space-y-6">
-
-                {/* Header: Thông tin tóm tắt luôn hiện */}
-                <div className="rounded-2xl bg-slate-50 p-5 border border-slate-100 flex items-center justify-between">
-                    <div>
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số tiền yêu cầu rút</p>
-                        <p className="text-2xl font-black text-slate-900 mt-1">{formatProjectCurrencyVND(request?.requestedAmount)}</p>
-                    </div>
-                    <div className="text-right">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Trạng thái Sổ cái</p>
+                
+                {/* THÔNG TIN YÊU CẦU */}
+                <div className="rounded-3xl bg-slate-50 p-6 border border-slate-100">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2 text-slate-400">
+                            <FileText size={16} />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Thông tin yêu cầu</span>
+                        </div>
                         <span className={clsx(
-                            "inline-block mt-1 px-3 py-1 rounded-lg text-xs font-black uppercase",
-                            isPendingStatus ? "bg-amber-100 text-amber-700" :
-                                isPendingTransfer ? "bg-blue-100 text-blue-700" :
-                                    isCompleted ? "bg-emerald-100 text-emerald-700" : "bg-slate-200 text-slate-600"
+                            "px-3 py-1 rounded-full text-[10px] font-black uppercase",
+                            isPendingApproval ? "bg-amber-100 text-amber-700" : 
+                            isCompleted ? "bg-emerald-100 text-emerald-700" :
+                            isPendingTransfer ? "bg-blue-100 text-blue-700" : "bg-slate-200 text-slate-600"
                         )}>
-                            {/* Bọc Optional Chaining cho hàm replace để chống Crash tuyệt đối */}
-                            {currentStatus.replace(/_/g, ' ')}
+                            {request.status.replace(/_/g, ' ')}
                         </span>
                     </div>
+                    <h3 className="text-2xl font-black text-slate-900">{formatProjectCurrencyVND(request.requestedAmount)}</h3>
+                    <p className="text-sm text-slate-500 mt-1">{request.reason}</p>
                 </div>
 
-                {/* --- STATE 1: ĐANG CHỜ DUYỆT (PENDING) --- */}
-                {isPendingStatus && (
+                {/* --- STATE 1: CHỜ DUYỆT --- */}
+                {isPendingApproval && (
                     <div className="space-y-4 animate-in fade-in zoom-in-95 duration-300">
-                        <div className="rounded-xl bg-blue-50/50 p-4 border border-blue-100 flex gap-3">
-                            <Info className="text-blue-500 shrink-0 mt-0.5" size={16} />
-                            <p className="text-xs text-blue-800 leading-relaxed font-medium">
-                                Vui lòng kiểm tra số tiền khớp với Lộ trình trước khi duyệt. Sau khi <strong>Phê duyệt lệnh</strong>, hệ thống sẽ mở khóa mã QR để Kế toán tiến hành chuyển khoản thật.
-                            </p>
-                        </div>
-
-                        <div className="relative">
-                            <FileText className="absolute left-4 top-4 text-slate-400" size={18} />
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Ghi chú phê duyệt (nếu có)</label>
                             <textarea
-                                placeholder="Ghi chú phản hồi cho Organizer (Bắt buộc nhập nếu Từ chối lệnh)..."
                                 value={note}
                                 onChange={(e) => setNote(e.target.value)}
-                                className="w-full rounded-2xl border border-slate-200 py-4 pr-4 pl-12 text-sm min-h-[100px] focus:border-slate-900 focus:bg-slate-50 outline-none transition-all"
+                                placeholder="Nhập lý do từ chối hoặc lưu ý cho lệnh chuyển tiền..."
+                                className="w-full rounded-2xl border border-slate-200 bg-white p-4 text-sm focus:border-slate-900 focus:ring-1 focus:ring-slate-900 outline-none min-h-[100px] shadow-sm transition-all"
                             />
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3 pt-2">
+                        <div className="grid grid-cols-2 gap-3">
                             <button
                                 onClick={() => handleAction('REJECTED')}
-                                disabled={isPending || (!note.trim())}
-                                className="flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 py-4 text-sm font-bold text-red-600 hover:bg-red-100 transition-all disabled:opacity-50"
+                                disabled={isPending || (!note.trim())} // Vẫn giữ rule khóa nút Reject nếu chưa nhập Note
+                                className="flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white py-4 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-all disabled:opacity-50"
                             >
                                 <XCircle size={18} /> Từ chối lệnh
                             </button>
@@ -106,8 +115,13 @@ export function AdminDisbursementReviewModal({ requestId, onClose }) {
                     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                         <DisbursementTransferEngine
                             request={request}
-                            paymentInfo={paymentInfo} // [BỔ SUNG] Truyền prop này xuống
-                            onCompleted={onClose}
+                            paymentInfo={paymentInfo}
+                            onCompleted={() => {
+                                // Gọi onSuccess của cha trước để trigger refetch data
+                                if (onSuccess) onSuccess();
+                                // Sau đó mới đóng modal
+                                onClose();
+                            }}
                         />
                     </div>
                 )}

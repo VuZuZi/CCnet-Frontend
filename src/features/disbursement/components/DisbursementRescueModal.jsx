@@ -11,7 +11,7 @@ export function DisbursementRescueModal({ request, onClose }) {
     const [selectedBankId, setSelectedBankId] = useState('');
 
     // Chỉ lấy các bank đã verified và đang ACTIVE
-    const verifiedBanks = bankAccounts?.filter(b => b.status === 'ACTIVE' || b.isVerified) || [];
+    const verifiedBanks = bankAccounts?.filter(b => b.status === 'ACTIVE' && b.isVerified) || [];
 
     const handleSubmit = (e) => {
         e.preventDefault();

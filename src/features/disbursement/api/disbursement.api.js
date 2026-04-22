@@ -34,7 +34,7 @@ export const disbursementAPI = {
         return data.data;
     },
     getAdminDisbursementList: async (params) => {
-        const { data } = await httpClient.get(`/admin/disbursements`, { params });
+        const { data } = await httpClient.get(`${BASE_PATH}/admin/list`, { params });
         return data.data;
     }
 };

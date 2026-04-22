@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadgeCheck,
   CalendarDays,
   HeartHandshake,
@@ -11,6 +11,7 @@ import {
   Send,
 } from "lucide-react";
 import { ApplyVolunteerButton } from "@/features/volunteer/components/ApplyVolunteerButton";
+import { getProjectFundingStats } from "@/features/project/utils/projectDisplay.utils";
 
 function formatCurrency(value) {
   return Number(value || 0).toLocaleString("vi-VN");
@@ -40,9 +41,9 @@ function getVolunteerStatusMeta(status) {
         panelClass:
           "border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)]",
         iconClass: "bg-white text-amber-700",
-        label: "Đang chờ duyệt rút",
+        label: "Äang chá» duyá»‡t rÃºt",
         description:
-          "Bạn đã gửi yêu cầu xin rút khỏi dự án. Hãy chờ người tổ chức phản hồi.",
+          "Báº¡n Ä‘Ã£ gá»­i yÃªu cáº§u xin rÃºt khá»i dá»± Ã¡n. HÃ£y chá» ngÆ°á»i tá»• chá»©c pháº£n há»“i.",
       };
 
     case "APPROVED":
@@ -52,9 +53,9 @@ function getVolunteerStatusMeta(status) {
         panelClass:
           "border-emerald-100 bg-[linear-gradient(180deg,#F7FFF9_0%,#ECFDF3_100%)]",
         iconClass: "bg-white text-emerald-700",
-        label: "Thành viên đang hoạt động",
+        label: "ThÃ nh viÃªn Ä‘ang hoáº¡t Ä‘á»™ng",
         description:
-          "Bạn đã được duyệt và đang là tình nguyện viên của dự án này.",
+          "Báº¡n Ä‘Ã£ Ä‘Æ°á»£c duyá»‡t vÃ  Ä‘ang lÃ  tÃ¬nh nguyá»‡n viÃªn cá»§a dá»± Ã¡n nÃ y.",
       };
   }
 }
@@ -70,13 +71,13 @@ export function SidebarVolunteer({
 }) {
   const isFunded = project?.projectType === "FUNDED" || !project?.projectType;
 
-  const availableBalance =
-    project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
-  const targetAmount = project?.targetAmount ?? 1;
-  const progressPercent = Math.min(
-    Math.round((availableBalance / targetAmount) * 100),
-    100
-  );
+  const availableBalance = Number(project?.financialDetail?.availableBalance ?? 0);
+  const pendingDisbursement = Number(project?.financialDetail?.pendingDisbursement ?? 0);
+  const escrowBalance =
+    project?.financialDetail?.escrowBalance ??
+    availableBalance + pendingDisbursement;
+  const { raisedAmount, targetAmount, fundingPercent } = getProjectFundingStats(project);
+  const progressPercent = fundingPercent;
 
   const currentVolunteers = Number(project?.stats?.currentVolunteers || 0);
   const targetVolunteers = Number(project?.stats?.targetVolunteers || 0);
@@ -90,23 +91,23 @@ export function SidebarVolunteer({
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700">
             <Sparkles size={11} />
-            Chế độ tình nguyện viên
+            Cháº¿ Ä‘á»™ tÃ¬nh nguyá»‡n viÃªn
           </div>
 
           <h2 className="text-lg font-extrabold text-slate-900">
-            Bạn đang tham gia dự án
+            Báº¡n Ä‘ang tham gia dá»± Ã¡n
           </h2>
 
           <p className="mt-1 text-sm text-slate-500">
-            Theo dõi tiến độ dự án và mở nhanh các thao tác dành cho tình nguyện
-            viên.
+            Theo dÃµi tiáº¿n Ä‘á»™ dá»± Ã¡n vÃ  má»Ÿ nhanh cÃ¡c thao tÃ¡c dÃ nh cho tÃ¬nh nguyá»‡n
+            viÃªn.
           </p>
         </div>
 
         <div className="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-3 py-1.5 text-white shadow-sm">
           <ShieldCheck className="h-4 w-4" />
           <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
-            Thành viên
+            ThÃ nh viÃªn
           </span>
         </div>
       </div>
@@ -115,7 +116,7 @@ export function SidebarVolunteer({
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-700">
-              Trạng thái tham gia
+              Tráº¡ng thÃ¡i tham gia
             </p>
 
             <div
@@ -135,7 +136,7 @@ export function SidebarVolunteer({
 
             {isCheckingApplication ? (
               <p className="mt-2 text-xs text-slate-500">
-                Đang đồng bộ trạng thái tham gia...
+                Äang Ä‘á»“ng bá»™ tráº¡ng thÃ¡i tham gia...
               </p>
             ) : null}
           </div>
@@ -156,7 +157,7 @@ export function SidebarVolunteer({
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
             <CalendarDays className="h-4 w-4" />
-            Thời gian
+            Thá»i gian
           </div>
           <p className="text-sm font-bold text-slate-900">
             {formatDateRange(project?.startDate, project?.endDate)}
@@ -166,20 +167,20 @@ export function SidebarVolunteer({
         <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
           <div className="mb-2 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
             <Users className="h-4 w-4" />
-            Tình nguyện viên
+            TÃ¬nh nguyá»‡n viÃªn
           </div>
           <p className="text-sm font-bold text-slate-900">
             {currentVolunteers}
-            {targetVolunteers > 0 ? ` / ${targetVolunteers}` : ""} thành viên
+            {targetVolunteers > 0 ? ` / ${targetVolunteers}` : ""} thÃ nh viÃªn
           </p>
         </div>
       </div>
 
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">
-          <p className="text-sm font-bold text-slate-900">Hành động của bạn</p>
+          <p className="text-sm font-bold text-slate-900">HÃ nh Ä‘á»™ng cá»§a báº¡n</p>
           <p className="mt-1 text-xs text-slate-500">
-            Quản lý trạng thái tham gia hoặc gửi yêu cầu xin rút khỏi dự án.
+            Quáº£n lÃ½ tráº¡ng thÃ¡i tham gia hoáº·c gá»­i yÃªu cáº§u xin rÃºt khá»i dá»± Ã¡n.
           </p>
         </div>
 
@@ -194,15 +195,15 @@ export function SidebarVolunteer({
       {isFunded ? (
         <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
-            Quỹ đang được giữ
+            Quá»¹ Ä‘ang Ä‘Æ°á»£c giá»¯
           </p>
 
           <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
-            {formatCurrency(availableBalance)}đ
+            {formatCurrency(escrowBalance)}Ä‘
           </div>
 
           <p className="mt-1 text-sm text-slate-500">
-            Mục tiêu: {formatCurrency(targetAmount)}đ
+            Má»¥c tiÃªu: {formatCurrency(targetAmount)}Ä‘
           </p>
 
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-amber-100">
@@ -219,7 +220,7 @@ export function SidebarVolunteer({
               className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3.5 text-sm font-bold text-amber-900 transition hover:border-amber-300 hover:bg-amber-100"
             >
               <Wallet className="h-4 w-4" />
-              Xem tiến độ tài chính
+              Xem tiáº¿n Ä‘á»™ tÃ i chÃ­nh
             </button>
           </div>
         </div>
@@ -227,9 +228,9 @@ export function SidebarVolunteer({
 
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">
-          <p className="text-sm font-bold text-slate-900">Nhóm dự án</p>
+          <p className="text-sm font-bold text-slate-900">NhÃ³m dá»± Ã¡n</p>
           <p className="mt-1 text-xs text-slate-500">
-            Trao đổi với người tổ chức và các tình nguyện viên khác trong nhóm
+            Trao Ä‘á»•i vá»›i ngÆ°á»i tá»• chá»©c vÃ  cÃ¡c tÃ¬nh nguyá»‡n viÃªn khÃ¡c trong nhÃ³m
             chat.
           </p>
         </div>
@@ -245,15 +246,15 @@ export function SidebarVolunteer({
           }`}
         >
           <MessageSquare className="h-4 w-4" />
-          {hasProjectGroup ? "Mở nhóm dự án" : "Chưa có nhóm dự án"}
+          {hasProjectGroup ? "Má»Ÿ nhÃ³m dá»± Ã¡n" : "ChÆ°a cÃ³ nhÃ³m dá»± Ã¡n"}
         </button>
       </div>
 
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">
-          <p className="text-sm font-bold text-slate-900">Cộng đồng dự án</p>
+          <p className="text-sm font-bold text-slate-900">Cá»™ng Ä‘á»“ng dá»± Ã¡n</p>
           <p className="mt-1 text-xs text-slate-500">
-            Theo dõi cập nhật mới, bài đăng và tương tác trong cộng đồng dự án.
+            Theo dÃµi cáº­p nháº­t má»›i, bÃ i Ä‘Äƒng vÃ  tÆ°Æ¡ng tÃ¡c trong cá»™ng Ä‘á»“ng dá»± Ã¡n.
           </p>
         </div>
 
@@ -263,7 +264,7 @@ export function SidebarVolunteer({
           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-5 py-3.5 text-sm font-bold text-slate-800 transition hover:border-slate-300 hover:bg-slate-100"
         >
           <Users className="h-4 w-4" />
-          Mở tab cộng đồng
+          Má»Ÿ tab cá»™ng Ä‘á»“ng
         </button>
       </div>
     </div>
@@ -271,3 +272,4 @@ export function SidebarVolunteer({
 }
 
 export default SidebarVolunteer;
+

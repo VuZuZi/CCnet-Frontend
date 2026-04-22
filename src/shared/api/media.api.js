@@ -22,6 +22,10 @@ export const mediaAPI = {
         const formData = new FormData();
         formData.append("file", file);
         
+        if (config.context) formData.append("context", config.context);
+        if (config.lat !== undefined && config.lat !== null) formData.append("lat", config.lat);
+        if (config.lng !== undefined && config.lng !== null) formData.append("lng", config.lng);
+
         const res = await httpClient.post("/media/upload-smart", formData, {
             ...config,
             headers: { ...config.headers, "Content-Type": "multipart/form-data" },

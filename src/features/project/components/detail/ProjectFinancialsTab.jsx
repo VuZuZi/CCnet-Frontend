@@ -15,6 +15,12 @@ export function ProjectFinancialsTab({ project }) {
 
     const donors = data?.pages.flatMap(page => page.donors) || [];
     const totalDonors = data?.pages[0]?.pagination?.totalItems || 0;
+    const totalRaised = Number(
+        project?.financialOverview?.totalRaised ??
+        project?.financialDetail?.totalRaised ??
+        project?.currentAmount ??
+        0
+    );
 
     if (isLoading) {
         return (
@@ -46,7 +52,7 @@ export function ProjectFinancialsTab({ project }) {
                         <span className="text-sm font-bold uppercase tracking-wider">Tiền thực nhận</span>
                     </div>
                     <p className="text-3xl font-black text-slate-900">
-                        {(project?.financialDetail?.availableBalance || 0).toLocaleString()} 
+                        {totalRaised.toLocaleString()} 
                         <span className="text-lg font-medium text-slate-500"> đ</span>
                     </p>
                 </div>

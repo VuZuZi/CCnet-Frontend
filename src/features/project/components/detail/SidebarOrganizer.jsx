@@ -1,4 +1,4 @@
-import {
+﻿import {
   ShieldCheck,
   Users,
   Sparkles,
@@ -6,6 +6,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
+import { getProjectFundingStats } from '@/features/project/utils/projectDisplay.utils';
 
 function formatCurrency(value) {
   return Number(value || 0).toLocaleString('vi-VN');
@@ -16,17 +17,16 @@ export function SidebarOrganizer({
   projectConversation,
   onOpenProjectGroup,
 }) {
-  const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
   const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
 
-  const availableBalance =
-    project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
-  const targetAmount = project?.targetAmount ?? 1;
+  const availableBalance = Number(project?.financialDetail?.availableBalance ?? 0);
+  const pendingDisbursement = Number(project?.financialDetail?.pendingDisbursement ?? 0);
+  const escrowBalance =
+    project?.financialDetail?.escrowBalance ??
+    availableBalance + pendingDisbursement;
+  const { raisedAmount, targetAmount, fundingPercent } = getProjectFundingStats(project);
   const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
-  const progressPercent = Math.min(
-    Math.round((availableBalance / targetAmount) * 100),
-    100
-  );
+  const progressPercent = fundingPercent;
 
   const projectId = project?._id;
 
@@ -61,9 +61,9 @@ export function SidebarOrganizer({
             <Sparkles size={11} />
             Organizer Mode
           </div>
-          <h2 className="text-lg font-extrabold text-slate-900">Quản lý dự án</h2>
+          <h2 className="text-lg font-extrabold text-slate-900">Quáº£n lÃ½ dá»± Ã¡n</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Theo dõi volunteer và thao tác nhanh theo vai trò organizer.
+            Theo dÃµi volunteer vÃ  thao tÃ¡c nhanh theo vai trÃ² organizer.
           </p>
         </div>
 
@@ -82,17 +82,17 @@ export function SidebarOrganizer({
           </p>
 
           <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
-            {formatCurrency(availableBalance)}đ
+            {formatCurrency(escrowBalance)}Ä‘
           </div>
 
           {pendingRefunds > 0 ? (
             <p className="mt-1 text-xs font-medium text-amber-700">
-              {formatCurrency(pendingRefunds)}đ đang chờ hoàn trả
+              {formatCurrency(pendingRefunds)}Ä‘ Ä‘ang chá» hoÃ n tráº£
             </p>
           ) : null}
 
           <p className="mt-1 text-sm text-slate-500">
-            Goal: {formatCurrency(targetAmount)}đ
+            Goal: {formatCurrency(targetAmount)}Ä‘
           </p>
 
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-amber-100">
@@ -110,7 +110,7 @@ export function SidebarOrganizer({
               <p className="text-2xl font-extrabold text-slate-900">
                 {progressPercent}%
               </p>
-              <p className="mt-1 text-sm font-medium text-slate-500">Đã gọi vốn</p>
+              <p className="mt-1 text-sm font-medium text-slate-500">ÄÃ£ gá»i vá»‘n</p>
             </div>
 
             <div className="rounded-2xl border border-amber-100 bg-amber-50 p-4">
@@ -121,7 +121,7 @@ export function SidebarOrganizer({
                 {isLoading ? '...' : pendingAppsCount}
               </p>
               <p className="mt-1 text-sm font-medium text-amber-700">
-                Đơn chờ duyệt
+                ÄÆ¡n chá» duyá»‡t
               </p>
             </div>
           </div>
@@ -139,7 +139,7 @@ export function SidebarOrganizer({
                 {isLoading ? '...' : pendingAppsCount}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Đơn tình nguyện đang chờ organizer xử lý
+                ÄÆ¡n tÃ¬nh nguyá»‡n Ä‘ang chá» organizer xá»­ lÃ½
               </p>
             </div>
 
@@ -152,9 +152,9 @@ export function SidebarOrganizer({
 
       <div className="rounded-[24px] border border-slate-200 bg-slate-50 p-4">
         <div className="mb-3">
-          <p className="text-sm font-bold text-slate-900">Nhóm dự án</p>
+          <p className="text-sm font-bold text-slate-900">NhÃ³m dá»± Ã¡n</p>
           <p className="mt-1 text-xs text-slate-500">
-            Mở nhanh group chat của dự án để trao đổi với volunteer.
+            Má»Ÿ nhanh group chat cá»§a dá»± Ã¡n Ä‘á»ƒ trao Ä‘á»•i vá»›i volunteer.
           </p>
         </div>
 
@@ -169,7 +169,7 @@ export function SidebarOrganizer({
           }`}
         >
           <MessageSquare className="h-4 w-4" />
-          {hasProjectGroup ? 'Mở nhóm dự án' : 'Chưa có nhóm dự án'}
+          {hasProjectGroup ? 'Má»Ÿ nhÃ³m dá»± Ã¡n' : 'ChÆ°a cÃ³ nhÃ³m dá»± Ã¡n'}
         </button>
       </div>
     </div>
@@ -177,3 +177,4 @@ export function SidebarOrganizer({
 }
 
 export default SidebarOrganizer;
+

@@ -23,26 +23,44 @@ function MapBoundsSetter({ points }) {
 }
 
 export function EvidenceMap({ markers = [] }) {
+    // [FIXED]: Xử lý tương thích ngược & tương thích chéo cho cả object flat và GeoJSON
     const validPoints = useMemo(() => markers
-        .filter(m => m.captureMetadata?.location?.coordinates)
-        .map(m => ({
-            id: m.id || m._id,
-            lat: m.captureMetadata.location.coordinates[1],
-            lng: m.captureMetadata.location.coordinates[0],
-            url: m.url
-        })), [markers]);
+        .map(m => {
+            const meta = m.captureMetadata || {};
+            let lat = null;
+            let lng = null;
+
+            // Xử lý chuẩn Data phẳng (BE đang trả về hiện tại)
+            if (typeof meta.lat === 'number' && typeof meta.lng === 'number') {
+                lat = meta.lat;
+                lng = meta.lng;
+            } 
+            // Dự phòng hỗ trợ GeoJSON (nếu BE nâng cấp)
+            else if (Array.isArray(meta.location?.coordinates) && meta.location.coordinates.length >= 2) {
+                lat = meta.location.coordinates[1];
+                lng = meta.location.coordinates[0];
+            }
+
+            return {
+                id: m.id || m._id,
+                lat,
+                lng,
+                url: m.url
+            };
+        })
+        .filter(point => point.lat !== null && point.lng !== null), [markers]);
 
     if (validPoints.length === 0) {
         return (
-            <div className="flex h-full w-full items-center justify-center bg-slate-100 rounded-2xl border border-slate-200 text-slate-400 text-xs text-center p-4">
+            <div className="flex h-full w-full items-center justify-center bg-slate-100 border border-slate-200 text-slate-400 text-xs text-center p-4">
                 Không tìm thấy dữ liệu GPS trong các ảnh được cung cấp.
             </div>
         );
     }
 
     return (
-        <div className="h-full w-full rounded-2xl overflow-hidden border border-slate-200 z-0">
-            <MapContainer center={[validPoints[0].lat, validPoints[0].lng]} zoom={13} className="h-full w-full">
+        <div className="h-full w-full overflow-hidden border border-slate-200 z-0">
+            <MapContainer center={[validPoints[0].lat, validPoints[0].lng]} zoom={13} className="h-full w-full relative z-0">
                 <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
                 {validPoints.map((point) => (
                     <Marker 
