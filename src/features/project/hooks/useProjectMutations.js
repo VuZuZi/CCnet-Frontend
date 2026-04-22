@@ -94,6 +94,54 @@ export const useSubmitProject = () => {
   });
 };
 
+export const useUpdateUpdatingProject = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (variables = {}) => {
+      const { id, data } = variables;
+      return projectAPI.updateUpdating({ id, data });
+    },
+    onSuccess: (data, variables) => {
+      if (variables?.id) {
+        queryClient.setQueryData(
+          PROJECT_QUERY_KEYS.updatingDetail(variables.id),
+          data,
+        );
+        queryClient.setQueryData(PROJECT_QUERY_KEYS.detail(variables.id), data);
+      }
+
+      invalidateAllProjectQueries(queryClient);
+      toast.success("Đã cập nhật milestone của dự án");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
+
+export const useConfirmUpdatingProject = () => {
+  const toast = useToast();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: projectAPI.confirmUpdating,
+    onSuccess: (data, projectId) => {
+      if (projectId) {
+        queryClient.setQueryData(PROJECT_QUERY_KEYS.updatingDetail(projectId), data);
+        queryClient.setQueryData(PROJECT_QUERY_KEYS.detail(projectId), data);
+      }
+
+      invalidateAllProjectQueries(queryClient);
+      toast.success("Đã gửi xác nhận cập nhật cho quản trị viên");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
+  });
+};
+
 export const useReportProject = () => {
   const toast = useToast();
   const queryClient = useQueryClient();

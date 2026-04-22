@@ -234,41 +234,43 @@ export function MessageList({
           compact ? "px-3 py-3 pb-4" : "px-5 py-4 pb-6"
         }`}
       >
-        <div className={compact ? "space-y-0.5" : "space-y-1"}>
-          {renderedMessages.map(({ message, showDeliveryStatus }, index) => {
-            const senderId = getSenderId(message?.senderId);
-            const reactKey = message?._id
-              ? String(message._id)
-              : `fallback_${senderId}_${String(message?.createdAt || "")}_${index}`;
+        <div className="flex min-h-full flex-col justify-end">
+  <div className={compact ? "space-y-0.5" : "space-y-1"}>
+    {renderedMessages.map(({ message, showDeliveryStatus }, index) => {
+      const senderId = getSenderId(message?.senderId);
+      const reactKey = message?._id
+        ? String(message._id)
+        : `fallback_${senderId}_${String(message?.createdAt || "")}_${index}`;
 
-            return (
-              <div key={reactKey} className="overflow-visible">
-                {message?.__ui?.showTimeSeparator ? (
-                  <TimeSeparator
-                    label={message?.__ui?.timeSeparatorLabel}
-                    compact={compact}
-                  />
-                ) : null}
+      return (
+        <div key={reactKey} className="overflow-visible">
+          {message?.__ui?.showTimeSeparator ? (
+            <TimeSeparator
+              label={message?.__ui?.timeSeparatorLabel}
+              compact={compact}
+            />
+          ) : null}
 
-                <MessageBubble
-                  message={message}
-                  conversationId={conversationId}
-                  currentUserId={myId}
-                  compact={compact}
-                  showSenderName={Boolean(message?.__ui?.showSenderName)}
-                  showSenderAvatar={Boolean(message?.__ui?.showSenderAvatar)}
-                  showSeenAvatars={Boolean(message?.__ui?.showSeenAvatars)}
-                  showDeliveryStatus={showDeliveryStatus}
-                  deliveryStatus={message?.__ui?.deliveryStatus || null}
-                  seenUsers={message?.__ui?.seenUsers || []}
-                  onJumpToMessage={jumpToMessage}
-                />
-              </div>
-            );
-          })}
-
-          <div ref={endRef} />
+          <MessageBubble
+            message={message}
+            conversationId={conversationId}
+            currentUserId={myId}
+            compact={compact}
+            showSenderName={Boolean(message?.__ui?.showSenderName)}
+            showSenderAvatar={Boolean(message?.__ui?.showSenderAvatar)}
+            showSeenAvatars={Boolean(message?.__ui?.showSeenAvatars)}
+            showDeliveryStatus={showDeliveryStatus}
+            deliveryStatus={message?.__ui?.deliveryStatus || null}
+            seenUsers={message?.__ui?.seenUsers || []}
+            onJumpToMessage={jumpToMessage}
+          />
         </div>
+      );
+    })}
+
+    <div ref={endRef} />
+  </div>
+</div>
       </div>
     </>
   );

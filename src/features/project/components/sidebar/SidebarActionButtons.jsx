@@ -13,12 +13,21 @@ export function SidebarActionButtons({
 }) {
   const projectId = project?._id || project?.id;
   const projectName = project?.title || project?.name || "";
+  const isUpdating = String(project?.status || "").toUpperCase() === "UPDATING";
 
   return (
     <>
       <div className="mt-6 flex flex-col gap-4">
         {isFunded ? (
-          isFundingPhase ? (
+          isUpdating ? (
+            <button
+              disabled
+              className="inline-flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-2xl bg-amber-50 px-5 py-4 text-base font-bold text-amber-700"
+            >
+              <Lock className="h-5 w-5" />
+              Tạm khóa quyên góp
+            </button>
+          ) : isFundingPhase ? (
             <button
               type="button"
               onClick={onDonateClick}

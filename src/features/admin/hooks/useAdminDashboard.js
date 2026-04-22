@@ -209,45 +209,63 @@ export const useAdminDashboard = (activeTab) => {
   };
 
   const updateProjectStatus = async (projectId, payloadOrStatus) => {
-    const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
+  const previousProjects = queryClient.getQueryData(ADMIN_PROJECTS_QUERY_KEY);
 
-    const requestPayload =
-      typeof payloadOrStatus === "string"
-        ? { status: payloadOrStatus }
-        : payloadOrStatus || {};
+  const requestPayload =
+    typeof payloadOrStatus === "string"
+      ? { status: payloadOrStatus }
+      : payloadOrStatus || {};
 
-    const optimisticStatus = requestPayload.status;
+  const optimisticStatus = requestPayload.status;
+
+  setProjectInProjectsCache(projectId, (project) => ({
+    ...project,
+    status: optimisticStatus || project.status,
+  }));
+
+  try {
+    const response = await adminAPI.updateProjectStatus(
+      projectId,
+      requestPayload
+    );
+    const updatedProject = normalizeResponseData(response);
 
     setProjectInProjectsCache(projectId, (project) => ({
       ...project,
-      status: optimisticStatus || project.status,
+      ...updatedProject,
     }));
 
-    try {
-      const response = await adminAPI.updateProjectStatus(
-        projectId,
-        requestPayload
-      );
-      const updatedProject = normalizeResponseData(response);
+    await Promise.all([
+      invalidateProjectsAndLogs(),
 
-      setProjectInProjectsCache(projectId, (project) => ({
-        ...project,
-        ...updatedProject,
-      }));
+      queryClient.invalidateQueries({
+        queryKey: ["project", "detail", projectId],
+      }),
 
-      await invalidateProjectsAndLogs();
+      queryClient.invalidateQueries({
+        queryKey: ["project"],
+      }),
 
-      toast.success("Project status updated successfully.");
-      return updatedProject;
-    } catch (error) {
-      if (previousProjects !== undefined) {
-        queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, previousProjects);
-      }
+      queryClient.invalidateQueries({
+        queryKey: ["volunteer-engagement", "project-reviews", projectId],
+      }),
 
-      toast.error(getErrorMessage(error, "Failed to update project status."));
-      throw error;
+      queryClient.invalidateQueries({
+        queryKey: ["volunteer-applications", projectId],
+      }),
+    ]);
+
+    toast.success("Project status updated successfully.");
+    return updatedProject;
+  } catch (error) {
+    if (previousProjects !== undefined) {
+      queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, previousProjects);
     }
-  };
+
+    toast.error(getErrorMessage(error, "Failed to update project status."));
+    throw error;
+  }
+};
 
   const handleResolveReport = async (
     reportId,

@@ -9,6 +9,12 @@ import {
   BadgeCheck,
   Building2,
   Globe,
+  HeartPulse,
+  GraduationCap,
+  TreePine,
+  LifeBuoy,
+  Hammer,
+  Award,
 } from "lucide-react";
 import { useUploadMedia } from "../../hooks/useUploadMedia";
 import { useToast } from "@/shared/contexts/ToastContext";
@@ -26,13 +32,87 @@ const DEFAULT_IMAGES = {
     "https://www.gravatar.com/avatar/00000000000000000000000000000000?d=mp",
 };
 
+const HERO_BADGE_ICON_MAP = {
+  heart: HeartPulse,
+  "graduation-cap": GraduationCap,
+  "tree-pine": TreePine,
+  "life-buoy": LifeBuoy,
+  hammer: Hammer,
+  award: Award,
+};
+
 const isOrganizerProfile = (user) => {
   const role = String(user?.role || "").toLowerCase();
   return role === "organizer" || Number(user?.kyc?.tier || 0) >= 2;
 };
 
+function ProfileAchievementBadges({ badges = [] }) {
+  if (!Array.isArray(badges) || badges.length === 0) {
+    return null;
+  }
+
+  const visibleBadges = badges.slice(0, 4);
+  const remainingCount = badges.length - visibleBadges.length;
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-2">
+      {visibleBadges.map((badge) => {
+        const Icon = HERO_BADGE_ICON_MAP[badge.icon] || Award;
+
+        return (
+          <div
+            key={badge.key}
+            className="inline-flex items-center gap-2 rounded-full border bg-white/92 px-3 py-1.5 shadow-sm backdrop-blur-sm"
+            style={{
+              borderColor: badge.borderColor,
+            }}
+            title={`${badge.label} • ${badge.count} dự án`}
+          >
+            <span
+              className="flex h-6 w-6 items-center justify-center rounded-full"
+              style={{ backgroundColor: badge.bgColor }}
+            >
+              <Icon
+                size={13}
+                strokeWidth={2.4}
+                style={{ color: badge.textColor }}
+              />
+            </span>
+
+            <span
+              className="max-w-[120px] truncate text-xs font-bold"
+              style={{ color: badge.textColor }}
+            >
+              {badge.label}
+            </span>
+
+            {badge.count > 1 ? (
+  <span
+    className="rounded-full px-1.5 py-0.5 text-[11px] font-black"
+    style={{
+      backgroundColor: badge.bgColor,
+      color: badge.textColor,
+    }}
+  >
+    x{badge.count}
+  </span>
+) : null}
+          </div>
+        );
+      })}
+
+      {remainingCount > 0 ? (
+        <div className="inline-flex items-center rounded-full border border-slate-200 bg-white/92 px-3 py-1.5 text-xs font-bold text-slate-600 shadow-sm">
+          +{remainingCount}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function ProfileHeroCard({
   user,
+  achievementBadges = [],
   isOwnProfile,
   isFollowing,
   onToggleFollow,
@@ -241,6 +321,10 @@ export function ProfileHeroCard({
               <MapPin className="h-4 w-4 text-gray-400" />
               {locationText}
             </p>
+
+            {!isOrganizer ? (
+              <ProfileAchievementBadges badges={achievementBadges} />
+            ) : null}
 
             {isOrganizer && organizationName && (
               <div className="mt-3 space-y-2">

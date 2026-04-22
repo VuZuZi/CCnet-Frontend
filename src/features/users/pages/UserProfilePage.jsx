@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useChatStore } from '@/features/chat/stores/useChatStore';
 import { useCreateConversation } from '@/features/chat/hooks/conversations/useCreateConversation';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
 import { useToast } from '@/shared/contexts/ToastContext';
-import { Building2, Heart, Wallet, User as UserIcon, ShieldCheck } from 'lucide-react';
+import { Building2, Heart, Wallet, ShieldCheck } from 'lucide-react';
 import PostFeed from '@/features/Community/components/post/PostFeed';
 
 import { useProfileIdentity } from "../hooks/useProfileIdentity";
@@ -132,14 +132,42 @@ export function UserProfilePage() {
   const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [reportModalOpen, setReportModalOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [reportError, setReportError] = useState(null);
-  const [financeTab, setFinanceTab] = useState('bank');
+  const resolveFinanceTab = (params) => {
+    const requestedTab = String(
+      params.get('tab') || params.get('walletTab') || ''
+    ).toLowerCase();
+
+    if (requestedTab === 'wallet' || requestedTab === 'donation' || requestedTab === 'bank') {
+      return requestedTab;
+    }
+
+    return 'bank';
+  };
+
+  const [financeTab, setFinanceTab] = useState(() => resolveFinanceTab(searchParams));
   const currentView = searchParams.get('view');
   const showWalletView = isOwnProfile && currentView === 'wallet';
+
+  useEffect(() => {
+    if (!showWalletView) return;
+    setFinanceTab(resolveFinanceTab(searchParams));
+  }, [showWalletView, searchParams]);
+
+  const handleFinanceTabChange = (tab) => {
+    setFinanceTab(tab);
+
+    if (!showWalletView) return;
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('view', 'wallet');
+    nextParams.set('tab', tab);
+    setSearchParams(nextParams, { replace: true });
+  };
 
   const {
     data: userProfile,
@@ -235,19 +263,20 @@ export function UserProfilePage() {
   return (
     <main className="bg-gray-50 min-h-screen text-gray-900 antialiased py-8 px-4">
       <div className="max-w-7xl mx-auto">
-
         {showWalletView ? (
           <div className="space-y-8">
             <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-black text-slate-900">Trung tâm tài chính</h2>
-                <p className="mt-1 text-sm text-slate-500">Quản lý ngân hàng, ví và ủng hộ theo từng nhóm để thao tác nhanh hơn.</p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Quản lý ngân hàng, ví và ủng hộ theo từng nhóm để thao tác nhanh hơn.
+                </p>
               </div>
 
               <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
                 <button
                   type="button"
-                  onClick={() => setFinanceTab('bank')}
+                  onClick={() => handleFinanceTabChange('bank')}
                   className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     financeTab === 'bank'
                       ? 'border-amber-300 bg-amber-50 text-amber-900'
@@ -257,12 +286,14 @@ export function UserProfilePage() {
                   <div className="flex items-center gap-2 text-sm font-black">
                     <Building2 size={16} /> Ngân hàng
                   </div>
-                  <p className="mt-1 text-xs font-medium text-slate-500">Đăng ký tài khoản nhận tiền</p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    Đăng ký tài khoản nhận tiền
+                  </p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setFinanceTab('wallet')}
+                  onClick={() => handleFinanceTabChange('wallet')}
                   className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     financeTab === 'wallet'
                       ? 'border-amber-300 bg-amber-50 text-amber-900'
@@ -272,12 +303,14 @@ export function UserProfilePage() {
                   <div className="flex items-center gap-2 text-sm font-black">
                     <Wallet size={16} /> Ví & giao dịch
                   </div>
-                  <p className="mt-1 text-xs font-medium text-slate-500">Số dư, rút tiền, sao kê ví</p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    Số dư, rút tiền, sao kê ví
+                  </p>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setFinanceTab('donation')}
+                  onClick={() => handleFinanceTabChange('donation')}
                   className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
                     financeTab === 'donation'
                       ? 'border-amber-300 bg-amber-50 text-amber-900'
@@ -287,7 +320,9 @@ export function UserProfilePage() {
                   <div className="flex items-center gap-2 text-sm font-black">
                     <Heart size={16} /> Ủng hộ
                   </div>
-                  <p className="mt-1 text-xs font-medium text-slate-500">Các khoản đã ủng hộ & hoàn tiền</p>
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    Các khoản đã ủng hộ & hoàn tiền
+                  </p>
                 </button>
               </div>
             </div>
@@ -297,21 +332,26 @@ export function UserProfilePage() {
             {financeTab === 'donation' ? <DonationHistoryList /> : null}
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <section className="lg:col-span-2 space-y-8">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+            <section className="space-y-8 lg:col-span-2">
               <ProfileHeroCard
-                user={userProfile}
-                isOwnProfile={isOwnProfile}
-                isFollowing={isFollowing}
-                onToggleFollow={handleToggleFollow}
-                onChat={handleOpenChat}
-                onReport={handleReportUser}
-                isChatLoading={isChatLoading}
-                isFollowLoading={isToggleLoading}
-                isReportLoading={isReportLoading}
-              />
+  user={userProfile}
+  achievementBadges={userProfile?.achievementBadges || []}
+  isOwnProfile={isOwnProfile}
+  isFollowing={isFollowing}
+  onToggleFollow={handleToggleFollow}
+  onChat={handleOpenChat}
+  onReport={handleReportUser}
+  isChatLoading={isChatLoading}
+  isFollowLoading={isToggleLoading}
+  isReportLoading={isReportLoading}
+/>
+
               <ImpactMetrics
                 supportedCount={supportedCount}
+                completedCount={userProfile?.impactMetrics?.completedCount || 0}
+                averageRating={userProfile?.impactMetrics?.averageRating || 0}
+                trustScore={userProfile?.impactMetrics?.trustScore || 0}
                 isOwnProfile={isOwnProfile}
                 onOpenSupportedProjects={() =>
                   navigate("/profile/supported-projects")
@@ -331,8 +371,12 @@ export function UserProfilePage() {
 
               <div className="space-y-4">
                 <div className="mb-2 px-1">
-                  <h2 className="text-lg font-black text-slate-900 sm:text-xl">Bài đăng của {isOwnProfile ? 'bạn' : 'người dùng này'}</h2>
-                  <p className="mt-1 text-sm text-slate-500">Dòng thời gian cá nhân theo thứ tự mới nhất.</p>
+                  <h2 className="text-lg font-black text-slate-900 sm:text-xl">
+                    Bài đăng của {isOwnProfile ? 'bạn' : 'người dùng này'}
+                  </h2>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Dòng thời gian cá nhân theo thứ tự mới nhất.
+                  </p>
                 </div>
 
                 <PostFeed
@@ -362,8 +406,6 @@ export function UserProfilePage() {
             </aside>
           </div>
         )}
-
-
       </div>
 
       {reportModalOpen && (
@@ -452,10 +494,11 @@ export function UserProfilePage() {
 function ProfileSkeletonLoader() {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">
-      <div className="mx-auto grid max-w-7xl grid-cols-1 gap-8 animate-pulse lg:grid-cols-3">
+      <div className="mx-auto grid max-w-7xl animate-pulse grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
           <div className="h-[350px] w-full rounded-2xl bg-gray-200 shadow-sm"></div>
           <div className="h-[150px] w-full rounded-2xl bg-gray-200 shadow-sm"></div>
+          <div className="h-[220px] w-full rounded-2xl bg-gray-200 shadow-sm"></div>
         </div>
         <div className="space-y-8">
           <div className="h-[250px] w-full rounded-2xl bg-gray-200 shadow-sm"></div>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ChevronLeft, PanelLeftOpen } from 'lucide-react';
 import { toast } from 'react-toastify';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useHelpRequestMapViewport } from '../../hooks/useHelpRequestQueries';
@@ -80,9 +81,7 @@ const normalizeMapResponse = (data = {}) => {
     })
     .filter(Boolean);
 
-  const panelItems = rawPanelItems
-    .map(normalizeMapItem)
-    .filter(Boolean);
+  const panelItems = rawPanelItems.map(normalizeMapItem).filter(Boolean);
 
   return {
     mode,
@@ -160,6 +159,7 @@ export default function NeedHelpMapShell() {
   const [locateRequestId, setLocateRequestId] = useState(0);
   const [resetRequestId, setResetRequestId] = useState(0);
   const [isLocating, setIsLocating] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   useEffect(() => {
     const previousHtmlOverflow = document.documentElement.style.overflow;
@@ -330,8 +330,22 @@ export default function NeedHelpMapShell() {
 
   return (
     <div className="h-[calc(100vh-88px)] overflow-hidden bg-[rgb(255,248,230)]">
-      <div className="mx-auto flex h-full max-w-[1720px] flex-col px-3 py-3 sm:px-4 lg:px-5">
-        <div className="relative z-[2500] shrink-0 overflow-visible">
+      <div className="relative h-full w-full overflow-hidden rounded-[34px] border border-amber-100 shadow-[0_28px_80px_rgba(15,23,42,0.12)]">
+        <NeedHelpMapCanvas
+          markers={normalized.markers}
+          activeItemId={activeItemId}
+          activeClusterId={activeClusterId}
+          onItemSelect={handleItemSelect}
+          onClusterSelect={handleClusterSelect}
+          onViewportChange={handleViewportChange}
+          selectedItem={selectedItem}
+          selectedCluster={selectedCluster}
+          userLocation={userLocation}
+          locateRequestId={locateRequestId}
+          resetRequestId={resetRequestId}
+        />
+
+        <div className="pointer-events-none absolute inset-x-6 top-5 z-[2300]">
           <NeedHelpMapToolbar
             summaryText={summaryText}
             localSearch={localSearch}
@@ -344,44 +358,43 @@ export default function NeedHelpMapShell() {
             onLocateMe={handleLocateMe}
             onResetVietnam={handleResetVietnam}
             isLocating={isLocating}
-            mode={normalized.mode}
           />
         </div>
 
-        <div className="mt-3 grid min-h-0 flex-1 grid-cols-1 gap-4 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <div className="min-h-0">
-            <NeedHelpMapSidebar
-              visibleItems={sidebarItems}
-              activeItemId={activeItemId}
-              onItemSelect={handleItemSelect}
-              isLoading={isLoading}
-              summaryText={summaryText}
-              mode={normalized.mode}
-            />
-          </div>
+        <NeedHelpMapSidebar
+          visibleItems={sidebarItems}
+          activeItemId={activeItemId}
+          onItemSelect={handleItemSelect}
+          isLoading={isLoading}
+          summaryText={summaryText}
+          isOpen={isSidebarOpen}
+        />
 
-          <div className="relative z-0 min-h-0">
-            <NeedHelpMapCanvas
-              markers={normalized.markers}
-              activeItemId={activeItemId}
-              activeClusterId={activeClusterId}
-              onItemSelect={handleItemSelect}
-              onClusterSelect={handleClusterSelect}
-              onViewportChange={handleViewportChange}
-              selectedItem={selectedItem}
-              selectedCluster={selectedCluster}
-              userLocation={userLocation}
-              locateRequestId={locateRequestId}
-              resetRequestId={resetRequestId}
-            />
+        {isSidebarOpen ? (
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(false)}
+            className="pointer-events-auto absolute left-[389px] top-[146px] z-[2400] flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-white/92 text-slate-700 shadow-[0_18px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:bg-white"
+            aria-label="Đóng danh sách"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setIsSidebarOpen(true)}
+            className="pointer-events-auto absolute left-6 top-[146px] z-[2400] inline-flex h-12 items-center gap-2 rounded-2xl border border-white/80 bg-white/92 px-4 text-sm font-bold text-slate-800 shadow-[0_18px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:bg-white"
+          >
+            <PanelLeftOpen size={18} />
+            Mở danh sách
+          </button>
+        )}
 
-            {isFetching ? (
-              <div className="pointer-events-none absolute right-3 top-3 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold text-slate-700 shadow-lg backdrop-blur">
-                Đang cập nhật bản đồ...
-              </div>
-            ) : null}
+        {isFetching ? (
+          <div className="pointer-events-none absolute right-6 top-[96px] z-[2300] rounded-full bg-white/94 px-4 py-2 text-sm font-semibold text-slate-700 shadow-lg backdrop-blur">
+            Đang cập nhật bản đồ...
           </div>
-        </div>
+        ) : null}
       </div>
     </div>
   );

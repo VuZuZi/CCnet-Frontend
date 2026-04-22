@@ -1,325 +1,175 @@
-import { memo, useEffect, useMemo, useRef } from 'react';
-import {
-  MapContainer,
-  Marker,
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import MapView, {
+  Source,
+  Layer,
   Popup,
-  TileLayer,
-  ZoomControl,
-  useMap,
-  useMapEvents,
-} from 'react-leaflet';
-import L from 'leaflet';
+  Marker,
+  NavigationControl,
+  GeolocateControl,
+  ScaleControl,
+  FullscreenControl,
+} from 'react-map-gl/maplibre';
+import 'maplibre-gl/dist/maplibre-gl.css';
 import { Link } from 'react-router-dom';
-import { LocateFixed, MapPin } from 'lucide-react';
+import { Layers3, MapPin, Navigation } from 'lucide-react';
 
 import {
   NEED_HELP_CLUSTER_SWITCH_ZOOM,
   VIETNAM_DEFAULT_ZOOM,
   VIETNAM_MAP_BOUNDS,
   VIETNAM_MAP_CENTER,
-  getClusterBadgeSizeClass,
-  getClusterIconPixelSize,
   getUrgencyBadgeClass,
   getUrgencyLabel,
 } from '../../utils/helpRequestMap.utils';
 
 const BRAND_YELLOW = '#FBBF24';
 const MAP_SOFT_YELLOW = '#FFF8E6';
+const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/bright';
 
-function MapViewportWatcher({ onViewportChange }) {
-  const map = useMap();
-  const lastViewportRef = useRef('');
+const SOURCE_CLUSTERS = 'needhelp-clusters-source';
+const SOURCE_ITEMS = 'needhelp-items-source';
+const SOURCE_ACTIVE_CLUSTER = 'needhelp-active-cluster-source';
+const SOURCE_ACTIVE_ITEM = 'needhelp-active-item-source';
 
-  useEffect(() => {
-    const syncViewport = () => {
-      const bounds = map.getBounds();
-      const nextViewport = {
-        north: Number(bounds.getNorth().toFixed(5)),
-        south: Number(bounds.getSouth().toFixed(5)),
-        east: Number(bounds.getEast().toFixed(5)),
-        west: Number(bounds.getWest().toFixed(5)),
-        zoom: map.getZoom(),
-      };
+const LAYER_CLUSTER_HALO = 'needhelp-cluster-halo';
+const LAYER_CLUSTER_CORE = 'needhelp-cluster-core';
+const LAYER_CLUSTER_LABEL = 'needhelp-cluster-label';
 
-      const signature = JSON.stringify(nextViewport);
-      if (lastViewportRef.current === signature) return;
+const LAYER_ITEM_HALO = 'needhelp-item-halo';
+const LAYER_ITEM_CORE = 'needhelp-item-core';
+const LAYER_ITEM_LABEL = 'needhelp-item-label';
 
-      lastViewportRef.current = signature;
-      onViewportChange?.(nextViewport);
-    };
+const LAYER_ACTIVE_CLUSTER_HALO = 'needhelp-active-cluster-halo';
+const LAYER_ACTIVE_CLUSTER_CORE = 'needhelp-active-cluster-core';
+const LAYER_ACTIVE_CLUSTER_LABEL = 'needhelp-active-cluster-label';
 
-    syncViewport();
-  }, [map, onViewportChange]);
+const LAYER_ACTIVE_ITEM_HALO = 'needhelp-active-item-halo';
+const LAYER_ACTIVE_ITEM_CORE = 'needhelp-active-item-core';
+const LAYER_ACTIVE_ITEM_LABEL = 'needhelp-active-item-label';
 
-  useMapEvents({
-    moveend(event) {
-      const nextMap = event.target;
-      const bounds = nextMap.getBounds();
+const INTERACTIVE_LAYER_IDS = [
+  LAYER_CLUSTER_CORE,
+  LAYER_CLUSTER_LABEL,
+  LAYER_ACTIVE_CLUSTER_CORE,
+  LAYER_ACTIVE_CLUSTER_LABEL,
+  LAYER_ITEM_CORE,
+  LAYER_ITEM_LABEL,
+  LAYER_ACTIVE_ITEM_CORE,
+  LAYER_ACTIVE_ITEM_LABEL,
+];
 
-      const nextViewport = {
-        north: Number(bounds.getNorth().toFixed(5)),
-        south: Number(bounds.getSouth().toFixed(5)),
-        east: Number(bounds.getEast().toFixed(5)),
-        west: Number(bounds.getWest().toFixed(5)),
-        zoom: nextMap.getZoom(),
-      };
-
-      const signature = JSON.stringify(nextViewport);
-      if (lastViewportRef.current === signature) return;
-
-      lastViewportRef.current = signature;
-      onViewportChange?.(nextViewport);
-    },
-    zoomend(event) {
-      const nextMap = event.target;
-      const bounds = nextMap.getBounds();
-
-      const nextViewport = {
-        north: Number(bounds.getNorth().toFixed(5)),
-        south: Number(bounds.getSouth().toFixed(5)),
-        east: Number(bounds.getEast().toFixed(5)),
-        west: Number(bounds.getWest().toFixed(5)),
-        zoom: nextMap.getZoom(),
-      };
-
-      const signature = JSON.stringify(nextViewport);
-      if (lastViewportRef.current === signature) return;
-
-      lastViewportRef.current = signature;
-      onViewportChange?.(nextViewport);
-    },
-  });
-
-  return null;
+function formatMoney(value) {
+  const amount = Number(value || 0);
+  if (!amount) return 'Chưa cập nhật';
+  return `${amount.toLocaleString('vi-VN')} đ`;
 }
 
-function MapResizeController() {
-  const map = useMap();
-
-  useEffect(() => {
-    const safeInvalidate = () => {
-      requestAnimationFrame(() => {
-        map.invalidateSize({ animate: false });
-      });
-    };
-
-    safeInvalidate();
-
-    const timeoutId = window.setTimeout(safeInvalidate, 120);
-
-    const container = map.getContainer();
-    if (!container || typeof ResizeObserver === 'undefined') {
-      return () => {
-        window.clearTimeout(timeoutId);
-      };
-    }
-
-    const observer = new ResizeObserver(() => {
-      safeInvalidate();
-    });
-
-    observer.observe(container);
-    window.addEventListener('resize', safeInvalidate);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-      observer.disconnect();
-      window.removeEventListener('resize', safeInvalidate);
-    };
-  }, [map]);
-
-  return null;
+function formatCoordinate(value) {
+  return Number.isFinite(value) ? Number(value).toFixed(5) : '--';
 }
 
-function MapProgrammaticController({
-  selectedItem,
-  selectedCluster,
-  locateRequestId,
-  userLocation,
-  resetRequestId,
-}) {
-  const map = useMap();
-  const lastLocateRequestId = useRef(0);
-  const lastResetRequestId = useRef(0);
-  const lastItemId = useRef('');
-  const lastClusterId = useRef('');
+function getLng(item) {
+  if (Number.isFinite(item?.longitude)) return item.longitude;
 
-  useEffect(() => {
-    if (!selectedItem?.id) return;
-    if (lastItemId.current === selectedItem.id) return;
-
-    lastItemId.current = selectedItem.id;
-
-    map.flyTo(
-      [selectedItem.latitude, selectedItem.longitude],
-      Math.max(map.getZoom(), NEED_HELP_CLUSTER_SWITCH_ZOOM + 1),
-      {
-        animate: true,
-        duration: 0.65,
-      }
-    );
-  }, [map, selectedItem]);
-
-  useEffect(() => {
-    if (!selectedCluster?.clusterId) return;
-    if (lastClusterId.current === selectedCluster.clusterId) return;
-
-    lastClusterId.current = selectedCluster.clusterId;
-
-    map.flyTo(
-      [selectedCluster.latitude, selectedCluster.longitude],
-      selectedCluster.expandZoom || Math.max(map.getZoom() + 2, 10),
-      {
-        animate: true,
-        duration: 0.6,
-      }
-    );
-  }, [map, selectedCluster]);
-
-  useEffect(() => {
-    if (!locateRequestId || lastLocateRequestId.current === locateRequestId) {
-      return;
-    }
-
-    lastLocateRequestId.current = locateRequestId;
-
-    if (!userLocation) return;
-
-    map.flyTo([userLocation.latitude, userLocation.longitude], 13, {
-      animate: true,
-      duration: 0.65,
-    });
-  }, [locateRequestId, map, userLocation]);
-
-  useEffect(() => {
-    if (!resetRequestId || lastResetRequestId.current === resetRequestId) {
-      return;
-    }
-
-    lastResetRequestId.current = resetRequestId;
-
-    map.fitBounds(VIETNAM_MAP_BOUNDS, {
-      padding: [32, 32],
-      animate: true,
-      duration: 0.65,
-    });
-  }, [map, resetRequestId]);
-
-  return null;
-}
-
-const clusterIconCache = new Map();
-const itemIconCache = new Map();
-
-function createClusterIcon(cluster, isActive) {
-  const cacheKey = `${cluster.count}-${isActive ? '1' : '0'}`;
-  if (clusterIconCache.has(cacheKey)) {
-    return clusterIconCache.get(cacheKey);
+  if (Array.isArray(item?.coordinates) && Number.isFinite(item.coordinates[0])) {
+    return item.coordinates[0];
   }
 
-  const sizeClass = getClusterBadgeSizeClass(cluster.count);
-  const iconPixelSize = getClusterIconPixelSize(cluster.count);
-  const iconAnchor = Math.round(iconPixelSize / 2);
-
-  const html = `
-    <div class="relative flex items-center justify-center">
-      <div class="absolute ${
-        isActive
-          ? 'h-[calc(100%+34px)] w-[calc(100%+34px)] bg-[rgba(251,191,36,0.36)]'
-          : 'h-[calc(100%+28px)] w-[calc(100%+28px)] bg-[rgba(251,191,36,0.24)]'
-      } rounded-full"></div>
-      <div class="absolute ${
-        isActive
-          ? 'h-[calc(100%+18px)] w-[calc(100%+18px)] bg-[rgba(251,191,36,0.18)]'
-          : 'h-[calc(100%+14px)] w-[calc(100%+14px)] bg-[rgba(251,191,36,0.12)]'
-      } rounded-full"></div>
-      <div class="relative flex ${sizeClass} items-center justify-center rounded-full border-[6px] ${
-        isActive
-          ? 'border-[#111827] bg-[#FBBF24] text-[#111827] shadow-[0_18px_38px_rgba(17,24,39,0.26)] scale-110'
-          : 'border-white bg-[#FBBF24] text-[#111827] shadow-[0_14px_30px_rgba(17,24,39,0.20)]'
-      } font-black tracking-tight transition-all">
-        ${cluster.count}
-      </div>
-    </div>
-  `;
-
-  const icon = L.divIcon({
-    html,
-    className: 'bg-transparent border-0',
-    iconSize: [iconPixelSize, iconPixelSize],
-    iconAnchor: [iconAnchor, iconAnchor],
-  });
-
-  clusterIconCache.set(cacheKey, icon);
-  return icon;
-}
-
-function createItemIcon(isActive) {
-  const cacheKey = isActive ? 'active' : 'default';
-  if (itemIconCache.has(cacheKey)) {
-    return itemIconCache.get(cacheKey);
+  if (
+    item?.location &&
+    Array.isArray(item.location.coordinates) &&
+    Number.isFinite(item.location.coordinates[0])
+  ) {
+    return item.location.coordinates[0];
   }
 
-  const iconSize = isActive ? 62 : 54;
-  const anchor = Math.round(iconSize / 2);
-
-  const html = `
-    <div class="relative flex items-center justify-center">
-      <div class="absolute ${
-        isActive
-          ? 'h-[72px] w-[72px] bg-[rgba(251,191,36,0.32)]'
-          : 'h-[62px] w-[62px] bg-[rgba(251,191,36,0.24)]'
-      } rounded-full"></div>
-      <div class="absolute ${
-        isActive
-          ? 'h-[56px] w-[56px] bg-[rgba(251,191,36,0.16)]'
-          : 'h-[48px] w-[48px] bg-[rgba(251,191,36,0.10)]'
-      } rounded-full"></div>
-      <div class="relative flex ${
-        isActive ? 'h-[40px] w-[40px]' : 'h-[34px] w-[34px]'
-      } items-center justify-center rounded-full border-[5px] ${
-        isActive
-          ? 'border-[#111827] bg-[#FBBF24] text-[#111827] shadow-[0_14px_28px_rgba(17,24,39,0.24)]'
-          : 'border-white bg-[#FBBF24] text-[#111827] shadow-[0_12px_22px_rgba(17,24,39,0.18)]'
-      } font-black text-[13px] leading-none transition-all">
-        1
-      </div>
-    </div>
-  `;
-
-  const icon = L.divIcon({
-    html,
-    className: 'bg-transparent border-0',
-    iconSize: [iconSize, iconSize],
-    iconAnchor: [anchor, anchor],
-  });
-
-  itemIconCache.set(cacheKey, icon);
-  return icon;
+  return null;
 }
 
-function createUserLocationIcon() {
-  const html = `
-    <div class="relative flex h-8 w-8 items-center justify-center">
-      <div class="absolute h-8 w-8 rounded-full bg-sky-500/20 animate-pulse"></div>
-      <div class="absolute h-4 w-4 rounded-full border-2 border-white bg-sky-500 shadow-lg"></div>
-    </div>
-  `;
+function getLat(item) {
+  if (Number.isFinite(item?.latitude)) return item.latitude;
 
-  return L.divIcon({
-    html,
-    className: 'bg-transparent border-0',
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
+  if (Array.isArray(item?.coordinates) && Number.isFinite(item.coordinates[1])) {
+    return item.coordinates[1];
+  }
+
+  if (
+    item?.location &&
+    Array.isArray(item.location.coordinates) &&
+    Number.isFinite(item.location.coordinates[1])
+  ) {
+    return item.location.coordinates[1];
+  }
+
+  return null;
+}
+
+function hideSensitiveSeaLabels(map) {
+  const sensitiveSeaMask = {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'Polygon',
+      coordinates: [[
+        [108.5, 8.0],
+        [122.8, 8.0],
+        [122.8, 20.5],
+        [108.5, 20.5],
+        [108.5, 8.0],
+      ]],
+    },
+  };
+
+  const style = map.getStyle?.();
+  const layers = style?.layers || [];
+
+  layers.forEach((layer) => {
+    if (!layer?.id || layer.type !== 'symbol') return;
+
+    const id = String(layer.id).toLowerCase();
+    const sourceLayer = String(layer['source-layer'] || '').toLowerCase();
+
+    const isSensitiveTextLayer =
+      id.includes('place') ||
+      id.includes('label') ||
+      id.includes('name') ||
+      id.includes('marine') ||
+      id.includes('water') ||
+      id.includes('ocean') ||
+      id.includes('sea') ||
+      id.includes('island') ||
+      sourceLayer.includes('place') ||
+      sourceLayer.includes('name') ||
+      sourceLayer.includes('marine') ||
+      sourceLayer.includes('water') ||
+      sourceLayer.includes('ocean') ||
+      sourceLayer.includes('sea') ||
+      sourceLayer.includes('island');
+
+    if (!isSensitiveTextLayer) return;
+
+    try {
+      const currentFilter = map.getFilter(layer.id);
+
+      if (currentFilter) {
+        map.setFilter(layer.id, [
+          'all',
+          currentFilter,
+          ['!', ['within', sensitiveSeaMask]],
+        ]);
+      } else {
+        map.setFilter(layer.id, ['!', ['within', sensitiveSeaMask]]);
+      }
+    } catch {}
   });
 }
 
-function NeedHelpPopupContent({ item }) {
+const NeedHelpPopupContent = memo(function NeedHelpPopupContent({ item }) {
   return (
-    <div className="w-[260px]">
-      <div className="mb-2 flex flex-wrap items-center gap-2">
+    <div className="w-[min(320px,calc(100vw-48px))] max-w-full min-w-0">
+      <div className="mb-3 flex min-w-0 flex-wrap items-center gap-2 pr-6">
         <span
-          className={`rounded-full border px-2.5 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${getUrgencyBadgeClass(
+          className={`inline-flex max-w-full rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${getUrgencyBadgeClass(
             item.urgencyLevel
           )}`}
         >
@@ -327,46 +177,348 @@ function NeedHelpPopupContent({ item }) {
         </span>
 
         {item.category ? (
-          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-bold text-amber-800">
-            {item.categoryLabel || item.category}
+          <span className="inline-flex max-w-full rounded-full bg-amber-100 px-3 py-1 text-[11px] font-bold text-amber-800">
+            <span className="truncate">
+              {item.categoryLabel || item.category}
+            </span>
           </span>
         ) : null}
       </div>
 
-      <h3 className="line-clamp-2 text-sm font-bold text-slate-900">
-        {item.title}
+      <h3 className="min-w-0 break-words text-[18px] font-bold leading-7 text-slate-900 line-clamp-2">
+        {item.title || 'Yêu cầu trợ giúp'}
       </h3>
 
-      <div className="mt-2 flex items-start gap-1.5 text-xs text-slate-500">
-        <MapPin size={13} className="mt-0.5 shrink-0" />
-        <span className="line-clamp-2">{item.address}</span>
+      <div className="mt-3 flex min-w-0 items-start gap-2 text-sm text-slate-500">
+        <MapPin size={15} className="mt-0.5 shrink-0" />
+        <span className="min-w-0 break-words leading-6 line-clamp-2">
+          {item.address || 'Chưa có địa chỉ'}
+        </span>
       </div>
 
-      <p className="mt-2 line-clamp-3 text-xs leading-5 text-slate-500">
+      <p className="mt-3 min-w-0 break-all text-sm leading-6 text-slate-500 line-clamp-2">
         {item.story || 'Yêu cầu trợ giúp này đang chờ được xem xét và hỗ trợ.'}
       </p>
 
-      {Number(item.amountNeeded || 0) > 0 ? (
-        <div className="mt-3 rounded-2xl bg-slate-50 px-3 py-2">
-          <div className="text-[11px] font-semibold text-slate-500">
-            Mức hỗ trợ cần thiết
-          </div>
-          <div className="mt-1 text-sm font-bold text-slate-900">
-            {Number(item.amountNeeded || 0).toLocaleString('vi-VN')} đ
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="min-w-0 rounded-[18px] bg-slate-50 px-3 py-3">
+          <div className="text-[11px] font-semibold text-slate-500">Kinh độ</div>
+          <div className="mt-1 break-all text-[16px] font-bold text-slate-900">
+            {formatCoordinate(item.longitude)}
           </div>
         </div>
-      ) : null}
+
+        <div className="min-w-0 rounded-[18px] bg-slate-50 px-3 py-3">
+          <div className="text-[11px] font-semibold text-slate-500">Vĩ độ</div>
+          <div className="mt-1 break-all text-[16px] font-bold text-slate-900">
+            {formatCoordinate(item.latitude)}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-3 min-w-0 rounded-[18px] bg-slate-50 px-3 py-3">
+        <div className="text-[11px] font-semibold text-slate-500">
+          Mức hỗ trợ cần thiết
+        </div>
+        <div className="mt-1 break-words text-[16px] font-bold text-slate-900">
+          {formatMoney(item.amountNeeded)}
+        </div>
+      </div>
 
       <Link
         to={`/need-help/${item.id}`}
-        className="mt-3 inline-flex w-full items-center justify-center rounded-2xl px-4 py-2.5 text-sm font-bold text-slate-900 transition-colors hover:opacity-95"
+        className="mt-4 inline-flex h-12 w-full items-center justify-center rounded-full px-4 text-base font-bold text-slate-900 transition hover:brightness-95"
         style={{ backgroundColor: BRAND_YELLOW }}
       >
         Xem chi tiết
       </Link>
     </div>
   );
+});
+
+const ClusterPopupContent = memo(function ClusterPopupContent({ item }) {
+  return (
+    <div className="w-[min(280px,calc(100vw-48px))] max-w-full min-w-0">
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+          <Layers3 size={18} />
+        </div>
+
+        <div className="min-w-0">
+          <div className="break-words text-sm font-bold text-slate-900">
+            {item.count} yêu cầu trong khu vực này
+          </div>
+          <div className="mt-1 text-xs leading-5 text-slate-500">
+            Bấm vào cụm để phóng to và xem chi tiết hơn
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="min-w-0 rounded-[18px] bg-slate-50 px-3 py-3">
+          <div className="text-[11px] font-semibold text-slate-500">Kinh độ</div>
+          <div className="mt-1 break-all text-sm font-bold text-slate-900">
+            {formatCoordinate(item.longitude)}
+          </div>
+        </div>
+
+        <div className="min-w-0 rounded-[18px] bg-slate-50 px-3 py-3">
+          <div className="text-[11px] font-semibold text-slate-500">Vĩ độ</div>
+          <div className="mt-1 break-all text-sm font-bold text-slate-900">
+            {formatCoordinate(item.latitude)}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+function buildFeatureCollection(features) {
+  return {
+    type: 'FeatureCollection',
+    features,
+  };
 }
+
+function makeClusterFeature(item) {
+  return {
+    type: 'Feature',
+    id: item.clusterId,
+    geometry: {
+      type: 'Point',
+      coordinates: [item.longitude, item.latitude],
+    },
+    properties: {
+      kind: 'cluster',
+      clusterId: item.clusterId,
+      rawClusterId: item.rawClusterId ?? '',
+      count: Number(item.count || 0),
+      expandZoom: Number(item.expandZoom || 11),
+      longitude: item.longitude,
+      latitude: item.latitude,
+    },
+  };
+}
+
+function makeItemFeature(item) {
+  return {
+    type: 'Feature',
+    id: item.id,
+    geometry: {
+      type: 'Point',
+      coordinates: [item.longitude, item.latitude],
+    },
+    properties: {
+      kind: 'item',
+      id: item.id,
+      title: item.title || '',
+      story: item.story || '',
+      urgencyLevel: item.urgencyLevel || '',
+      category: item.category || '',
+      categoryLabel: item.categoryLabel || '',
+      address: item.address || '',
+      amountNeeded: Number(item.amountNeeded || 0),
+      longitude: item.longitude,
+      latitude: item.latitude,
+    },
+  };
+}
+
+const clusterHaloLayer = {
+  id: LAYER_CLUSTER_HALO,
+  type: 'circle',
+  source: SOURCE_CLUSTERS,
+  paint: {
+    'circle-radius': [
+      'interpolate',
+      ['linear'],
+      ['get', 'count'],
+      1, 28,
+      5, 32,
+      20, 38,
+      100, 46,
+    ],
+    'circle-color': 'rgba(251,191,36,0.14)',
+  },
+};
+
+const clusterCoreLayer = {
+  id: LAYER_CLUSTER_CORE,
+  type: 'circle',
+  source: SOURCE_CLUSTERS,
+  paint: {
+    'circle-radius': [
+      'interpolate',
+      ['linear'],
+      ['get', 'count'],
+      1, 18,
+      5, 21,
+      20, 24,
+      100, 28,
+    ],
+    'circle-color': '#FBBF24',
+    'circle-stroke-width': 5,
+    'circle-stroke-color': '#ffffff',
+  },
+};
+
+const clusterLabelLayer = {
+  id: LAYER_CLUSTER_LABEL,
+  type: 'symbol',
+  source: SOURCE_CLUSTERS,
+  layout: {
+    'text-field': ['to-string', ['get', 'count']],
+    'text-size': [
+      'interpolate',
+      ['linear'],
+      ['get', 'count'],
+      1, 12,
+      5, 14,
+      20, 16,
+      100, 18,
+    ],
+    'text-font': ['Open Sans Bold'],
+    'text-allow-overlap': true,
+  },
+  paint: {
+    'text-color': '#111827',
+  },
+};
+
+const itemHaloLayer = {
+  id: LAYER_ITEM_HALO,
+  type: 'circle',
+  source: SOURCE_ITEMS,
+  paint: {
+    'circle-radius': 22,
+    'circle-color': 'rgba(251,191,36,0.14)',
+  },
+};
+
+const itemCoreLayer = {
+  id: LAYER_ITEM_CORE,
+  type: 'circle',
+  source: SOURCE_ITEMS,
+  paint: {
+    'circle-radius': 14,
+    'circle-color': '#FBBF24',
+    'circle-stroke-width': 4,
+    'circle-stroke-color': '#ffffff',
+  },
+};
+
+const itemLabelLayer = {
+  id: LAYER_ITEM_LABEL,
+  type: 'symbol',
+  source: SOURCE_ITEMS,
+  layout: {
+    'text-field': '1',
+    'text-size': 11,
+    'text-font': ['Open Sans Bold'],
+    'text-allow-overlap': true,
+  },
+  paint: {
+    'text-color': '#111827',
+  },
+};
+
+const activeClusterHaloLayer = {
+  id: LAYER_ACTIVE_CLUSTER_HALO,
+  type: 'circle',
+  source: SOURCE_ACTIVE_CLUSTER,
+  paint: {
+    'circle-radius': [
+      'interpolate',
+      ['linear'],
+      ['get', 'count'],
+      1, 34,
+      5, 38,
+      20, 44,
+      100, 52,
+    ],
+    'circle-color': 'rgba(251,191,36,0.22)',
+  },
+};
+
+const activeClusterCoreLayer = {
+  id: LAYER_ACTIVE_CLUSTER_CORE,
+  type: 'circle',
+  source: SOURCE_ACTIVE_CLUSTER,
+  paint: {
+    'circle-radius': [
+      'interpolate',
+      ['linear'],
+      ['get', 'count'],
+      1, 20,
+      5, 23,
+      20, 26,
+      100, 31,
+    ],
+    'circle-color': '#FBBF24',
+    'circle-stroke-width': 5,
+    'circle-stroke-color': '#111827',
+  },
+};
+
+const activeClusterLabelLayer = {
+  id: LAYER_ACTIVE_CLUSTER_LABEL,
+  type: 'symbol',
+  source: SOURCE_ACTIVE_CLUSTER,
+  layout: {
+    'text-field': ['to-string', ['get', 'count']],
+    'text-size': [
+      'interpolate',
+      ['linear'],
+      ['get', 'count'],
+      1, 12,
+      5, 14,
+      20, 16,
+      100, 18,
+    ],
+    'text-font': ['Open Sans Bold'],
+    'text-allow-overlap': true,
+  },
+  paint: {
+    'text-color': '#111827',
+  },
+};
+
+const activeItemHaloLayer = {
+  id: LAYER_ACTIVE_ITEM_HALO,
+  type: 'circle',
+  source: SOURCE_ACTIVE_ITEM,
+  paint: {
+    'circle-radius': 28,
+    'circle-color': 'rgba(251,191,36,0.22)',
+  },
+};
+
+const activeItemCoreLayer = {
+  id: LAYER_ACTIVE_ITEM_CORE,
+  type: 'circle',
+  source: SOURCE_ACTIVE_ITEM,
+  paint: {
+    'circle-radius': 16,
+    'circle-color': '#FBBF24',
+    'circle-stroke-width': 4,
+    'circle-stroke-color': '#111827',
+  },
+};
+
+const activeItemLabelLayer = {
+  id: LAYER_ACTIVE_ITEM_LABEL,
+  type: 'symbol',
+  source: SOURCE_ACTIVE_ITEM,
+  layout: {
+    'text-field': '1',
+    'text-size': 11,
+    'text-font': ['Open Sans Bold'],
+    'text-allow-overlap': true,
+  },
+  paint: {
+    'text-color': '#111827',
+  },
+};
 
 function NeedHelpMapCanvasComponent({
   markers,
@@ -381,128 +533,541 @@ function NeedHelpMapCanvasComponent({
   locateRequestId,
   resetRequestId,
 }) {
-  const userLocationIcon = useMemo(() => createUserLocationIcon(), []);
+  const mapRef = useRef(null);
+  const lastLocateRequestId = useRef(0);
+  const lastResetRequestId = useRef(0);
+  const lastItemId = useRef('');
+  const lastClusterId = useRef('');
+  const lastViewportRef = useRef('');
+  const viewportTimeoutRef = useRef(null);
+  const labelsHiddenRef = useRef(false);
+
+  const [popupItem, setPopupItem] = useState(null);
+  const [popupCluster, setPopupCluster] = useState(null);
+  const [baseReady, setBaseReady] = useState(false);
+
   const safeMarkers = useMemo(
     () => (Array.isArray(markers) ? markers : []),
     [markers]
   );
 
+  const initialViewState = useMemo(
+    () => ({
+      longitude: VIETNAM_MAP_CENTER[1],
+      latitude: VIETNAM_MAP_CENTER[0],
+      zoom: VIETNAM_DEFAULT_ZOOM,
+    }),
+    []
+  );
+
+  const normalizedBounds = useMemo(
+    () => [
+      [VIETNAM_MAP_BOUNDS[0][1], VIETNAM_MAP_BOUNDS[0][0]],
+      [VIETNAM_MAP_BOUNDS[1][1], VIETNAM_MAP_BOUNDS[1][0]],
+    ],
+    []
+  );
+
+  const visibleMarkers = useMemo(
+    () =>
+      safeMarkers
+        .map((item) => {
+          const longitude = getLng(item);
+          const latitude = getLat(item);
+
+          return {
+            ...item,
+            longitude,
+            latitude,
+          };
+        })
+        .filter(
+          (item) =>
+            Number.isFinite(item.longitude) && Number.isFinite(item.latitude)
+        ),
+    [safeMarkers]
+  );
+
+  const itemMap = useMemo(() => {
+    const map = new globalThis.Map();
+    visibleMarkers.forEach((item) => {
+      if (item.type !== 'cluster' && item.id) {
+        map.set(String(item.id), item);
+      }
+    });
+    return map;
+  }, [visibleMarkers]);
+
+  const clusterMap = useMemo(() => {
+    const map = new globalThis.Map();
+    visibleMarkers.forEach((item) => {
+      if (item.type === 'cluster' && item.clusterId) {
+        map.set(String(item.clusterId), item);
+      }
+    });
+    return map;
+  }, [visibleMarkers]);
+
+  const inactiveClusterFeatures = useMemo(
+    () =>
+      visibleMarkers
+        .filter(
+          (item) =>
+            item.type === 'cluster' &&
+            String(item.clusterId) !== String(activeClusterId || '')
+        )
+        .map(makeClusterFeature),
+    [visibleMarkers, activeClusterId]
+  );
+
+  const activeClusterFeatures = useMemo(
+    () =>
+      visibleMarkers
+        .filter(
+          (item) =>
+            item.type === 'cluster' &&
+            String(item.clusterId) === String(activeClusterId || '')
+        )
+        .map(makeClusterFeature),
+    [visibleMarkers, activeClusterId]
+  );
+
+  const inactiveItemFeatures = useMemo(
+    () =>
+      visibleMarkers
+        .filter(
+          (item) =>
+            item.type !== 'cluster' && String(item.id) !== String(activeItemId || '')
+        )
+        .map(makeItemFeature),
+    [visibleMarkers, activeItemId]
+  );
+
+  const activeItemFeatures = useMemo(
+    () =>
+      visibleMarkers
+        .filter(
+          (item) =>
+            item.type !== 'cluster' && String(item.id) === String(activeItemId || '')
+        )
+        .map(makeItemFeature),
+    [visibleMarkers, activeItemId]
+  );
+
+  const clusterGeoJson = useMemo(
+    () => buildFeatureCollection(inactiveClusterFeatures),
+    [inactiveClusterFeatures]
+  );
+
+  const activeClusterGeoJson = useMemo(
+    () => buildFeatureCollection(activeClusterFeatures),
+    [activeClusterFeatures]
+  );
+
+  const itemGeoJson = useMemo(
+    () => buildFeatureCollection(inactiveItemFeatures),
+    [inactiveItemFeatures]
+  );
+
+  const activeItemGeoJson = useMemo(
+    () => buildFeatureCollection(activeItemFeatures),
+    [activeItemFeatures]
+  );
+
+  useEffect(() => {
+    if (!selectedItem?.id) return;
+    if (lastItemId.current === selectedItem.id) return;
+
+    const map = mapRef.current?.getMap?.();
+    const lng = getLng(selectedItem);
+    const lat = getLat(selectedItem);
+
+    if (!map || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+    lastItemId.current = selectedItem.id;
+    setPopupCluster(null);
+
+    map.flyTo({
+      center: [lng, lat],
+      zoom: Math.max(map.getZoom(), NEED_HELP_CLUSTER_SWITCH_ZOOM + 1),
+      duration: 450,
+      essential: true,
+    });
+
+    setPopupItem({
+      ...selectedItem,
+      longitude: lng,
+      latitude: lat,
+    });
+  }, [selectedItem]);
+
+  useEffect(() => {
+    if (!selectedCluster?.clusterId) return;
+    if (lastClusterId.current === selectedCluster.clusterId) return;
+
+    const map = mapRef.current?.getMap?.();
+    const lng = getLng(selectedCluster);
+    const lat = getLat(selectedCluster);
+
+    if (!map || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+    lastClusterId.current = selectedCluster.clusterId;
+    setPopupItem(null);
+
+    map.flyTo({
+      center: [lng, lat],
+      zoom: selectedCluster.expandZoom || Math.max(map.getZoom() + 2, 10),
+      duration: 430,
+      essential: true,
+    });
+
+    setPopupCluster({
+      ...selectedCluster,
+      longitude: lng,
+      latitude: lat,
+    });
+  }, [selectedCluster]);
+
+  useEffect(() => {
+    if (!locateRequestId || lastLocateRequestId.current === locateRequestId) {
+      return;
+    }
+
+    lastLocateRequestId.current = locateRequestId;
+
+    const map = mapRef.current?.getMap?.();
+    const lng = getLng(userLocation);
+    const lat = getLat(userLocation);
+
+    if (!map || !Number.isFinite(lng) || !Number.isFinite(lat)) return;
+
+    map.flyTo({
+      center: [lng, lat],
+      zoom: 13,
+      duration: 480,
+      essential: true,
+    });
+  }, [locateRequestId, userLocation]);
+
+  useEffect(() => {
+    if (!resetRequestId || lastResetRequestId.current === resetRequestId) {
+      return;
+    }
+
+    lastResetRequestId.current = resetRequestId;
+
+    const map = mapRef.current?.getMap?.();
+    if (!map) return;
+
+    setPopupItem(null);
+    setPopupCluster(null);
+
+    map.fitBounds(normalizedBounds, {
+      padding: 32,
+      duration: 500,
+      essential: true,
+    });
+  }, [normalizedBounds, resetRequestId]);
+
+  useEffect(() => {
+    return () => {
+      if (viewportTimeoutRef.current) {
+        clearTimeout(viewportTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const emitViewportChange = useCallback(
+    (map) => {
+      const bounds = map.getBounds();
+
+      const nextViewport = {
+        north: Number(bounds.getNorth().toFixed(5)),
+        south: Number(bounds.getSouth().toFixed(5)),
+        east: Number(bounds.getEast().toFixed(5)),
+        west: Number(bounds.getWest().toFixed(5)),
+        zoom: Number(map.getZoom().toFixed(2)),
+      };
+
+      const signature = JSON.stringify(nextViewport);
+      if (lastViewportRef.current === signature) return;
+
+      lastViewportRef.current = signature;
+      onViewportChange?.(nextViewport);
+    },
+    [onViewportChange]
+  );
+
+  const handleViewportChange = useCallback(
+    (event) => {
+      const map = event.target;
+
+      if (viewportTimeoutRef.current) {
+        clearTimeout(viewportTimeoutRef.current);
+      }
+
+      viewportTimeoutRef.current = setTimeout(() => {
+        emitViewportChange(map);
+      }, 60);
+    },
+    [emitViewportChange]
+  );
+
+  const tryHideLabels = useCallback((map) => {
+    if (labelsHiddenRef.current) return;
+    hideSensitiveSeaLabels(map);
+    labelsHiddenRef.current = true;
+  }, []);
+
+  const handleMapLoad = useCallback(
+    (event) => {
+      const map = event.target;
+      tryHideLabels(map);
+      setBaseReady(true);
+      emitViewportChange(map);
+    },
+    [emitViewportChange, tryHideLabels]
+  );
+
+  const handleStyleData = useCallback(() => {
+    const map = mapRef.current?.getMap?.();
+    if (!map) return;
+    tryHideLabels(map);
+  }, [tryHideLabels]);
+
+  const handleMapClick = useCallback(
+    (event) => {
+      const feature = event.features?.[0];
+
+      if (!feature) {
+        setPopupItem(null);
+        setPopupCluster(null);
+        return;
+      }
+
+      const layerId = feature.layer?.id || '';
+      const props = feature.properties || {};
+
+      if (layerId.includes('cluster')) {
+        const clusterId = String(props.clusterId || '');
+        const cluster = clusterMap.get(clusterId);
+
+        if (cluster) {
+          setPopupItem(null);
+          setPopupCluster(cluster);
+          onClusterSelect?.(cluster);
+          return;
+        }
+      }
+
+      if (layerId.includes('item')) {
+        const id = String(props.id || '');
+        const item = itemMap.get(id);
+
+        if (item) {
+          setPopupCluster(null);
+          setPopupItem(item);
+          onItemSelect?.(item);
+          return;
+        }
+      }
+
+      setPopupItem(null);
+      setPopupCluster(null);
+    },
+    [clusterMap, itemMap, onClusterSelect, onItemSelect]
+  );
+
   return (
-    <div
-      className="h-full w-full overflow-hidden rounded-[32px] border border-amber-100 shadow-[0_20px_60px_rgba(15,23,42,0.10)]"
-      style={{ backgroundColor: MAP_SOFT_YELLOW }}
-    >
+    <>
       <style>{`
-        .needhelp-map-surface .leaflet-container {
-          background: ${MAP_SOFT_YELLOW} !important;
-          height: 100% !important;
-          width: 100% !important;
+        .needhelp-maplibre,
+        .needhelp-maplibre .maplibregl-map,
+        .needhelp-maplibre .maplibregl-canvas-container,
+        .needhelp-maplibre .maplibregl-canvas {
+          width: 100%;
+          height: 100%;
         }
-        .needhelp-map-surface .leaflet-control-zoom a {
+
+        .needhelp-maplibre .maplibregl-map {
+          background: ${MAP_SOFT_YELLOW};
+        }
+
+        .needhelp-maplibre .maplibregl-canvas {
+          outline: none;
+        }
+
+        .needhelp-maplibre .maplibregl-ctrl-group {
+          border-radius: 18px !important;
+          overflow: hidden;
+          border: 1px solid #fde68a !important;
+          box-shadow: 0 10px 22px rgba(15,23,42,0.10) !important;
+        }
+
+        .needhelp-maplibre .maplibregl-ctrl-group button {
           background: #ffffff !important;
-          color: #111827 !important;
-          border-color: #fde68a !important;
         }
-        .needhelp-map-surface .leaflet-control-zoom a:hover {
+
+        .needhelp-maplibre .maplibregl-ctrl-group button:hover {
           background: #fef3c7 !important;
         }
-        .needhelp-map-surface .leaflet-popup-content-wrapper {
-          border-radius: 18px !important;
+
+        .needhelp-maplibre .maplibregl-ctrl-scale {
+          border-radius: 999px !important;
+          border: 1px solid #fde68a !important;
+          background: rgba(255,255,255,0.96) !important;
+          color: #0f172a !important;
+          padding: 2px 10px !important;
+          box-shadow: 0 8px 16px rgba(15,23,42,0.08) !important;
         }
-        .needhelp-map-surface .leaflet-popup-tip {
-          background: #ffffff !important;
+
+        .needhelp-maplibre .maplibregl-popup {
+          max-width: none !important;
+        }
+
+        .needhelp-maplibre .maplibregl-popup-content {
+          padding: 16px !important;
+          border-radius: 22px !important;
+          box-shadow: 0 16px 34px rgba(15,23,42,0.16) !important;
+        }
+
+        .needhelp-maplibre .maplibregl-popup-tip {
+          border-top-color: white !important;
+        }
+
+        .needhelp-maplibre .maplibregl-popup-close-button {
+          font-size: 20px;
+          line-height: 1;
+          color: #475569;
+          padding: 8px 10px;
+          right: 2px;
+          top: 2px;
         }
       `}</style>
 
-      <div className="needhelp-map-surface h-full w-full">
-        <MapContainer
-          center={VIETNAM_MAP_CENTER}
-          zoom={VIETNAM_DEFAULT_ZOOM}
+      <div className="needhelp-maplibre absolute inset-0">
+        <MapView
+          ref={mapRef}
+          initialViewState={initialViewState}
+          mapStyle={MAP_STYLE_URL}
           minZoom={5}
-          zoomControl={false}
-          className="h-full w-full"
-          style={{ backgroundColor: MAP_SOFT_YELLOW, height: '100%', width: '100%' }}
+          maxZoom={18}
+          dragRotate={false}
+          pitchWithRotate={false}
+          touchZoomRotate={false}
+          attributionControl={false}
+          interactiveLayerIds={INTERACTIVE_LAYER_IDS}
+          style={{ width: '100%', height: '100%' }}
+          onLoad={handleMapLoad}
+          onStyleData={handleStyleData}
+          onMoveEnd={handleViewportChange}
+          onZoomEnd={handleViewportChange}
+          onClick={handleMapClick}
         >
-          <TileLayer
-            attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          <NavigationControl position="bottom-right" />
+          <GeolocateControl
+            position="bottom-right"
+            trackUserLocation
+            showUserHeading
           />
+          <FullscreenControl position="bottom-right" />
+          <ScaleControl position="bottom-left" unit="metric" />
 
-          <ZoomControl position="bottomright" />
-          <MapResizeController />
-          <MapViewportWatcher onViewportChange={onViewportChange} />
+          {baseReady ? (
+            <>
+              <Source id={SOURCE_CLUSTERS} type="geojson" data={clusterGeoJson}>
+                <Layer {...clusterHaloLayer} />
+                <Layer {...clusterCoreLayer} />
+                <Layer {...clusterLabelLayer} />
+              </Source>
 
-          <MapProgrammaticController
-            selectedItem={selectedItem}
-            selectedCluster={selectedCluster}
-            locateRequestId={locateRequestId}
-            userLocation={userLocation}
-            resetRequestId={resetRequestId}
-          />
-
-          {safeMarkers.map((item) => {
-            if (item.type === 'cluster') {
-              const isActive = activeClusterId === item.clusterId;
-
-              return (
-                <Marker
-                  key={item.clusterId}
-                  position={[item.latitude, item.longitude]}
-                  icon={createClusterIcon(item, isActive)}
-                  eventHandlers={{
-                    click: () => onClusterSelect?.(item),
-                  }}
-                >
-                  <Popup>
-                    <div className="w-[220px]">
-                      <h3 className="text-sm font-bold text-slate-900">
-                        {item.count} yêu cầu trong khu vực này
-                      </h3>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Bấm vào cụm để zoom sâu hơn và xem chi tiết từng yêu cầu.
-                      </p>
-                    </div>
-                  </Popup>
-                </Marker>
-              );
-            }
-
-            const isActive = activeItemId === item.id;
-
-            return (
-              <Marker
-                key={item.id}
-                position={[item.latitude, item.longitude]}
-                icon={createItemIcon(isActive)}
-                eventHandlers={{
-                  click: () => onItemSelect?.(item),
-                }}
+              <Source
+                id={SOURCE_ACTIVE_CLUSTER}
+                type="geojson"
+                data={activeClusterGeoJson}
               >
-                <Popup>
-                  <NeedHelpPopupContent item={item} />
-                </Popup>
-              </Marker>
-            );
-          })}
+                <Layer {...activeClusterHaloLayer} />
+                <Layer {...activeClusterCoreLayer} />
+                <Layer {...activeClusterLabelLayer} />
+              </Source>
 
-          {userLocation ? (
-            <Marker
-              position={[userLocation.latitude, userLocation.longitude]}
-              icon={userLocationIcon}
+              <Source id={SOURCE_ITEMS} type="geojson" data={itemGeoJson}>
+                <Layer {...itemHaloLayer} />
+                <Layer {...itemCoreLayer} />
+                <Layer {...itemLabelLayer} />
+              </Source>
+
+              <Source
+                id={SOURCE_ACTIVE_ITEM}
+                type="geojson"
+                data={activeItemGeoJson}
+              >
+                <Layer {...activeItemHaloLayer} />
+                <Layer {...activeItemCoreLayer} />
+                <Layer {...activeItemLabelLayer} />
+              </Source>
+            </>
+          ) : null}
+
+          {popupItem ? (
+            <Popup
+              longitude={popupItem.longitude}
+              latitude={popupItem.latitude}
+              anchor="top"
+              offset={18}
+              closeOnClick={false}
+              onClose={() => setPopupItem(null)}
             >
-              <Popup>
+              <NeedHelpPopupContent item={popupItem} />
+            </Popup>
+          ) : null}
+
+          {popupCluster ? (
+            <Popup
+              longitude={popupCluster.longitude}
+              latitude={popupCluster.latitude}
+              anchor="top"
+              offset={18}
+              closeOnClick={false}
+              onClose={() => setPopupCluster(null)}
+            >
+              <ClusterPopupContent item={popupCluster} />
+            </Popup>
+          ) : null}
+
+          {Number.isFinite(getLng(userLocation)) && Number.isFinite(getLat(userLocation)) ? (
+            <>
+              <Marker
+                longitude={getLng(userLocation)}
+                latitude={getLat(userLocation)}
+                anchor="center"
+              >
+                <div className="relative flex h-10 w-10 items-center justify-center">
+                  <div className="absolute h-10 w-10 rounded-full bg-sky-500/20 animate-pulse" />
+                  <div className="absolute h-5 w-5 rounded-full border-4 border-white bg-sky-500 shadow-lg" />
+                </div>
+              </Marker>
+
+              <Popup
+                longitude={getLng(userLocation)}
+                latitude={getLat(userLocation)}
+                anchor="top"
+                offset={16}
+                closeButton={false}
+                closeOnClick={false}
+              >
                 <div className="flex items-center gap-2">
-                  <LocateFixed size={16} className="text-sky-500" />
+                  <Navigation size={16} className="text-sky-500" />
                   <span className="text-sm font-semibold text-slate-900">
                     Vị trí hiện tại của bạn
                   </span>
                 </div>
               </Popup>
-            </Marker>
+            </>
           ) : null}
-        </MapContainer>
+        </MapView>
       </div>
-    </div>
+    </>
   );
 }
 

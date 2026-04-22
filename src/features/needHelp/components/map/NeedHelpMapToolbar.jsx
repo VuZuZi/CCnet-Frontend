@@ -9,7 +9,6 @@ import {
   Layers,
   List,
   LocateFixed,
-  MapPinned,
   Search,
 } from 'lucide-react';
 import {
@@ -25,9 +24,7 @@ function useClickOutside(ref, onClose) {
     };
 
     const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        onClose?.();
-      }
+      if (event.key === 'Escape') onClose?.();
     };
 
     document.addEventListener('mousedown', handleClickOutside);
@@ -55,7 +52,8 @@ function CustomSelect({
 
   const selectedOption =
     options.find((option) => option.value === value) ||
-    options[0] || { label: placeholder || '' };
+    options[0] ||
+    { label: placeholder || '' };
 
   const handleSelect = (nextValue) => {
     onChange?.({
@@ -65,14 +63,14 @@ function CustomSelect({
   };
 
   return (
-    <div ref={rootRef} className={`relative ${className}`}>
+    <div ref={rootRef} className={`relative min-w-0 ${className}`}>
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className={`flex h-11 w-full items-center gap-3 rounded-2xl border px-3 text-left shadow-sm outline-none transition-all ${
+        className={`flex h-11 w-full min-w-0 items-center gap-2 rounded-2xl border px-3 text-left shadow-sm outline-none transition-all ${
           isOpen
             ? 'border-amber-400 bg-white ring-2 ring-amber-400/20'
-            : 'border-amber-100 bg-white/90 hover:border-amber-200'
+            : 'border-amber-100 bg-white/95 hover:border-amber-200'
         }`}
       >
         <Icon size={15} className="shrink-0 text-slate-400" />
@@ -89,8 +87,8 @@ function CustomSelect({
         />
       </button>
 
-      {isOpen && (
-        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-[3000] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.16)]">
+      {isOpen ? (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-[5000] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.16)]">
           <div className="max-h-72 overflow-y-auto p-2">
             {options.map((option) => {
               const isActive = option.value === value;
@@ -124,13 +122,25 @@ function CustomSelect({
             })}
           </div>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
 
+function ToolbarButton({ onClick, icon: Icon, children, className = '' }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex h-11 min-w-0 items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 ${className}`}
+    >
+      <Icon size={15} className="shrink-0" />
+      <span className="truncate">{children}</span>
+    </button>
+  );
+}
+
 function NeedHelpMapToolbarComponent({
-  summaryText,
   localSearch,
   setLocalSearch,
   filters,
@@ -143,93 +153,65 @@ function NeedHelpMapToolbarComponent({
   isLocating = false,
 }) {
   return (
-    <div className="relative z-[2500] pointer-events-auto overflow-visible rounded-[28px] border border-amber-100/80 bg-white/88 px-4 py-3 shadow-[0_12px_34px_rgba(15,23,42,0.07)] backdrop-blur-xl">
-      <div className="flex flex-col gap-3">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
-              <MapPinned size={20} />
-            </div>
-
-            <div>
-              <h2 className="text-[18px] font-bold text-slate-900">
-                Bản đồ NeedHelp
-              </h2>
-              <p className="text-sm text-slate-500">{summaryText}</p>
-            </div>
+    <div className="pointer-events-auto rounded-[26px] border border-white/70 bg-white/84 p-3 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl">
+      <div className="grid grid-cols-[minmax(240px,1.35fr)_180px_180px_140px_140px_132px] items-center gap-3">
+        <div className="relative min-w-0">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3">
+            <Search size={15} className="text-slate-400" />
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              type="button"
-              onClick={onLocateMe}
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <LocateFixed size={15} className={isLocating ? 'animate-pulse' : ''} />
-              Vị trí của tôi
-            </button>
-
-            <button
-              type="button"
-              onClick={onResetVietnam}
-              className="inline-flex h-11 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-            >
-              <Compass size={15} />
-              Toàn Việt Nam
-            </button>
-
-            <Link
-              to="/need-help"
-              className="inline-flex h-11 items-center gap-2 rounded-full bg-[#FBBF24] px-5 text-sm font-bold text-slate-900 hover:bg-amber-500"
-            >
-              <List size={15} />
-              Danh sách
-            </Link>
-          </div>
+          <input
+            type="text"
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            placeholder="Tìm tiêu đề, địa điểm, nội dung..."
+            className="h-11 w-full rounded-2xl border border-amber-100 bg-white/95 py-2 pl-11 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
+          />
         </div>
 
-        <div className="grid gap-2 xl:grid-cols-[minmax(0,1.8fr)_220px_220px_auto]">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 flex items-center pl-3">
-              <Search size={15} className="text-slate-400" />
-            </div>
+        <CustomSelect
+          value={filters.category}
+          onChange={onCategoryChange}
+          options={CATEGORY_OPTIONS}
+          icon={Layers}
+          placeholder="Danh mục"
+        />
 
-            <input
-              type="text"
-              value={localSearch}
-              onChange={(e) => setLocalSearch(e.target.value)}
-              placeholder="Tìm tiêu đề, địa điểm, nội dung..."
-              className="h-11 w-full rounded-2xl border border-amber-100 bg-white/90 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
-            />
-          </div>
+        <CustomSelect
+          value={filters.urgencyLevel}
+          onChange={onUrgencyChange}
+          options={URGENCY_OPTIONS}
+          icon={AlertTriangle}
+          placeholder="Mức độ"
+        />
 
-          <CustomSelect
-            value={filters.category}
-            onChange={onCategoryChange}
-            options={CATEGORY_OPTIONS}
-            icon={Layers}
-            placeholder="Tất cả danh mục"
-          />
+        <ToolbarButton onClick={onLocateMe} icon={LocateFixed}>
+          <span className={isLocating ? 'animate-pulse' : ''}>Vị trí tôi</span>
+        </ToolbarButton>
 
-          <CustomSelect
-            value={filters.urgencyLevel}
-            onChange={onUrgencyChange}
-            options={URGENCY_OPTIONS}
-            icon={AlertTriangle}
-            placeholder="Tất cả mức độ"
-          />
+        <ToolbarButton onClick={onResetVietnam} icon={Compass}>
+          Việt Nam
+        </ToolbarButton>
 
-          <div className="flex items-center justify-end">
-            {hasActiveFilters && (
-              <button
-                onClick={onResetFilters}
-                className="inline-flex h-11 items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              >
-                <FilterX size={15} />
-                Đặt lại
-              </button>
-            )}
-          </div>
+        <div className="flex min-w-0 items-center justify-end gap-2">
+          {hasActiveFilters ? (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50"
+              title="Đặt lại bộ lọc"
+            >
+              <FilterX size={16} />
+            </button>
+          ) : null}
+
+          <Link
+            to="/need-help"
+            className="inline-flex h-11 min-w-0 flex-1 items-center justify-center gap-2 rounded-2xl bg-[#FBBF24] px-4 text-sm font-bold text-slate-900 transition hover:bg-amber-500"
+          >
+            <List size={15} className="shrink-0" />
+            <span className="truncate">Danh sách</span>
+          </Link>
         </div>
       </div>
     </div>

@@ -17,7 +17,7 @@ export default function AdminFinanceSummaryPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <header>
-                <h1 className="text-3xl font-black text-slate-900 flex items-center gap-3">
+                <h1 className="text-3xl font-black text-slate-900 flex flex-wrap items-center gap-3">
                     <Activity className="text-emerald-600" size={32} />
                     Finance Ledger Control
                 </h1>
@@ -25,14 +25,15 @@ export default function AdminFinanceSummaryPage() {
             </header>
 
             <div className="overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-sm">
-                <table className="w-full text-left border-collapse">
+                <div className="overflow-x-auto">
+                <table className="w-full min-w-[860px] table-fixed text-left border-collapse">
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
-                            <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Dự án</th>
-                            <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Số dư Escrow</th>
-                            <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Đã chi</th>
-                            <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Chờ duyệt</th>
-                            <th className="px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400"></th>
+                            <th className="w-[44%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Dự án</th>
+                            <th className="w-[18%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Số dư Escrow</th>
+                            <th className="w-[16%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Đã chi</th>
+                            <th className="w-[16%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Chờ duyệt</th>
+                            <th className="w-[6%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
@@ -79,6 +80,7 @@ export default function AdminFinanceSummaryPage() {
                         ))}
                     </tbody>
                 </table>
+                </div>
             </div>
         </div>
     );

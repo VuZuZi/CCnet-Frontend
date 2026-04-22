@@ -97,6 +97,10 @@ export function getAdminProjectStats(projects) {
         mapProjectStatusToUI(project?.status) ===
         ADMIN_UI_PROJECT_STATUS.PENDING_APPROVAL
     ).length,
+    [ADMIN_UI_PROJECT_STATUS.UPDATING]: adminProjects.filter(
+      (project) =>
+        mapProjectStatusToUI(project?.status) === ADMIN_UI_PROJECT_STATUS.UPDATING
+    ).length,
     [ADMIN_UI_PROJECT_STATUS.PAUSED]: adminProjects.filter(
       (project) =>
         mapProjectStatusToUI(project?.status) === ADMIN_UI_PROJECT_STATUS.PAUSED

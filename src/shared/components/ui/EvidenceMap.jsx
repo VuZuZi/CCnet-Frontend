@@ -1,25 +1,36 @@
 import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
 import { renderToString } from 'react-dom/server';
 import { MapPin } from 'lucide-react';
+import L from 'leaflet';
+import {
+  MapContainer,
+  Marker,
+  Popup,
+  TileLayer,
+  useMap,
+} from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const customMarkerIcon = L.divIcon({
-    html: renderToString(<MapPin size={28} className="text-red-500 fill-white" />),
-    className: 'bg-transparent border-none',
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
+  html: renderToString(
+    <MapPin size={28} className="text-red-500 fill-white" />
+  ),
+  className: 'bg-transparent border-none',
+  iconSize: [28, 28],
+  iconAnchor: [14, 28],
 });
 
 function MapBoundsSetter({ points }) {
-    const map = useMap();
-    useEffect(() => {
-        if (points.length > 0) {
-            const bounds = L.latLngBounds(points.map(p => [p.lat, p.lng]));
-            map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
-        }
-    }, [points, map]);
-    return null;
+  const map = useMap();
+
+  useEffect(() => {
+    if (points.length > 0) {
+      const bounds = L.latLngBounds(points.map((p) => [p.lat, p.lng]));
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 15 });
+    }
+  }, [points, map]);
+
+  return null;
 }
 
 export function EvidenceMap({ markers = [] }) {

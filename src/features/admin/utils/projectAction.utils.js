@@ -12,6 +12,7 @@ export const ADMIN_PROJECT_ACTION_KEYS = {
   APPROVE_PROJECT: "APPROVE_PROJECT",
   REQUEST_PROJECT_REVISION: "REQUEST_PROJECT_REVISION",
   REJECT_PROJECT: "REJECT_PROJECT",
+  REQUEST_PROJECT_UPDATE: "REQUEST_PROJECT_UPDATE",
   PAUSE_PROJECT: "PAUSE_PROJECT",
   RESUME_PROJECT: "RESUME_PROJECT",
   COMPLETE_PROJECT: "COMPLETE_PROJECT",
@@ -23,6 +24,7 @@ export const ADMIN_PROJECT_ACTION_LABELS = {
   [ADMIN_PROJECT_ACTION_KEYS.APPROVE_PROJECT]: "Approve Project",
   [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_REVISION]: "Request Revision",
   [ADMIN_PROJECT_ACTION_KEYS.REJECT_PROJECT]: "Reject Project",
+  [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_UPDATE]: "Request Update",
   [ADMIN_PROJECT_ACTION_KEYS.PAUSE_PROJECT]: "Pause Project",
   [ADMIN_PROJECT_ACTION_KEYS.RESUME_PROJECT]: "Resume Project",
   [ADMIN_PROJECT_ACTION_KEYS.COMPLETE_PROJECT]: "Complete Project",
@@ -37,6 +39,8 @@ export const ADMIN_PROJECT_ACTION_BADGE_STYLES = {
     "border-orange-200 bg-orange-50 text-orange-700",
   [ADMIN_PROJECT_ACTION_KEYS.REJECT_PROJECT]:
     "border-rose-200 bg-rose-50 text-rose-700",
+  [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_UPDATE]:
+    "border-amber-200 bg-amber-50 text-amber-800",
   [ADMIN_PROJECT_ACTION_KEYS.PAUSE_PROJECT]:
     "border-orange-200 bg-orange-50 text-orange-700",
   [ADMIN_PROJECT_ACTION_KEYS.RESUME_PROJECT]:
@@ -87,11 +91,10 @@ export function getAllowedNextProjectStatuses(project) {
         PROJECT_STATUS.REJECTED,
       ];
 
-    case PROJECT_STATUS.FUNDING:
-    case PROJECT_STATUS.RECRUITING:
     case PROJECT_STATUS.EXECUTING:
     case PROJECT_STATUS.ACTIVE:
       return [
+        PROJECT_STATUS.UPDATING,
         PROJECT_STATUS.PAUSED,
         PROJECT_STATUS.COMPLETED_SUCCESSFULLY,
         PROJECT_STATUS.CANCELLED_BY_PLATFORM,
@@ -100,6 +103,23 @@ export function getAllowedNextProjectStatuses(project) {
     case PROJECT_STATUS.PAUSED:
       return [
         getResumeStatus(project),
+        PROJECT_STATUS.UPDATING,
+        PROJECT_STATUS.COMPLETED_SUCCESSFULLY,
+        PROJECT_STATUS.CANCELLED_BY_PLATFORM,
+      ];
+
+    case PROJECT_STATUS.UPDATING:
+      return [
+        PROJECT_STATUS.EXECUTING,
+        PROJECT_STATUS.PAUSED,
+        PROJECT_STATUS.CANCELLED_BY_PLATFORM,
+      ];
+
+    case PROJECT_STATUS.FUNDING:
+    case PROJECT_STATUS.RECRUITING:
+      return [
+        PROJECT_STATUS.UPDATING,
+        PROJECT_STATUS.PAUSED,
         PROJECT_STATUS.COMPLETED_SUCCESSFULLY,
         PROJECT_STATUS.CANCELLED_BY_PLATFORM,
       ];
@@ -156,7 +176,7 @@ export function getPrimaryProjectAction(project) {
 
 export function getProjectActionKeyFromNextStatus(
   nextStatus,
-  currentStatus = ""
+  currentStatus = "",
 ) {
   const normalizedNextStatus = normalizeProjectStatus(nextStatus);
   const normalizedCurrentStatus = normalizeProjectStatus(currentStatus);
@@ -169,12 +189,23 @@ export function getProjectActionKeyFromNextStatus(
     return ADMIN_PROJECT_ACTION_KEYS.APPROVE_PROJECT;
   }
 
+  if (
+    normalizedNextStatus === PROJECT_STATUS.EXECUTING &&
+    normalizedCurrentStatus === PROJECT_STATUS.UPDATING
+  ) {
+    return ADMIN_PROJECT_ACTION_KEYS.RESUME_PROJECT;
+  }
+
   if (normalizedNextStatus === PROJECT_STATUS.REVISION_REQUESTED) {
     return ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_REVISION;
   }
 
   if (normalizedNextStatus === PROJECT_STATUS.REJECTED) {
     return ADMIN_PROJECT_ACTION_KEYS.REJECT_PROJECT;
+  }
+
+  if (normalizedNextStatus === PROJECT_STATUS.UPDATING) {
+    return ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_UPDATE;
   }
 
   if (normalizedNextStatus === PROJECT_STATUS.PAUSED) {

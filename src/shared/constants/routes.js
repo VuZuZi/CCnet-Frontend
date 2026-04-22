@@ -18,7 +18,7 @@ export const AUTH_ROUTES = {
 };
 
 export const PROTECTED_ROUTES = {
-  DASHBOARD: '/dashboard',
+  DASHBOARD: '/profile/supported-projects',
   PROFILE: '/profile',
   FOLLOWING: '/following',
   COMMUNITY: '/community',
