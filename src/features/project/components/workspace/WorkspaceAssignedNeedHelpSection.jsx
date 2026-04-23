@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   CalendarDays,
   Check,
@@ -13,6 +13,7 @@ import {
 
 import { useOrganizerAssignedRequests } from "@/features/needHelp/hooks/useHelpRequestQueries";
 import { useRespondHelpRequestAssignment } from "@/features/needHelp/hooks/useHelpRequestMutations";
+import { ROUTES } from "@/shared/constants/routes";
 import { formatDate } from "@/shared/lib/formatters";
 
 const STATUS_TABS = [
@@ -181,6 +182,7 @@ function AssignmentCard({ item, activeTab, isResponding, onAccept, onReject }) {
 }
 
 export function WorkspaceAssignedNeedHelpSection() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("pending");
   const [currentPage, setCurrentPage] = useState(1);
   const { data, isLoading } = useOrganizerAssignedRequests(
@@ -204,6 +206,10 @@ export function WorkspaceAssignedNeedHelpSection() {
   const handleRespond = async (id, action) => {
     if (!id || respondMutation.isPending) return;
     await respondMutation.mutateAsync({ id, action });
+
+    if (action === "accept") {
+      navigate(`${ROUTES.PROJECT_CREATE}?helpRequestId=${id}`);
+    }
   };
 
   return (

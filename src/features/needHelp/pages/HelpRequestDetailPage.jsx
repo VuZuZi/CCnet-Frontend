@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
   CalendarDays,
+  CheckCircle2,
   CircleAlert,
   Expand,
   FolderKanban,
@@ -20,10 +21,17 @@ import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore
 import { HelpRequestFundingCard } from '../components/detail/HelpRequestFundingCard';
 import { HelpRequestVerification } from '../components/detail/HelpRequestVerification';
 import { EvidenceGallery } from '../components/detail/EvidenceGallery';
-import { useHelpRequestDetail } from '../hooks/useHelpRequestQueries';
-import { useDeleteHelpRequest } from '../hooks/useHelpRequestMutations';
 import { AdminAssignmentPanel } from '../components/admin/AdminAssignmentPanel';
-import { HELP_REQUEST_CATEGORIES, URGENCY_LEVELS } from '../validations/helpRequestSchema';
+import { RoleUpgradeModal } from '../components/RoleUpgradeModal';
+import { useHelpRequestDetail } from '../hooks/useHelpRequestQueries';
+import {
+  useDeleteHelpRequest,
+  useRespondHelpRequestAssignment,
+} from '../hooks/useHelpRequestMutations';
+import {
+  HELP_REQUEST_CATEGORIES,
+  URGENCY_LEVELS,
+} from '../validations/helpRequestSchema';
 
 const CATEGORY_LABELS = Object.fromEntries(
   HELP_REQUEST_CATEGORIES.map((item) => [item.value, item.label])
@@ -32,6 +40,20 @@ const CATEGORY_LABELS = Object.fromEntries(
 const URGENCY_LABELS = Object.fromEntries(
   URGENCY_LEVELS.map((item) => [item.value, item.label])
 );
+
+function getEntityId(value) {
+  if (!value) return null;
+
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return value._id || value.id || null;
+  }
+
+  return value;
+}
+
+function getPopulatedEntity(value) {
+  return value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+}
 
 function getHelpRequestImage(helpRequest) {
   if (!helpRequest) return '';
@@ -54,9 +76,14 @@ function getHelpRequestImage(helpRequest) {
   }
 
   if (Array.isArray(helpRequest.evidences) && helpRequest.evidences.length > 0) {
-    const firstEvidence = helpRequest.evidences[0];
+    const firstEvidence = helpRequest.evidences.find(
+      (item) => item?.mediaType === 'image' || !item?.mediaType
+    );
+
     if (typeof firstEvidence === 'string' && firstEvidence.trim()) return firstEvidence;
-    if (typeof firstEvidence?.url === 'string' && firstEvidence.url.trim()) return firstEvidence.url;
+    if (typeof firstEvidence?.url === 'string' && firstEvidence.url.trim()) {
+      return firstEvidence.url;
+    }
     if (
       typeof firstEvidence?.secure_url === 'string' &&
       firstEvidence.secure_url.trim()
@@ -141,7 +168,7 @@ function SectionCard({ eyebrow, title, children }) {
 
 function ImagePreviewModal({ isOpen, imageUrl, title, onClose }) {
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) return undefined;
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') onClose();
@@ -178,30 +205,73 @@ function ImagePreviewModal({ isOpen, imageUrl, title, onClose }) {
   );
 }
 
+function OrganizerActionCard({
+  title,
+  description,
+  buttonLabel,
+  onAction,
+  disabled = false,
+  isPending = false,
+}) {
+  return (
+    <section className="rounded-[28px] border border-amber-200 bg-[#fff9eb] p-6 shadow-sm">
+      <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-white/90 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
+        <CheckCircle2 size={13} />
+        Host NeedHelp
+      </div>
+
+      <h2 className="text-xl font-black tracking-tight text-slate-950">{title}</h2>
+      <p className="mt-2 text-sm leading-7 text-slate-600">{description}</p>
+
+      <button
+        type="button"
+        onClick={onAction}
+        disabled={disabled || isPending}
+        className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-300 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"
+      >
+        {isPending ? <Loader2 size={16} className="animate-spin" /> : <FolderKanban size={16} />}
+        {buttonLabel}
+      </button>
+    </section>
+  );
+}
+
 export function HelpRequestDetailPage() {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
 
   const [isImagePreviewOpen, setIsImagePreviewOpen] = useState(false);
+  const [isRoleUpgradeOpen, setIsRoleUpgradeOpen] = useState(false);
 
+  const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const currentUserRole = useAuthStore(authSelectors.userRole);
   const currentUserId = useAuthStore(authSelectors.userId);
 
   const { data: helpRequest, isLoading, isError, error } = useHelpRequestDetail(id);
   const deleteMutation = useDeleteHelpRequest();
+  const respondMutation = useRespondHelpRequestAssignment();
 
-  const backTo = location.state?.backTo;
   const isAdmin = currentUserRole === 'admin';
+  const isOrganizer = currentUserRole === 'organizer';
+  const backTo = location.state?.backTo;
 
-  const requesterId =
-    typeof helpRequest?.requesterId === 'object'
-      ? helpRequest.requesterId?._id || helpRequest.requesterId?.id
-      : helpRequest?.requesterId;
-
+  const requesterId = getEntityId(helpRequest?.requesterId);
   const isOwner = Boolean(
-    currentUserId && requesterId && currentUserId.toString() === requesterId.toString()
+    currentUserId && requesterId && String(currentUserId) === String(requesterId)
   );
+
+  const handleBack = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (window.history.length > 1) {
+      navigate(-1);
+      return;
+    }
+
+    navigate(backTo || ROUTES.NEED_HELP, { replace: true });
+  };
 
   const handleDelete = () => {
     if (!helpRequest?._id) return;
@@ -215,16 +285,26 @@ export function HelpRequestDetailPage() {
     }
   };
 
-  const handleBack = (event) => {
-    event.preventDefault();
-    event.stopPropagation();
+  const handleRoleUpgradeConfirm = () => {
+    setIsRoleUpgradeOpen(false);
 
-    if (window.history.length > 1) {
-      navigate(-1);
+    if (!isAuthenticated) {
+      navigate(ROUTES.REGISTER, {
+        state: {
+          from: location,
+          intendedPath: `${ROUTES.NEED_HELP}/${id}`,
+          nextAfterAuth: ROUTES.ORGANIZER_APPLY,
+        },
+      });
       return;
     }
 
-    navigate(backTo || ROUTES.NEED_HELP, { replace: true });
+    navigate(ROUTES.ORGANIZER_APPLY, {
+      state: {
+        from: location,
+        intendedPath: `${ROUTES.NEED_HELP}/${id}`,
+      },
+    });
   };
 
   if (isLoading) {
@@ -272,26 +352,32 @@ export function HelpRequestDetailPage() {
     );
   }
 
-  const imageUrl = getHelpRequestImage(helpRequest);
-  const requester =
-    typeof helpRequest.requesterId === 'object' ? helpRequest.requesterId : null;
-  const linkedProject =
-    helpRequest.linkedProjectId &&
-    typeof helpRequest.linkedProjectId === 'object' &&
-    !Array.isArray(helpRequest.linkedProjectId)
-      ? helpRequest.linkedProjectId
-      : null;
+  const requester = getPopulatedEntity(helpRequest.requesterId);
+  const assignedOrganizer = getPopulatedEntity(helpRequest.assignedOrganizerId);
+  const linkedProject = getPopulatedEntity(helpRequest.linkedProjectId);
+  const linkedProjectId = getEntityId(helpRequest.linkedProjectId);
+  const assignedOrganizerId = getEntityId(helpRequest.assignedOrganizerId);
 
+  const imageUrl = getHelpRequestImage(helpRequest);
   const title = helpRequest.title || 'Yêu cầu trợ giúp không có tiêu đề';
   const description = helpRequest.description?.trim() || '';
   const storyText = helpRequest.story?.trim() || '';
   const leadText = description && description !== storyText ? description : '';
-
   const requesterName =
-    requester?.name || requester?.fullName || helpRequest.requesterName || 'Người dùng ẩn danh';
+    requester?.name ||
+    requester?.fullName ||
+    helpRequest.requesterName ||
+    'Người dùng ẩn danh';
   const requesterEmail =
-    helpRequest.contactEmail || requester?.email || 'Không cung cấp email liên hệ';
-  const requesterPhone = helpRequest.contactPhone || 'Không cung cấp số điện thoại';
+    helpRequest.contactEmail ||
+    requester?.email ||
+    'Không cung cấp email liên hệ';
+  const requesterPhone =
+    helpRequest.contactPhone || 'Không cung cấp số điện thoại';
+  const assignedOrganizerName =
+    assignedOrganizer?.fullName ||
+    assignedOrganizer?.name ||
+    'một nhà tổ chức khác';
 
   const categoryValue =
     helpRequest.category || helpRequest.requestType || helpRequest.type || 'KHAC';
@@ -307,13 +393,108 @@ export function HelpRequestDetailPage() {
   const submittedAt = helpRequest.createdAt
     ? new Date(helpRequest.createdAt).toLocaleDateString('vi-VN')
     : 'Được gửi gần đây';
-
   const urgencyTone =
     urgencyValue === 'CRITICAL' || urgencyValue === 'HIGH'
       ? 'rose'
       : urgencyValue === 'LOW'
         ? 'default'
         : 'blue';
+
+  const isAssignedToCurrentOrganizer = Boolean(
+    currentUserId &&
+      assignedOrganizerId &&
+      String(currentUserId) === String(assignedOrganizerId)
+  );
+  const isAssignedToAnotherOrganizer = Boolean(
+    assignedOrganizerId && !isAssignedToCurrentOrganizer
+  );
+  const canAcceptAssignedAndCreate =
+    isOrganizer &&
+    isAssignedToCurrentOrganizer &&
+    helpRequest.status === 'VERIFIED' &&
+    !linkedProjectId;
+  const canCreateProjectFromAssignedRequest =
+    isOrganizer &&
+    isAssignedToCurrentOrganizer &&
+    helpRequest.status === 'IN_PROGRESS' &&
+    !linkedProjectId;
+  const canCreateProjectDirectly =
+    isOrganizer &&
+    !assignedOrganizerId &&
+    helpRequest.status === 'VERIFIED' &&
+    !linkedProjectId;
+
+  const shouldShowHostActionCard =
+    !isAdmin &&
+    (Boolean(linkedProjectId) ||
+      helpRequest.status === 'VERIFIED' ||
+      isAssignedToCurrentOrganizer ||
+      isAssignedToAnotherOrganizer);
+
+  let hostActionTitle = 'Tổ chức chiến dịch từ yêu cầu này';
+  let hostActionDescription =
+    'CCNet sẽ mang dữ liệu của yêu cầu này sang trang tạo dự án để bạn tiếp tục xử lý.';
+  let hostActionLabel = 'Tổ chức chiến dịch này';
+  let hostActionDisabled = false;
+
+  if (linkedProjectId) {
+    hostActionTitle = 'Yêu cầu này đã được tiếp nhận';
+    hostActionDescription =
+      'Yêu cầu này đã được chuyển thành dự án. Bạn có thể mở dự án liên kết để theo dõi.';
+    hostActionLabel = 'Xem dự án liên kết';
+  } else if (canAcceptAssignedAndCreate) {
+    hostActionTitle = 'Bạn đã được giao yêu cầu này';
+    hostActionDescription =
+      'Chấp nhận giao việc và chuyển thẳng sang tạo dự án với dữ liệu NeedHelp đã điền sẵn.';
+    hostActionLabel = 'Chấp nhận và tạo dự án';
+  } else if (canCreateProjectFromAssignedRequest) {
+    hostActionTitle = 'Tiếp tục xử lý yêu cầu này';
+    hostActionDescription =
+      'Yêu cầu này đang do bạn phụ trách. Bạn có thể tạo dự án ngay từ dữ liệu hiện có.';
+    hostActionLabel = 'Tạo dự án từ yêu cầu';
+  } else if (isAssignedToAnotherOrganizer) {
+    hostActionTitle = 'Yêu cầu này đang có nhà tổ chức phụ trách';
+    hostActionDescription = `${assignedOrganizerName} đang xử lý yêu cầu này trên CCNet.`;
+    hostActionLabel = 'Đã có nhà tổ chức phụ trách';
+    hostActionDisabled = true;
+  } else if (!isOrganizer) {
+    hostActionTitle = 'Muốn đứng ra tổ chức chiến dịch này?';
+    hostActionDescription = isAuthenticated
+      ? 'Bạn cần quyền nhà tổ chức để tiếp nhận yêu cầu này và tạo chiến dịch từ đó.'
+      : 'Bạn cần tài khoản và quyền nhà tổ chức để tiếp nhận yêu cầu này và tạo chiến dịch từ đó.';
+    hostActionLabel = 'Đăng ký để tổ chức';
+  }
+
+  const handleHostAction = async () => {
+    if (!helpRequest?._id || hostActionDisabled || respondMutation.isPending) {
+      return;
+    }
+
+    if (linkedProjectId) {
+      navigate(`/projects/${linkedProjectId}`);
+      return;
+    }
+
+    if (!isOrganizer) {
+      setIsRoleUpgradeOpen(true);
+      return;
+    }
+
+    if (canAcceptAssignedAndCreate) {
+      await respondMutation.mutateAsync({
+        id: helpRequest._id,
+        action: 'accept',
+      });
+    }
+
+    if (
+      canAcceptAssignedAndCreate ||
+      canCreateProjectFromAssignedRequest ||
+      canCreateProjectDirectly
+    ) {
+      navigate(`${ROUTES.PROJECT_CREATE}?helpRequestId=${helpRequest._id}`);
+    }
+  };
 
   return (
     <>
@@ -410,6 +591,17 @@ export function HelpRequestDetailPage() {
                 </div>
 
                 <div className="space-y-4">
+                  {shouldShowHostActionCard ? (
+                    <OrganizerActionCard
+                      title={hostActionTitle}
+                      description={hostActionDescription}
+                      buttonLabel={hostActionLabel}
+                      onAction={handleHostAction}
+                      disabled={hostActionDisabled}
+                      isPending={respondMutation.isPending}
+                    />
+                  ) : null}
+
                   <section className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
                     <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
                       Người gửi yêu cầu
@@ -500,7 +692,10 @@ export function HelpRequestDetailPage() {
                         .map((paragraph) => paragraph.trim())
                         .filter(Boolean)
                         .map((paragraph, index) => (
-                          <p key={`${index}-${paragraph.slice(0, 20)}`} className="break-words whitespace-pre-wrap">
+                          <p
+                            key={`${index}-${paragraph.slice(0, 20)}`}
+                            className="break-words whitespace-pre-wrap"
+                          >
                             {paragraph}
                           </p>
                         ))}
@@ -532,6 +727,19 @@ export function HelpRequestDetailPage() {
         imageUrl={imageUrl}
         title={title}
         onClose={() => setIsImagePreviewOpen(false)}
+      />
+
+      <RoleUpgradeModal
+        isOpen={isRoleUpgradeOpen}
+        onAssignNow={handleRoleUpgradeConfirm}
+        onLater={() => setIsRoleUpgradeOpen(false)}
+        title={!isAuthenticated ? 'Đăng ký để tổ chức chiến dịch' : 'Cần quyền nhà tổ chức'}
+        description={
+          !isAuthenticated
+            ? 'Bạn cần một tài khoản và vai trò nhà tổ chức để đứng ra host yêu cầu này.'
+            : 'Chỉ nhà tổ chức mới có thể host yêu cầu này và chuyển nó thành dự án.'
+        }
+        confirmLabel="Đăng ký ngay"
       />
     </>
   );

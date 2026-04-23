@@ -6,6 +6,7 @@ export const PUBLIC_ROUTES = {
   PRICING: '/pricing',
   ABOUT: '/about',
   CONTACT: '/contact',
+  NEED_HELP: '/need-help',
 };
 
 export const AUTH_ROUTES = {
@@ -24,6 +25,7 @@ export const PROTECTED_ROUTES = {
   COMMUNITY: '/community',
   WORKSPACE: '/workspace',
   WORKSPACE_PROJECTS: '/workspace',
+  ORGANIZER_APPLY: '/organizer/apply',
 };
 
 export const PROJECT_ROUTES = {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { CheckCircle2, Trash2, AlertTriangle } from "lucide-react";
@@ -91,8 +91,13 @@ export function CreateProjectPage() {
     [location.search],
   );
   const helpRequestId = queryParams.get("helpRequestId");
+  const sourceKey = isEditMode ? `edit:${id || ""}` : `help:${helpRequestId || ""}`;
+  const appliedPrefillRef = useRef("");
+  const [isPrefillApplied, setIsPrefillApplied] = useState(
+    !isEditMode && !helpRequestId,
+  );
 
-  const { currentStep, updateFormData, setProjectId, resetDraft, projectId } =
+  const { currentStep, updateFormData, setProjectId, resetDraft } =
     useProjectDraftStore();
 
   const { data: draftData, isLoading, isError } = useProjectDraftDetail(id);
@@ -103,31 +108,42 @@ export function CreateProjectPage() {
   } = useHelpRequestAsProjectData(helpRequestId);
 
   useEffect(() => {
+    appliedPrefillRef.current = "";
+    setIsPrefillApplied(!isEditMode && !helpRequestId);
+  }, [sourceKey, isEditMode, helpRequestId]);
+
+  useEffect(() => {
     if (!isEditMode && !helpRequestId) {
+      setIsPrefillApplied(true);
       return;
     }
 
-    if (isEditMode && draftData) {
+    if (isEditMode && draftData && appliedPrefillRef.current !== sourceKey) {
       resetDraft();
       updateFormData(buildDraftFormData(draftData));
       setProjectId(id);
+      appliedPrefillRef.current = sourceKey;
+      setIsPrefillApplied(true);
       return;
     }
 
-    if (helpRequestId && helpRequestData) {
-      if (projectId) {
-        resetDraft();
-      }
-
+    if (
+      helpRequestId &&
+      helpRequestData &&
+      appliedPrefillRef.current !== sourceKey
+    ) {
+      resetDraft();
       updateFormData(buildHelpRequestFormData(helpRequestData, helpRequestId));
+      appliedPrefillRef.current = sourceKey;
+      setIsPrefillApplied(true);
     }
   }, [
+    sourceKey,
     isEditMode,
     draftData,
     helpRequestId,
     helpRequestData,
     id,
-    projectId,
     resetDraft,
     setProjectId,
     updateFormData,
@@ -140,11 +156,16 @@ export function CreateProjectPage() {
     navigate("/projects");
   };
 
-  const isPageReady = !isEditMode && !helpRequestId
+  const isDataLoaded = !isEditMode && !helpRequestId
     ? true
     : Boolean((isEditMode && draftData) || (helpRequestId && helpRequestData));
+  const isPageReady = isDataLoaded && isPrefillApplied;
 
-  if ((isEditMode && isLoading) || (helpRequestId && isHelpRequestLoading)) {
+  if (
+    (isEditMode && isLoading) ||
+    (helpRequestId && isHelpRequestLoading) ||
+    (isDataLoaded && !isPrefillApplied)
+  ) {
     return (
       <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">
         Đang đồng bộ dữ liệu từ máy chủ...

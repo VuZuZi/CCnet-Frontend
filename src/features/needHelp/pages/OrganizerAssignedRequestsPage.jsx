@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   CalendarDays,
   Check,
@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 
 import { formatVND, formatDate } from '@/shared/lib/formatters';
+import { ROUTES } from '@/shared/constants/routes';
 import { useOrganizerAssignedRequests } from '../hooks/useHelpRequestQueries';
 import { useRespondHelpRequestAssignment } from '../hooks/useHelpRequestMutations';
 
@@ -275,6 +276,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
 }
 
 export function OrganizerAssignedRequestsPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('pending');
   const [rejectModal, setRejectModal] = useState({
     isOpen: false,
@@ -305,6 +307,7 @@ export function OrganizerAssignedRequestsPage() {
 
   const handleAccept = async (id) => {
     await respondMutation.mutateAsync({ id, action: 'accept' });
+    navigate(`${ROUTES.PROJECT_CREATE}?helpRequestId=${id}`);
   };
 
   const handleRejectClick = (requestId, requestTitle) => {
