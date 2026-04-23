@@ -7,11 +7,11 @@ export const SEARCH_GROUP_ORDER = [
 ];
 
 export const SEARCH_GROUP_LABELS = {
-  user: "Users",
-  organizer: "Organizers",
-  project: "Projects",
-  needhelp: "Need Help",
-  communitypost: "Community Posts",
+  user: "Người dùng",
+  organizer: "Nhà tổ chức",
+  project: "Dự án",
+  needhelp: "Yêu cầu hỗ trợ",
+  communitypost: "Bài viết cộng đồng",
 };
 
 function normalizeString(value, fallback = "") {

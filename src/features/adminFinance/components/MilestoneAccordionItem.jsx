@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, FileText, Wallet, CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatProjectCurrencyVND } from '@/features/project/utils/projectDisplay.utils';
+import { getStatusLabel } from '@/shared/lib/statusLabels';
 import clsx from 'clsx';
 
 export function MilestoneAccordionItem({ milestone, onReviewEvidence, onReviewDisbursement }) {
@@ -39,13 +40,13 @@ export function MilestoneAccordionItem({ milestone, onReviewEvidence, onReviewDi
                             <div key={ev._id} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                                 <div className="min-w-0 pr-4">
                                     <p className="text-xs font-bold text-slate-900 truncate">{ev.reportContent}</p>
-                                    <span className="text-[9px] font-black uppercase text-slate-400">{ev.status}</span>
+                                    <span className="text-[9px] font-black uppercase text-slate-400">{getStatusLabel(ev.status)}</span>
                                 </div>
                                 <button
                                     onClick={() => onReviewEvidence(ev._id)}
                                     className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-[10px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm shrink-0"
                                 >
-                                    Review
+                                    Xem xét
                                 </button>
                             </div>
                         )) : <p className="text-xs italic text-slate-400 p-4">Chưa có bằng chứng nào.</p>}
@@ -68,7 +69,7 @@ export function MilestoneAccordionItem({ milestone, onReviewEvidence, onReviewDi
                                             {formatProjectCurrencyVND(req.requestedAmount)}
                                         </p>
                                         <span className={clsx("text-[9px] font-black uppercase", isCompleted ? "text-emerald-500" : "text-blue-500")}>
-                                            {req.status}
+                                            {getStatusLabel(req.status)}
                                         </span>
                                     </div>
                                     {/* Chỉ hiện nút Xử lý tiền nếu CHƯA hoàn thành */}

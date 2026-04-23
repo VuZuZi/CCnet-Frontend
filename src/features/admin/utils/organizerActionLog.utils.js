@@ -3,8 +3,8 @@ import { CheckCircle2, Clock3, History } from "lucide-react";
 export const PAGE_SIZE = 10;
 
 export const ACTION_LABELS = {
-  APPROVE_ORGANIZER_REQUEST: "Approve request",
-  DECLINE_ORGANIZER_REQUEST: "Decline request",
+  APPROVE_ORGANIZER_REQUEST: "Phê duyệt yêu cầu",
+  DECLINE_ORGANIZER_REQUEST: "Từ chối yêu cầu",
 };
 
 export const ACTION_STYLES = {
@@ -14,9 +14,9 @@ export const ACTION_STYLES = {
 };
 
 export const ACTION_OPTIONS = [
-  { value: "", label: "All actions" },
-  { value: "APPROVE_ORGANIZER_REQUEST", label: "Approve request" },
-  { value: "DECLINE_ORGANIZER_REQUEST", label: "Decline request" },
+  { value: "", label: "Tất cả hành động" },
+  { value: "APPROVE_ORGANIZER_REQUEST", label: "Phê duyệt yêu cầu" },
+  { value: "DECLINE_ORGANIZER_REQUEST", label: "Từ chối yêu cầu" },
 ];
 
 export const getActionIconComponent = (action) => {
@@ -34,13 +34,12 @@ export const formatDateTimeSingleLine = (value) => {
   if (!value) return "--";
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("vi-VN", {
       month: "short",
       day: "numeric",
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
     }).format(new Date(value));
   } catch {
     return String(value);

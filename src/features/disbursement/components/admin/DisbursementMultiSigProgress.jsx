@@ -11,7 +11,7 @@ export function DisbursementMultiSigProgress({ request }) {
     const isTransferDone = request.status === 'COMPLETED';
 
     const steps = [];
-    steps.push({ label: 'Organizer yêu cầu', status: 'DONE' });
+    steps.push({ label: 'Nhà tổ chức yêu cầu', status: 'DONE' });
 
     if (required === 1) {
         steps.push({
@@ -24,11 +24,11 @@ export function DisbursementMultiSigProgress({ request }) {
         });
     } else {
         steps.push({
-            label: 'Manager phê duyệt',
+            label: 'Quản lý phê duyệt',
             status: isFirstApproved ? 'DONE' : 'PENDING'
         });
         steps.push({
-            label: 'Admin xác nhận',
+            label: 'Quản trị viên xác nhận',
             status: isSecondApproved ? 'DONE' : (isFirstApproved ? 'PENDING' : 'WAITING')
         });
         steps.push({

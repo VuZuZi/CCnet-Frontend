@@ -41,8 +41,8 @@ export default function NotificationDropdown({
             {canManageSettings ? (
               <button
                 type="button"
-                title="Notification settings"
-                aria-label="Notification settings"
+          title="Cài đặt thông báo"
+          aria-label="Cài đặt thông báo"
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenSettings?.();

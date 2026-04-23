@@ -152,7 +152,7 @@ export function HybridMediaDropzone({
                                 media.isCamera ? "bg-emerald-500/80" : "bg-slate-900/60"
                             )}>
                                 {media.isCamera ? <Camera size={10} /> : <ImageIcon size={10} />}
-                                {media.isCamera ? "LIVE GPS" : "FILE"}
+                            {media.isCamera ? "GPS trực tiếp" : "Tệp"}
                             </div>
 
                             <button

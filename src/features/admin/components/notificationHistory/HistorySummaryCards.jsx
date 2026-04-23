@@ -1,6 +1,7 @@
+import { createElement } from "react";
 import { BellRing, ShieldCheck, Users } from "lucide-react";
 
-function SummaryCard({ icon: Icon, label, value, tone = "amber" }) {
+function SummaryCard({ icon, label, value, tone = "amber" }) {
   const toneMap = {
     amber: "border-amber-200 bg-amber-50 text-amber-700",
     slate: "border-slate-200 bg-slate-50 text-slate-700",
@@ -9,21 +10,21 @@ function SummaryCard({ icon: Icon, label, value, tone = "amber" }) {
 
   return (
     <div
-      className={`rounded-[24px] border px-5 py-4 shadow-[0_10px_24px_-24px_rgba(15,23,42,0.22)] ${
+      className={`min-w-0 rounded-[24px] border px-5 py-4 shadow-[0_10px_24px_-24px_rgba(15,23,42,0.22)] ${
         toneMap[tone] || toneMap.amber
       }`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <p className="text-[11px] font-bold uppercase tracking-[0.16em]">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <p className="ccnet-nowrap-label text-[11px] font-bold uppercase tracking-[0.08em]">
           {label}
         </p>
 
-        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
-          <Icon size={18} />
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-white shadow-sm">
+          {createElement(icon, { size: 18 })}
         </div>
       </div>
 
-      <p className="mt-3 text-[34px] font-black leading-none tracking-tight text-slate-900">
+      <p className="mt-3 text-[clamp(1.75rem,3vw,2.125rem)] font-black leading-none tracking-tight text-slate-900">
         {value}
       </p>
     </div>
@@ -32,7 +33,10 @@ function SummaryCard({ icon: Icon, label, value, tone = "amber" }) {
 
 export default function HistorySummaryCards({ stats }) {
   return (
-    <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
+    <div
+      className="ccnet-auto-grid w-full gap-3 xl:max-w-[560px]"
+      style={{ "--ccnet-grid-min": "150px" }}
+    >
       <SummaryCard
         icon={BellRing}
         label="Nhật ký đã gửi"

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { usePostMutations } from "../../hooks/usePostMutations";
 import { useAuthStore } from "../../../auth/stores/useAuthStore";
-import { useToast } from "@/shared/contexts/ToastContext";
 import { Globe2, Lock, ImagePlus, SendHorizontal } from "lucide-react";
 import { SharedEntityCard } from "./SharedEntityCard";
 
@@ -102,7 +101,6 @@ const PostForm = ({
 
   const { user } = useAuthStore();
   const { createPost } = usePostMutations();
-  const toast = useToast();
 
   const isOverLimit = content.length > 300;
 

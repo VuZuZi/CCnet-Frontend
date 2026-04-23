@@ -51,21 +51,21 @@ export function HelpRequestVerification({ helpRequest }) {
       </h2>
 
       <p className="mt-2 text-sm leading-7 text-slate-500">
-        Kiểm tra organizer được giao, thông tin dự án liên kết, liên hệ,
+        Kiểm tra nhà tổ chức được giao, thông tin dự án liên kết, liên hệ,
         và minh chứng đính kèm của yêu cầu này.
       </p>
 
       <div className="mt-6 grid gap-4">
-        <DetailRow icon={UserRound} label="Organizer được giao">
+        <DetailRow icon={UserRound} label="Nhà tổ chức được giao">
           {organizer ? (
             <>
               <p className="font-semibold text-slate-900">{organizer.fullName}</p>
               <p className="text-slate-500">
-                {organizer.email || 'Thông tin liên hệ organizer có trong hồ sơ.'}
+                {organizer.email || 'Thông tin liên hệ nhà tổ chức có trong hồ sơ.'}
               </p>
             </>
           ) : (
-            <p className="text-slate-500">Chưa có organizer nào được giao.</p>
+            <p className="text-slate-500">Chưa có nhà tổ chức nào được giao.</p>
           )}
         </DetailRow>
 

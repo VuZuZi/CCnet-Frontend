@@ -41,7 +41,7 @@ export default function AdminFinanceDetailPage() {
                     <h1 className="text-2xl font-black text-slate-900 truncate" title={project.title}>
                         {project.title}
                     </h1>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Finance Management & Audit</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Quản lý tài chính & kiểm toán</p>
                 </div>
             </div>
 

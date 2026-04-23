@@ -91,7 +91,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareData = {
       title,
-      text: `Hỗ trợ yêu cầu NeedHelp này trên CCNet: ${title}`,
+      text: `Hỗ trợ yêu cầu cần giúp đỡ này trên CCNet: ${title}`,
       url: shareUrl,
     };
 

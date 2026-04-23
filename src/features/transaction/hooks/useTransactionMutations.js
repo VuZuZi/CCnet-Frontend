@@ -74,7 +74,7 @@ export const useRefundMutation = () => {
             useTransactionLockStore.getState().lock('Đang gửi yêu cầu hoàn tiền...');
         },
         onSuccess: () => {
-            toast.success('Đã gửi yêu cầu hoàn tiền, vui lòng chờ admin duyệt.');
+            toast.success('Đã gửi yêu cầu hoàn tiền, vui lòng chờ quản trị viên duyệt.');
 
             queryClient.invalidateQueries({ queryKey: WALLET_QUERY_KEYS.me() });
             queryClient.invalidateQueries({ queryKey: TRANSACTION_QUERY_KEYS.myDonations() });

@@ -11,5 +11,5 @@ export const evidenceSubmitSchema = z.object({
 });
 
 export const evidenceUpdateSchema = evidenceSubmitSchema.extend({
-    reportContent: z.string().min(50, "Vui lòng giải trình chi tiết hơn theo yêu cầu của Admin.")
+    reportContent: z.string().min(50, "Vui lòng giải trình chi tiết hơn theo yêu cầu của quản trị viên.")
 });

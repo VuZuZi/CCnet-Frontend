@@ -3,6 +3,7 @@ import { formatProjectCurrencyVND } from '@/features/project/utils/projectDispla
 import { SubmitEvidenceModal } from './SubmitEvidenceModal';
 import { RequestDisbursementModal } from '@/features/disbursement/components/RequestDisbursementModal';
 import { DisbursementRescueModal } from '@/features/disbursement/components/DisbursementRescueModal';
+import { PublicEvidenceViewerModal } from '@/features/evidence/components/public/PublicEvidenceViewerModal';
 import { 
   CheckCircle2, Clock, Camera, Wallet, 
   ArrowRightLeft, ShieldCheck, AlertCircle, FileWarning, Lock
@@ -13,6 +14,8 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
     const [selectedMilestone, setSelectedMilestone] = useState(null);
     const [disbursementTarget, setDisbursementTarget] = useState(null);
     const [rescueTarget, setRescueTarget] = useState(null);
+    // [NEW] State để quản lý modal view cho Public/Donor
+    const [publicEvidenceTarget, setPublicEvidenceTarget] = useState(null);
 
     const milestones = project?.milestones || [];
     const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
@@ -20,7 +23,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
 
     return (
         <div className="space-y-8 p-2 sm:p-6">
-            {/* Header Tổng quan minh bạch - Đã map với DTO financialOverview mới */}
+            {/* Header Tổng quan minh bạch */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-[28px] bg-slate-900 p-6 text-white shadow-xl">
                 <div>
                     <h3 className="text-lg font-black uppercase tracking-tight">Sổ Cái Minh Bạch</h3>
@@ -31,7 +34,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                 {!isVolunteerOnly && project?.financialOverview && (
                     <div className="flex flex-wrap gap-4 md:gap-6 mt-4 md:mt-0 rounded-2xl bg-slate-800/50 p-4 border border-slate-700/50">
                         <div className="text-right">
-                            <p className="text-[10px] font-bold text-slate-400 uppercase">Khả dụng (Available)</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase">Khả dụng</p>
                             <p className="text-sm font-black text-blue-400">
                                 {formatProjectCurrencyVND(project.financialOverview.withdrawableBalance)}
                             </p>
@@ -81,12 +84,13 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                             onNopNghiemThu={() => setSelectedMilestone(ms)}
                             onYeuCauGiaiNgan={() => setDisbursementTarget(ms)}
                             onCuuHo={() => setRescueTarget(ms)}
+                            onXemBaoCao={() => setPublicEvidenceTarget(ms)} // [NEW] Truyền prop
                         />
                     );
                 })}
             </div>
 
-            {/* Modals Layer - Truyền full project xuống */}
+            {/* Modals Layer */}
             {selectedMilestone && (
                 <SubmitEvidenceModal
                     project={project}
@@ -109,19 +113,27 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                     onClose={() => setRescueTarget(null)}
                 />
             )}
+
+            {/* [NEW] Public Viewer Modal */}
+            {publicEvidenceTarget && (
+                <PublicEvidenceViewerModal
+                    projectId={project._id}
+                    milestone={publicEvidenceTarget}
+                    onClose={() => setPublicEvidenceTarget(null)}
+                />
+            )}
         </div>
     );
 }
 
 // --- Sub-component cho từng dòng Sổ cái ---
-function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canRequestDisbursement, isProjectExecuting, onNopNghiemThu, onYeuCauGiaiNgan, onCuuHo }) {
+function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canRequestDisbursement, isProjectExecuting, onNopNghiemThu, onYeuCauGiaiNgan, onCuuHo, onXemBaoCao }) {
     const isCompleted = ms.status === 'COMPLETED';
     const requiredDisbursementAmount = Number(
         ms?.requiredDisbursementAmount ?? ms?.targetAmount ?? 0
     );
     const isDisbursementRequired = !isVolunteerOnly && requiredDisbursementAmount > 0;
     
-    // Mapping trạng thái thực tế
     const evStatus = ms.evidenceStatus || 'NOT_SUBMITTED';
     const disStatus = ms.disbursementStatus || 'NOT_STARTED';
     
@@ -162,7 +174,7 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                     {/* Block: Dòng tiền (Rút tiền trước) */}
                     {!isVolunteerOnly && (
                         <div className={clsx(
-                            "rounded-2xl border p-4 transition-all",
+                            "rounded-2xl border p-4 transition-all flex flex-col justify-between",
                             disStatus === 'HOLD' ? "bg-red-50 border-red-200" : "bg-blue-50/30 border-blue-100"
                         )}>
                             <div className="flex items-center justify-between mb-3">
@@ -173,7 +185,6 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                             </div>
 
                             <div className="flex gap-2">
-                                {/* Khóa liên động (Interlock) cho nút Rút Tiền */}
                                 {isOrganizer && !isDisbursementRequired && (
                                     <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-tight cursor-default">
                                         Mốc 0đ không cần yêu cầu giải ngân
@@ -196,7 +207,6 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                                     )
                                 )}
 
-                                {/* Điều kiện Cứu hộ */}
                                 {isOrganizer && disStatus === 'HOLD' && (
                                     <button onClick={onCuuHo} className="w-full py-2 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 animate-pulse">
                                         Sửa số tài khoản bị lỗi
@@ -207,7 +217,7 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                     )}
 
                     {/* Block: Nghiệm thu (Báo cáo sau) */}
-                    <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4">
+                    <div className="rounded-2xl border border-slate-100 bg-slate-50/50 p-4 flex flex-col justify-between">
                         <div className="flex items-center justify-between mb-3">
                             <span className="flex items-center gap-1.5 text-[10px] font-black uppercase text-slate-400">
                                 <Camera size={12} /> Bằng chứng thực thi
@@ -215,18 +225,28 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                             <EvidenceBadge status={evStatus} />
                         </div>
                         
-                        {/* Organizer chỉ được nộp bằng chứng khi (Đã nhận được tiền HOẶC là dự án tình nguyện) và đang ở trạng thái cho phép nộp */}
-                        {canSubmitEvidence && (
-                            <button onClick={onNopNghiemThu} className="w-full py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                                {evStatus === 'REVISION_REQUESTED' ? 'Nộp lại báo cáo' : 'Nộp báo cáo + Hóa đơn'}
-                            </button>
-                        )}
-                        {/* Block hiển thị nếu chưa nhận được tiền */}
-                         {isOrganizer && isDisbursementRequired && !isDisbursementCompleted && evStatus === 'NOT_SUBMITTED' && (
-                            <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-transparent text-slate-400 text-[10px] italic cursor-default">
-                                Chỉ nộp khi đã nhận tạm ứng
-                            </div>
-                        )}
+                        <div className="space-y-2 mt-auto">
+                            {/* Nút dành cho Organizer nộp / sửa báo cáo */}
+                            {canSubmitEvidence && (
+                                <button onClick={onNopNghiemThu} className="w-full py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                                    {evStatus === 'REVISION_REQUESTED' ? 'Nộp lại báo cáo' : 'Nộp báo cáo + Hóa đơn'}
+                                </button>
+                            )}
+
+                            {/* [NEW] Nút Xem chi tiết cho BẤT KỲ AI nếu báo cáo đã duyệt */}
+                            {evStatus === 'APPROVED' && (
+                                <button onClick={onXemBaoCao} className="w-full py-2 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-bold text-emerald-700 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white transition-all shadow-sm">
+                                    Xem báo cáo chi tiết
+                                </button>
+                            )}
+
+                            {/* Cảnh báo chặn Organizer */}
+                            {isOrganizer && isDisbursementRequired && !isDisbursementCompleted && evStatus === 'NOT_SUBMITTED' && (
+                                <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-transparent text-slate-400 text-[10px] italic cursor-default">
+                                    Chỉ nộp khi đã nhận tạm ứng
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

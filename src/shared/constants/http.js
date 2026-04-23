@@ -16,16 +16,16 @@ export const HTTP_STATUS = {
 };
 
 export const HTTP_ERROR_MESSAGES = {
-  [HTTP_STATUS.BAD_REQUEST]: 'Invalid request. Please check your input.',
-  [HTTP_STATUS.UNAUTHORIZED]: 'Your session has expired. Please login again.',
-  [HTTP_STATUS.FORBIDDEN]: 'You do not have permission to perform this action.',
-  [HTTP_STATUS.NOT_FOUND]: 'The requested resource was not found.',
-  [HTTP_STATUS.CONFLICT]: 'This action conflicts with existing data.',
-  [HTTP_STATUS.UNPROCESSABLE_ENTITY]: 'Unable to process your request.',
-  [HTTP_STATUS.TOO_MANY_REQUESTS]: 'Too many requests. Please try again later.',
-  [HTTP_STATUS.INTERNAL_SERVER_ERROR]: 'Server error. Please try again later.',
-  [HTTP_STATUS.SERVICE_UNAVAILABLE]: 'Service temporarily unavailable.',
-  DEFAULT: 'An unexpected error occurred. Please try again.',
+  [HTTP_STATUS.BAD_REQUEST]: 'Yêu cầu không hợp lệ. Vui lòng kiểm tra lại thông tin.',
+  [HTTP_STATUS.UNAUTHORIZED]: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.',
+  [HTTP_STATUS.FORBIDDEN]: 'Bạn không có quyền thực hiện thao tác này.',
+  [HTTP_STATUS.NOT_FOUND]: 'Không tìm thấy tài nguyên được yêu cầu.',
+  [HTTP_STATUS.CONFLICT]: 'Thao tác này xung đột với dữ liệu hiện có.',
+  [HTTP_STATUS.UNPROCESSABLE_ENTITY]: 'Không thể xử lý yêu cầu của bạn.',
+  [HTTP_STATUS.TOO_MANY_REQUESTS]: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau.',
+  [HTTP_STATUS.INTERNAL_SERVER_ERROR]: 'Lỗi máy chủ. Vui lòng thử lại sau.',
+  [HTTP_STATUS.SERVICE_UNAVAILABLE]: 'Dịch vụ tạm thời không khả dụng.',
+  DEFAULT: 'Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.',
 };
 
 export const getErrorMessage = (statusCode) => {

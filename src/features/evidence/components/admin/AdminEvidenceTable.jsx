@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatProjectCurrencyVND, formatProjectDate } from '@/features/project/utils/projectDisplay.utils';
+import { getStatusLabel } from '@/shared/lib/statusLabels';
 import { Eye, FileText, User, MapPin } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -62,7 +63,7 @@ export function AdminEvidenceTable({ items = [], onAction, isLoading }) {
                                     row.status === 'APPROVED' ? "bg-emerald-50 text-emerald-600" :
                                     "bg-red-50 text-red-600"
                                 )}>
-                                    {row.status}
+                                    {getStatusLabel(row.status)}
                                 </span>
                             </td>
                             <td className="px-6 py-5 text-center">

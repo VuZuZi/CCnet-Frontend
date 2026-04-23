@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { ROUTES } from '@/shared/constants/routes';
 import { cn } from '@/shared/components/ui/Button/Button';
+import { getRoleLabel } from '@/shared/lib/roleLabels';
 
 function Avatar({ user, size = 'sm' }) {
   const sizeClass = size === 'sm' ? 'h-10 w-10' : 'h-12 w-12';
@@ -124,7 +125,7 @@ export function NavbarUserDropdown({ user, onLogout }) {
               {user?.fullName || 'Alex Doe'}
             </span>
             <span className="block text-xs capitalize text-slate-500">
-              {user?.role || 'Nhà tài trợ'}
+              {getRoleLabel(user?.role, 'Nhà tài trợ')}
             </span>
           </div>
           <ChevronDown className="hidden text-slate-400 lg:block" size={16} />

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
@@ -15,6 +15,11 @@ export default function NotificationSettingsModal({
 
   const { settingsQuery, updateSettings, resetUpdateState } = useNotificationSettings();
   const isAllowedRole = role === 'user' || role === 'organizer';
+
+  const handleClose = useCallback(() => {
+    resetUpdateState?.();
+    onClose?.();
+  }, [onClose, resetUpdateState]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -34,12 +39,7 @@ export default function NotificationSettingsModal({
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [isOpen, resetUpdateState]);
-
-  const handleClose = () => {
-    resetUpdateState?.();
-    onClose?.();
-  };
+  }, [handleClose, isOpen, resetUpdateState]);
 
   const handleBackdropClose = () => {
     resetUpdateState?.();
@@ -84,7 +84,7 @@ export default function NotificationSettingsModal({
         <div className="max-h-[75vh] overflow-y-auto px-6 py-6">
           {!isAllowedRole ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
-              Cài đặt thông báo chỉ khả dụng cho các tài khoản user và organizer.
+              Cài đặt thông báo chỉ khả dụng cho các tài khoản người dùng và nhà tổ chức.
             </div>
           ) : settingsQuery.isLoading ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">

@@ -251,7 +251,7 @@ export function UserProfilePage() {
 
   if (isError || !userProfile) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 text-gray-900">
+      <main className="ccnet-page-shell flex min-h-dvh flex-col items-center justify-center bg-gray-50 px-4 text-center text-gray-900">
         <h2 className="text-2xl font-bold text-gray-700">Không tìm thấy hồ sơ</h2>
         <p className="mt-2 text-gray-500">
           Người dùng bạn đang tìm không tồn tại hoặc đã xảy ra lỗi.
@@ -261,10 +261,10 @@ export function UserProfilePage() {
   }
 
   return (
-    <main className="bg-gray-50 min-h-screen text-gray-900 antialiased py-8 px-4">
-      <div className="max-w-7xl mx-auto">
+    <main className="ccnet-page-shell min-h-dvh bg-gray-50 px-3 py-8 text-gray-900 antialiased sm:px-4">
+      <div className="mx-auto w-full max-w-7xl min-w-0">
         {showWalletView ? (
-          <div className="space-y-8">
+          <div className="min-w-0 space-y-8">
             <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
               <div className="mb-5">
                 <h2 className="text-xl font-black text-slate-900">Trung tâm tài chính</h2>
@@ -332,8 +332,8 @@ export function UserProfilePage() {
             {financeTab === 'donation' ? <DonationHistoryList /> : null}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-            <section className="space-y-8 lg:col-span-2">
+          <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
+            <section className="min-w-0 space-y-8">
               <ProfileHeroCard
   user={userProfile}
   achievementBadges={userProfile?.achievementBadges || []}
@@ -389,7 +389,7 @@ export function UserProfilePage() {
               </div>
             </section>
 
-            <aside className="space-y-8">
+            <aside className="min-w-0 space-y-8">
               {isOrganizer && <OrganizerOverviewCard user={userProfile} />}
               <AboutMeCard
                 about={userProfile.about}
@@ -409,8 +409,8 @@ export function UserProfilePage() {
       </div>
 
       {reportModalOpen && (
-        <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl overflow-hidden rounded-3xl bg-white shadow-xl">
+        <div className="ccnet-modal-overlay fixed inset-0 z-[1050] flex items-center justify-center bg-black/45 p-4">
+          <div className="ccnet-modal-panel flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-3xl bg-white shadow-xl">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5">
               <div>
                 <h3 className="text-xl font-semibold text-slate-900">
@@ -428,7 +428,7 @@ export function UserProfilePage() {
                 ×
               </button>
             </div>
-            <form className="space-y-5 px-6 py-6" onSubmit={handleSubmitReport}>
+            <form className="ccnet-modal-scroll space-y-5 overflow-y-auto px-6 py-6" onSubmit={handleSubmitReport}>
               {reportError && (
                 <div className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-sm text-rose-700">
                   {reportError}
@@ -447,7 +447,7 @@ export function UserProfilePage() {
                   className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none focus:border-amber-300 focus:ring-2 focus:ring-amber-100"
                 >
                   <option value="">Chọn lý do</option>
-                  <option value="spam">Spam</option>
+                  <option value="spam">Thư rác</option>
                   <option value="harassment">Quấy rối</option>
                   <option value="inappropriate">Nội dung không phù hợp</option>
                   <option value="violence">Bạo lực</option>

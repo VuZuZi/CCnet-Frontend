@@ -8,10 +8,10 @@ export default function OrganizerActionLogsFilters({
   onSearchChange,
 }) {
   return (
-    <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex w-full flex-col gap-3 md:flex-row xl:w-auto">
-          <div className="relative w-full xl:w-[320px]">
+    <div className="min-w-0 rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-sm">
+      <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex w-full min-w-0 flex-col gap-3 md:flex-row xl:max-w-[760px]">
+          <div className="relative w-full min-w-0 md:max-w-[320px]">
             <Filter
               size={15}
               className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"
@@ -29,7 +29,7 @@ export default function OrganizerActionLogsFilters({
             </select>
           </div>
 
-          <div className="relative w-full xl:w-[420px]">
+          <div className="relative w-full min-w-0">
             <Search
               size={15}
               className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"

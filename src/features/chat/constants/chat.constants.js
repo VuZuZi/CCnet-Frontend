@@ -18,7 +18,7 @@ export const CHAT_ASSET_TYPES = {
 export const CHAT_ASSET_PAGE_LIMIT = 30;
 
 export const CHAT_ASSET_TABS = [
-  { key: CHAT_ASSET_TYPES.IMAGE, label: 'File phương tiện' },
-  { key: CHAT_ASSET_TYPES.FILE, label: 'File' },
+  { key: CHAT_ASSET_TYPES.IMAGE, label: 'Tệp phương tiện' },
+  { key: CHAT_ASSET_TYPES.FILE, label: 'Tệp' },
   { key: CHAT_ASSET_TYPES.LINK, label: 'Liên kết' },
 ];

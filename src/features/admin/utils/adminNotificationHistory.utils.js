@@ -1,5 +1,5 @@
 export function formatLogDate(value) {
-  if (!value) return "Unknown time";
+  if (!value) return "Không rõ thời gian";
 
   try {
     return new Intl.DateTimeFormat("en-US", {
@@ -44,12 +44,12 @@ export function normalizeRecipientUsers(users = []) {
 
 export function normalizeHistoryItem(item) {
   return {
-    title: item?.notificationTitle || item?.metadata?.title || "Untitled",
+    title: item?.notificationTitle || item?.metadata?.title || "Không có tiêu đề",
     message: item?.notificationMessage || item?.metadata?.message || "--",
     severity: item?.notificationSeverity || item?.metadata?.severity || "info",
     targetType:
       item?.notificationTargetType || item?.metadata?.targetType || "all",
-    actorName: item?.actorName || "Admin",
+    actorName: item?.actorName || "Quản trị viên",
     actorEmail: item?.actorEmail || "--",
     actorRole: item?.actorRole || "--",
     roles: Array.isArray(item?.metadata?.roleSelections)

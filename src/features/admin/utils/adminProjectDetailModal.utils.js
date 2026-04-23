@@ -129,29 +129,29 @@ export function getProjectDetailOrganizer(project) {
 
 export function buildProjectDetailRows(project, documents = []) {
   return [
-    { label: "Category", value: project?.category || "--" },
-    { label: "Location", value: toDisplayValue(project?.location) },
-    { label: "Target Amount (VND)", value: formatVnd(project?.targetAmount) },
-    { label: "Current Amount (VND)", value: formatVnd(project?.currentAmount) },
+    { label: "Danh mục", value: project?.category || "--" },
+    { label: "Địa điểm", value: toDisplayValue(project?.location) },
+    { label: "Mục tiêu gây quỹ (VND)", value: formatVnd(project?.targetAmount) },
+    { label: "Số tiền hiện có (VND)", value: formatVnd(project?.currentAmount) },
     {
-      label: "Target Volunteers",
+      label: "Mục tiêu tình nguyện viên",
       value: toDisplayValue(
         project?.stats?.targetVolunteers ?? project?.targetVolunteers
       ),
     },
     {
-      label: "Current Volunteers",
+      label: "Tình nguyện viên hiện tại",
       value: toDisplayValue(
         project?.stats?.currentVolunteers ?? project?.currentVolunteers
       ),
     },
-    { label: "Documents Count", value: toDisplayValue(documents.length) },
-    { label: "Start Date", value: formatDateOnly(project?.startDate) },
-    { label: "End Date", value: formatDateOnly(project?.endDate) },
-    { label: "Created At", value: formatDateOnly(project?.createdAt) },
-    { label: "Updated At", value: formatDateOnly(project?.updatedAt) },
-    { label: "Project Type", value: toDisplayValue(project?.projectType) },
-    { label: "Status", value: toDisplayValue(project?.status) },
+    { label: "Số tài liệu", value: toDisplayValue(documents.length) },
+    { label: "Ngày bắt đầu", value: formatDateOnly(project?.startDate) },
+    { label: "Ngày kết thúc", value: formatDateOnly(project?.endDate) },
+    { label: "Ngày tạo", value: formatDateOnly(project?.createdAt) },
+    { label: "Ngày cập nhật", value: formatDateOnly(project?.updatedAt) },
+    { label: "Loại dự án", value: toDisplayValue(project?.projectType) },
+    { label: "Trạng thái", value: toDisplayValue(project?.status) },
   ];
 }
 

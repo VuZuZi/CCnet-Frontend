@@ -6,7 +6,7 @@ import { useReviewEvidenceMutation } from '../../hooks/useEvidenceMutations';
 import { formatProjectCurrencyVND } from '@/features/project/utils/projectDisplay.utils';
 import { 
     Loader2, ShieldCheck, FileText, Map as MapIcon, 
-    Receipt, ZoomIn, X, ExternalLink 
+    Receipt, ZoomIn, X, Clock 
 } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -33,9 +33,11 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
     const currentMilestone = milestones.find(m => m.milestoneId === evidence.milestoneId);
     const targetAmount = currentMilestone?.targetAmount || 0;
     
-    // FIX: Dùng truthy check thay vì !== null để tránh crash khi undefined
     const hasFinancialReport = !!evidence.financialReport;
     const expenseItems = evidence.financialReport?.expenseItems || [];
+    
+    // Check trạng thái chờ duyệt (Chỉ PENDING mới cho thao tác Form)
+    const isPendingReview = evidence.status === 'PENDING';
 
     const handleConfirm = () => {
         if (!decision) return;
@@ -108,7 +110,10 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
                                         <div className="flex-1 min-w-0">
                                             <div className="flex justify-between items-center">
                                                 <p className="font-bold text-slate-900 truncate text-sm">{item.itemName || 'Chi phí chung'}</p>
-                                                <p className="font-black text-slate-900 text-sm">{formatProjectCurrencyVND(item.amount || 0)}</p>
+                                                {/* FIX: Chỉ hiển thị số tiền nếu amount > 0 để tránh nhiễu 0đ */}
+                                                {item.amount > 0 && (
+                                                    <p className="font-black text-slate-900 text-sm">{formatProjectCurrencyVND(item.amount)}</p>
+                                                )}
                                             </div>
                                             <p className="text-[11px] text-slate-400 truncate">{item.note || 'Chứng từ hợp lệ'}</p>
                                         </div>
@@ -151,7 +156,7 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
                     )}
                 </div>
 
-                {/* CỘT PHẢI: BẢN ĐỒ & QUYẾT ĐỊNH */}
+                {/* CỘT PHẢI: BẢN ĐỒ & QUYẾT ĐỊNH / KẾT QUẢ */}
                 <div className="lg:col-span-5 space-y-6">
                     <div className="h-[280px] rounded-[32px] overflow-hidden border border-slate-100 shadow-inner bg-slate-50 relative">
                         <EvidenceMap markers={evidence.mediaIds} />
@@ -159,47 +164,95 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
 
                     <div className="rounded-[32px] border border-slate-200 bg-white p-6 space-y-6 shadow-xl shadow-slate-100">
                         <div className="flex items-center justify-between border-b border-slate-50 pb-4">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">Thao tác kiểm duyệt</h4>
-                            <span className="flex h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-900">
+                                {isPendingReview ? "Thao tác kiểm duyệt" : "Kết quả kiểm duyệt"}
+                            </h4>
+                            <span className={clsx("flex h-2 w-2 rounded-full shadow-[0_0_8px_currentColor]",
+                                evidence.status === 'APPROVED' ? "bg-emerald-500 text-emerald-500" :
+                                evidence.status === 'REJECTED' ? "bg-red-500 text-red-500" :
+                                evidence.status === 'REVISION_REQUESTED' ? "bg-amber-500 text-amber-500" :
+                                "bg-blue-500 text-blue-500"
+                            )} />
                         </div>
 
-                        <div className="grid grid-cols-1 gap-2">
-                            {['APPROVED', 'REVISION_REQUESTED', 'REJECTED'].map((status) => (
+                        {isPendingReview ? (
+                            /* --- MODE 1: CHỜ DUYỆT (FORM TƯƠNG TÁC) --- */
+                            <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+                                <div className="grid grid-cols-1 gap-2">
+                                    {['APPROVED', 'REVISION_REQUESTED', 'REJECTED'].map((status) => (
+                                        <button
+                                            key={status}
+                                            onClick={() => setDecision(status)}
+                                            className={clsx(
+                                                "w-full px-4 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all flex items-center justify-between",
+                                                decision === status
+                                                    ? status === 'APPROVED' ? "border-emerald-500 bg-emerald-50 text-emerald-700" :
+                                                      status === 'REJECTED' ? "border-red-500 bg-red-50 text-red-700" :
+                                                      "border-amber-500 bg-amber-50 text-amber-700"
+                                                    : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-100 hover:bg-slate-100"
+                                            )}
+                                        >
+                                            <span>{status === 'APPROVED' ? 'Chấp thuận' : status === 'REJECTED' ? 'Từ chối' : 'Yêu cầu sửa'}</span>
+                                            {decision === status && <ShieldCheck size={14} />}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest px-1">Lý do phản hồi</label>
+                                    <textarea
+                                        placeholder="Nhập lý do chi tiết cho nhà tổ chức..."
+                                        value={reviewNotes}
+                                        onChange={(e) => setReviewNotes(e.target.value)}
+                                        className="w-full rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs min-h-[100px] outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all shadow-inner"
+                                    />
+                                </div>
+
                                 <button
-                                    key={status}
-                                    onClick={() => setDecision(status)}
-                                    className={clsx(
-                                        "w-full px-4 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-widest border-2 transition-all flex items-center justify-between",
-                                        decision === status
-                                            ? status === 'APPROVED' ? "border-emerald-500 bg-emerald-50 text-emerald-700" :
-                                              status === 'REJECTED' ? "border-red-500 bg-red-50 text-red-700" :
-                                              "border-amber-500 bg-amber-50 text-amber-700"
-                                            : "border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-100 hover:bg-slate-100"
-                                    )}
+                                    onClick={handleConfirm}
+                                    disabled={isPending || !decision || (decision !== 'APPROVED' && !reviewNotes)}
+                                    className="w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 transition-all transform active:scale-95 shadow-lg shadow-slate-200"
                                 >
-                                    <span>{status === 'APPROVED' ? 'Chấp thuận' : status === 'REJECTED' ? 'Từ chối' : 'Yêu cầu sửa'}</span>
-                                    {decision === status && <ShieldCheck size={14} />}
+                                    {isPending ? <Loader2 className="animate-spin" size={18} /> : "Xác nhận & Cập nhật trạng thái"}
                                 </button>
-                            ))}
-                        </div>
+                            </div>
+                        ) : (
+                            /* --- MODE 2: ĐÃ DUYỆT (VIEW ONLY) --- */
+                            <div className="space-y-5 animate-in fade-in duration-300">
+                                <div className={clsx(
+                                    "p-4 rounded-2xl border",
+                                    evidence.status === 'APPROVED' ? "bg-emerald-50 border-emerald-100 text-emerald-700" :
+                                    evidence.status === 'REJECTED' ? "bg-red-50 border-red-100 text-red-700" :
+                                    "bg-amber-50 border-amber-100 text-amber-700"
+                                )}>
+                                    <p className="text-[10px] font-black uppercase tracking-widest mb-1 opacity-70">Quyết định cuối cùng</p>
+                                    <p className="font-bold text-sm">
+                                        {evidence.status === 'APPROVED' ? 'Đã chấp thuận báo cáo' :
+                                         evidence.status === 'REJECTED' ? 'Từ chối báo cáo' : 'Đã yêu cầu chỉnh sửa lại'}
+                                    </p>
+                                </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest px-1">Lý do phản hồi</label>
-                            <textarea
-                                placeholder="Nhập lý do chi tiết cho Organizer..."
-                                value={reviewNotes}
-                                onChange={(e) => setReviewNotes(e.target.value)}
-                                className="w-full rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs min-h-[100px] outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all shadow-inner"
-                            />
-                        </div>
+                                {evidence.reviewNotes && (
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest px-1">
+                                            Ghi chú từ quản trị viên
+                                        </label>
+                                        <div className="w-full rounded-2xl border border-slate-100 bg-slate-50 p-4 text-sm text-slate-700 shadow-inner">
+                                            {evidence.reviewNotes}
+                                        </div>
+                                    </div>
+                                )}
 
-                        <button
-                            onClick={handleConfirm}
-                            disabled={isPending || !decision || (decision !== 'APPROVED' && !reviewNotes)}
-                            className="w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white hover:bg-slate-800 disabled:opacity-50 transition-all transform active:scale-95 shadow-lg shadow-slate-200"
-                        >
-                            {isPending ? <Loader2 className="animate-spin" size={18} /> : "Xác nhận & Cập nhật trạng thái"}
-                        </button>
+                                {evidence.reviewedAt && (
+                                    <div className="flex items-center gap-2 text-slate-400 border-t border-slate-100 pt-4">
+                                        <Clock size={14} />
+                                        <p className="text-[10px] font-medium uppercase tracking-widest">
+                                            Thời gian duyệt: {new Date(evidence.reviewedAt).toLocaleString('vi-VN')}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>

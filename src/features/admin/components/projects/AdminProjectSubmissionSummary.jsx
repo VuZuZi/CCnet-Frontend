@@ -14,7 +14,7 @@ export default function AdminProjectSubmissionSummary({
           <h3 className="text-lg font-bold text-slate-900">
             Tóm tắt hồ sơ dự án
           </h3>
-          <p className="text-sm text-slate-500">Tóm tắt nhanh cho Admin</p>
+          <p className="text-sm text-slate-500">Tóm tắt nhanh cho quản trị viên</p>
         </div>
       </div>
 

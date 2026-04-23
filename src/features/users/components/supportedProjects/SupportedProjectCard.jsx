@@ -5,6 +5,7 @@ import {
   formatDate,
   getStatusMeta,
 } from "../../utils/supportedProjects.utils";
+import { getStatusLabel } from "@/shared/lib/statusLabels";
 
 export function SupportedProjectCard({ item }) {
   const project = item.project;
@@ -45,7 +46,7 @@ export function SupportedProjectCard({ item }) {
             </div>
 
             <span className="rounded-full bg-white/15 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
-              {project.status}
+              {getStatusLabel(project.status)}
             </span>
           </div>
         </div>

@@ -13,34 +13,34 @@ export function RoleUpgradeModal({ isOpen, onAssignNow, onLater }) {
               <AlertCircle className="h-8 w-8 text-amber-600" />
             </div>
             <h2 className="text-center text-2xl font-bold text-slate-900">
-              Become an Organizer
+              Trở thành nhà tổ chức
             </h2>
             <p className="text-center text-sm text-slate-600">
-              You are not an Organizer. Do you want to register as an Organizer now?
+              Bạn chưa phải là nhà tổ chức. Bạn có muốn đăng ký làm nhà tổ chức ngay bây giờ không?
             </p>
           </div>
 
           {/* Benefits */}
           <div className="space-y-2 rounded-xl bg-amber-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
-              As an Organizer you can:
+              Khi trở thành nhà tổ chức, bạn có thể:
             </p>
             <ul className="space-y-2 text-sm text-amber-900">
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-amber-600" />
-                <span>Create and manage community projects</span>
+                <span>Tạo và quản lý các dự án cộng đồng</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-amber-600" />
-                <span>Raise funds for causes you care about</span>
+                <span>Gây quỹ cho những hoạt động bạn quan tâm</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-amber-600" />
-                <span>Recruit volunteers for your initiatives</span>
+                <span>Tuyển tình nguyện viên cho sáng kiến của bạn</span>
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-amber-600" />
-                <span>Access organizer workspace and analytics</span>
+                <span>Truy cập không gian làm việc và số liệu dành cho nhà tổ chức</span>
               </li>
             </ul>
           </div>
@@ -52,7 +52,7 @@ export function RoleUpgradeModal({ isOpen, onAssignNow, onLater }) {
               onClick={onLater}
               className="flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
             >
-              Later
+              Để sau
             </button>
             <button
               type="button"
@@ -60,7 +60,7 @@ export function RoleUpgradeModal({ isOpen, onAssignNow, onLater }) {
               className="flex-1 inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-400 px-4 py-3 font-semibold text-slate-900 transition-colors hover:bg-amber-500"
             >
               <CheckCircle2 size={16} />
-              Assign Now
+              Đăng ký ngay
             </button>
           </div>
         </div>

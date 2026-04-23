@@ -45,7 +45,7 @@ function HeroContent() {
             <Button variant="yellow" className="!px-8 !py-4 !text-lg">Bắt đầu dùng thử miễn phí</Button>
         </Link>
         <Link to="/demo">
-            <Button variant="outlineDark" className="!px-8 !py-4 !text-lg">Xem bản demo</Button>
+            <Button variant="outlineDark" className="!px-8 !py-4 !text-lg">Xem bản trải nghiệm</Button>
         </Link>
       </div>
     </>

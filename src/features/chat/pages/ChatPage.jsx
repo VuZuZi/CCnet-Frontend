@@ -126,7 +126,7 @@ export function ChatPage() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-72px)] min-h-0 bg-[#f6f7fb]">
+    <div className="flex h-[calc(100dvh-80px)] min-h-0 min-w-0 bg-[#f6f7fb]">
       <ChatSidebar>
         <div className="border-b border-slate-200 bg-white p-4">
           <div className="mb-3 flex items-center justify-between">

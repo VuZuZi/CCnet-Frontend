@@ -139,8 +139,8 @@ export function OrganizerWorkspacePage() {
 
   if (isError) {
     return (
-      <main className="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl rounded-3xl border border-red-100 bg-white p-10 text-center text-red-500">
+      <main className="ccnet-page-shell min-h-dvh bg-white px-3 py-8 sm:px-6 lg:px-8 lg:py-10">
+        <div className="mx-auto w-full max-w-7xl rounded-3xl border border-red-100 bg-white p-6 text-center text-red-500 sm:p-10">
           Không thể tải dữ liệu khu vực làm việc.
         </div>
       </main>
@@ -148,23 +148,23 @@ export function OrganizerWorkspacePage() {
   }
 
   return (
-    <main className="min-h-screen bg-white px-4 py-10 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-8">
+    <main className="ccnet-page-shell min-h-dvh bg-white px-3 py-8 sm:px-6 lg:px-8 lg:py-10">
+      <div className="mx-auto w-full max-w-7xl space-y-8">
         <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex items-start gap-4">
+          <div className="flex min-w-0 flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex min-w-0 items-start gap-4">
               <div className="rounded-2xl bg-amber-100 p-3">
                 <BriefcaseBusiness className="text-amber-700" size={24} />
               </div>
 
-              <div>
+              <div className="min-w-0">
                 <p className="inline-flex rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em] text-amber-700">
                   Khu vực làm việc của bạn
                 </p>
-                <h1 className="mt-2 text-3xl font-black tracking-tight text-slate-900">
+                <h1 className="ccnet-safe-text mt-2 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">
                   Khu vực làm việc của ban tổ chức
                 </h1>
-                <p className="mt-2 text-sm text-slate-600">
+                <p className="ccnet-safe-text mt-2 text-sm text-slate-600">
                   Quản lý toàn bộ dự án của bạn tại một nơi: tạo mới, theo dõi trạng thái và điều phối các hoạt động.
                 </p>
               </div>
@@ -185,7 +185,7 @@ export function OrganizerWorkspacePage() {
         <WorkspaceSummaryStats summary={summary} />
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] xl:items-start">
-          <div>
+          <div className="min-w-0">
             <WorkspaceProjectSection
               filteredProjects={filteredProjects}
               paginatedProjects={paginatedProjects}
@@ -203,7 +203,7 @@ export function OrganizerWorkspacePage() {
             />
           </div>
 
-          <div className="space-y-6 xl:sticky xl:top-24">
+          <div className="min-w-0 space-y-6 xl:sticky xl:top-24">
             <WorkspaceAssignedNeedHelpSection />
 
             <WorkspaceDraftSection

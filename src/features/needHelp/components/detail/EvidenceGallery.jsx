@@ -73,8 +73,8 @@ export function EvidenceGallery({ evidences = [] }) {
       <section className="space-y-5">
         <SectionLabel
           icon={Images}
-          label="Minh chứng & Media"
-          description="Tệp minh chứng đính kèm theo yêu cầu để admin kiểm duyệt."
+          label="Minh chứng & tệp đính kèm"
+          description="Tệp minh chứng đính kèm theo yêu cầu để quản trị viên kiểm duyệt."
         />
 
         {!!images.length && (

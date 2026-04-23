@@ -9,13 +9,19 @@ function RoleBadge({ role }) {
     user: "border-slate-200 bg-slate-50 text-slate-700",
   };
 
+  const labelMap = {
+    admin: "Quản trị viên",
+    organizer: "Nhà tổ chức",
+    user: "Người dùng",
+  };
+
   return (
     <span
       className={`inline-flex rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] ${
         classMap[normalized] || classMap.user
       }`}
     >
-      {normalized}
+      {labelMap[normalized] || role || "Người dùng"}
     </span>
   );
 }

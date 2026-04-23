@@ -13,9 +13,9 @@ export default function FloatingAlert({
   };
 
   return (
-    <div className="pointer-events-none fixed right-6 top-6 z-[9999]">
+    <div className="pointer-events-none fixed inset-x-4 top-6 z-[9999] flex justify-end sm:inset-x-6">
       <div
-        className={`pointer-events-auto flex min-w-[320px] max-w-[460px] items-start justify-between gap-3 rounded-2xl border px-4 py-3 shadow-lg ${
+        className={`pointer-events-auto flex w-full max-w-[460px] items-start justify-between gap-3 rounded-2xl border px-4 py-3 shadow-lg ${
           toneMap[type] || toneMap.success
         }`}
       >

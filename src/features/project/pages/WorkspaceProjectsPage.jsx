@@ -219,7 +219,7 @@ export function OrganizerWorkspacePage() {
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="inline-flex items-center gap-2 text-emerald-800">
               <HeartHandshake size={18} />
-              <span className="font-semibold">Bạn có NeedHelp được admin gán?</span>
+              <span className="font-semibold">Bạn có yêu cầu hỗ trợ được quản trị viên gán?</span>
             </div>
 
             <Link

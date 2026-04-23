@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   MapPin,
   Share2,
@@ -30,6 +30,7 @@ import {
 export function ProjectCard({ project }) {
   const [isShareOpen, setIsShareOpen] = useState(false);
   const currentUser = useAuthStore((state) => state.user);
+  const navigate = useNavigate();
 
   const currentUserId = normalizeProjectId(
     currentUser?._id || currentUser?.id || currentUser?.userId,
@@ -45,7 +46,7 @@ export function ProjectCard({ project }) {
   const { isVolunteerOnly, isFunded, needsVolunteers, isMixedProject } =
     useMemo(() => getProjectMode(project), [project]);
 
-  const { currentAmount, targetAmount, fundingPercent } = useMemo(
+  const { currentAmount, fundingPercent } = useMemo(
     () => getProjectFundingStats(project),
     [project],
   );
@@ -90,9 +91,7 @@ export function ProjectCard({ project }) {
     project,
     currentUserId,
     isOwner,
-    navigate: (path) => {
-      window.location.href = path;
-    },
+    navigate,
   });
 
   return (

@@ -26,7 +26,7 @@ export function PaymentResultPage() {
                         </div>
                         <h1 className="text-2xl font-extrabold text-slate-900 mb-2">Thanh toán thành công!</h1>
                         <p className="text-slate-500 mb-8">
-                            Cảm ơn bạn đã đóng góp. Số tiền của bạn đã được ghi nhận vào quỹ dự án an toàn trong hệ thống Escrow.
+                            Cảm ơn bạn đã đóng góp. Số tiền của bạn đã được ghi nhận vào quỹ dự án an toàn trong hệ thống ký quỹ.
                         </p>
                         <div className="flex flex-col gap-3">
                             <Link

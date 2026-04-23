@@ -5,7 +5,7 @@ export const PROJECTS_PER_PAGE = 8;
 export const FILTER_CONFIG = [
   {
     key: "ALL",
-    label: "All",
+    label: "Tất cả",
     activeClassName:
       "bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-900 shadow-sm",
     idleClassName:
@@ -13,7 +13,7 @@ export const FILTER_CONFIG = [
   },
   {
     key: ADMIN_UI_PROJECT_STATUS.PENDING_APPROVAL,
-    label: "Pending Review",
+    label: "Chờ kiểm duyệt",
     activeClassName:
       "bg-gradient-to-r from-yellow-400 via-amber-400 to-yellow-500 text-slate-900 shadow-sm",
     idleClassName:
@@ -21,7 +21,7 @@ export const FILTER_CONFIG = [
   },
   {
     key: ADMIN_UI_PROJECT_STATUS.ACTIVE,
-    label: "Active",
+    label: "Đang hoạt động",
     activeClassName:
       "bg-gradient-to-r from-emerald-400 to-emerald-500 text-white shadow-sm",
     idleClassName:
@@ -29,7 +29,7 @@ export const FILTER_CONFIG = [
   },
   {
     key: ADMIN_UI_PROJECT_STATUS.UPDATING,
-    label: "Updating",
+    label: "Đang cập nhật",
     activeClassName:
       "bg-gradient-to-r from-amber-400 to-amber-500 text-slate-900 shadow-sm",
     idleClassName:
@@ -37,7 +37,7 @@ export const FILTER_CONFIG = [
   },
   {
     key: ADMIN_UI_PROJECT_STATUS.PAUSED,
-    label: "Paused",
+    label: "Tạm dừng",
     activeClassName:
       "bg-gradient-to-r from-orange-400 to-amber-500 text-white shadow-sm",
     idleClassName:
@@ -45,7 +45,7 @@ export const FILTER_CONFIG = [
   },
   {
     key: ADMIN_UI_PROJECT_STATUS.COMPLETED,
-    label: "Completed",
+    label: "Đã hoàn thành",
     activeClassName:
       "bg-gradient-to-r from-blue-400 to-blue-500 text-white shadow-sm",
     idleClassName:
@@ -53,7 +53,7 @@ export const FILTER_CONFIG = [
   },
   {
     key: ADMIN_UI_PROJECT_STATUS.CANCELLED,
-    label: "Cancelled",
+    label: "Đã hủy",
     activeClassName:
       "bg-gradient-to-r from-rose-400 to-rose-500 text-white shadow-sm",
     idleClassName:

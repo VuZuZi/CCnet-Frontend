@@ -1,9 +1,9 @@
 export const USER_PAGE_SIZE = 6;
 
 export const USER_FILTERS = [
-  { key: "ALL", label: "All" },
-  { key: "ACTIVE", label: "Active" },
-  { key: "BANNED", label: "Banned" },
+  { key: "ALL", label: "Tất cả" },
+  { key: "ACTIVE", label: "Đang hoạt động" },
+  { key: "BANNED", label: "Đã khóa" },
 ];
 
 export const getInitials = (name) => {
@@ -33,18 +33,18 @@ export const getStatusMeta = (status) => {
   switch (status) {
     case "banned":
       return {
-        label: "Banned",
+        label: "Đã khóa",
         className: "border-red-200 bg-red-50 text-red-700",
       };
     case "inactive":
       return {
-        label: "Inactive",
+        label: "Không hoạt động",
         className: "border-amber-200 bg-amber-50 text-amber-700",
       };
     case "active":
     default:
       return {
-        label: "Active",
+        label: "Đang hoạt động",
         className: "border-emerald-200 bg-emerald-50 text-emerald-700",
       };
   }
@@ -64,11 +64,21 @@ export const getRoleClass = (role) => {
   return "border-slate-200 bg-slate-50 text-slate-700";
 };
 
+export const getRoleLabel = (role) => {
+  const normalized = String(role || "").toLowerCase();
+
+  if (normalized === "admin") return "Quản trị viên";
+  if (normalized === "organizer") return "Nhà tổ chức";
+  if (normalized === "user") return "Người dùng";
+
+  return role || "Người dùng";
+};
+
 export const formatDateTime = (value) => {
   if (!value) return "--";
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("vi-VN", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(value));
@@ -112,5 +122,5 @@ export const normalizeUsersResponse = (res, fallbackLimit = USER_PAGE_SIZE) => {
   };
 };
 
-export const getErrorMessage = (error, fallback = "Something went wrong.") =>
+export const getErrorMessage = (error, fallback = "Đã xảy ra lỗi.") =>
   error?.response?.data?.message || error?.message || fallback;

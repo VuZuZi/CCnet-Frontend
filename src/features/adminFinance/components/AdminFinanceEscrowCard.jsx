@@ -9,7 +9,7 @@ export function AdminFinanceEscrowCard({ escrow }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-3xl bg-slate-900 p-6 text-white shadow-xl relative overflow-hidden">
                 <Landmark className="absolute -right-4 -bottom-4 text-white/5" size={100} />
-                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số dư khả dụng (Escrow)</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số dư khả dụng (ký quỹ)</p>
                 <h3 className="mt-2 text-2xl font-black">{formatProjectCurrencyVND(availableBalance)}</h3>
             </div>
 

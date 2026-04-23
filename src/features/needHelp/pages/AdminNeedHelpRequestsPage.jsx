@@ -162,7 +162,7 @@ export function AdminNeedHelpRequestsPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
-                Điều phối NeedHelp của Admin
+                Điều phối yêu cầu hỗ trợ
               </div>
 
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-[46px]">
@@ -187,7 +187,7 @@ export function AdminNeedHelpRequestsPage() {
                 />
                 <SummaryCard
                   icon={TimerReset}
-                  label="Đã gán organizer"
+                  label="Đã gán nhà tổ chức"
                   value={summary.assigned}
                   tone="amber"
                 />
@@ -199,7 +199,7 @@ export function AdminNeedHelpRequestsPage() {
                 />
                 <SummaryCard
                   icon={ClipboardList}
-                  label="Cần gán organizer"
+                  label="Cần gán nhà tổ chức"
                   value={summary.unassigned}
                   tone="emerald"
                 />

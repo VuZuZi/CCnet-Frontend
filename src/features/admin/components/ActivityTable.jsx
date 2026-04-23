@@ -97,9 +97,9 @@ const ActivityTable = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-100 p-6">
-        <div>
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div className="flex min-w-0 items-center justify-between border-b border-slate-100 p-5 sm:p-6">
+        <div className="min-w-0">
           <h3 className="text-lg font-black text-slate-800">Hoạt động gần đây</h3>
           <p className="mt-1 text-sm text-slate-500">
             Xem xét các báo cáo và thực hiện hành động kiểm duyệt.
@@ -107,8 +107,11 @@ const ActivityTable = ({
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-left">
+      <div className="ccnet-safe-scroll">
+        <table
+          className="ccnet-safe-table text-left"
+          style={{ "--ccnet-table-min": "980px" }}
+        >
           <thead className="bg-slate-50/60">
             <tr>
               <th className="px-6 py-4 text-[10px] font-bold uppercase tracking-widest text-slate-400">
@@ -147,11 +150,11 @@ const ActivityTable = ({
                     key={report._id}
                     className="transition-colors hover:bg-slate-50/40"
                   >
-                    <td className="px-6 py-4 text-xs font-medium text-slate-400">
+                    <td className="w-[120px] px-6 py-4 text-xs font-medium text-slate-400">
                       #{report._id?.slice(-4).toUpperCase() || "Không có"}
                     </td>
 
-                    <td className="px-6 py-4">
+                    <td className="w-[240px] px-6 py-4">
                       {targetLink ? (
                         <Link
                           to={targetLink}
@@ -172,7 +175,7 @@ const ActivityTable = ({
                       </div>
                     </td>
 
-                    <td className="max-w-xs px-6 py-4 text-sm text-slate-600">
+                    <td className="w-[360px] px-6 py-4 text-sm text-slate-600">
                       <div className="mb-1 flex items-center gap-2">
                         <FileWarning size={14} className="text-amber-500" />
                         <span className="font-semibold">
@@ -203,7 +206,7 @@ const ActivityTable = ({
                       )}
                     </td>
 
-                    <td className="px-6 py-4 text-right">
+                    <td className="w-[260px] px-6 py-4 text-right">
                       {isPending ? (
                         <div className="flex flex-col items-end gap-2">
                           {isProject && target?._id && onProjectStatusChange ? (
@@ -217,7 +220,7 @@ const ActivityTable = ({
                                   )
                                 }
                                 disabled={isProjectLoading}
-                                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
+                                className="w-full min-w-[180px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs text-slate-700"
                               >
                                 {projectStatusOptions.map((option) => (
                                   <option
@@ -235,7 +238,7 @@ const ActivityTable = ({
                                 disabled={
                                   isProjectLoading || !canApplyProjectStatus
                                 }
-                                className="inline-flex items-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-[10px] font-bold uppercase text-blue-700 hover:bg-blue-100 disabled:opacity-50"
+                                className="inline-flex min-w-[180px] items-center justify-center gap-2 rounded-xl bg-blue-50 px-3 py-2 text-[10px] font-bold uppercase text-blue-700 hover:bg-blue-100 disabled:opacity-50"
                               >
                                 {isProjectLoading ? (
                                   <Loader2
@@ -255,7 +258,7 @@ const ActivityTable = ({
                               type="button"
                               onClick={() => handleUserBanToggle(report)}
                               disabled={isUserLoading}
-                              className="inline-flex items-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-[10px] font-bold uppercase text-red-700 hover:bg-red-100 disabled:opacity-50"
+                              className="inline-flex min-w-[180px] items-center justify-center gap-2 rounded-xl bg-red-50 px-3 py-2 text-[10px] font-bold uppercase text-red-700 hover:bg-red-100 disabled:opacity-50"
                             >
                               {isUserLoading ? (
                                 <Loader2 size={12} className="animate-spin" />
@@ -271,7 +274,7 @@ const ActivityTable = ({
                           <button
                             type="button"
                             onClick={() => onAction?.(report._id)}
-                            className="inline-flex items-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[10px] font-bold uppercase text-amber-700 hover:bg-amber-100"
+                            className="inline-flex min-w-[180px] items-center justify-center gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[10px] font-bold uppercase text-amber-700 hover:bg-amber-100"
                           >
                             <AlertTriangle size={12} />
                             Giải quyết báo cáo

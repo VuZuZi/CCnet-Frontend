@@ -105,7 +105,7 @@ export const useAssignOrganizer = () => {
   return useMutation({
     mutationFn: helpRequestAPI.assignOrganizer,
     onSuccess: (data) => {
-      toast.success('Đã gán organizer. Đã gửi thông báo kèm liên kết yêu cầu.');
+      toast.success('Đã gán nhà tổ chức. Đã gửi thông báo kèm liên kết yêu cầu.');
 
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);

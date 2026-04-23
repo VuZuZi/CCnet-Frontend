@@ -19,7 +19,7 @@ const STATUS_TABS = [
   {
     key: "pending",
     label: "Đang chờ",
-    helper: "Các yêu cầu admin vừa giao cho bạn.",
+    helper: "Các yêu cầu quản trị viên vừa giao cho bạn.",
   },
   {
     key: "accepted",
@@ -212,10 +212,10 @@ export function WorkspaceAssignedNeedHelpSection() {
         <div>
           <p className="inline-flex items-center gap-1.5 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">
             <Sparkles size={12} />
-            Admin Assigned
+            Quản trị viên đã giao
           </p>
           <h2 className="mt-2 text-lg font-black tracking-tight text-slate-900">
-            NeedHelp được giao
+            Yêu cầu hỗ trợ được giao
           </h2>
           <p className="mt-1 text-xs text-slate-500">
             Xử lý nhanh yêu cầu mà không cần rời workspace.

@@ -32,7 +32,7 @@ export const useUpdateProfile = () => {
         user: updatedUser,
       }));
 
-      toast.success("Profile updated successfully!");
+      toast.success("Đã cập nhật hồ sơ thành công!");
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

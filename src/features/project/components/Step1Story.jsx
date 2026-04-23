@@ -14,6 +14,7 @@ import { MediaDropzone } from '@/shared/components/ui/MediaDropzone';
 import { devConfig } from '@/config/app.config';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { useNavigate } from 'react-router-dom';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 
 const formatDateForInput = (isoString) => {
   if (!isoString) return '';
@@ -54,6 +55,7 @@ export default function Step1Story() {
   const [isMediaUploading, setIsMediaUploading] = useState(false);
 
   const [isTypeConfirmModalOpen, setIsTypeConfirmModalOpen] = useState(false);
+  useBodyScrollLock(isSaveModalOpen || isTypeConfirmModalOpen);
   const [pendingType, setPendingType] = useState(null);
 
   const [draftMeta, setDraftMeta] = useState({
@@ -607,7 +609,7 @@ export default function Step1Story() {
       )}
 
       {isTypeConfirmModalOpen && (
-        <div className="animate-in fade-in fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm duration-200">
+        <div className="animate-in fade-in fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/60 p-4 duration-150">
           <div className="w-full max-w-md space-y-4 rounded-3xl bg-white p-6 shadow-2xl">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <AlertCircle className="text-red-600" size={24} />

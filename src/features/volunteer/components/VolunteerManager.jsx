@@ -611,7 +611,7 @@ export const VolunteerManager = ({
             {!canReviewVolunteers ? (
               <div className="rounded-3xl border border-slate-200 bg-white p-10 text-center">
                 <p className="text-slate-500">
-                  Chỉ có thể đánh giá volunteer khi dự án đã hoàn thành.
+                  Chỉ có thể đánh giá tình nguyện viên khi dự án đã hoàn thành.
                 </p>
               </div>
             ) : reviewItems.length === 0 ? (
@@ -1269,7 +1269,7 @@ const ReviewVolunteerModal = ({
 
   return (
     <BaseModal open={open} onClose={handleClose}>
-      <ModalHeader title="Cập nhật đánh giá volunteer" onClose={handleClose} />
+      <ModalHeader title="Cập nhật đánh giá tình nguyện viên" onClose={handleClose} />
 
       <div className="space-y-4">
         <div>

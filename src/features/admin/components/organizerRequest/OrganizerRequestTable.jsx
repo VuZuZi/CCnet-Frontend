@@ -11,10 +11,10 @@ const formatDate = (value) => {
 
 export function OrganizerRequestTable({ items = [], isLoading = false }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <div className="min-w-0 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-6 py-5">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
             <h2 className="text-[20px] font-black text-slate-900">
               Đơn đăng ký Tổ chức
             </h2>
@@ -23,14 +23,17 @@ export function OrganizerRequestTable({ items = [], isLoading = false }) {
             </p>
           </div>
 
-          <div className="rounded-2xl bg-slate-50 px-4 py-2 text-sm font-medium text-slate-500">
+          <div className="ccnet-nowrap-label max-w-full rounded-2xl bg-slate-50 px-4 py-2 text-sm font-medium text-slate-500">
             Đang hiển thị {items.length} yêu cầu
           </div>
         </div>
       </div>
 
-      <div className="min-h-[460px] overflow-hidden">
-        <table className="w-full table-fixed text-sm">
+      <div className="ccnet-safe-scroll min-h-[460px]">
+        <table
+          className="ccnet-safe-table text-sm"
+          style={{ "--ccnet-table-min": "1040px" }}
+        >
           <thead className="bg-slate-50/90">
             <tr className="text-left text-slate-500">
               <th className="w-[30%] px-6 py-4 font-bold">Người nộp đơn</th>
@@ -66,7 +69,7 @@ export function OrganizerRequestTable({ items = [], isLoading = false }) {
               items.map((item) => (
                 <tr key={item._id} className="transition hover:bg-amber-50/20">
                   <td className="px-6 py-5 align-top">
-                    <div className="group flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 transition-all duration-200 hover:border-amber-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_12px_28px_rgba(245,158,11,0.10)]">
+                    <div className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 transition-all duration-200 hover:border-amber-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_12px_28px_rgba(245,158,11,0.10)]">
                       <div className="min-w-0">
                         <p className="truncate text-[16px] font-semibold tracking-[-0.01em] text-slate-900">
                           {item.fullNameSnapshot}
@@ -99,7 +102,7 @@ export function OrganizerRequestTable({ items = [], isLoading = false }) {
                   <td className="px-6 py-5 align-top text-right">
                     <Link
                       to={`/admin/organizers/${item._id}`}
-                      className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
+                      className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
                     >
                       Xem xét
                       <ArrowRight size={15} />

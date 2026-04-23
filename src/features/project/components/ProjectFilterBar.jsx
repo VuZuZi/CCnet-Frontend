@@ -17,8 +17,8 @@ const CATEGORY_OPTIONS = [
 ];
 
 const ORGANIZER_SCOPE_OPTIONS = [
-  { value: "ALL", label: "Tất cả organizer" },
-  { value: "FOLLOWED", label: "Organizer đã follow" },
+  { value: "ALL", label: "Tất cả nhà tổ chức" },
+  { value: "FOLLOWED", label: "Nhà tổ chức đã theo dõi" },
 ];
 
 function FilterSelect({ value, onChange, options }) {

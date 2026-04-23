@@ -127,7 +127,7 @@ function ImagePreviewModal({ isOpen, imageUrl, title, onClose }) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Image preview"
+      aria-label="Xem trước ảnh"
     >
       <div className="flex h-screen w-screen items-center justify-center p-3">
         <img
