@@ -31,17 +31,22 @@ export function ContactsSidebar({
     navigate("/messages");
   };
 
-  return (
-    <div className="flex h-full min-h-0 flex-col bg-white">
-      <header className="border-b border-slate-200 bg-white px-4 py-4">
+    return (
+      <div className="flex h-full min-h-0 flex-col bg-white">
+      <header className="border-b border-[#FBBF24]/70 bg-[#FBBF24] px-4 py-4">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-[18px] font-black text-slate-900">Đoạn chat</h2>
+          <div>
+            <div className="mb-1 inline-flex items-center rounded-full border border-white/60 bg-white/70 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-900">
+              Hộp thư
+            </div>
+            <h2 className="text-[18px] font-black text-slate-900">Tin nhắn</h2>
+          </div>
 
           <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setShowMenu((prev) => !prev)}
-              className="flex h-9 w-9 items-center justify-center rounded-full text-slate-500 transition-colors hover:bg-slate-100"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/80 text-slate-700 transition-colors hover:bg-white"
               aria-label="Tùy chọn đoạn chat"
             >
               <MoreHorizontal className="h-5 w-5" />
@@ -49,11 +54,11 @@ export function ContactsSidebar({
 
             {showMenu ? (
               <div className="absolute right-0 top-[calc(100%+8px)] z-20 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
-                <button
-                  type="button"
-                  onClick={handleOpenMessagesPage}
-                  className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-800 transition-colors hover:bg-slate-50"
-                >
+              <button
+                type="button"
+                onClick={handleOpenMessagesPage}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left text-sm font-medium text-slate-800 transition-colors hover:bg-slate-50"
+              >
                   <Expand className="h-4 w-4" />
                   Mở trang tin nhắn
                 </button>
@@ -69,7 +74,7 @@ export function ContactsSidebar({
             placeholder="Tìm đoạn chat theo tên..."
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
-            className="h-11 w-full rounded-full border border-slate-200 bg-slate-50 pl-11 pr-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-amber-400 focus:bg-white focus:ring-2 focus:ring-amber-100"
+            className="h-11 w-full rounded-full border border-white/70 bg-white pl-11 pr-4 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-white focus:bg-white focus:ring-2 focus:ring-white/70"
             aria-label="Tìm đoạn chat theo tên"
           />
         </div>

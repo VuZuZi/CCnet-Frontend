@@ -6,8 +6,9 @@ import ContactsSidebar from "@/features/chat/components/conversation/ContactsSid
 import { chatKeys } from "@/features/chat/constants/chat.queryKeys";
 import { disconnectChatSocket } from "@/features/chat/lib/socketClient";
 import { useChatStore, chatSelectors } from "@/features/chat/stores/useChatStore";
+import { getNavbarFloatingPanelMetrics } from "@/shared/lib/navbarFloatingPanel";
 
-function getWidgetStyle(mode) {
+function getWidgetStyle(mode, anchorRect) {
   if (mode === "mobile") {
     return {
       className:
@@ -17,17 +18,31 @@ function getWidgetStyle(mode) {
   }
 
   if (mode === "tablet") {
+    const metrics = getNavbarFloatingPanelMetrics(anchorRect, { width: 408 });
     return {
       className:
-        "fixed bottom-4 right-4 z-[6200] h-[min(760px,calc(100vh-32px))] w-[min(460px,calc(100vw-32px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
-      style: undefined,
+        "fixed z-[6200] overflow-hidden rounded-[24px] border border-[#FBBF24]/60 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]",
+      style: {
+        top: metrics.top,
+        right: metrics.right,
+        width: metrics.width,
+        maxWidth: metrics.maxWidth,
+        height: Math.min(680, metrics.availableHeight),
+      },
     };
   }
 
+  const metrics = getNavbarFloatingPanelMetrics(anchorRect, { width: 408 });
   return {
     className:
-      "fixed right-4 top-[92px] z-[6200] h-[min(640px,calc(100vh-112px))] w-[min(460px,calc(100vw-24px))] overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_20px_70px_rgba(15,23,42,0.18)]",
-    style: undefined,
+      "fixed z-[6200] overflow-hidden rounded-[24px] border border-[#FBBF24]/60 bg-white shadow-[0_18px_50px_rgba(15,23,42,0.12)]",
+    style: {
+      top: metrics.top,
+      right: metrics.right,
+      width: metrics.width,
+      maxWidth: metrics.maxWidth,
+      height: Math.min(640, metrics.availableHeight),
+    },
   };
 }
 

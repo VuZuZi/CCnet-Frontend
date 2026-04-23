@@ -21,27 +21,25 @@ export function HelpRequestStory({ story, evidences = [] }) {
         <div>
           <div className="inline-flex items-center gap-2 rounded-full border border-violet-200 bg-violet-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-violet-700">
             <AlignLeft size={13} />
-            Story
+            Câu chuyện
           </div>
 
           <h2 className="mt-3 text-lg font-bold tracking-tight text-slate-900">
-            Background and context
+            Hoàn cảnh cần hỗ trợ
           </h2>
 
-          <p className="mt-1 text-sm leading-6 text-slate-500">
-            Understand the situation, urgency, and why this request matters.
-          </p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">Thông tin người gửi chia sẻ về hoàn cảnh và nhu cầu hiện tại.</p>
         </div>
       </div>
 
       <div className="mt-5 space-y-5">
         {storyImage ? (
           <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-100 shadow-sm">
-            <img
-              src={storyImage.url}
-              alt={storyImage.originalName || 'Supporting evidence'}
-              className="h-56 w-full object-cover sm:h-64"
-            />
+              <img
+                src={storyImage.url}
+                alt={storyImage.originalName || 'Minh chứng bổ sung'}
+                className="h-56 w-full object-cover sm:h-64"
+              />
           </div>
         ) : null}
 

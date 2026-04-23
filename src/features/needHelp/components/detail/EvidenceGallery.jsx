@@ -74,7 +74,7 @@ export function EvidenceGallery({ evidences = [] }) {
         <SectionLabel
           icon={Images}
           label="Minh chứng & tệp đính kèm"
-          description="Tệp minh chứng đính kèm theo yêu cầu để quản trị viên kiểm duyệt."
+          description="Xem ảnh, video và tài liệu người gửi đã cung cấp kèm theo yêu cầu."
         />
 
         {!!images.length && (
