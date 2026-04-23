@@ -15,6 +15,7 @@ export function OrganizerRequestForm({
   const {
     register,
     control,
+    setValue,
     watch,
     formState: { errors },
   } = form;
@@ -63,6 +64,7 @@ export function OrganizerRequestForm({
       <OrganizerRequestBankSection
         control={control}
         register={register}
+        setValue={setValue}
         errors={errors}
         bankProof={bankProof}
         banks={banks}

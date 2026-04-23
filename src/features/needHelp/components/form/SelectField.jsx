@@ -6,7 +6,7 @@ export function SelectField({
   options,
   error,
   required,
-  placeholder = 'Select an option',
+  placeholder = 'Chọn một tùy chọn',
   value,
   onChange,
   className = '',

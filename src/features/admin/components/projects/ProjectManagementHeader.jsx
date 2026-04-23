@@ -12,11 +12,11 @@ function ProjectManagementHeader({
   onOpenGlobalHistory,
 }) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <div className="min-w-0 rounded-[28px] border border-slate-200 bg-white shadow-sm">
       <div className="p-5 md:p-6">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div className="max-w-2xl">
-            <h1 className="text-[28px] font-black leading-none tracking-tight text-slate-900">
+        <div className="flex min-w-0 flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0 max-w-2xl">
+            <h1 className="text-[clamp(1.5rem,2.4vw,1.75rem)] font-black leading-tight tracking-tight text-slate-900">
               Dự án
             </h1>
 
@@ -25,9 +25,9 @@ function ProjectManagementHeader({
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-3 xl:w-auto xl:min-w-[420px] xl:items-end">
+          <div className="flex w-full min-w-0 flex-col gap-3 xl:max-w-[560px] xl:items-end">
             <div className="flex w-full flex-col gap-3 sm:flex-row xl:justify-end">
-              <div className="relative flex-1 xl:min-w-[320px]">
+              <div className="relative min-w-0 flex-1">
                 <Search
                   size={18}
                   strokeWidth={2.2}
@@ -43,7 +43,7 @@ function ProjectManagementHeader({
 
               <AdminHistoryButton
                 onClick={onOpenGlobalHistory}
-                className="h-11 justify-center sm:min-w-[220px]"
+                className="h-11 justify-center whitespace-nowrap sm:min-w-[220px]"
               >
                 Xem tất cả nhật ký dự án
               </AdminHistoryButton>
@@ -58,7 +58,7 @@ function ProjectManagementHeader({
           </div>
         </div>
 
-        <div className="mt-5 flex flex-wrap gap-2.5">
+        <div className="mt-5 flex min-w-0 flex-wrap gap-2.5">
           {FILTER_CONFIG.map((filter) => {
             const count =
               filter.key === "ALL" ? stats.total : stats[filter.key] || 0;
@@ -70,7 +70,7 @@ function ProjectManagementHeader({
                 key={filter.key}
                 type="button"
                 onClick={() => onFilterChange(filter.key)}
-                className={`rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 ${
+                className={`min-w-0 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200 ${
                   isActive ? filter.activeClassName : filter.idleClassName
                 }`}
               >

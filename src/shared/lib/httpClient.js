@@ -117,7 +117,7 @@ httpClient.interceptors.response.use(
 export const getErrorMessage = (error) => {
   if (error.response?.data?.message) return error.response.data.message;
   if (error.response?.data?.error) return error.response.data.error;
-  if (error.message === "Network Error") return "Network error. Please check your connection.";
+    if (error.message === "Network Error") return "Lỗi mạng. Vui lòng kiểm tra kết nối.";
   return error.message || "An unexpected error occurred.";
 };
 

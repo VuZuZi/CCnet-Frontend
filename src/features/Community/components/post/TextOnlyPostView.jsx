@@ -1,9 +1,27 @@
-import React, { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { FiArrowRight } from "react-icons/fi";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
+import { Heart, MessageCircle, X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import httpClient from "@/shared/lib/httpClient";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
+import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
+import { usePostMutations } from "../../hooks/usePostMutations";
+import { SharedEntityCard } from "./SharedEntityCard";
+import CommentComposer from "../comment/CommentComposer";
+import CommentList from "../comment/CommentList";
+import {
+  appendReplyToTree,
+  extractComments,
+  extractCommentTotal,
+  extractRootCommentTotal,
+  getCommentTotal,
+  getInitialComments,
+  getPostId,
+  hydrateCommentAuthor,
+  mergeComments,
+  replaceCommentInTree,
+} from "../../utils/comment.utils";
 
 const PRIVACY_LABELS = {
   public: { label: "Công khai", icon: "public" },
@@ -11,55 +29,82 @@ const PRIVACY_LABELS = {
   friends: { label: "Bạn bè", icon: "group" },
 };
 
-const SharedEntityCard = ({ entity }) => {
-  if (!entity) return null;
-  const isProject = entity.entityModel === "Project";
-  const linkTo = isProject
-    ? `/projects/${entity.entityId}`
-    : `/need-help/${entity.entityId}`;
-  const badgeClass = isProject ? "bg-blue-600" : "bg-red-500";
-  const btnClass = isProject
-    ? "bg-blue-50 text-blue-700 border-blue-100"
-    : "bg-red-50 text-red-700 border-red-100";
+const formatRelativeTime = (dateStr) => {
+  if (!dateStr) return "";
+
+  const now = new Date();
+  const date = new Date(dateStr);
+  const diffMs = now - date;
+  const diffSec = Math.floor(diffMs / 1000);
+  const diffMin = Math.floor(diffSec / 60);
+  const diffHour = Math.floor(diffMin / 60);
+  const diffDay = Math.floor(diffHour / 24);
+  const diffWeek = Math.floor(diffDay / 7);
+
+  if (diffSec < 60) return "Vừa xong";
+  if (diffMin < 60) return `${diffMin} phút trước`;
+  if (diffHour < 24) return `${diffHour} giờ trước`;
+  if (diffDay === 1) return "Hôm qua";
+  if (diffDay < 7) return `${diffDay} ngày trước`;
+  if (diffWeek < 4) return `${diffWeek} tuần trước`;
+
+  return date.toLocaleDateString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+const getMediaSrc = (image) =>
+  typeof image === "string"
+    ? image
+    : image?.url || image?.secureUrl || image?.path || "";
+
+const PostMediaGrid = ({ images }) => {
+  if (!images?.length) return null;
+
+  const count = images.length;
+  const visibleImages = images.slice(0, 5);
+  const remainingCount = count - 5;
+
+  const getGridClass = () => {
+    if (count === 1) return "grid-cols-1";
+    if (count === 2) return "grid-cols-2";
+    if (count === 3) return "grid-cols-2 grid-rows-2";
+    if (count === 4) return "grid-cols-2 grid-rows-2";
+    return "grid-cols-6 grid-rows-2";
+  };
+
+  const getItemClassName = (index) => {
+    if (count === 1) return "col-span-1 aspect-[16/10]";
+    if (count === 2) return "aspect-[4/5]";
+    if (count === 3) {
+      if (index === 0) return "row-span-2 aspect-auto h-full";
+      return "aspect-square";
+    }
+    if (count === 4) return "aspect-square";
+    if (index < 3) return "col-span-2 aspect-[4/3]";
+    return "col-span-3 aspect-[16/9]";
+  };
 
   return (
-    <div className="relative mt-4 flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-slate-50 sm:flex-row">
-      <div className="relative h-[140px] w-full shrink-0 border-b border-slate-200 bg-slate-200 sm:h-auto sm:w-[160px] sm:border-b-0 sm:border-r">
-        {entity.thumbnail ? (
-          <img
-            src={entity.thumbnail}
-            alt="Ảnh đại diện"
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm font-medium text-slate-400">
-            Không có ảnh
-          </div>
-        )}
-        <span
-          className={`absolute left-2 top-2 rounded-md px-2 py-1 text-[9px] font-bold uppercase text-white shadow-sm ${badgeClass}`}
+    <section
+      className={`mb-5 grid gap-0.5 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 ${getGridClass()}`}
+    >
+      {visibleImages.map((image, index) => (
+        <div
+          key={`${getMediaSrc(image)}-${index}`}
+          className={`relative overflow-hidden bg-slate-100 bg-center bg-cover ${getItemClassName(index)}`}
+          style={{ backgroundImage: `url("${getMediaSrc(image)}")` }}
         >
-          {isProject ? "DỰ ÁN" : "CẦN GIÚP ĐỠ"}
-        </span>
-      </div>
-      <div className="flex flex-1 flex-col bg-white p-4">
-        <h4 className="mb-1.5 line-clamp-2 font-bold text-slate-900">
-          {entity.title}
-        </h4>
-        <p className="mb-3 line-clamp-2 text-sm text-slate-500">
-          {entity.description || "Nhấn để xem chi tiết..."}
-        </p>
-        <div className="mt-auto">
-          <Link
-            to={linkTo}
-            className={`inline-flex items-center justify-center rounded-lg border px-4 py-2 text-sm font-bold transition-colors hover:opacity-80 ${btnClass}`}
-          >
-            {isProject ? "Xem Dự Án" : "Giúp Đỡ Ngay"}
-            <FiArrowRight className="ml-1" />
-          </Link>
+          {index === 4 && remainingCount > 0 ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 text-3xl font-black text-white">
+              +{remainingCount}
+            </div>
+          ) : null}
         </div>
-      </div>
-    </div>
+      ))}
+    </section>
   );
 };
 
@@ -72,53 +117,81 @@ const TextOnlyPostView = ({
   targetCommentId = "",
   onClose,
 }) => {
-  const isLiked = post.userReaction === "like";
- 
+  const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
+  const dropdownRef = useRef(null);
+  const postId = getPostId(post);
+  const initialComments = useMemo(() => getInitialComments(post), [post]);
+  const initialCommentTotal = useMemo(() => getCommentTotal(post), [post]);
+  const bootstrapRef = useRef({
+    postId,
+    comments: initialComments,
+    total: initialCommentTotal,
+  });
+
+  if (bootstrapRef.current.postId !== postId) {
+    bootstrapRef.current = {
+      postId,
+      comments: initialComments,
+      total: initialCommentTotal,
+    };
+  }
+  const {
+    addComment: localAddComment,
+    toggleCommentReaction,
+  } = usePostMutations();
+  const commentMutation = addComment || localAddComment;
 
   const [sortMode, setSortMode] = useState("relevant");
   const [isSortOpen, setIsSortOpen] = useState(false);
-  const [page, setPage] = useState(0);
-  const [allComments, setAllComments] = useState(
-    post?.latestComments || post?.comments || [],
+  const [page, setPage] = useState(1);
+  const [allComments, setAllComments] = useState(() => initialComments);
+  const [commentTotal, setCommentTotal] = useState(() => initialCommentTotal);
+  const [rootCommentTotal, setRootCommentTotal] = useState(() =>
+    Math.max(initialComments.length, 0),
   );
-  const dropdownRef = useRef(null);
-  const user = useAuthStore((state) => state.user);
+  const [activeReplyId, setActiveReplyId] = useState("");
+  const [replyValue, setReplyValue] = useState("");
+  const [activeLikeId, setActiveLikeId] = useState("");
 
-  useEffect(() => {
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, []);
-
-  // KHAI BÁO HOOK CHUYỂN TRANG
-  const navigate = useNavigate();
+  useBodyScrollLock(true);
 
   const { data: commentsData, isLoading: isLoadingComments } = useQuery({
-    queryKey: ["postComments", post?.id || post?._id, page, sortMode],
+    queryKey: ["postComments", postId, page, sortMode],
     queryFn: async () => {
       const res = await httpClient.get(
-        `/posts/${post.id || post._id}/comments?page=${page}&sort=${sortMode}`,
+        `/posts/${postId}/comments?page=${page}&sort=${sortMode}`,
       );
       return res.data;
     },
-    enabled: !!(post?.id || post?._id) && page > 0,
+    enabled: Boolean(postId) && page > 0,
+    keepPreviousData: true,
   });
 
   useEffect(() => {
-    if (commentsData) {
-      const fetchedData =
-        commentsData?.data?.data || commentsData?.data || commentsData;
-      if (Array.isArray(fetchedData) && fetchedData.length > 0) {
-        setAllComments((prev) => {
-          const newComments = [...prev, ...fetchedData];
-          return Array.from(
-            new Map(newComments.map((c) => [c._id, c])).values(),
-          );
-        });
-      }
-    }
-  }, [commentsData]);
+    const bootComments = bootstrapRef.current.comments || [];
+    const bootTotal = bootstrapRef.current.total || 0;
+    setAllComments(bootComments);
+    setCommentTotal(bootTotal);
+    setRootCommentTotal(Math.max(bootComments.length, 0));
+    setPage(1);
+    setSortMode("relevant");
+    setActiveReplyId("");
+    setReplyValue("");
+  }, [postId]);
+
+  useEffect(() => {
+    if (!commentsData) return;
+
+    const nextComments = extractComments(commentsData);
+    setAllComments((prev) =>
+      mergeComments(prev, nextComments, { replace: page === 1 }),
+    );
+    setCommentTotal((prev) => extractCommentTotal(commentsData, prev));
+    setRootCommentTotal((prev) =>
+      extractRootCommentTotal(commentsData, Math.max(prev, nextComments.length)),
+    );
+  }, [commentsData, page]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -126,9 +199,26 @@ const TextOnlyPostView = ({
         setIsSortOpen(false);
       }
     };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const authorName =
+    post?.author?.fullName ||
+    post?.author?.username ||
+    post?.authorName ||
+    "Người ẩn danh";
+  const displayTime = post?.timeAgo || formatRelativeTime(post?.createdAt);
+  const privacyInfo = PRIVACY_LABELS[post?.privacy] || PRIVACY_LABELS.public;
+  const isLiked = post?.userReaction === "like";
+  const hasMoreComments = allComments.length < rootCommentTotal;
+  const mediaItems = Array.isArray(post?.images) ? post.images : [];
+
+  const handleBack = () => {
+    if (onClose) onClose();
+    else navigate(-1);
+  };
 
   const handleSortChange = (mode) => {
     setSortMode(mode);
@@ -137,223 +227,235 @@ const TextOnlyPostView = ({
     setIsSortOpen(false);
   };
 
-  const getSortLabel = () => {
-    if (sortMode === "relevant") return "Phù hợp nhất";
-    if (sortMode === "newest") return "Mới nhất";
-    return "Tất cả bình luận";
-  };
-
-  const totalComments = post.stats?.comments || 0;
-  const hasMoreComments = allComments.length < totalComments;
-
-  const onCommentSubmit = async (e) => {
-    e.preventDefault();
-    if (!commentContent.trim() || addComment.isPending) return;
+  const handleCommentSubmit = async (event) => {
+    event.preventDefault();
+    if (!commentContent.trim() || commentMutation.isPending) return;
 
     try {
-      const result = await addComment.mutateAsync({
-        postId: post.id || post._id,
-        content: commentContent,
+      const result = await commentMutation.mutateAsync({
+        postId,
+        content: commentContent.trim(),
       });
+      const newComment = hydrateCommentAuthor(result?.data || result, user);
 
-      const newComment = result?.data || result;
-      if (newComment && newComment._id) {
-        if (!newComment.author || typeof newComment.author !== 'object' || !newComment.author.fullName) {
-          newComment.author = {
-            _id: user?._id || user?.id,
-            fullName: user?.fullName,
-            username: user?.username,
-            avatar: user?.avatar,
-          };
-        }
-        setAllComments((prev) => [newComment, ...prev]);
+      if (newComment) {
+        setAllComments((prev) =>
+          mergeComments(prev, [newComment], { prepend: true }),
+        );
+        setCommentTotal((prev) => prev + 1);
+        setRootCommentTotal((prev) => prev + 1);
       }
 
       setCommentContent("");
-    } catch (err) {
-      console.error("Comment failed:", err);
+    } catch (error) {
+      console.error("Comment failed:", error);
     }
   };
 
-  const handleBack = () => {
-    if (onClose) onClose();
-    else navigate(-1);
+  const handleOpenReply = (comment) => {
+    const targetId = comment?._id || comment?.id;
+    if (!targetId) return;
+    setActiveReplyId(String(targetId));
+    setReplyValue("");
   };
 
-  const getRelativeTime = (dateStr) => {
-    if (!dateStr) return "";
-    const now = new Date();
-    const date = new Date(dateStr);
-    const diffMs = now - date;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-    const diffWeek = Math.floor(diffDay / 7);
-
-    if (diffSec < 60) return "Vừa xong";
-    if (diffMin < 60) return `${diffMin} phút trước`;
-    if (diffHour < 24) return `${diffHour} giờ trước`;
-    if (diffDay === 1) return "Hôm qua";
-    if (diffDay < 7) return `${diffDay} ngày trước`;
-    if (diffWeek < 4) return `${diffWeek} tuần trước`;
-
-    return date.toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    });
+  const handleCancelReply = () => {
+    setActiveReplyId("");
+    setReplyValue("");
   };
 
-  const authorName = post.author?.fullName || post.author?.username || post.authorName || "Người ẩn danh";
-  const displayTime = post.timeAgo || getRelativeTime(post.createdAt);
+  const handleSubmitReply = async (event, comment) => {
+    event.preventDefault();
+    if (!replyValue.trim() || commentMutation.isPending) return;
 
-  return (
+    const targetId = comment?._id || comment?.id;
+    if (!targetId) return;
+
+    try {
+      const result = await commentMutation.mutateAsync({
+        postId,
+        content: replyValue.trim(),
+        parentCommentId: targetId,
+      });
+      const newReply = hydrateCommentAuthor(result?.data || result, user);
+      if (newReply) {
+        setAllComments((prev) => appendReplyToTree(prev, targetId, newReply));
+        setCommentTotal((prev) => prev + 1);
+      }
+      handleCancelReply();
+    } catch (error) {
+      console.error("Reply failed:", error);
+    }
+  };
+
+  const handleToggleCommentLike = async (comment) => {
+    const commentId = comment?._id || comment?.id;
+    if (!commentId || toggleCommentReaction.isPending) return;
+
+    try {
+      setActiveLikeId(String(commentId));
+      const result = await toggleCommentReaction.mutateAsync({
+        postId,
+        commentId,
+        type: "like",
+      });
+      const updatedComment =
+        result?.data?.comment || result?.comment || result?.data || result;
+      if (updatedComment) {
+        setAllComments((prev) => replaceCommentInTree(prev, updatedComment));
+      }
+    } catch (error) {
+      console.error("Toggle comment like failed:", error);
+    } finally {
+      setActiveLikeId("");
+    }
+  };
+
+  const modalContent = (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4 overflow-hidden"
-      onClick={handleBack}
+      className="ccnet-modal-overlay fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden p-3 sm:p-4"
+      onMouseDown={handleBack}
+      role="dialog"
+      aria-modal="true"
     >
-      {/* KHUNG POPUP CỐ ĐỊNH */}
       <div
-        className="relative flex w-full max-w-[700px] max-h-[90vh] min-h-[500px] flex-col rounded-xl bg-white shadow-2xl cursor-default overflow-hidden"
-        onClick={(e) => e.stopPropagation()}
+        className="ccnet-modal-backdrop absolute inset-0 bg-slate-950/20"
+        aria-hidden="true"
+      />
+      <div
+        className="ccnet-modal-panel relative z-10 flex max-h-[92vh] min-h-[520px] w-full max-w-3xl cursor-default flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.35)]"
+        onMouseDown={(event) => event.stopPropagation()}
       >
-        {/* 1. FIXED HEADER */}
-        <div className="flex shrink-0 items-center justify-center border-b border-gray-200 p-4 relative z-10 w-full h-[64px] bg-white">
-          <h2 className="text-xl font-bold text-gray-900 truncate px-12">Bài viết của {authorName}</h2>
+        <header className="flex h-[68px] shrink-0 items-center justify-between gap-4 border-b border-slate-100 bg-white px-5">
+          <div className="min-w-0">
+            <h2 className="truncate text-lg font-black text-slate-900">
+              Bài viết của {authorName}
+            </h2>
+            <p className="text-xs font-medium text-slate-500">
+              {commentTotal} bình luận
+            </p>
+          </div>
           <button
+            type="button"
             onClick={handleBack}
-            className="absolute right-4 flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-700"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-500 transition hover:bg-slate-200 hover:text-slate-900"
+            aria-label="Đóng popup"
           >
-            <span className="material-symbols-outlined text-[22px]">close</span>
+            <X size={18} />
           </button>
-        </div>
+        </header>
 
-        {/* 2. SCROLLABLE CONTENT BODY */}
-        <div 
-          className="flex-1 overflow-y-auto overscroll-contain transform-gpu custom-scrollbar p-5 md:p-6 bg-white" 
-          style={{ WebkitOverflowScrolling: 'touch', willChange: 'transform, scroll-position' }}
-        >
-          <div className="mb-5 flex items-center gap-3 border-b border-transparent pb-0">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xl font-bold text-slate-500 overflow-hidden border border-slate-100">
-              {post.author?.avatar ? (
-                <img src={post.author.avatar} alt="Avatar" className="w-full h-full object-cover" />
+        <div className="ccnet-modal-scroll min-h-0 flex-1 overflow-y-auto bg-white px-5 py-5 sm:px-6">
+          <div className="mb-5 flex items-start gap-3">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-slate-100 bg-slate-200 text-lg font-black text-slate-500">
+              {post?.author?.avatar ? (
+                <img
+                  src={post.author.avatar}
+                  alt={authorName}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
               ) : (
                 authorName.charAt(0).toUpperCase()
               )}
             </div>
-            <div>
-              <h3 className="font-bold text-slate-900 leading-tight">{authorName}</h3>
-              <div className="flex items-center gap-1 mt-0.5 text-xs text-slate-500">
+
+            <div className="min-w-0 flex-1">
+              <h3 className="font-black leading-tight text-slate-900">
+                {authorName}
+              </h3>
+              <div className="mt-1 flex flex-wrap items-center gap-1.5 text-xs font-medium text-slate-500">
                 <span>{displayTime}</span>
                 <span className="text-slate-300">•</span>
-                <span className="inline-flex items-center gap-0.5">
-                  <span className="material-symbols-outlined text-[12px]">{PRIVACY_LABELS[post.privacy]?.icon || "public"}</span>
-                  {PRIVACY_LABELS[post.privacy]?.label || "Công khai"}
+                <span className="inline-flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[13px]">
+                    {privacyInfo.icon}
+                  </span>
+                  {privacyInfo.label}
                 </span>
-                {post.isEdited && (
+                {post?.isEdited ? (
                   <>
                     <span className="text-slate-300">•</span>
-                    <span className="inline-flex items-center gap-0.5 text-slate-400 italic">
-                      <span className="material-symbols-outlined text-[11px]">edit</span>
-                      Đã chỉnh sửa
-                    </span>
+                    <span className="italic text-slate-400">Đã chỉnh sửa</span>
                   </>
-                )}
+                ) : null}
               </div>
             </div>
           </div>
 
-          <div className="prose prose-slate prose-lg max-w-none whitespace-pre-wrap break-words leading-relaxed text-slate-800 text-[15px] mb-4">
-            {post.content}
-          </div>
+          {post?.content ? (
+            <article className="mb-4 whitespace-pre-wrap break-words text-[15px] leading-7 text-slate-800 [overflow-wrap:anywhere]">
+              {post.content}
+            </article>
+          ) : null}
 
-          <SharedEntityCard entity={post.sharedEntity} />
+          <SharedEntityCard entity={post?.sharedEntity} isPreview />
 
-          <div className="mt-4 flex items-center gap-6 border-y border-slate-100 py-3">
+          <PostMediaGrid images={mediaItems} />
+
+          <div className="mt-5 flex items-center gap-3 border-y border-slate-100 py-3">
             <button
-              onClick={() => toggleReaction.mutate({ postId: post.id || post._id, type: "like" })}
-              className={`flex items-center gap-2 text-sm font-bold transition-all hover:opacity-70 ${isLiked ? "text-rose-500" : "text-slate-500"}`}
+              type="button"
+              onClick={() =>
+                toggleReaction?.mutate({ postId, type: "like" })
+              }
+              className={`inline-flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-bold transition ${
+                isLiked
+                  ? "bg-rose-50 text-rose-600"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+              }`}
             >
-              <svg viewBox="0 0 24 24" className="size-5" fill={isLiked ? "currentColor" : "none"} stroke="currentColor" strokeWidth={isLiked ? "0" : "2"} strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
-              </svg>
-              {post.stats?.likes || 0} Thích
+              <Heart size={18} fill={isLiked ? "currentColor" : "none"} />
+              {post?.stats?.likes || 0} Thích
             </button>
-            <div className="ml-auto flex items-center gap-2 text-sm font-bold text-slate-500">
-              <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-              </svg>
-              {totalComments} Bình luận
+
+            <div className="ml-auto inline-flex items-center gap-2 text-sm font-bold text-slate-500">
+              <MessageCircle size={18} />
+              {commentTotal} Bình luận
             </div>
           </div>
 
-          <div className="mt-4">
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-[14px] font-bold text-slate-900">Bình luận ({totalComments})</span>
-              <div className="relative" ref={dropdownRef}>
-                <button
-                  onClick={() => setIsSortOpen(!isSortOpen)}
-                  className="flex items-center text-[14px] font-semibold text-gray-600 hover:text-gray-900"
-                >
-                  {getSortLabel()}
-                  <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
-                </button>
-                {isSortOpen && (
-                  <div className="absolute right-0 top-full z-50 mt-1 w-[220px] rounded-lg border border-gray-100 bg-white py-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.15)]">
-                    <button onClick={() => handleSortChange("relevant")} className="w-full px-4 py-2 text-left transition-colors hover:bg-gray-50"><div className="text-[14px] font-semibold text-gray-900">Phù hợp nhất</div></button>
-                    <button onClick={() => handleSortChange("newest")} className="w-full px-4 py-2 text-left transition-colors hover:bg-gray-50"><div className="text-[14px] font-semibold text-gray-900">Mới nhất</div></button>
-                    <button onClick={() => handleSortChange("all")} className="w-full px-4 py-2 text-left transition-colors hover:bg-gray-50"><div className="text-[14px] font-semibold text-gray-900">Tất cả bình luận</div></button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-4 pb-2">
-              {allComments.length === 0 ? (
-                <div className="py-6 text-center"><p className="text-sm text-gray-400">Chưa có bình luận nào.</p></div>
-              ) : (
-                allComments.map((comment) => {
-                  const commentId = comment._id || comment.id || "";
-                  const isTarget = targetCommentId && String(commentId) === String(targetCommentId);
-                  return (
-                    <div key={comment._id || comment.id} id={commentId ? `comment-${commentId}` : undefined} className={`flex w-full items-start gap-2.5 rounded-2xl transition-all duration-300 ${isTarget ? "bg-yellow-50/70 p-2" : ""}`}>
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-500 overflow-hidden border border-slate-100">
-                        {comment.author?.avatar ? <img src={comment.author.avatar} alt="Avatar" className="w-full h-full object-cover" /> : (comment.author?.fullName || comment.author?.username || "U").charAt(0).toUpperCase()}
-                      </div>
-                      <div className="min-w-0 flex-1 break-words rounded-[18px] border border-slate-100 bg-slate-100/70 px-3.5 py-2.5 text-[14px]">
-                        <span className="mr-2 font-bold text-slate-900 block md:inline">{comment.author?.fullName || comment.author?.username || "Người ẩn danh"}</span>
-                        <span className="whitespace-pre-wrap break-words text-slate-700 leading-snug">{comment.content}</span>
-                      </div>
-                    </div>
-                  );
-                })
-              )}
-              {hasMoreComments && (
-                <button onClick={() => setPage((prev) => (prev === 0 ? 1 : prev + 1))} disabled={isLoadingComments} className="block w-full py-2 text-center text-[13.5px] font-semibold text-slate-500 hover:text-slate-800 hover:underline">
-                  {isLoadingComments ? "Đang tải..." : "Xem thêm bình luận"}
-                </button>
-              )}
-            </div>
-          </div>
+          <CommentList
+            comments={allComments}
+            totalComments={commentTotal}
+            sortMode={sortMode}
+            isSortOpen={isSortOpen}
+            onToggleSort={() => setIsSortOpen((value) => !value)}
+            onSortChange={handleSortChange}
+            sortRef={dropdownRef}
+            targetCommentId={targetCommentId}
+            hasMoreComments={hasMoreComments}
+            isLoadingMore={isLoadingComments}
+            onLoadMore={() => {
+              if (!isLoadingComments && hasMoreComments) {
+                setPage((prev) => prev + 1);
+              }
+            }}
+            activeReplyId={activeReplyId}
+            replyValue={replyValue}
+            onReplyValueChange={setReplyValue}
+            onOpenReply={handleOpenReply}
+            onCancelReply={handleCancelReply}
+            onSubmitReply={handleSubmitReply}
+            onToggleLike={handleToggleCommentLike}
+            isSubmittingReply={commentMutation.isPending && Boolean(activeReplyId)}
+            activeLikeId={activeLikeId}
+          />
         </div>
 
-        {/* 3. FIXED FOOTER */}
-        <div className="shrink-0 border-t border-gray-200 bg-white p-3 md:p-4 relative z-10 w-full drop-shadow-[0_-4px_6px_rgba(0,0,0,0.02)]">
-          <form onSubmit={onCommentSubmit} className="flex items-center space-x-2">
-            <div className="flex flex-1 rounded-full bg-gray-100 px-4 py-2.5 transition-all focus-within:ring-2 focus-within:ring-yellow-400">
-              <input type="text" value={commentContent} onChange={(e) => setCommentContent(e.target.value)} placeholder="Viết bình luận..." className="w-full border-none bg-transparent text-[14px] outline-none focus:ring-0" disabled={addComment.isPending} />
-            </div>
-            <button type="submit" disabled={!commentContent.trim() || addComment.isPending} className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-yellow-500 transition-colors hover:bg-slate-50 hover:text-yellow-600 disabled:opacity-40">
-              <svg className="h-[22px] w-[22px] rotate-45 transform" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path>
-              </svg>
-            </button>
-          </form>
-        </div>
+        <footer className="shrink-0 border-t border-slate-100 bg-white px-4 py-3 sm:px-5">
+          <CommentComposer
+            value={commentContent}
+            onChange={setCommentContent}
+            onSubmit={handleCommentSubmit}
+            isSubmitting={commentMutation.isPending && !activeReplyId}
+          />
+        </footer>
       </div>
     </div>
   );
+
+  return createPortal(modalContent, document.body);
 };
 
 export default TextOnlyPostView;

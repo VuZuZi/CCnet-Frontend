@@ -11,7 +11,7 @@ import {
 
 const FILTERS = [
   { key: "all", label: "Tất cả", icon: LayoutGrid },
-  { key: "organizer", label: "Tổ chức", icon: UserRound },
+  { key: "organizer", label: "Nhà tổ chức", icon: UserRound },
   { key: "project", label: "Dự án", icon: FolderKanban },
   { key: "needhelp", label: "Cần giúp đỡ", icon: HeartHandshake },
   { key: "communitypost", label: "Bài viết", icon: Newspaper },

@@ -4,6 +4,7 @@ import { adminAPI } from '../api/adminAPI';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { getStatusLabel } from '@/shared/lib/statusLabels';
 
 const STATUS_OPTIONS = [
   { value: 'PENDING', label: 'Chờ duyệt' },
@@ -87,7 +88,7 @@ export default function AdminRefundRequestsPage() {
           <div>
             <h1 className="text-2xl font-black tracking-tight text-slate-900">Xử lý yêu cầu hoàn tiền</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Admin duyệt hoặc từ chối yêu cầu hoàn tiền. Khi duyệt, ví user nhận lại 98% và 2% chuyển vào quỹ duy trì hệ thống.
+              Quản trị viên duyệt hoặc từ chối yêu cầu hoàn tiền. Khi duyệt, ví người dùng nhận lại 98% và 2% chuyển vào quỹ duy trì hệ thống.
             </p>
           </div>
 
@@ -128,9 +129,9 @@ export default function AdminRefundRequestsPage() {
                     <div className="space-y-2 min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${statusClass}`}>
-                          {item.status}
+                          {getStatusLabel(item.status)}
                         </span>
-                        <span className="text-xs text-slate-500">Request #{String(item.id).slice(-8).toUpperCase()}</span>
+                        <span className="text-xs text-slate-500">Yêu cầu #{String(item.id).slice(-8).toUpperCase()}</span>
                       </div>
 
                       <h3 className="text-base font-extrabold text-slate-900 truncate" title={item.project?.title}>
@@ -153,7 +154,7 @@ export default function AdminRefundRequestsPage() {
                         <b className="text-slate-900">{formatVnd(item.originalAmount)}</b>
                       </p>
                       <p className="mt-1 flex items-center justify-between">
-                        <span className="text-slate-500">Hoàn user:</span>
+                        <span className="text-slate-500">Hoàn cho người dùng:</span>
                         <b className="text-emerald-700">{formatVnd(item.refundAmount)}</b>
                       </p>
                       <p className="mt-1 flex items-center justify-between">
@@ -166,7 +167,7 @@ export default function AdminRefundRequestsPage() {
                   {isPending ? (
                     <div className="mt-4 border-t border-slate-200 pt-4">
                       <label className="mb-1 block text-xs font-bold uppercase tracking-wide text-slate-500">
-                        Ghi chú admin (tùy chọn)
+                        Ghi chú quản trị viên (tùy chọn)
                       </label>
                       <textarea
                         rows={2}

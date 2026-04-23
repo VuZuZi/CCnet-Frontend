@@ -1,4 +1,4 @@
-import {
+﻿import {
   BadgeCheck,
   CalendarDays,
   HeartHandshake,
@@ -95,6 +95,8 @@ export function SidebarVolunteer({
 
   const availableBalance =
     project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
+  const escrowBalance =
+    project?.financialDetail?.escrowBalance ?? availableBalance;
   const targetAmount = project?.targetAmount ?? 1;
   const progressPercent = Math.min(
     Math.round((availableBalance / Math.max(targetAmount, 1)) * 100),
@@ -280,7 +282,7 @@ export function SidebarVolunteer({
           </p>
 
           <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
-            {formatCurrency(availableBalance)}đ
+            {formatCurrency(escrowBalance)}đ
           </div>
 
           <p className="mt-1 text-sm text-slate-500">
@@ -353,3 +355,4 @@ export function SidebarVolunteer({
 }
 
 export default SidebarVolunteer;
+

@@ -49,10 +49,19 @@ export const postAPI = {
     return data;
   },
 
-  addComment: async (postId, content) => {
+  addComment: async (postId, content, parentCommentId = null) => {
     const { data } = await httpClient.post(`/posts/${postId}/comments`, {
       content,
+      parentCommentId,
     });
+    return data;
+  },
+
+  toggleCommentReaction: async (postId, commentId, type) => {
+    const { data } = await httpClient.post(
+      `/posts/${postId}/comments/${commentId}/reaction`,
+      { type },
+    );
     return data;
   },
 

@@ -8,9 +8,9 @@ export default function NotificationList({ items, onRead, onDelete, onClose }) {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-slate-100 text-slate-400">
           <BellOff size={26} />
         </div>
-        <h4 className="text-base font-bold text-slate-800">Chưa có notification nào</h4>
+          <h4 className="text-base font-bold text-slate-800">Chưa có thông báo nào</h4>
         <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-          Khi có cập nhật mới từ dự án, organizer request hoặc hệ thống, chúng sẽ xuất hiện ở đây.
+          Khi có cập nhật mới từ dự án, yêu cầu nhà tổ chức hoặc hệ thống, chúng sẽ xuất hiện ở đây.
         </p>
       </div>
     );

@@ -6,6 +6,7 @@ import { useFormValidation } from '@/shared/hooks/useFormValidation';
 import { validators } from '@/shared/constants/validation';
 import { ROUTES } from '@/shared/constants/routes';
 import { Button } from '@/shared/components/ui/Button/Button';
+import { getRoleLabel } from '@/shared/lib/roleLabels';
 
 export function ProfilePage() {
   const user = useAuthStore(authSelectors.user);
@@ -111,7 +112,7 @@ export function ProfilePage() {
                 <label className="block text-sm font-medium text-black mb-1.5">Vai trò</label>
                 <input
                   type="text"
-                  value={user.role}
+                  value={getRoleLabel(user.role)}
                   disabled
                   readOnly
                   className="block w-full rounded-md border border-light-gray bg-light-gray cursor-not-allowed opacity-70 py-2 px-3 text-black focus:outline-none"

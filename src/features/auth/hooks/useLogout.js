@@ -12,7 +12,7 @@ export function useLogout() {
   const executeLogout = () => {
     clearAuth();
     queryClient.clear(); 
-    toast.info('You have been logged out');
+    toast.info('Bạn đã đăng xuất');
     
     window.location.replace(ROUTES.HOME);
   };

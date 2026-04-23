@@ -40,8 +40,17 @@ export function AdminLayout() {
     .toUpperCase();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900">
+    <div className="ccnet-admin-shell bg-slate-50 text-slate-900">
       <NotificationStreamBootstrap />
+
+      {isSidebarOpen ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 bg-slate-950/30 lg:hidden"
+          aria-label="Đóng thanh quản trị"
+          onClick={() => setSidebarOpen(false)}
+        />
+      ) : null}
 
       <Sidebar
         isOpen={isSidebarOpen}
@@ -49,9 +58,9 @@ export function AdminLayout() {
         logoutLabel={t("Đăng xuất") || "Đăng xuất"}
       />
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="grid min-w-0 flex-1 grid-rows-[auto_minmax(0,1fr)]">
         <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
-          <div className="flex h-20 items-center justify-between gap-4 px-4 md:px-6 xl:px-8">
+          <div className="flex min-h-20 min-w-0 flex-wrap items-center justify-between gap-3 px-3 py-3 sm:px-4 md:px-6 xl:px-8">
             <div className="flex min-w-0 items-center gap-3">
               <button
                 type="button"
@@ -67,7 +76,7 @@ export function AdminLayout() {
               </button>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3">
               <div className="relative hidden xl:block">
                 <Search
                   size={18}
@@ -82,11 +91,11 @@ export function AdminLayout() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="group flex items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-sm transition hover:border-amber-300 hover:bg-amber-50"
+                className="group flex max-w-[min(240px,42vw)] min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 sm:gap-3 sm:px-3"
                 title={t("Đăng xuất") || "Đăng xuất"}
               >
-                <div className="hidden text-right sm:block">
-                  <p className="text-sm font-semibold text-slate-800">
+                <div className="hidden min-w-0 text-right sm:block">
+                  <p className="truncate text-sm font-semibold text-slate-800">
                     {displayName}
                   </p>
                   <p className="text-[11px] text-slate-400">Quản trị viên</p>
@@ -122,8 +131,8 @@ export function AdminLayout() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-4 py-4 md:px-6 md:py-5 xl:px-8">
-          <div className="mx-auto max-w-[1500px]">
+        <main className="min-w-0 overflow-y-auto px-3 py-4 sm:px-4 md:px-6 md:py-5 xl:px-8">
+          <div className="mx-auto w-full max-w-[1500px] min-w-0">
             <Outlet />
           </div>
         </main>

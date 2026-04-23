@@ -6,6 +6,7 @@ import FormErrorText from "./FormErrorText";
 export function BankAutocomplete({
   value,
   onChange,
+  onSelectBank,
   banks,
   isLoading,
   error,
@@ -65,6 +66,7 @@ export function BankAutocomplete({
 
   const handleSelectBank = (bank) => {
     onChange(bank.shortName || bank.name);
+    onSelectBank?.(bank);
     setInputValue(bank.displayLabel);
     setActiveIndex(0);
     setIsOpen(false);

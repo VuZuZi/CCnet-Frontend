@@ -13,7 +13,7 @@ export function useVerifyOTP() {
     mutationFn: authAPI.verifyOTP,
     
     onSuccess: () => {
-      toast.success('Email verified successfully! Please login.');
+      toast.success('Xác thực email thành công! Vui lòng đăng nhập.');
       
       navigate(ROUTES.LOGIN, { 
         state: { verified: true },

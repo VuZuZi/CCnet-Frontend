@@ -82,12 +82,12 @@ export default function ProjectStatusBanner({ project }) {
 
             {hasOrganizerSubmitted ? (
               <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-emerald-700">
-                ✅ Organizer đã gửi cập nhật (
+                ✅ Nhà tổ chức đã gửi cập nhật (
                 {formatDateTime(project.updateSubmittedAt)})
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 rounded-full border border-orange-200 bg-orange-50 px-2 py-0.5 text-orange-700">
-                ⏳ Chờ organizer cập nhật
+                ⏳ Chờ nhà tổ chức cập nhật
               </span>
             )}
           </div>

@@ -39,7 +39,7 @@ export function Step3Preview() {
 
   const handleSubmit = async () => {
     if (!projectId) {
-      toast.error("Không tìm thấy project draft để submit.");
+      toast.error("Không tìm thấy bản nháp dự án để gửi duyệt.");
       return;
     }
 

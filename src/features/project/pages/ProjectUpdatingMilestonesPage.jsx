@@ -129,7 +129,7 @@ export function ProjectUpdatingMilestonesPage() {
               Updating
             </p>
             <h1 className="mt-3 text-3xl font-black tracking-tight text-slate-900">
-              Cập nhật milestone cho dự án
+              Cập nhật mốc hoạt động cho dự án
             </h1>
             <p className="mt-2 text-sm leading-6 text-slate-500">
               {project?.title}
@@ -145,7 +145,7 @@ export function ProjectUpdatingMilestonesPage() {
                 {formatMoney(matchingAmount)}đ
               </p>
               <p className="mt-1 text-sm text-slate-500">
-                Tổng ngân sách milestone phải trùng với số tiền hiện tại của dự án.
+                Tổng ngân sách mốc hoạt động phải trùng với số tiền hiện tại của dự án.
               </p>
             </div>
 

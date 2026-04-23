@@ -5,7 +5,6 @@ import {
   ClipboardList,
   Flame,
   Loader2,
-  ShieldCheck,
   Sparkles,
   TimerReset,
 } from "lucide-react";
@@ -109,7 +108,6 @@ function PaginationBar({ pagination, onPageChange }) {
 export function AdminNeedHelpRequestsPage() {
   const [filters, setFilters] = useState({
     search: "",
-    status: "",
     urgencyLevel: "",
     page: 1,
     limit: 8,
@@ -127,9 +125,11 @@ export function AdminNeedHelpRequestsPage() {
     return items.reduce(
       (acc, item) => {
         acc.total += 1;
-        if (item.status === "PENDING") acc.pending += 1;
-        if (item.status === "VERIFIED") acc.verified += 1;
-        if (item.status === "IN_PROGRESS") acc.inProgress += 1;
+        if (item.assignedOrganizerId) {
+          acc.assigned += 1;
+        } else {
+          acc.unassigned += 1;
+        }
         if (
           item.urgencyLevel === "HIGH" ||
           item.urgencyLevel === "CRITICAL"
@@ -140,9 +140,8 @@ export function AdminNeedHelpRequestsPage() {
       },
       {
         total: 0,
-        pending: 0,
-        verified: 0,
-        inProgress: 0,
+        assigned: 0,
+        unassigned: 0,
         priority: 0,
       }
     );
@@ -163,7 +162,7 @@ export function AdminNeedHelpRequestsPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
-                Kiểm duyệt NeedHelp của Admin
+                Điều phối yêu cầu hỗ trợ
               </div>
 
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-[46px]">
@@ -171,8 +170,8 @@ export function AdminNeedHelpRequestsPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Kiểm duyệt các yêu cầu được gửi, điều chỉnh trạng thái xuất bản và 
-                gán nhà tổ chức phù hợp với quy trình làm việc nhanh hơn và sạch sẽ hơn.
+                Theo dõi các yêu cầu đã được tạo và gán nhà tổ chức phù hợp với
+                quy trình làm việc nhanh hơn và rõ ràng hơn.
               </p>
             </div>
 
@@ -187,21 +186,21 @@ export function AdminNeedHelpRequestsPage() {
                   tone="slate"
                 />
                 <SummaryCard
-                  icon={ShieldCheck}
-                  label="Chờ kiểm duyệt"
-                  value={summary.pending}
-                  tone="amber"
-                />
-                <SummaryCard
                   icon={TimerReset}
-                  label="Đã xác minh"
-                  value={summary.verified}
-                  tone="sky"
+                  label="Đã gán nhà tổ chức"
+                  value={summary.assigned}
+                  tone="amber"
                 />
                 <SummaryCard
                   icon={Flame}
                   label="Ưu tiên cao"
                   value={summary.priority}
+                  tone="sky"
+                />
+                <SummaryCard
+                  icon={ClipboardList}
+                  label="Cần gán nhà tổ chức"
+                  value={summary.unassigned}
                   tone="emerald"
                 />
               </div>

@@ -96,8 +96,10 @@ export function Sidebar({
 
   return (
     <aside
-      className={`z-30 flex h-screen shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white transition-all duration-300 ${
-        isOpen ? "w-[260px]" : "w-[88px]"
+      className={`fixed inset-y-0 left-0 z-40 flex h-dvh w-[min(260px,calc(100vw-32px))] shrink-0 flex-col overflow-hidden border-r border-slate-200 bg-white shadow-2xl transition-all duration-300 lg:relative lg:z-30 lg:translate-x-0 lg:shadow-none ${
+        isOpen
+          ? "translate-x-0 lg:w-[260px]"
+          : "-translate-x-full lg:w-[88px]"
       }`}
     >
       <div className="flex h-20 items-center border-b border-slate-200 px-4">
@@ -109,7 +111,7 @@ export function Sidebar({
           {isOpen ? (
             <div className="min-w-0">
               <h1 className="truncate text-lg font-semibold text-slate-900">
-                CCNet Admin
+                CCNet Quản trị
               </h1>
               <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-slate-400">
                 Trung tâm điều khiển
@@ -121,7 +123,7 @@ export function Sidebar({
 
       <div className="h-3" />
 
-      <nav className="flex-1 space-y-2 px-3 pb-4">
+      <nav className="min-h-0 flex-1 space-y-2 overflow-y-auto px-3 pb-4">
         {MENU_ITEMS.map((item) => {
           const Icon = item.icon;
           const active = isItemActive(item);

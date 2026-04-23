@@ -91,6 +91,7 @@ const sanitizePayload = (values) => {
       values.organizationName?.trim().replace(/\s+/g, " ") || "",
     organizationWebsite: values.organizationWebsite?.trim() || "",
     bankName: values.bankName?.trim() || "",
+    bankBin: values.bankBin?.trim() || "",
     bankAccountNumber: values.bankAccountNumber?.trim() || "",
     bankAccountName:
       values.bankAccountName?.trim().replace(/\s+/g, " ") || "",
@@ -151,6 +152,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
       businessLicense: normalizeDocument(existingRequest?.businessLicense),
       bankProof: normalizeDocument(existingRequest?.bankProof),
       bankName: existingRequest?.bankName || "",
+      bankBin: existingRequest?.bankBin || "",
       bankAccountNumber: existingRequest?.bankAccountNumber || "",
       bankAccountName: existingRequest?.bankAccountName || "",
       notes: existingRequest?.notes || "",

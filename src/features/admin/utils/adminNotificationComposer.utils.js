@@ -4,11 +4,11 @@ export function buildNotificationSummaryText({
   roleSelections = {},
 }) {
   if (recipientMode === "all") {
-    return "This notification will be sent to all users.";
+    return "Thông báo này sẽ được gửi đến tất cả người dùng.";
   }
 
   if (!selectedRoles.length) {
-    return "Choose one or more roles. If a role has no selected users, the system will send to the entire role.";
+    return "Chọn một hoặc nhiều vai trò. Nếu vai trò chưa chọn người dùng cụ thể, hệ thống sẽ gửi đến toàn bộ vai trò đó.";
   }
 
   const parts = selectedRoles.map((role) => {
@@ -52,11 +52,11 @@ export function buildNotificationPayload({
   const message = String(form?.message || "").trim();
 
   if (!title) {
-    throw new Error("Title is required.");
+    throw new Error("Vui lòng nhập tiêu đề.");
   }
 
   if (!message) {
-    throw new Error("Message is required.");
+    throw new Error("Vui lòng nhập nội dung.");
   }
 
   const basePayload = {
@@ -73,7 +73,7 @@ export function buildNotificationPayload({
   }
 
   if (!selectedRoles.length) {
-    throw new Error("Please choose at least one role.");
+    throw new Error("Vui lòng chọn ít nhất một vai trò.");
   }
 
   const roleSelectionsPayload = buildRoleSelectionsPayload({
@@ -90,12 +90,12 @@ export function buildNotificationPayload({
 
 export function getNotificationSuccessMessage(data) {
   if (data?.targetType === "all") {
-    return "Notification sent to all users.";
+    return "Đã gửi thông báo đến tất cả người dùng.";
   }
 
   const roleCount = Number(data?.totalRoles || 0);
   const requestedUserCount = Number(data?.totalUsers || 0);
   const resolvedCount = Number(data?.resolvedRecipientCount || 0);
 
-  return `Notification sent successfully (${roleCount} role group(s), ${requestedUserCount} selected user(s), ${resolvedCount} final recipient(s)).`;
+  return `Đã gửi thông báo thành công (${roleCount} nhóm vai trò, ${requestedUserCount} người dùng được chọn, ${resolvedCount} người nhận cuối cùng).`;
 }

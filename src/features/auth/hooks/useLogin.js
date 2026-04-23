@@ -19,7 +19,7 @@ export function useLogin() {
       
       setAuthSuccess(user, tokens.accessToken);
       
-      toast.success(`Welcome back, ${user.fullName}!`);
+    toast.success(`Chào mừng trở lại, ${user.fullName}!`);
       devConfig.log('Login successful:', user.email);
       
       navigate('/', { replace: true });

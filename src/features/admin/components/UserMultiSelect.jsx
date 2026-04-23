@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { Check, ChevronDown, Search, Users, X } from "lucide-react";
 import useUserMultiSelect from "../hooks/useUserMultiSelect";
-import { getRoleBadgeClasses } from "../utils/userMultiSelect.utils";
+import { getRoleBadgeClasses, getRoleLabel } from "../utils/userMultiSelect.utils";
 
 function getUserId(user) {
   return String(user?._id || user?.id || "");
@@ -68,7 +68,7 @@ function UserRow({ user, isSelected, onToggle }) {
             user?.role
           )}`}
         >
-          {user?.role || "user"}
+          {getRoleLabel(user?.role)}
         </span>
 
         {isSelected ? (

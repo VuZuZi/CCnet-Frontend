@@ -29,7 +29,7 @@ export function ImpactMetrics({
           {trustScore} điểm
         </span>
         <span className="mt-2 text-sm text-amber-700">
-          Tính từ các dự án volunteer đã hoàn thành
+          Tính từ các dự án tình nguyện đã hoàn thành
         </span>
       </div>
 

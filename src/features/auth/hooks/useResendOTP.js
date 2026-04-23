@@ -10,7 +10,7 @@ export function useResendOTP() {
     mutationFn: authAPI.resendOTP,
     
     onSuccess: () => {
-      toast.success('New OTP has been sent to your email');
+      toast.success('Mã OTP mới đã được gửi đến email của bạn');
     },
     
     onError: (error) => {

@@ -52,8 +52,18 @@ export const usePostMutations = () => {
   });
 
   const addComment = useMutation({
-    mutationFn: ({ postId, content }) => postAPI.addComment(postId, content),
+    mutationFn: ({ postId, content, parentCommentId = null }) =>
+      postAPI.addComment(postId, content, parentCommentId),
     onSuccess: (_, { postId }) => refreshAllPosts(postId),
+  });
+
+  const toggleCommentReaction = useMutation({
+    mutationFn: ({ postId, commentId, type }) =>
+      postAPI.toggleCommentReaction(postId, commentId, type),
+    onSuccess: (_, { postId }) => refreshAllPosts(postId),
+    onError: () => {
+      toast.error("Khong the tuong tac voi binh luan. Vui long thu lai!");
+    },
   });
 
   const deletePost = useMutation({
@@ -217,6 +227,7 @@ export const usePostMutations = () => {
     createPost,
     reportPost,
     addComment,
+    toggleCommentReaction,
     toggleReaction,
     updatePost,
     deletePost,

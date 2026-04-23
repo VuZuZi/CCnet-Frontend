@@ -3,34 +3,37 @@ import { ArrowLeft } from "lucide-react";
 function StatCard({ label, value, className = "" }) {
   return (
     <div
-      className={`rounded-[22px] border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${className}`}
+      className={`min-w-0 rounded-[22px] border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${className}`}
     >
-      <p className="text-[10px] font-bold uppercase tracking-[0.14em]">{label}</p>
-      <p className="mt-2 text-[30px] font-black leading-none">{value}</p>
+      <p className="ccnet-nowrap-label text-[10px] font-bold uppercase tracking-[0.08em]">{label}</p>
+      <p className="mt-2 text-[clamp(1.5rem,2.2vw,1.875rem)] font-black leading-none">{value}</p>
     </div>
   );
 }
 
 export default function OrganizerActionLogsHeader({ stats, onBack }) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm">
-      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-        <div className="flex-1">
+    <div className="min-w-0 rounded-[28px] border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
+      <div className="flex min-w-0 flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="min-w-0 flex-1">
           <button
             type="button"
             onClick={onBack}
-            className="mb-4 inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
+            className="mb-4 inline-flex max-w-full items-center gap-2 rounded-2xl bg-amber-500 px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-amber-600"
           >
             <ArrowLeft size={16} />
             Quay lại Yêu cầu Tổ chức
           </button>
 
-          <h1 className="text-[34px] font-black leading-none tracking-tight text-slate-900">
+          <h1 className="text-[clamp(1.75rem,3vw,2.125rem)] font-black leading-tight tracking-tight text-slate-900">
             Lịch sử Quản duyệt Tổ chức
           </h1>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:min-w-[420px]">
+        <div
+          className="ccnet-auto-grid w-full gap-3 xl:max-w-[420px]"
+          style={{ "--ccnet-grid-min": "112px" }}
+        >
           <StatCard
             label="Tổng cộng"
             value={stats.total}

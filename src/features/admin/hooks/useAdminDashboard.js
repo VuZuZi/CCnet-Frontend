@@ -47,7 +47,7 @@ const ensureReason = (reason, actionLabel) => {
   const normalizedReason = String(reason || "").trim();
 
   if (!normalizedReason) {
-    throw new Error(`Reason is required to ${actionLabel}.`);
+    throw new Error(`Vui lòng nhập lý do để ${actionLabel}.`);
   }
 
   return normalizedReason;
@@ -165,19 +165,19 @@ export const useAdminDashboard = (activeTab) => {
 
       toast.success(
         updatedUser?.status === "banned"
-          ? "User has been banned successfully."
-          : "User has been unbanned successfully."
+          ? "Đã khóa người dùng thành công."
+          : "Đã mở khóa người dùng thành công."
       );
 
       return updatedUser;
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to update ban status."));
+      toast.error(getErrorMessage(error, "Cập nhật trạng thái khóa thất bại."));
       throw error;
     }
   };
 
   const toggleVerifyUser = async () => {
-    const error = new Error("Verify user feature is disabled.");
+    const error = new Error("Tính năng xác minh người dùng đang bị tắt.");
     toast.error(error.message);
     throw error;
   };
@@ -200,10 +200,10 @@ export const useAdminDashboard = (activeTab) => {
 
       await invalidateUsersAndLogs();
 
-      toast.success("User status updated successfully.");
+      toast.success("Đã cập nhật trạng thái người dùng.");
       return updatedUser;
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to update user status."));
+      toast.error(getErrorMessage(error, "Cập nhật trạng thái người dùng thất bại."));
       throw error;
     }
   };
@@ -255,14 +255,14 @@ export const useAdminDashboard = (activeTab) => {
       }),
     ]);
 
-    toast.success("Project status updated successfully.");
+    toast.success("Đã cập nhật trạng thái dự án.");
     return updatedProject;
   } catch (error) {
     if (previousProjects !== undefined) {
       queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, previousProjects);
     }
 
-    toast.error(getErrorMessage(error, "Failed to update project status."));
+    toast.error(getErrorMessage(error, "Cập nhật trạng thái dự án thất bại."));
     throw error;
   }
 };
@@ -296,14 +296,14 @@ export const useAdminDashboard = (activeTab) => {
 
       await queryClient.invalidateQueries({ queryKey: ADMIN_REPORTS_QUERY_KEY });
 
-      toast.success("Report resolved successfully.");
+      toast.success("Đã xử lý báo cáo.");
       return true;
     } catch (error) {
       if (previousReports !== undefined) {
         queryClient.setQueryData(ADMIN_REPORTS_QUERY_KEY, previousReports);
       }
 
-      toast.error(getErrorMessage(error, "Failed to resolve report."));
+      toast.error(getErrorMessage(error, "Xử lý báo cáo thất bại."));
       throw error;
     }
   };

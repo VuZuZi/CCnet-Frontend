@@ -1,4 +1,4 @@
-import {
+﻿import {
   ShieldCheck,
   Users,
   Sparkles,
@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
+import { getProjectFundingStats } from '@/features/project/utils/projectDisplay.utils';
 
 function formatCurrency(value) {
   return Number(value || 0).toLocaleString('vi-VN');
@@ -18,12 +19,15 @@ export function SidebarOrganizer({
   onOpenProjectGroup,
   onManageVolunteers,
 }) {
-  const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
   const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
+  const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
 
-  const availableBalance =
-    project?.financialDetail?.availableBalance ?? project?.currentAmount ?? 0;
-  const targetAmount = project?.targetAmount ?? 1;
+  const availableBalance = Number(project?.financialDetail?.availableBalance ?? 0);
+  const pendingDisbursement = Number(project?.financialDetail?.pendingDisbursement ?? 0);
+  const escrowBalance =
+    project?.financialDetail?.escrowBalance ??
+    availableBalance + pendingDisbursement;
+  const { raisedAmount, targetAmount, fundingPercent } = getProjectFundingStats(project);
   const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
   const progressPercent = Math.min(
     Math.round((availableBalance / Math.max(targetAmount, 1)) * 100),
@@ -62,18 +66,18 @@ export function SidebarOrganizer({
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/25 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">
             <Sparkles size={11} />
-            Organizer Mode
+            Chế độ nhà tổ chức
           </div>
           <h2 className="text-lg font-extrabold text-slate-900">Quản lý dự án</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Theo dõi volunteer và thao tác nhanh theo vai trò organizer.
+            Theo dõi tình nguyện viên và thao tác nhanh theo vai trò nhà tổ chức.
           </p>
         </div>
 
         <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-white shadow-sm">
           <ShieldCheck className="h-4 w-4" />
           <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
-            Organizer
+            Nhà tổ chức
           </span>
         </div>
       </div>
@@ -81,11 +85,11 @@ export function SidebarOrganizer({
       {isFunded ? (
         <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
-            Funds in Escrow
+            Quỹ đang ký quỹ
           </p>
 
           <div className="mt-2 text-4xl font-extrabold tracking-tight text-slate-900">
-            {formatCurrency(availableBalance)}đ
+            {formatCurrency(escrowBalance)}đ
           </div>
 
           {pendingRefunds > 0 ? (
@@ -136,13 +140,13 @@ export function SidebarOrganizer({
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
-                Volunteer Overview
+                Tổng quan tình nguyện
               </p>
               <h3 className="mt-2 text-2xl font-extrabold text-slate-900">
                 {isLoading ? '...' : pendingAppsCount}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Đơn tình nguyện đang chờ organizer xử lý
+                Đơn tình nguyện đang chờ nhà tổ chức xử lý
               </p>
             </div>
 
@@ -157,14 +161,14 @@ export function SidebarOrganizer({
         <div className="rounded-[24px] border border-amber-200 bg-amber-50 p-4">
           <p className="text-sm font-black text-amber-900">Yêu cầu cập nhật từ quản trị viên</p>
           <p className="mt-2 whitespace-pre-wrap text-sm leading-6 text-amber-800">
-            {project?.updateRequestReason || 'Vui lòng rà soát lại milestone của dự án.'}
+            {project?.updateRequestReason || 'Vui lòng rà soát lại mốc hoạt động của dự án.'}
           </p>
 
           <Link
             to={`/projects/${projectId}/updating`}
             className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-black text-slate-900 transition hover:bg-amber-600"
           >
-            Cập nhật milestone
+            Cập nhật mốc hoạt động
           </Link>
         </div>
       ) : null}
@@ -183,7 +187,7 @@ export function SidebarOrganizer({
           className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-amber-200 bg-[#FFFBEB] px-5 py-3.5 text-sm font-bold text-amber-900 transition hover:border-amber-300 hover:bg-amber-100"
         >
           <Users className="h-4 w-4" />
-          {isLoading ? 'Đang tải...' : `Quản lý volunteer${pendingAppsCount > 0 ? ` (${pendingAppsCount})` : ''}`}
+          {isLoading ? 'Đang tải...' : `Quản lý tình nguyện viên${pendingAppsCount > 0 ? ` (${pendingAppsCount})` : ''}`}
         </button>
       </div>
 
@@ -191,7 +195,7 @@ export function SidebarOrganizer({
         <div className="mb-3">
           <p className="text-sm font-bold text-slate-900">Nhóm dự án</p>
           <p className="mt-1 text-xs text-slate-500">
-            Mở nhanh group chat của dự án để trao đổi với volunteer.
+            Mở nhanh nhóm chat của dự án để trao đổi với tình nguyện viên.
           </p>
         </div>
 
@@ -214,3 +218,4 @@ export function SidebarOrganizer({
 }
 
 export default SidebarOrganizer;
+

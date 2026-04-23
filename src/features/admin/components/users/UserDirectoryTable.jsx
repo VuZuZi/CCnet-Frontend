@@ -10,6 +10,7 @@ import {
 import {
   getInitials,
   getRoleClass,
+  getRoleLabel,
   getStatusMeta,
 } from "../../utils/adminUser.utils";
 
@@ -26,24 +27,27 @@ export function UserDirectoryTable({
   onOpenBanModal,
 }) {
   return (
-    <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+    <div className="min-w-0 overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-5 py-4">
-        <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div className="flex min-w-0 flex-col gap-1 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
             <h2 className="text-xl font-black text-slate-900">Danh mục người dùng</h2>
             <p className="mt-1 text-sm text-slate-500">
               Trang {page} / {totalPages}
             </p>
           </div>
 
-          <div className="text-sm text-slate-500">
+          <div className="ccnet-nowrap-label max-w-full text-sm text-slate-500">
             Đang hiển thị {users.length} người dùng trên trang này
           </div>
         </div>
       </div>
 
-      <div className="min-h-[420px] overflow-hidden">
-        <table className="w-full table-fixed text-sm">
+      <div className="ccnet-safe-scroll min-h-[420px]">
+        <table
+          className="ccnet-safe-table text-sm"
+          style={{ "--ccnet-table-min": "900px" }}
+        >
           <thead className="bg-slate-50">
             <tr className="text-left text-slate-500">
               <th className="w-[42%] px-5 py-3 font-bold text-slate-600">Người dùng</th>
@@ -84,16 +88,16 @@ export function UserDirectoryTable({
                     className="border-b border-slate-100/80 transition hover:bg-slate-50/40"
                   >
                     <td className="px-5 py-4">
-                      <div className="group flex items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 transition-all duration-200 hover:border-amber-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_12px_28px_rgba(245,158,11,0.10)]">
+                      <div className="group flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3 transition-all duration-200 hover:border-amber-300 hover:shadow-[0_0_0_1px_rgba(245,158,11,0.35),0_12px_28px_rgba(245,158,11,0.10)]">
                         <div className="flex min-w-0 items-center gap-3">
                           {user.avatar ? (
                             <img
                               src={user.avatar}
                               alt="Ảnh đại diện"
-                              className="h-12 w-12 rounded-full object-cover ring-1 ring-slate-200"
+                              className="h-12 w-12 shrink-0 rounded-full object-cover ring-1 ring-slate-200"
                             />
                           ) : (
-                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 ring-1 ring-slate-200">
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-slate-100 text-sm font-bold text-slate-600 ring-1 ring-slate-200">
                               {getInitials(user.fullName)}
                             </div>
                           )}
@@ -132,7 +136,7 @@ export function UserDirectoryTable({
                           user.role
                         )}`}
                       >
-                        {user.role || "user"}
+                        {getRoleLabel(user.role)}
                       </span>
                     </td>
 

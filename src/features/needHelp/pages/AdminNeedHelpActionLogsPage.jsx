@@ -236,7 +236,7 @@ function LogCard({ log, isLast }) {
             <div className="space-y-4">
               <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
                 <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                  Admin
+                  Quản trị viên
                 </p>
                 <p className="mt-2 text-sm font-bold text-slate-900">
                   {actorName}
@@ -249,7 +249,7 @@ function LogCard({ log, isLast }) {
               {organizerName || organizerEmail ? (
                 <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Organizer được giao
+                      Nhà tổ chức được giao
                   </p>
                   <p className="mt-2 text-sm font-bold text-slate-900">
                     {organizerName || "--"}
@@ -294,8 +294,8 @@ function LogCard({ log, isLast }) {
 
                     <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-semibold text-slate-600">
                       {log?.previousState?.assignedOrganizerId
-                        ? "Đã có organizer"
-                        : "Chưa có organizer"}
+                        ? "Đã có nhà tổ chức"
+                        : "Chưa có nhà tổ chức"}
                     </span>
 
                     <span className="text-slate-400">→</span>
@@ -412,7 +412,7 @@ export function AdminNeedHelpActionLogsPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Theo dõi hoạt động kiểm duyệt, luồng giao việc cho organizer và
+                Theo dõi hoạt động kiểm duyệt, luồng giao việc cho nhà tổ chức và
                 các cập nhật quan trọng trong một dòng thời gian rõ ràng.
               </p>
             </div>
@@ -450,7 +450,7 @@ export function AdminNeedHelpActionLogsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Tìm theo tiêu đề yêu cầu, admin, organizer hoặc lý do..."
+            placeholder="Tìm theo tiêu đề yêu cầu, quản trị viên, nhà tổ chức hoặc lý do..."
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
           />
         </label>
@@ -484,7 +484,7 @@ export function AdminNeedHelpActionLogsPage() {
             Không tìm thấy nhật ký NeedHelp
           </h3>
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
-            Khi thao tác kiểm duyệt NeedHelp của admin được ghi nhận, chúng sẽ
+            Khi thao tác kiểm duyệt yêu cầu hỗ trợ của quản trị viên được ghi nhận, chúng sẽ
             xuất hiện tại đây.
           </p>
         </div>

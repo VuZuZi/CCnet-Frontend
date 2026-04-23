@@ -1,8 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { usePostMutations } from "../../hooks/usePostMutations";
-import { useQuery } from "@tanstack/react-query";
-import httpClient from "@/shared/lib/httpClient";
 import EditPostModal from "./EditPostModal";
 import PostTheaterMode from "./PostTheaterMode";
 import TextOnlyPostView from "./TextOnlyPostView";
@@ -182,6 +180,10 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   const relativeTime = getRelativeTime(post?.createdAt);
   const privacyInfo = PRIVACY_LABELS[post?.privacy] || PRIVACY_LABELS.public;
 
+  const openCommentView = () => {
+    setIsCommentViewOpen(true);
+  };
+
   return (
     <>
       <article className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden w-full min-w-0 hover:shadow-md transition-shadow duration-300">
@@ -325,7 +327,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             )}
             {stats.comments > 0 && (
               <button
-                onClick={() => setIsCommentViewOpen(true)}
+                onClick={openCommentView}
                 className="hover:underline font-medium cursor-pointer text-slate-500 hover:text-slate-700"
               >
                 {stats.comments} bình luận
@@ -351,7 +353,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             <span>Thích</span>
           </button>
           <button
-            onClick={() => setIsCommentViewOpen(true)}
+            onClick={openCommentView}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all duration-200 active:scale-95"
           >
             <CommentIcon className="size-5" />

@@ -2,6 +2,15 @@ import { useMyWallet, useWalletHistory } from '../hooks/useWalletQueries';
 import { PageLoader } from '@/shared/components/ui/PageLoader';
 import { ArrowDownLeft, ArrowUpRight, Wallet, Clock, AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
+import { getStatusLabel } from '@/shared/lib/statusLabels';
+
+const TRANSACTION_TYPE_LABELS = {
+    WALLET_WITHDRAWAL: 'Rút tiền',
+    USER_REFUND_REQUEST: 'Hoàn tiền ủng hộ',
+    DONATION_FROM_WALLET: 'Ủng hộ dự án từ ví',
+    WALLET_DEPOSIT: 'Nạp tiền vào ví',
+    DONATION: 'Ủng hộ dự án',
+};
 
 export function WalletDashboard() {
     const { data: wallet, isLoading: isLoadingWallet, isError: isWalletError } = useMyWallet();
@@ -60,11 +69,7 @@ export function WalletDashboard() {
                                         </div>
                                         <div>
                                             <p className="font-bold text-slate-900">
-                                                {tx.type === 'WALLET_WITHDRAWAL' ? 'Rút tiền' :
-                                                 tx.type === 'USER_REFUND_REQUEST' ? 'Hoàn tiền ủng hộ' :
-                                                 tx.type === 'DONATION_FROM_WALLET' ? 'Ủng hộ dự án từ Ví' :
-                                                 tx.type === 'WALLET_DEPOSIT' ? 'Nạp tiền vào ví' :
-                                                 tx.type === 'DONATION' ? 'Ủng hộ dự án' : tx.type}
+                                                {TRANSACTION_TYPE_LABELS[tx.type] || tx.type}
                                             </p>
                                             <p className="text-xs text-slate-500">
                                                 {format(new Date(tx.createdAt), 'dd/MM/yyyy HH:mm')}
@@ -78,7 +83,7 @@ export function WalletDashboard() {
                                         <p className={`text-base font-bold ${tx.direction === 'IN' ? 'text-emerald-600' : 'text-rose-600'}`}>
                                             {tx.direction === 'IN' ? '+' : '-'}{tx.amount.toLocaleString('vi-VN')} đ
                                         </p>
-                                        <p className="text-xs font-medium uppercase text-slate-400">{tx.status}</p>
+                                        <p className="text-xs font-medium uppercase text-slate-400">{getStatusLabel(tx.status)}</p>
                                     </div>
                                 </div>
                             ))}

@@ -7,6 +7,7 @@ import {
   Trophy, 
   Sparkles 
 } from 'lucide-react';
+import { getRoleLabel } from '@/shared/lib/roleLabels';
 
 export function DashboardPage() {
   const user = useAuthStore(authSelectors.user);
@@ -25,7 +26,7 @@ export function DashboardPage() {
 
         <section 
           className="mb-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
-          aria-label="Key Statistics"
+          aria-label="Thống kê chính"
         >
           <StatsCard 
             title="Tổng dự án" 
@@ -67,7 +68,7 @@ export function DashboardPage() {
                 <dt className="mb-1 text-sm font-medium text-gray-500">Vai trò</dt>
                 <dd>
                   <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                    {user?.role || 'Khách'}
+                    {getRoleLabel(user?.role, 'Khách')}
                   </span>
                 </dd>
               </div>

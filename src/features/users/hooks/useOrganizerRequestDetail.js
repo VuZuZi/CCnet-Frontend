@@ -18,7 +18,7 @@ export function useOrganizerRequestDetail(id) {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'organizer-requests'] });
       await queryClient.invalidateQueries({ queryKey: ['admin', 'organizer-request', id] });
       await queryClient.invalidateQueries({ queryKey: ['organizer-request', 'me'] });
-      toast.success('Đã duyệt hồ sơ Organizer');
+      toast.success('Đã duyệt hồ sơ nhà tổ chức');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));
@@ -31,7 +31,7 @@ export function useOrganizerRequestDetail(id) {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'organizer-requests'] });
       await queryClient.invalidateQueries({ queryKey: ['admin', 'organizer-request', id] });
       await queryClient.invalidateQueries({ queryKey: ['organizer-request', 'me'] });
-      toast.success('Đã từ chối hồ sơ Organizer');
+      toast.success('Đã từ chối hồ sơ nhà tổ chức');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

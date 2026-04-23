@@ -329,8 +329,8 @@ export default function NeedHelpMapShell() {
   }, [resetSelection]);
 
   return (
-    <div className="h-[calc(100vh-88px)] overflow-hidden bg-[rgb(255,248,230)]">
-      <div className="relative h-full w-full overflow-hidden rounded-[34px] border border-amber-100 shadow-[0_28px_80px_rgba(15,23,42,0.12)]">
+    <div className="h-[calc(100dvh-88px)] min-h-[560px] overflow-hidden bg-[rgb(255,248,230)]">
+      <div className="relative h-full w-full min-w-0 overflow-hidden rounded-[24px] border border-amber-100 shadow-[0_28px_80px_rgba(15,23,42,0.12)] sm:rounded-[34px]">
         <NeedHelpMapCanvas
           markers={normalized.markers}
           activeItemId={activeItemId}
@@ -374,7 +374,8 @@ export default function NeedHelpMapShell() {
           <button
             type="button"
             onClick={() => setIsSidebarOpen(false)}
-            className="pointer-events-auto absolute left-[389px] top-[146px] z-[2400] flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-white/92 text-slate-700 shadow-[0_18px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:bg-white"
+            style={{ left: "min(calc(100vw - 76px), 389px)" }}
+            className="pointer-events-auto absolute top-[146px] z-[2400] flex h-12 w-12 items-center justify-center rounded-full border border-white/80 bg-white/92 text-slate-700 shadow-[0_18px_36px_rgba(15,23,42,0.18)] backdrop-blur-xl transition hover:bg-white"
             aria-label="Đóng danh sách"
           >
             <ChevronLeft size={20} />

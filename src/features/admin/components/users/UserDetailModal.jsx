@@ -15,6 +15,7 @@ import {
   formatDateTime,
   getInitials,
   getRoleClass,
+  getRoleLabel,
   getStatusMeta,
   normalizeUserStatus,
 } from "../../utils/adminUser.utils";
@@ -380,7 +381,7 @@ function UserDetailModal({ open, user, onClose, loadUserDetail }) {
                     displayUser?.role
                   )}`}
                 >
-                  {displayUser?.role || "user"}
+                  {getRoleLabel(displayUser?.role)}
                 </span>
 
                 <span
@@ -424,7 +425,7 @@ function UserDetailModal({ open, user, onClose, loadUserDetail }) {
                   icon={<CircleOff size={16} strokeWidth={2.3} />}
                   label="Trạng thái tài khoản"
                   value={statusMeta.label}
-                  tone={statusMeta.label === "Banned" ? "red" : "green"}
+                  tone={displayUser.normalizedStatus === "banned" ? "red" : "green"}
                 />
               </div>
 

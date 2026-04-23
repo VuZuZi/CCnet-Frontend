@@ -8,9 +8,9 @@ export function UserFilters({
   onSearchChange,
 }) {
   return (
-    <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex flex-wrap gap-2">
+    <div className="min-w-0 rounded-[22px] border border-slate-200 bg-white px-4 py-3 shadow-sm">
+      <div className="flex min-w-0 flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex min-w-0 flex-wrap gap-2">
           {USER_FILTERS.map((item) => {
             const isActive = activeFilter === item.key;
 
@@ -19,7 +19,7 @@ export function UserFilters({
                 key={item.key}
                 type="button"
                 onClick={() => onFilterChange(item.key)}
-                className={`rounded-2xl px-4 py-2 text-sm font-bold transition ${
+                className={`min-w-0 rounded-2xl px-4 py-2 text-sm font-bold transition ${
                   isActive
                     ? "bg-amber-500 text-white shadow-sm"
                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
@@ -31,7 +31,7 @@ export function UserFilters({
           })}
         </div>
 
-        <div className="relative w-full xl:w-[320px]">
+        <div className="relative w-full min-w-0 xl:max-w-[320px]">
           <Search
             size={15}
             strokeWidth={2.3}

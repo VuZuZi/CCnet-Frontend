@@ -34,7 +34,7 @@ export function useDisbursementStatusStream(disbursementId, onStatusChange) {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Stream HTTP Error: ${response.status}`);
+                    throw new Error(`Lỗi kết nối luồng HTTP: ${response.status}`);
                 }
 
                 setConnectionStatus('open');

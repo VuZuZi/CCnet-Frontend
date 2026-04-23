@@ -14,6 +14,16 @@ export function getRoleBadgeClasses(role) {
   return "bg-slate-50 text-slate-600 border border-slate-200";
 }
 
+export function getRoleLabel(role) {
+  const normalized = String(role || "").toLowerCase();
+
+  if (normalized === "admin") return "Quản trị viên";
+  if (normalized === "organizer") return "Nhà tổ chức";
+  if (normalized === "user") return "Người dùng";
+
+  return role || "Người dùng";
+}
+
 export function normalizeUsersResponse(response) {
   const payload = response?.data?.data;
 

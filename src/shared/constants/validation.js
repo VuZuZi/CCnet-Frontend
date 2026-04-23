@@ -16,46 +16,46 @@ export const VALIDATION_LIMITS = {
 };
 
 export const VALIDATION_MESSAGES = {
-  REQUIRED: 'This field is required',
+  REQUIRED: 'Trường này là bắt buộc',
   
   EMAIL: {
-    INVALID: 'Please enter a valid email address',
-    REQUIRED: 'Email is required',
+    INVALID: 'Vui lòng nhập địa chỉ email hợp lệ',
+    REQUIRED: 'Vui lòng nhập email',
   },
   
   PASSWORD: {
-    REQUIRED: 'Password is required',
-    MIN_LENGTH: `Password must be at least ${VALIDATION_LIMITS.PASSWORD.MIN} characters`,
-    WEAK: 'Password must contain uppercase, lowercase, number, and special character',
-    MISMATCH: 'Passwords do not match',
+    REQUIRED: 'Vui lòng nhập mật khẩu',
+    MIN_LENGTH: `Mật khẩu phải có ít nhất ${VALIDATION_LIMITS.PASSWORD.MIN} ký tự`,
+    WEAK: 'Mật khẩu phải có chữ hoa, chữ thường, số và ký tự đặc biệt',
+    MISMATCH: 'Mật khẩu không khớp',
   },
   
   FULL_NAME: {
-    REQUIRED: 'Full name is required',
-    MIN_LENGTH: `Name must be at least ${VALIDATION_LIMITS.FULL_NAME.MIN} characters`,
-    MAX_LENGTH: `Name must not exceed ${VALIDATION_LIMITS.FULL_NAME.MAX} characters`,
+    REQUIRED: 'Vui lòng nhập họ và tên',
+    MIN_LENGTH: `Tên phải có ít nhất ${VALIDATION_LIMITS.FULL_NAME.MIN} ký tự`,
+    MAX_LENGTH: `Tên không được vượt quá ${VALIDATION_LIMITS.FULL_NAME.MAX} ký tự`,
   },
   
   OTP: {
-    REQUIRED: 'OTP is required',
-    INVALID: `OTP must be ${VALIDATION_LIMITS.OTP.LENGTH} digits`,
+    REQUIRED: 'Vui lòng nhập mã OTP',
+    INVALID: `Mã OTP phải gồm ${VALIDATION_LIMITS.OTP.LENGTH} chữ số`,
   },
 
   PROJECT: {
     TITLE: {
-      REQUIRED: 'Campaign title is required',
-      MIN_LENGTH: `Title must be at least ${VALIDATION_LIMITS.PROJECT_TITLE.MIN} characters`,
-      MAX_LENGTH: `Title must not exceed ${VALIDATION_LIMITS.PROJECT_TITLE.MAX} characters`,
+      REQUIRED: 'Vui lòng nhập tiêu đề chiến dịch',
+      MIN_LENGTH: `Tiêu đề phải có ít nhất ${VALIDATION_LIMITS.PROJECT_TITLE.MIN} ký tự`,
+      MAX_LENGTH: `Tiêu đề không được vượt quá ${VALIDATION_LIMITS.PROJECT_TITLE.MAX} ký tự`,
     },
     DESCRIPTION: {
-      MAX_LENGTH: `Description must not exceed ${VALIDATION_LIMITS.PROJECT_DESCRIPTION.MAX} characters`,
+      MAX_LENGTH: `Mô tả không được vượt quá ${VALIDATION_LIMITS.PROJECT_DESCRIPTION.MAX} ký tự`,
     },
     FINANCIAL_GOAL: {
-      INVALID: 'Financial goal must be a positive number',
+      INVALID: 'Mục tiêu tài chính phải là số dương',
     },
     DATE: {
-      INVALID: 'Please enter a valid date',
-      END_BEFORE_START: 'End date must be after start date',
+      INVALID: 'Vui lòng nhập ngày hợp lệ',
+      END_BEFORE_START: 'Ngày kết thúc phải sau ngày bắt đầu',
     },
   },
 };

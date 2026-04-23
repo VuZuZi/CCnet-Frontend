@@ -39,7 +39,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-bold text-slate-900 mb-3">
-              3. Quyền và trách nhiệm của Người Tổ Chức (Organizer)
+              3. Quyền và trách nhiệm của người tổ chức
             </h2>
             <ul className="list-disc pl-5 space-y-2 mt-2">
               <li>

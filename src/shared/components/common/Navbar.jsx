@@ -24,6 +24,7 @@ import { useMyWallet } from '@/features/wallet/hooks/useWalletQueries';
 import NavbarChatAction from './navbar/NavbarChatAction';
 import NavbarUserDropdown from './navbar/NavbarUserDropdown';
 import NavbarNotificationAction from '@/features/notification/components/NavbarNotificationAction';
+import { getRoleLabel } from '@/shared/lib/roleLabels';
 
 const NAV_LINKS = [
   { label: "Dự án", to: ROUTES.PROJECTS },
@@ -148,10 +149,10 @@ export function Navbar() {
   }, [location.pathname]);
 
   return (
-    <nav className="sticky top-0 z-[3000] w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
-      <div className="w-full px-6 sm:px-8 lg:px-10 xl:px-12">
-        <div className="grid h-20 grid-cols-[auto_minmax(320px,1fr)_auto] items-center gap-8 lg:gap-10 overflow-visible">
-          <div className="flex min-w-0 items-center gap-10 overflow-visible">
+    <nav className="sticky top-0 z-[3000] w-full max-w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
+      <div className="w-full max-w-full px-3 sm:px-5 lg:px-8 xl:px-10">
+        <div className="grid h-20 min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 overflow-visible md:gap-5 lg:gap-8">
+          <div className="flex min-w-0 items-center gap-4 overflow-visible lg:gap-8">
             <Link
               to={ROUTES.HOME}
               className="group flex flex-shrink-0 items-center gap-3 outline-none"
@@ -164,7 +165,7 @@ export function Navbar() {
               </span>
             </Link>
 
-            <div className="hidden items-center gap-6 text-[15px] font-medium lg:flex">
+            <div className="hidden min-w-0 items-center gap-4 text-[15px] font-medium lg:flex xl:gap-6">
               {NAV_LINKS.map((link) => {
                 const isActive = location.pathname.startsWith(link.to);
 
@@ -187,13 +188,13 @@ export function Navbar() {
           </div>
 
           {/* KHU VỰC GIỮA: Thanh tìm kiếm */}
-          <div className="hidden w-full justify-center md:flex">
-            <div className="w-full max-w-[420px] lg:max-w-[520px]">
+          <div className="hidden min-w-0 w-full justify-center lg:flex">
+            <div className="w-full max-w-[min(520px,100%)]">
               <GlobalSearch />
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 overflow-visible sm:gap-4 lg:gap-5">
+          <div className="flex min-w-0 items-center justify-end gap-1.5 overflow-visible sm:gap-3 lg:gap-4">
             {isAuthenticated ? (
               <>
                 {/* 1. DROPDOWN GIỚI THIỆU (Nằm trái cùng) */}
@@ -213,11 +214,11 @@ export function Navbar() {
                 <NavbarNotificationAction isAuthenticated={isAuthenticated} />
 
                 <div
-                  className="hidden items-center gap-1.5 p-2 text-slate-500 md:flex"
+                  className="hidden max-w-[150px] items-center gap-1.5 p-2 text-slate-500 xl:flex"
                   title="Số dư ví"
                 >
                   <Wallet size={20} />
-                  <span className="text-xs font-bold text-slate-600">
+                  <span className="truncate text-xs font-bold text-slate-600">
                     {isWalletLoading ? '...' : `${(walletData?.balance || 0).toLocaleString('vi-VN')}đ`}
                   </span>
                 </div>
@@ -338,7 +339,7 @@ export function Navbar() {
                     {user?.fullName}
                   </p>
                   <p className="text-xs capitalize text-slate-500">
-                    {user?.role || 'Người dùng'}
+                    {getRoleLabel(user?.role)}
                   </p>
                 </div>
               </div>
@@ -452,11 +453,6 @@ function OrganizerNeedHelpAction({ user }) {
     };
   }, [isOpen]);
 
-  if (!isOrganizer) return null;
-
-  const suggestedItems = data?.data || [];
-  const hasItems = suggestedItems.length > 0;
-
   const panelStyle = useMemo(() => {
     if (!anchorRect) return undefined;
 
@@ -467,6 +463,11 @@ function OrganizerNeedHelpAction({ user }) {
       zIndex: 5000,
     };
   }, [anchorRect]);
+
+  if (!isOrganizer) return null;
+
+  const suggestedItems = data?.data || [];
+  const hasItems = suggestedItems.length > 0;
 
   return (
     <>
@@ -508,7 +509,7 @@ function OrganizerNeedHelpAction({ user }) {
             <>
               <button
                 type="button"
-                aria-label="Đóng gợi ý NeedHelp"
+                aria-label="Đóng gợi ý yêu cầu hỗ trợ"
                 onClick={() => setIsOpen(false)}
                 className="fixed inset-0 z-[4990] cursor-default bg-transparent"
               />
@@ -596,7 +597,7 @@ function UserDropdown({ user, onLogout }) {
             {user?.fullName || "Alex Doe"}
           </span>
           <span className="block text-xs capitalize text-slate-500">
-            {user?.role || "Nhà tài trợ"}
+            {getRoleLabel(user?.role, "Nhà tài trợ")}
           </span>
         </div>
         <ChevronDown className="hidden text-slate-400 lg:block" size={16} />

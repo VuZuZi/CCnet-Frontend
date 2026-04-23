@@ -26,7 +26,7 @@ export function AchievementBadges({ badges = [] }) {
       <div className="mb-5">
         <h2 className="text-xl font-black text-slate-900">Huy hiệu đóng góp</h2>
         <p className="mt-1 text-sm text-slate-500">
-          Huy hiệu được mở khóa theo các dự án volunteer đã hoàn thành.
+          Huy hiệu được mở khóa theo các dự án tình nguyện đã hoàn thành.
         </p>
       </div>
 

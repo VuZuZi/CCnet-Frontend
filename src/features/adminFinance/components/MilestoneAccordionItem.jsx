@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, FileText, Wallet, CheckCircle2, AlertCircle } from 'lucide-react';
 import { formatProjectCurrencyVND } from '@/features/project/utils/projectDisplay.utils';
+import { getStatusLabel } from '@/shared/lib/statusLabels';
 import clsx from 'clsx';
 
 export function MilestoneAccordionItem({ milestone, onReviewEvidence, onReviewDisbursement }) {
@@ -30,6 +31,7 @@ export function MilestoneAccordionItem({ milestone, onReviewEvidence, onReviewDi
 
             {isOpen && (
                 <div className="px-5 pb-5 grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in slide-in-from-top-2 duration-300">
+                    {/* BÁO CÁO NGHIỆM THU */}
                     <div className="space-y-3">
                         <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                             <FileText size={12} /> Báo cáo nghiệm thu ({evidences.length})
@@ -38,36 +40,50 @@ export function MilestoneAccordionItem({ milestone, onReviewEvidence, onReviewDi
                             <div key={ev._id} className="p-4 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
                                 <div className="min-w-0 pr-4">
                                     <p className="text-xs font-bold text-slate-900 truncate">{ev.reportContent}</p>
-                                    <span className="text-[9px] font-black uppercase text-slate-400">{ev.status}</span>
+                                    <span className="text-[9px] font-black uppercase text-slate-400">{getStatusLabel(ev.status)}</span>
                                 </div>
                                 <button
                                     onClick={() => onReviewEvidence(ev._id)}
-                                    className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-[10px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm"
+                                    className="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-[10px] font-bold hover:bg-slate-900 hover:text-white transition-all shadow-sm shrink-0"
                                 >
-                                    Review
+                                    Xem xét
                                 </button>
                             </div>
                         )) : <p className="text-xs italic text-slate-400 p-4">Chưa có bằng chứng nào.</p>}
                     </div>
 
+                    {/* LỆNH GIẢI NGÂN */}
                     <div className="space-y-3">
                         <h5 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
                             <Wallet size={12} /> Lệnh giải ngân ({disbursementRequests.length})
                         </h5>
-                        {disbursementRequests.length > 0 ? disbursementRequests.map(req => (
-                            <div key={req._id} className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-center justify-between">
-                                <div>
-                                    <p className="text-xs font-bold text-blue-900">{formatProjectCurrencyVND(req.requestedAmount)}</p>
-                                    <span className="text-[9px] font-black uppercase text-blue-500">{req.status}</span>
+                        {disbursementRequests.length > 0 ? disbursementRequests.map(req => {
+                            const isCompleted = req.status === 'COMPLETED'; 
+                            return (
+                                <div key={req._id} className={clsx(
+                                    "p-4 rounded-2xl border flex items-center justify-between",
+                                    isCompleted ? "bg-slate-50 border-slate-200" : "bg-blue-50/50 border-blue-100"
+                                )}>
+                                    <div>
+                                        <p className={clsx("text-xs font-bold", isCompleted ? "text-slate-700" : "text-blue-900")}>
+                                            {formatProjectCurrencyVND(req.requestedAmount)}
+                                        </p>
+                                        <span className={clsx("text-[9px] font-black uppercase", isCompleted ? "text-emerald-500" : "text-blue-500")}>
+                                            {getStatusLabel(req.status)}
+                                        </span>
+                                    </div>
+                                    {/* Chỉ hiện nút Xử lý tiền nếu CHƯA hoàn thành */}
+                                    {!isCompleted && (
+                                        <button
+                                            onClick={() => onReviewDisbursement(req._id)}
+                                            className="px-3 py-1.5 rounded-lg border bg-white border-blue-200 text-[10px] font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm shrink-0"
+                                        >
+                                            Xử lý tiền
+                                        </button>
+                                    )}
                                 </div>
-                                <button
-                                    onClick={() => onReviewDisbursement(req._id)}
-                                    className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-[10px] font-bold text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
-                                >
-                                    Xử lý tiền
-                                </button>
-                            </div>
-                        )) : <p className="text-xs italic text-slate-400 p-4">Chưa có yêu cầu rút tiền.</p>}
+                            );
+                        }) : <p className="text-xs italic text-slate-400 p-4">Chưa có yêu cầu rút tiền.</p>}
                     </div>
                 </div>
             )}

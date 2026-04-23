@@ -688,7 +688,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
       if (item.type === REALTIME_NOTIFICATION_TYPES.REFUND_REQUEST_SUBMITTED) {
         toast.success(
-          "Đã gửi yêu cầu hoàn tiền. Admin sẽ xem xét và phản hồi sớm nhất."
+          "Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xem xét và phản hồi sớm nhất."
         );
 
         queryClient.invalidateQueries({

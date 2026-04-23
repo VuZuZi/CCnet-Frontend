@@ -162,7 +162,7 @@ export default function FeaturedProject({
     try {
       if (navigator.share) {
         await navigator.share({
-          title: featuredProject?.title || "Project",
+    title: featuredProject?.title || "Dự án",
           text: "Xem dự án này trên CCNet",
           url,
         });

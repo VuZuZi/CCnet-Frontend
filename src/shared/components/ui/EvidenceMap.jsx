@@ -34,60 +34,58 @@ function MapBoundsSetter({ points }) {
 }
 
 export function EvidenceMap({ markers = [] }) {
-  const validPoints = useMemo(
-    () =>
-      markers
-        .filter(
-          (m) =>
-            Array.isArray(m.captureMetadata?.location?.coordinates) &&
-            m.captureMetadata.location.coordinates.length >= 2
-        )
-        .map((m) => ({
-          id: m.id || m._id,
-          lat: Number(m.captureMetadata.location.coordinates[1]),
-          lng: Number(m.captureMetadata.location.coordinates[0]),
-          url: m.url,
-        }))
-        .filter(
-          (point) =>
-            Number.isFinite(point.lat) && Number.isFinite(point.lng)
-        ),
-    [markers]
-  );
+    // [FIXED]: Xử lý tương thích ngược & tương thích chéo cho cả object flat và GeoJSON
+    const validPoints = useMemo(() => markers
+        .map(m => {
+            const meta = m.captureMetadata || {};
+            let lat = null;
+            let lng = null;
 
-  if (validPoints.length === 0) {
+            // Xử lý chuẩn Data phẳng (BE đang trả về hiện tại)
+            if (typeof meta.lat === 'number' && typeof meta.lng === 'number') {
+                lat = meta.lat;
+                lng = meta.lng;
+            } 
+            // Dự phòng hỗ trợ GeoJSON (nếu BE nâng cấp)
+            else if (Array.isArray(meta.location?.coordinates) && meta.location.coordinates.length >= 2) {
+                lat = meta.location.coordinates[1];
+                lng = meta.location.coordinates[0];
+            }
+
+            return {
+                id: m.id || m._id,
+                lat,
+                lng,
+                url: m.url
+            };
+        })
+        .filter(point => point.lat !== null && point.lng !== null), [markers]);
+
+    if (validPoints.length === 0) {
+        return (
+            <div className="flex h-full w-full items-center justify-center bg-slate-100 border border-slate-200 text-slate-400 text-xs text-center p-4">
+                Không tìm thấy dữ liệu GPS trong các ảnh được cung cấp.
+            </div>
+        );
+    }
+
     return (
-      <div className="flex h-full w-full items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 p-4 text-center text-xs text-slate-400">
-        Không tìm thấy dữ liệu GPS trong các ảnh được cung cấp.
-      </div>
+        <div className="h-full w-full overflow-hidden border border-slate-200 z-0">
+            <MapContainer center={[validPoints[0].lat, validPoints[0].lng]} zoom={13} className="h-full w-full relative z-0">
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                {validPoints.map((point) => (
+                    <Marker 
+                        key={point.id} 
+                        position={[point.lat, point.lng]} 
+                        icon={customMarkerIcon}
+                    >
+                        <Popup>
+                            <img src={point.url} alt="Bằng chứng" className="w-32 h-20 object-cover rounded-lg" />
+                        </Popup>
+                    </Marker>
+                ))}
+                <MapBoundsSetter points={validPoints} />
+            </MapContainer>
+        </div>
     );
-  }
-
-  return (
-    <div className="z-0 h-full w-full overflow-hidden rounded-2xl border border-slate-200">
-      <MapContainer
-        center={[validPoints[0].lat, validPoints[0].lng]}
-        zoom={13}
-        className="h-full w-full"
-      >
-        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-        {validPoints.map((point) => (
-          <Marker
-            key={point.id}
-            position={[point.lat, point.lng]}
-            icon={customMarkerIcon}
-          >
-            <Popup>
-              <img
-                src={point.url}
-                alt="Bằng chứng"
-                className="h-20 w-32 rounded-lg object-cover"
-              />
-            </Popup>
-          </Marker>
-        ))}
-        <MapBoundsSetter points={validPoints} />
-      </MapContainer>
-    </div>
-  );
 }

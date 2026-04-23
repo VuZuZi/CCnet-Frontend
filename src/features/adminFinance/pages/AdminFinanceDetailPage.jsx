@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAdminFinanceDetail } from '../hooks/useAdminFinanceQueries';
+import { ADMIN_FINANCE_QUERY_KEYS } from '../constants/adminFinance.queryKeys';
 import { AdminFinanceEscrowCard } from '../components/AdminFinanceEscrowCard';
 import { MilestoneAccordionItem } from '../components/MilestoneAccordionItem';
 import { AdminEvidenceReviewModal } from '@/features/evidence/components/admin/AdminEvidenceReviewModal';
@@ -11,6 +13,8 @@ import { ArrowLeft, ShieldCheck } from 'lucide-react';
 export default function AdminFinanceDetailPage() {
     const { projectId } = useParams();
     const navigate = useNavigate();
+    const queryClient = useQueryClient();
+    
     const { data, isLoading } = useAdminFinanceDetail(projectId);
 
     const [reviewingEvidenceId, setReviewingEvidenceId] = useState(null);
@@ -21,17 +25,23 @@ export default function AdminFinanceDetailPage() {
 
     const { project, escrow, milestones = [] } = data;
 
+    const handleRefreshData = () => {
+        queryClient.invalidateQueries({ 
+            queryKey: ADMIN_FINANCE_QUERY_KEYS.detail(projectId) 
+        });
+    };
+
     return (
         <div className="p-6 max-w-6xl mx-auto space-y-8 animate-in fade-in duration-500">
-            <div className="flex items-start gap-4">
-                <button onClick={() => navigate(-1)} className="h-10 w-10 shrink-0 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 transition-colors">
+            <div className="flex items-center gap-4 min-w-0">
+                <button onClick={() => navigate(-1)} className="shrink-0 h-10 w-10 flex items-center justify-center rounded-xl bg-white border border-slate-100 text-slate-400 hover:text-slate-900 transition-colors shadow-sm">
                     <ArrowLeft size={20} />
                 </button>
-                <div className="min-w-0">
-                    <h1 className="text-2xl font-black text-slate-900 [overflow-wrap:anywhere]">
+                <div className="min-w-0 flex-1">
+                    <h1 className="text-2xl font-black text-slate-900 truncate" title={project.title}>
                         {project.title}
                     </h1>
-                    <p className="text-sm text-slate-500 [overflow-wrap:anywhere]">ID Dự án: {project.id} • Organizer: {project.organizer?.fullName}</p>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Quản lý tài chính & kiểm toán</p>
                 </div>
             </div>
 
@@ -63,10 +73,12 @@ export default function AdminFinanceDetailPage() {
                     onClose={() => setReviewingEvidenceId(null)}
                 />
             )}
+            
             {reviewingDisbursementId && (
                 <AdminDisbursementReviewModal
                     requestId={reviewingDisbursementId}
                     onClose={() => setReviewingDisbursementId(null)}
+                    onSuccess={handleRefreshData}
                 />
             )}
         </div>

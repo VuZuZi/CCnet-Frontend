@@ -58,7 +58,7 @@ export function DisbursementTransferEngine({ request, paymentInfo, onCompleted }
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                         </span>
-                        <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Auto-Listen</span>
+                        <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Tự động nghe</span>
                     </div>
                 )}
                 
@@ -113,7 +113,7 @@ export function DisbursementTransferEngine({ request, paymentInfo, onCompleted }
                     <div className="space-y-4 p-6 bg-slate-50 rounded-3xl border border-slate-200 animate-in slide-in-from-bottom-4 duration-300 shadow-inner">
                         <h4 className="text-xs font-black uppercase text-amber-600 flex items-center gap-2">
                             <ShieldAlert size={16} />
-                            Chế độ xử lý thủ công (Fallback)
+                            Chế độ xử lý thủ công (dự phòng)
                         </h4>
 
                         {!showFailInput ? (
@@ -122,7 +122,7 @@ export function DisbursementTransferEngine({ request, paymentInfo, onCompleted }
                                     <KeyRound size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input
                                         type="text"
-                                        placeholder="Nhập mã giao dịch (Bank Ref)..."
+                                        placeholder="Nhập mã giao dịch ngân hàng..."
                                         value={bankTransactionRef}
                                         onChange={(e) => setBankTransactionRef(e.target.value)}
                                         className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm font-medium outline-none focus:border-emerald-500 transition-all shadow-sm"

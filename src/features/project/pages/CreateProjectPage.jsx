@@ -7,6 +7,7 @@ import { useProjectDraftStore } from "../stores/useProjectDraftStore";
 import { useProjectDraftDetail } from "../hooks/useProjectQueries";
 import { useHelpRequestAsProjectData } from "@/features/needHelp/hooks/useHelpRequestQueries";
 import { useToast } from "@/shared/contexts/ToastContext";
+import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
 import Step1Story from "../components/Step1Story";
 import Step2Budget from "../components/Step2Budget";
 import Step3Preview from "../components/create-project/step3/Step3Preview";
@@ -83,6 +84,7 @@ export function CreateProjectPage() {
 
   const isEditMode = Boolean(id || location.pathname.includes("edit"));
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+  useBodyScrollLock(isDiscardModalOpen);
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -228,8 +230,8 @@ export function CreateProjectPage() {
         </div>
 
         {isDiscardModalOpen ? (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60">
+            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-150">
               <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full mb-4">
                 <AlertTriangle className="text-red-500" size={24} />
               </div>

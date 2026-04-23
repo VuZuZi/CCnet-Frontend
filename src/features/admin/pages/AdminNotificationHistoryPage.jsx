@@ -83,27 +83,27 @@ export function AdminNotificationHistoryPage() {
   const stats = useMemo(() => getNotificationHistoryStats(items), [items]);
 
   return (
-    <div className="space-y-5">
-      <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_40px_-32px_rgba(15,23,42,0.18)]">
+    <div className="min-w-0 space-y-5">
+      <section className="min-w-0 overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_40px_-32px_rgba(15,23,42,0.18)]">
         <div className="px-6 py-6 sm:px-8">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="max-w-3xl">
+          <div className="flex min-w-0 flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 max-w-3xl">
               <div className="flex flex-wrap items-center gap-3">
                 <Link
                   to="/admin/notifications"
-                  className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-700 transition-colors hover:bg-amber-100"
+                  className="inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-700 transition-colors hover:bg-amber-100"
                 >
                   <ArrowLeft size={16} />
                   Quay lại Thông báo
                 </Link>
 
-                <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
+                <div className="inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.08em] text-amber-700">
                   <History size={14} />
                   Lịch sử Thông báo
                 </div>
               </div>
 
-              <h1 className="mt-4 text-[28px] font-black leading-none tracking-tight text-slate-900 sm:text-[46px]">
+              <h1 className="mt-4 text-[clamp(1.75rem,4vw,2.875rem)] font-black leading-tight tracking-tight text-slate-900">
                 Lịch sử Thông báo
               </h1>
 
@@ -117,9 +117,9 @@ export function AdminNotificationHistoryPage() {
         </div>
       </section>
 
-      <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
+      <section className="min-w-0 rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+        <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
             <p className="text-sm font-black tracking-tight text-slate-900">
               Tìm kiếm lịch sử thông báo
             </p>
@@ -128,7 +128,7 @@ export function AdminNotificationHistoryPage() {
             </p>
           </div>
 
-          <label className="relative block w-full md:w-[440px]">
+          <label className="relative block w-full min-w-0 md:max-w-[440px]">
             <Search
               size={17}
               className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { usePostMutations } from "../../hooks/usePostMutations";
 import { Globe2, Lock, X, ImagePlus } from "lucide-react";
+import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
 
 const PRIVACY_OPTIONS = [
   { value: "public", label: "Công khai", description: "Ai cũng xem được", icon: Globe2 },
@@ -18,6 +19,7 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
   const { updatePost } = usePostMutations();
   const totalMediaCount = oldImages.length + newAttachments.length;
   const isOverLimit = content.length > 5000;
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (isOpen && post) {
@@ -40,10 +42,8 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
       if (event.key === "Escape") onClose();
     };
     document.addEventListener("keydown", handleKeyDown);
-    document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
     };
   }, [isOpen, onClose]);
 
@@ -87,7 +87,7 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
     isOverLimit;
 
   return (
-    <div className="fixed inset-0 z-[1100] flex items-center justify-center px-4 py-6 bg-black/60 backdrop-blur-sm">
+    <div className="ccnet-modal-overlay fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/45 px-4 py-6">
       <button
         type="button"
         className="absolute inset-0 cursor-default"
@@ -95,7 +95,7 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
         aria-label="Đóng"
       />
 
-      <div className="relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
+      <div className="ccnet-modal-panel relative z-10 flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-2xl">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
           <div>
@@ -115,7 +115,7 @@ const EditPostModal = ({ isOpen, onClose, post }) => {
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto bg-slate-50 p-4 sm:p-6 flex-1">
+        <div className="ccnet-modal-scroll flex-1 overflow-y-auto bg-slate-50 p-4 sm:p-6">
           {/* Privacy selector */}
           <div className="mb-4 flex items-center gap-2 rounded-2xl border border-slate-200 bg-white p-1">
             {PRIVACY_OPTIONS.map((option) => {

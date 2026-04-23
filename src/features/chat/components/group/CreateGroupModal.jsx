@@ -176,7 +176,7 @@ export function CreateGroupModal({
                   {groupAvatarPreview ? (
                     <img
                       src={groupAvatarPreview}
-                      alt="group avatar"
+                      alt="Ảnh đại diện nhóm"
                       className="h-full w-full object-cover"
                     />
                   ) : (

@@ -109,7 +109,7 @@ function SummaryCard({ label, value, active = false }) {
 
 function AssignedRequestCard({ request, onAccept, onReject, isResponding, activeTab }) {
   const urgencyStyle = URGENCY_STYLES[request.urgencyLevel] || URGENCY_STYLES.MEDIUM;
-  const categoryLabel = CATEGORY_LABELS[request.category] || 'Other';
+  const categoryLabel = CATEGORY_LABELS[request.category] || 'Khác';
   const coverImage = request.evidences?.find(
     (item) => item?.mediaType === 'image' || !item?.mediaType
   )?.url;

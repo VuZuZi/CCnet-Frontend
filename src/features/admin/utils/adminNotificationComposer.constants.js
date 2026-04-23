@@ -3,26 +3,26 @@ import { Shield, User, Users } from "lucide-react";
 export const ROLE_OPTIONS = [
   {
     value: "user",
-    label: "User",
+    label: "Người dùng",
     icon: User,
   },
   {
     value: "organizer",
-    label: "Organizer",
+    label: "Nhà tổ chức",
     icon: Users,
   },
   {
     value: "admin",
-    label: "Admin",
+    label: "Quản trị viên",
     icon: Shield,
   },
 ];
 
 export const SEVERITY_OPTIONS = [
-  { value: "info", label: "Info" },
-  { value: "success", label: "Success" },
-  { value: "warning", label: "Warning" },
-  { value: "error", label: "Error" },
+  { value: "info", label: "Thông tin" },
+  { value: "success", label: "Thành công" },
+  { value: "warning", label: "Cảnh báo" },
+  { value: "error", label: "Lỗi" },
 ];
 
 export const EMPTY_ROLE_SELECTIONS = {

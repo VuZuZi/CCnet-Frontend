@@ -152,6 +152,13 @@ export const organizerRequestSchema = z.object({
     .min(2, "Vui lòng chọn hoặc nhập tên ngân hàng")
     .max(200, "Tên ngân hàng quá dài"),
 
+  bankBin: z
+    .string()
+    .trim()
+    .max(10, "Mã BIN không hợp lệ")
+    .optional()
+    .default(""),
+
   bankAccountNumber: z.preprocess(
     (value) => (typeof value === "string" ? value.trim() : value),
     z.string().regex(BANK_ACCOUNT_REGEX, "Số tài khoản phải từ 8 đến 19 chữ số")

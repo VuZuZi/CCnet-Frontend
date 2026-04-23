@@ -15,17 +15,17 @@ const DOCUMENT_ITEMS = [
   },
   {
     key: "selfie",
-    title: "Ảnh chân dung (Selfie)",
+    title: "Ảnh chân dung tự chụp",
     emptyText: "Chưa cung cấp ảnh",
   },
   {
     key: "businessLicense",
-    title: "Giấy phép Kinh doanh",
+    title: "Giấy phép kinh doanh",
     emptyText: "Chưa cung cấp",
   },
   {
     key: "bankProof",
-    title: "Minh chứng Ngân hàng",
+    title: "Minh chứng ngân hàng",
     emptyText: "Chưa cung cấp",
   },
 ];

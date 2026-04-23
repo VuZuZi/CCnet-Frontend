@@ -364,7 +364,7 @@ export function EditHelpRequestPage() {
                   )}
                 />
               </FormField>
-              <p className="mt-3 text-xs text-slate-400">Upload photos, videos, or documents. Max 10 files.</p>
+              <p className="mt-3 text-xs text-slate-400">Tải lên ảnh, video hoặc tài liệu. Tối đa 10 tệp.</p>
             </SectionCard>
           </div>
 
@@ -372,7 +372,7 @@ export function EditHelpRequestPage() {
           <div className="space-y-6 lg:col-span-1">
 
             {/* Location */}
-            <SectionCard icon={MapPin} title="Location" accent="emerald">
+            <SectionCard icon={MapPin} title="Địa điểm" accent="emerald">
               <FormField error={errors.location?.address?.message || errors.location?.message}>
                 <Controller
                   name="location"
@@ -389,8 +389,8 @@ export function EditHelpRequestPage() {
             </SectionCard>
 
             {/* Funding Goal */}
-            <SectionCard icon={DollarSign} title="Funding Goal" accent="amber">
-              <FormField label="Amount Needed (VND)" error={errors.amountNeeded?.message}>
+            <SectionCard icon={DollarSign} title="Mục tiêu gây quỹ" accent="amber">
+              <FormField label="Số tiền cần hỗ trợ (VND)" error={errors.amountNeeded?.message}>
                 <div className="relative">
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <span className="text-base font-bold text-slate-400">₫</span>

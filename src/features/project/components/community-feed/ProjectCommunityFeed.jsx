@@ -134,7 +134,7 @@ export function ProjectCommunityFeed({
     }
 
     if (file.size > 50 * 1024 * 1024) {
-      toast.error("File quá lớn. Tối đa 50MB.");
+      toast.error("Tệp quá lớn. Tối đa 50MB.");
       return;
     }
 

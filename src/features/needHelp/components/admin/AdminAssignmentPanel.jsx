@@ -4,8 +4,6 @@ import { ArrowRight, ShieldCheck, UserRound } from 'lucide-react';
 import { useAssignOrganizer } from '../../hooks/useHelpRequestMutations';
 import { OrganizerSuggestionModal } from './OrganizerSuggestionModal';
 
-const ASSIGNABLE_STATUSES = ['VERIFIED', 'IN_PROGRESS'];
-
 export function AdminAssignmentPanel({ helpRequest }) {
   const [isOpen, setIsOpen] = useState(false);
   const assignMutation = useAssignOrganizer();
@@ -20,11 +18,10 @@ export function AdminAssignmentPanel({ helpRequest }) {
   };
 
   const assignedName = helpRequest?.assignedOrganizerId?.fullName;
-  const isAssignable = ASSIGNABLE_STATUSES.includes(helpRequest?.status);
-  const buttonLabel = assignedName ? 'Giao lại' : 'Giao organizer';
+  const buttonLabel = assignedName ? 'Giao lại' : 'Giao nhà tổ chức';
 
   const handleOpenModal = () => {
-    if (!isAssignable || assignMutation.isPending) {
+    if (assignMutation.isPending) {
       return;
     }
     setIsOpen(true);
@@ -40,25 +37,19 @@ export function AdminAssignmentPanel({ helpRequest }) {
           </div>
 
           <h3 className="mt-3 text-lg font-bold tracking-tight text-slate-900">
-            Giao việc cho organizer
+            Giao việc cho nhà tổ chức
           </h3>
 
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Giao yêu cầu này cho organizer phù hợp dựa trên mức độ liên quan và vị trí.
+            Giao yêu cầu này cho nhà tổ chức phù hợp dựa trên mức độ liên quan và vị trí.
           </p>
-
-          {!isAssignable ? (
-            <p className="mt-2 text-sm font-medium text-amber-700">
-              Hãy xác minh yêu cầu này trước khi giao cho organizer.
-            </p>
-          ) : null}
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
             <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
               <UserRound size={13} />
-              Organizer hiện tại
+              Nhà tổ chức hiện tại
             </div>
             <p className="mt-1 text-sm font-semibold text-slate-900">
               {assignedName || 'Chưa được giao'}
@@ -68,7 +59,7 @@ export function AdminAssignmentPanel({ helpRequest }) {
           <button
             type="button"
             onClick={handleOpenModal}
-            disabled={!isAssignable || assignMutation.isPending}
+            disabled={assignMutation.isPending}
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {buttonLabel}
