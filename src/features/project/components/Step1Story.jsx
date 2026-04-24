@@ -187,8 +187,6 @@ export default function Step1Story() {
       setValue('projectType', pendingType, { shouldValidate: true, shouldDirty: true });
       updateFormData({
         targetAmount: 0,
-        mvpAmount: 0,
-        budgetBreakdown: [],
         milestones: formData?.milestones?.map((m) => ({ ...m, targetAmount: 0 })) || []
       });
     }
@@ -398,45 +396,45 @@ export default function Step1Story() {
 
             <div className="grid grid-cols-1 gap-6 pt-2 md:grid-cols-2">
               <div>
-  <label className="mb-2 block text-sm font-bold text-slate-700">Ngày bắt đầu dự kiến</label>
-  <input
-    type="date"
-    min={todayInputValue}
-    max={startDateMax}
-    {...register('startDate')}
-    className={`w-full rounded-2xl border bg-gradient-to-b from-white to-slate-50 px-4 py-3.5 text-slate-900 shadow-sm outline-none transition-all [color-scheme:light] ${
-      errors.startDate
-        ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
-        : 'border-slate-200 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-amber-100'
-    }`}
-  />
-  <p className="mt-2 text-xs text-slate-500">
-    Chỉ được chọn từ hôm nay đến tối đa {maxDurationDays} ngày tiếp theo.
-  </p>
-  {errors.startDate && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.startDate.message}</p>}
-</div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Ngày bắt đầu dự kiến</label>
+                <input
+                  type="date"
+                  min={todayInputValue}
+                  max={startDateMax}
+                  {...register('startDate')}
+                  className={`w-full rounded-2xl border bg-gradient-to-b from-white to-slate-50 px-4 py-3.5 text-slate-900 shadow-sm outline-none transition-all [color-scheme:light] ${
+                    errors.startDate
+                      ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+                      : 'border-slate-200 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-amber-100'
+                  }`}
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  Chỉ được chọn từ hôm nay đến tối đa {maxDurationDays} ngày tiếp theo.
+                </p>
+                {errors.startDate && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.startDate.message}</p>}
+              </div>
 
               <div>
-  <label className="mb-2 block text-sm font-bold text-slate-700">Ngày kết thúc dự kiến</label>
-  <input
-    type="date"
-    min={endDateMin}
-    max={endDateMax || undefined}
-    disabled={!startDateValue}
-    {...register('endDate')}
-    className={`w-full rounded-2xl border bg-gradient-to-b from-white to-slate-50 px-4 py-3.5 text-slate-900 shadow-sm outline-none transition-all [color-scheme:light] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 ${
-      errors.endDate
-        ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
-        : 'border-slate-200 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-amber-100'
-    }`}
-  />
-  <p className="mt-2 text-xs text-slate-500">
-    {!startDateValue
-      ? 'Hãy chọn ngày bắt đầu trước.'
-      : `Chỉ được chọn từ ngày bắt đầu đến tối đa ${maxDurationDays} ngày sau ngày bắt đầu.`}
-  </p>
-  {errors.endDate && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.endDate.message}</p>}
-</div>
+                <label className="mb-2 block text-sm font-bold text-slate-700">Ngày kết thúc dự kiến</label>
+                <input
+                  type="date"
+                  min={endDateMin}
+                  max={endDateMax || undefined}
+                  disabled={!startDateValue}
+                  {...register('endDate')}
+                  className={`w-full rounded-2xl border bg-gradient-to-b from-white to-slate-50 px-4 py-3.5 text-slate-900 shadow-sm outline-none transition-all [color-scheme:light] disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400 ${
+                    errors.endDate
+                      ? 'border-red-500 focus:border-red-500 focus:ring-4 focus:ring-red-100'
+                      : 'border-slate-200 hover:border-slate-300 focus:border-amber-400 focus:ring-4 focus:ring-amber-100'
+                  }`}
+                />
+                <p className="mt-2 text-xs text-slate-500">
+                  {!startDateValue
+                    ? 'Hãy chọn ngày bắt đầu trước.'
+                    : `Chỉ được chọn từ ngày bắt đầu đến tối đa ${maxDurationDays} ngày sau ngày bắt đầu.`}
+                </p>
+                {errors.endDate && <p className="mt-1.5 text-sm font-medium text-red-500">{errors.endDate.message}</p>}
+              </div>
             </div>
           </div>
 

@@ -1,3 +1,5 @@
+import { calculateUnallocatedAmount } from "../../../../utils/finance.utils";
+
 export const normalizePreviewArray = (value) =>
   Array.isArray(value) ? value : [];
 
@@ -8,6 +10,7 @@ export const getPreviewCoverMedia = (formData) => {
 
 export const getPreviewDocuments = (formData) =>
   normalizePreviewArray(formData?.documents);
+
 
 export const getPreviewValidationItems = (formData) => {
   const items = [];
@@ -21,44 +24,64 @@ export const getPreviewValidationItems = (formData) => {
   }
 
   if (!formData?.location?.address) {
-    items.push("Thiếu địa điểm");
+    items.push("Thiếu địa điểm cụ thể trên bản đồ");
   }
 
-  if (!formData?.description?.trim()) {
-    items.push("Thiếu câu chuyện dự án");
+  if (!formData?.description?.trim() || formData.description === "<p></p>") {
+    items.push("Câu chuyện dự án chưa được nhập hoặc quá ngắn");
   }
 
   if (!formData?.beneficiaryInfo?.details?.trim()) {
-    items.push("Thiếu mô tả đối tượng thụ hưởng");
+    items.push("Thiếu mô tả chi tiết đối tượng thụ hưởng");
   }
 
   if (!formData?.startDate) {
-    items.push("Thiếu ngày bắt đầu");
+    items.push("Thiếu ngày bắt đầu dự kiến");
   }
 
   if (!formData?.endDate) {
-    items.push("Thiếu ngày kết thúc");
+    items.push("Thiếu ngày kết thúc dự kiến");
   }
 
-  if (!getPreviewCoverMedia(formData)) {
-    items.push("Thiếu ảnh hoặc video đại diện");
+  const coverCount = getPreviewCoverMedia(formData) ? 1 : 0;
+  const docCount = getPreviewDocuments(formData).length;
+  if (coverCount + docCount < 3) {
+    items.push("Bắt buộc có tối thiểu 3 tệp minh chứng (Ảnh bìa + Tài liệu)");
   }
 
   if (formData?.projectType === "FUNDED") {
-    if (!Number(formData?.targetAmount || 0)) {
-      items.push("Thiếu mục tiêu gây quỹ");
+    const targetAmount = Number(formData?.targetAmount || 0);
+    const milestones = normalizePreviewArray(formData?.milestones);
+
+    if (targetAmount <= 0) {
+      items.push("Mục tiêu gây quỹ phải lớn hơn 0");
     }
 
-    if (!normalizePreviewArray(formData?.milestones).length) {
-      items.push("Thiếu các mốc ngân sách");
+    if (milestones.length === 0) {
+      items.push("Dự án gây quỹ bắt buộc phải có ít nhất 1 mốc hoạt động");
+    } else {
+      const unallocated = calculateUnallocatedAmount(targetAmount, milestones);
+      if (unallocated !== 0) {
+        const diffText = unallocated > 0 ? "thiếu" : "vượt";
+        items.push(
+          `Ngân sách các mốc chưa khớp (Đang ${diffText} ${Math.abs(unallocated).toLocaleString()} đ)`
+        );
+      }
+
+      milestones.forEach((m, idx) => {
+        const prefix = `Mốc ${idx + 1} ("${m.title || "Chưa đặt tên"}")`;
+        if (!m.title?.trim()) items.push(`${prefix}: Thiếu tiêu đề`);
+        if (!m.startDate || !m.endDate) items.push(`${prefix}: Thiếu thời gian thực hiện`);
+        if (!m.deliverables?.trim()) items.push(`${prefix}: Thiếu kết quả bàn giao (Deliverables)`);
+      });
     }
   }
 
-  if (
-    formData?.needsVolunteers &&
-    !normalizePreviewArray(formData?.volunteerRoles).length
-  ) {
-    items.push("Đã bật tuyển tình nguyện viên nhưng chưa có vị trí tuyển");
+  if (formData?.needsVolunteers) {
+    const roles = normalizePreviewArray(formData?.volunteerRoles);
+    if (roles.length === 0) {
+      items.push("Đã bật cần tình nguyện viên nhưng chưa thêm vị trí nào");
+    }
   }
 
   return items;

@@ -51,17 +51,6 @@ const sanitizeMediaPayload = (mediaArray) => {
     .filter((media) => media._id || (media.url && media.publicId));
 };
 
-const sanitizeBudgetBreakdown = (items) => {
-  if (!Array.isArray(items)) return undefined;
-
-  return items
-    .map((item) => ({
-      item: String(item?.item || "").trim(),
-      amount: Number(item?.amount || 0),
-      note: item?.note ? String(item.note).trim() : undefined,
-    }))
-    .filter((item) => item.item || item.amount > 0 || item.note);
-};
 
 const sanitizeVolunteerRoles = (roles) => {
   if (!Array.isArray(roles)) return undefined;
@@ -117,7 +106,6 @@ const prepareProjectPayload = (data = {}) => {
     startDate: toIsoOrUndefined(data.startDate),
     endDate: toIsoOrUndefined(data.endDate),
     milestones: sanitizeMilestones(data.milestones),
-    budgetBreakdown: sanitizeBudgetBreakdown(data.budgetBreakdown),
     volunteerRoles: sanitizeVolunteerRoles(data.volunteerRoles),
     deletedDocumentIds:
       Array.isArray(data.deletedDocumentIds) && data.deletedDocumentIds.length

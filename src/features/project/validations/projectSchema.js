@@ -64,12 +64,6 @@ const volunteerRoleSchema = z.object({
   quantity: z.coerce.number().min(1, "Phải >= 1"),
 });
 
-const budgetItemSchema = z.object({
-  item: z.string().min(1, "Không được để trống"),
-  amount: z.coerce.number().min(1, "Phải lớn hơn 0"),
-  note: z.string().optional(),
-});
-
 const getDateDifferenceInDays = (start, end) =>
   (new Date(end) - new Date(start)) / (1000 * 60 * 60 * 24);
 
@@ -318,17 +312,6 @@ export const draftStep1Schema = z.object({
 
 export const draftStep2Schema = z.object({
   targetAmount: z.coerce.number().optional().default(0),
-  mvpAmount: z.coerce.number().optional().default(0),
-  budgetBreakdown: z
-    .array(
-      z.object({
-        item: z.string().optional(),
-        amount: z.coerce.number().optional(),
-        note: z.string().optional(),
-      }),
-    )
-    .optional()
-    .default([]),
   milestones: z.array(baseMilestoneSchema).optional().default([]),
   needsVolunteers: z.boolean().default(false),
   volunteerRoles: z.array(mediaLikeSchema).optional().default([]),
@@ -386,8 +369,6 @@ export const strictStep2Schema = (
   z
     .object({
       targetAmount: z.coerce.number().optional().default(0),
-      mvpAmount: z.coerce.number().optional().default(0),
-      budgetBreakdown: z.array(budgetItemSchema).optional().default([]),
       milestones: z.array(strictMilestoneSchema).optional().default([]),
       needsVolunteers: z.boolean().default(false),
       volunteerRoles: z.array(volunteerRoleSchema).optional().default([]),
@@ -407,22 +388,6 @@ export const strictStep2Schema = (
             code: z.ZodIssueCode.custom,
             message: `Hạn mức KYC của bạn chỉ cho phép gọi vốn tối đa ${tierCapMaxFunding.toLocaleString()} VND`,
             path: ["targetAmount"],
-          });
-        }
-
-        if (data.mvpAmount <= 0 || data.mvpAmount > data.targetAmount) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Ngưỡng giải ngân MVP không hợp lệ",
-            path: ["mvpAmount"],
-          });
-        }
-
-        if (!data.budgetBreakdown || data.budgetBreakdown.length === 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Bắt buộc phải có bảng giải trình ngân sách chi tiết",
-            path: ["budgetBreakdown"],
           });
         }
 
@@ -511,8 +476,6 @@ export const createProjectSubmitSchema = (
       coverMedia: z.any().default([]),
       documents: z.array(mediaLikeSchema).default([]),
       targetAmount: z.coerce.number().optional().default(0),
-      mvpAmount: z.coerce.number().optional().default(0),
-      budgetBreakdown: z.array(mediaLikeSchema).optional().default([]),
       milestones: z
         .array(
           z.object({
@@ -566,22 +529,6 @@ export const createProjectSubmitSchema = (
             code: z.ZodIssueCode.custom,
             message: `Hạn mức KYC của bạn chỉ cho phép gọi vốn tối đa ${tierCapMaxFunding.toLocaleString()} VND`,
             path: ["targetAmount"],
-          });
-        }
-
-        if (data.mvpAmount <= 0 || data.mvpAmount > data.targetAmount) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Ngưỡng MVP không hợp lệ",
-            path: ["mvpAmount"],
-          });
-        }
-
-        if (!data.budgetBreakdown || data.budgetBreakdown.length === 0) {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            message: "Bắt buộc phải có bảng giải trình ngân sách",
-            path: ["budgetBreakdown"],
           });
         }
 

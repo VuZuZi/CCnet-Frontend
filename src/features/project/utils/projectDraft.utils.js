@@ -95,8 +95,6 @@ export const buildStep2Payload = (data, isFunded) => {
     return {
       ...data,
       targetAmount: 0,
-      mvpAmount: 0,
-      budgetBreakdown: [],
       milestones: (data?.milestones || []).map((milestone) => ({
         ...milestone,
         targetAmount: 0,

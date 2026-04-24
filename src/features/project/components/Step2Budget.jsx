@@ -1,3 +1,4 @@
+// Đường dẫn: features/project/components/Step2Budget.jsx
 import { useEffect } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +15,6 @@ import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
 import { FinancialPlanBlock } from './FinancialPlanBlock';
-import { BudgetBreakdownBlock } from './BudgetBreakdownBlock';
 import { MilestonesBlock } from './MilestonesBlock';
 import { VolunteerRolesBlock } from './VolunteerRolesBlock';
 
@@ -71,10 +71,6 @@ export default function Step2Budget() {
     reValidateMode: 'onChange',
     defaultValues: {
       targetAmount: formData.targetAmount || 0,
-      mvpAmount: formData.mvpAmount || 0,
-      budgetBreakdown: formData.budgetBreakdown?.length
-        ? formData.budgetBreakdown
-        : [],
       milestones: formData.milestones?.length
         ? formData.milestones.map((m) => ({
             ...m,
@@ -106,14 +102,6 @@ export default function Step2Budget() {
         shouldDirty: true,
       });
       setValue('targetAmount', 0, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-      setValue('mvpAmount', 0, {
-        shouldValidate: true,
-        shouldDirty: true,
-      });
-      setValue('budgetBreakdown', [], {
         shouldValidate: true,
         shouldDirty: true,
       });
@@ -153,8 +141,6 @@ export default function Step2Budget() {
       : {
           ...data,
           targetAmount: 0,
-          mvpAmount: 0,
-          budgetBreakdown: [],
           milestones: safeMilestones.map((m) => ({
             ...m,
             targetAmount: 0,
@@ -228,14 +214,7 @@ export default function Step2Budget() {
           className="space-y-8 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isFunded && (
-            <>
-              <FinancialPlanBlock control={control} errors={errors} />
-              <BudgetBreakdownBlock
-                control={control}
-                register={register}
-                errors={errors}
-              />
-            </>
+            <FinancialPlanBlock control={control} errors={errors} />
           )}
 
           <MilestonesBlock

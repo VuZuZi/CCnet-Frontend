@@ -13,9 +13,6 @@ const initialFormData = {
   endDate: "",
 
   targetAmount: 0,
-  mvpAmount: 0,
-  budgetBreakdown: [],
-
   milestones: [],
 
   needsVolunteers: false,
@@ -92,6 +89,6 @@ export const useProjectDraftStore = create(
           deletedDocumentIds: [],
         },
       }),
-    },
-  ),
+    }
+  )
 );
