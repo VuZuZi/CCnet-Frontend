@@ -20,13 +20,15 @@ const STEPS = [
 
 const parseDateLocal = (isoString) => {
   if (!isoString) return "";
-  return format(new Date(isoString), "yyyy-MM-dd");
+  const date = new Date(isoString);
+  return Number.isNaN(date.getTime()) ? "" : format(date, "yyyy-MM-dd");
 };
 
 const normalizeCoverMedia = (coverMedia) => {
   if (!coverMedia) return [];
   return Array.isArray(coverMedia) ? coverMedia : [coverMedia];
 };
+
 
 const buildDraftFormData = (draftData) => ({
   projectType: draftData.projectType || "FUNDED",
@@ -35,17 +37,14 @@ const buildDraftFormData = (draftData) => ({
   location: draftData.location || null,
   description: draftData.description || "",
   beneficiaryInfo: draftData.beneficiaryInfo || { details: "" },
-  targetAmount: draftData.targetAmount || 0,
-  mvpAmount: draftData.mvpAmount || 0,
-  budgetBreakdown: draftData.budgetBreakdown || [],
-  surplusPolicy: draftData.surplusPolicy || "",
+  targetAmount: Number(draftData.targetAmount || 0),
   startDate: parseDateLocal(draftData.startDate),
   endDate: parseDateLocal(draftData.endDate),
   needsVolunteers: draftData.needsVolunteers || false,
-  milestones: draftData.milestones?.length ? draftData.milestones : [],
-  volunteerRoles: draftData.volunteerRoles || [],
+  milestones: Array.isArray(draftData.milestones) ? draftData.milestones : [],
+  volunteerRoles: Array.isArray(draftData.volunteerRoles) ? draftData.volunteerRoles : [],
   coverMedia: normalizeCoverMedia(draftData.coverMedia),
-  documents: draftData.documents || [],
+  documents: Array.isArray(draftData.documents) ? draftData.documents : [],
   deletedDocumentIds: [],
   fromHelpRequestId: draftData.fromHelpRequestId || null,
 });
@@ -61,16 +60,14 @@ const buildHelpRequestFormData = (helpRequestData, helpRequestId) => {
     location: helpRequestData.location || null,
     description: helpRequestData.description || "",
     beneficiaryInfo: helpRequestData.beneficiaryInfo || { details: "" },
-    targetAmount: helpRequestData.targetAmount || 0,
-    mvpAmount: 0,
-    budgetBreakdown: [],
+    targetAmount: Number(helpRequestData.targetAmount || 0),
     startDate: "",
     endDate: "",
     needsVolunteers: false,
     milestones: [],
     volunteerRoles: [],
-    coverMedia: helpRequestData.coverMedia || [],
-    documents: helpRequestData.documents || [],
+    coverMedia: Array.isArray(helpRequestData.coverMedia) ? helpRequestData.coverMedia : [],
+    documents: Array.isArray(helpRequestData.documents) ? helpRequestData.documents : [],
     deletedDocumentIds: [],
     fromHelpRequestId: helpRequestId,
   };
@@ -118,7 +115,6 @@ export function CreateProjectPage() {
       if (projectId) {
         resetDraft();
       }
-
       updateFormData(buildHelpRequestFormData(helpRequestData, helpRequestId));
     }
   }, [

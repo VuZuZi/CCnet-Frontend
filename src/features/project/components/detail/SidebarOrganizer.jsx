@@ -7,7 +7,7 @@
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useVolunteerQueries } from '@/features/volunteer/hooks/useVolunteerQueries';
-import { getProjectFundingStats } from '@/features/project/utils/projectDisplay.utils';
+import { getProjectFundingStats, getProjectMode } from '@/features/project/utils/projectDisplay.utils';
 
 function formatCurrency(value) {
   return Number(value || 0).toLocaleString('vi-VN');
@@ -19,44 +19,25 @@ export function SidebarOrganizer({
   onOpenProjectGroup,
   onManageVolunteers,
 }) {
-  const isFunded = project?.projectType === 'FUNDED' || !project?.projectType;
-  const isVolunteerOnly = project?.projectType === 'VOLUNTEER_ONLY';
+  const { isFundedProject, isVolunteerOnly } = getProjectMode(project);
+  const { targetAmount, fundingPercent } = getProjectFundingStats(project);
+
 
   const availableBalance = Number(project?.financialDetail?.availableBalance ?? 0);
   const pendingDisbursement = Number(project?.financialDetail?.pendingDisbursement ?? 0);
-  const escrowBalance =
-    project?.financialDetail?.escrowBalance ??
-    availableBalance + pendingDisbursement;
-  const { raisedAmount, targetAmount, fundingPercent } = getProjectFundingStats(project);
+  const escrowBalance = project?.financialDetail?.escrowBalance ?? (availableBalance + pendingDisbursement);
   const pendingRefunds = project?.financialDetail?.pendingRefunds ?? 0;
-  const progressPercent = Math.min(
-    Math.round((availableBalance / Math.max(targetAmount, 1)) * 100),
-    100
-  );
 
   const projectId = project?._id;
 
   const { useProjectPendingApplications } = useVolunteerQueries();
   const { data: pendingData, isLoading } = useProjectPendingApplications(projectId);
 
-  const getPendingCount = () => {
-    if (!pendingData) return 0;
-    if (pendingData?.data?.data && Array.isArray(pendingData.data.data)) {
-      return pendingData.data.data.length;
-    }
-    if (pendingData?.data && Array.isArray(pendingData.data)) {
-      return pendingData.data.length;
-    }
-    if (Array.isArray(pendingData)) {
-      return pendingData.length;
-    }
-    if (pendingData?.data?.total) {
-      return pendingData.data.total;
-    }
-    return 0;
-  };
 
-  const pendingAppsCount = getPendingCount();
+  const pendingAppsCount = Array.isArray(pendingData)
+    ? pendingData.length
+    : (pendingData?.total || pendingData?.totalItems || 0);
+
   const hasProjectGroup = Boolean(projectConversation?._id);
   const isUpdating = String(project?.status || '').toUpperCase() === 'UPDATING';
 
@@ -70,7 +51,7 @@ export function SidebarOrganizer({
           </div>
           <h2 className="text-lg font-extrabold text-slate-900">Quản lý dự án</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Theo dõi tình nguyện viên và thao tác nhanh theo vai trò nhà tổ chức.
+            Theo dõi volunteer và thao tác nhanh theo vai trò organizer.
           </p>
         </div>
 
@@ -82,7 +63,7 @@ export function SidebarOrganizer({
         </div>
       </div>
 
-      {isFunded ? (
+      {isFundedProject ? (
         <div className="rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFBEB_100%)] p-5">
           <p className="text-sm font-semibold uppercase tracking-[0.12em] text-amber-700">
             Quỹ đang ký quỹ
@@ -105,7 +86,7 @@ export function SidebarOrganizer({
           <div className="mt-4 h-3 w-full overflow-hidden rounded-full bg-amber-100">
             <div
               className="h-full rounded-full bg-[linear-gradient(135deg,#FFC107_0%,#FFB300_100%)] transition-all duration-1000"
-              style={{ width: `${progressPercent}%` }}
+              style={{ width: `${fundingPercent}%` }}
             />
           </div>
 
@@ -115,7 +96,7 @@ export function SidebarOrganizer({
                 <Wallet size={18} />
               </div>
               <p className="text-2xl font-extrabold text-slate-900">
-                {progressPercent}%
+                {fundingPercent}%
               </p>
               <p className="mt-1 text-sm font-medium text-slate-500">Đã gọi vốn</p>
             </div>
@@ -146,7 +127,7 @@ export function SidebarOrganizer({
                 {isLoading ? '...' : pendingAppsCount}
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Đơn tình nguyện đang chờ nhà tổ chức xử lý
+                Đơn tình nguyện đang chờ organizer xử lý
               </p>
             </div>
 
@@ -195,7 +176,7 @@ export function SidebarOrganizer({
         <div className="mb-3">
           <p className="text-sm font-bold text-slate-900">Nhóm dự án</p>
           <p className="mt-1 text-xs text-slate-500">
-            Mở nhanh nhóm chat của dự án để trao đổi với tình nguyện viên.
+            Mở nhanh group chat của dự án để trao đổi với volunteer.
           </p>
         </div>
 
@@ -203,11 +184,10 @@ export function SidebarOrganizer({
           type="button"
           onClick={onOpenProjectGroup}
           disabled={!hasProjectGroup}
-          className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-bold transition ${
-            hasProjectGroup
-              ? 'border border-amber-200 bg-[#FFFBEB] text-amber-900 hover:border-amber-300 hover:bg-amber-100'
-              : 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400'
-          }`}
+          className={`inline-flex w-full items-center justify-center gap-2 rounded-2xl px-5 py-3.5 text-sm font-bold transition ${hasProjectGroup
+            ? 'border border-amber-200 bg-[#FFFBEB] text-amber-900 hover:border-amber-300 hover:bg-amber-100'
+            : 'cursor-not-allowed border border-slate-200 bg-slate-100 text-slate-400'
+            }`}
         >
           <MessageSquare className="h-4 w-4" />
           {hasProjectGroup ? 'Mở nhóm dự án' : 'Chưa có nhóm dự án'}
@@ -218,4 +198,3 @@ export function SidebarOrganizer({
 }
 
 export default SidebarOrganizer;
-
