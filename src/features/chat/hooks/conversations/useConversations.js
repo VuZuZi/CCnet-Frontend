@@ -1,10 +1,8 @@
-import { useQuery } from '@tanstack/react-query';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import { chatAPI } from '@/features/chat/api/chat.api';
-import { chatKeys } from '@/features/chat/constants/chat.queryKeys';
-import { getErrorMessage } from '@/shared/lib/httpClient';
-
-const CONVERSATIONS_REFETCH_INTERVAL = 5000;
+import { useQuery } from "@tanstack/react-query";
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import { chatAPI } from "@/features/chat/api/chat.api";
+import { chatKeys } from "@/features/chat/constants/chat.queryKeys";
+import { getErrorMessage } from "@/shared/lib/httpClient";
 
 export function useConversations() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
@@ -14,16 +12,12 @@ export function useConversations() {
     queryKey: chatKeys.conversations(),
     enabled: Boolean(isAuthenticated && !isAuthLoading),
     retry: false,
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnReconnect: true,
-    refetchOnWindowFocus: true,
-    refetchInterval: (queryState) => {
-      if (!isAuthenticated || isAuthLoading) return false;
-      if (typeof document !== 'undefined' && document.hidden) return false;
-      if (queryState.state.status === 'error') return false;
-      return CONVERSATIONS_REFETCH_INTERVAL;
-    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnReconnect: false,
+    refetchOnWindowFocus: false,
+    refetchInterval: false,
     queryFn: async () => {
       const data = await chatAPI.getConversations();
       return Array.isArray(data) ? data : [];

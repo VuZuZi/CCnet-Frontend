@@ -26,14 +26,14 @@ import NavbarUserDropdown from './navbar/NavbarUserDropdown';
 import NavbarNotificationAction from '@/features/notification/components/NavbarNotificationAction';
 
 const NAV_LINKS = [
-  { label: "Dự án", to: ROUTES.PROJECTS },
-  { label: "Cộng đồng", to: ROUTES.COMMUNITY || "/community" },
-  { label: "Cần giúp đỡ", to: "/need-help" },
+  { label: 'Dự án', to: ROUTES.PROJECTS },
+  { label: 'Cộng đồng', to: ROUTES.COMMUNITY || '/community' },
+  { label: 'Cần giúp đỡ', to: '/need-help' },
 ];
 
-function Avatar({ user, size = "sm" }) {
-  const sizeClass = size === "sm" ? "h-10 w-10" : "h-12 w-12";
-  const initials = user?.fullName?.substring(0, 2).toUpperCase() || "U";
+function Avatar({ user, size = 'sm' }) {
+  const sizeClass = size === 'sm' ? 'h-10 w-10' : 'h-12 w-12';
+  const initials = user?.fullName?.substring(0, 2).toUpperCase() || 'U';
 
   if (user?.avatar) {
     return (
@@ -42,7 +42,7 @@ function Avatar({ user, size = "sm" }) {
         alt="Ảnh đại diện"
         className={cn(
           sizeClass,
-          "rounded-full border-2 border-white bg-slate-100 object-cover shadow-sm",
+          'rounded-full border-2 border-white bg-slate-100 object-cover shadow-sm'
         )}
       />
     );
@@ -52,7 +52,7 @@ function Avatar({ user, size = "sm" }) {
     <div
       className={cn(
         sizeClass,
-        "flex items-center justify-center rounded-full border-2 border-white bg-amber-100 text-sm font-bold text-amber-700 shadow-sm",
+        'flex items-center justify-center rounded-full border-2 border-white bg-amber-100 text-sm font-bold text-amber-700 shadow-sm'
       )}
     >
       {initials}
@@ -60,7 +60,6 @@ function Avatar({ user, size = "sm" }) {
   );
 }
 
-// 👇 1. TẠO COMPONENT MỚI CHO DROPDOWN GIỚI THIỆU 👇
 function AboutDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
@@ -71,27 +70,29 @@ function AboutDropdown() {
         setIsOpen(false);
       }
     };
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   return (
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="hidden md:flex items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900"
+        className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-sm font-semibold text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 md:flex"
+        type="button"
       >
         Giới thiệu
         <ChevronDown
           size={14}
-          className={`transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
 
-      {/* Nút icon cho màn hình nhỏ (nếu cần) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="md:hidden rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100"
+        className="rounded-full p-2 text-slate-500 transition-colors hover:bg-slate-100 md:hidden"
+        type="button"
       >
         <Info size={24} />
       </button>
@@ -105,6 +106,7 @@ function AboutDropdown() {
           >
             Về chúng tôi
           </Link>
+
           <Link
             to="/terms"
             onClick={() => setIsOpen(false)}
@@ -112,6 +114,7 @@ function AboutDropdown() {
           >
             Điều khoản sử dụng
           </Link>
+
           <Link
             to="/privacy"
             onClick={() => setIsOpen(false)}
@@ -124,24 +127,25 @@ function AboutDropdown() {
     </div>
   );
 }
-// 👆 KẾT THÚC COMPONENT DROPDOWN GIỚI THIỆU 👆
 
 export function Navbar() {
   const isAuthenticated = useAuthStore(authSelectors.isAuthenticated);
   const user = useAuthStore(authSelectors.user);
-  const { data: walletData, isLoading: isWalletLoading } = useMyWallet({ enabled: isAuthenticated });
+  const { data: walletData, isLoading: isWalletLoading } = useMyWallet({
+    enabled: isAuthenticated,
+  });
   const { logout } = useLogout();
   const location = useLocation();
-  const normalizedRole = String(user?.role || "").toLowerCase();
-  const isOrganizer = normalizedRole === "organizer";
+  const normalizedRole = String(user?.role || '').toLowerCase();
+  const isOrganizer = normalizedRole === 'organizer';
   const userMainRoute = isOrganizer ? ROUTES.WORKSPACE : ROUTES.DASHBOARD;
   const userMainLabel = isOrganizer
-    ? "Không gian làm việc của bạn"
-    : "Bảng điều khiển";
+    ? 'Không gian làm việc của bạn'
+    : 'Bảng điều khiển';
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const isMessagesPage = location.pathname.startsWith("/messages");
+  const isMessagesPage = location.pathname.startsWith('/messages');
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
@@ -150,7 +154,7 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-[3000] w-full border-b border-slate-200 bg-white/95 backdrop-blur-md">
       <div className="w-full px-6 sm:px-8 lg:px-10 xl:px-12">
-        <div className="grid h-20 grid-cols-[auto_minmax(320px,1fr)_auto] items-center gap-8 lg:gap-10 overflow-visible">
+        <div className="grid h-20 grid-cols-[auto_minmax(320px,1fr)_auto] items-center gap-8 overflow-visible lg:gap-10">
           <div className="flex min-w-0 items-center gap-10 overflow-visible">
             <Link
               to={ROUTES.HOME}
@@ -159,6 +163,7 @@ export function Navbar() {
               <div className="transition-transform group-hover:scale-105">
                 <CCNetLogo className="h-10 w-10" />
               </div>
+
               <span className="hidden text-[20px] font-bold tracking-tight text-slate-900 sm:block">
                 CCNet
               </span>
@@ -173,10 +178,10 @@ export function Navbar() {
                     key={link.label}
                     to={link.to}
                     className={cn(
-                      "transition-colors whitespace-nowrap",
+                      'whitespace-nowrap transition-colors',
                       isActive
-                        ? "font-bold text-amber-500"
-                        : "text-slate-600 hover:text-amber-500",
+                        ? 'font-bold text-amber-500'
+                        : 'text-slate-600 hover:text-amber-500'
                     )}
                   >
                     {link.label}
@@ -186,7 +191,6 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* KHU VỰC GIỮA: Thanh tìm kiếm */}
           <div className="hidden w-full justify-center md:flex">
             <div className="w-full max-w-[420px] lg:max-w-[520px]">
               <GlobalSearch />
@@ -196,20 +200,14 @@ export function Navbar() {
           <div className="flex items-center justify-end gap-3 overflow-visible sm:gap-4 lg:gap-5">
             {isAuthenticated ? (
               <>
-                {/* 1. DROPDOWN GIỚI THIỆU (Nằm trái cùng) */}
                 <div className="hidden sm:block">
                   <AboutDropdown />
                 </div>
 
-                {/* 2. GỢI Ý CẦN GIÚP ĐỠ */}
                 <OrganizerNeedHelpAction user={user} />
 
-                {/* 3. CHAT */}
-                {!isMessagesPage ? (
-                  <NavbarChatAction hideWidget={false} />
-                ) : null}
+                {!isMessagesPage ? <NavbarChatAction hideWidget={false} /> : null}
 
-                {/* 4. THÔNG BÁO */}
                 <NavbarNotificationAction isAuthenticated={isAuthenticated} />
 
                 <div
@@ -218,7 +216,9 @@ export function Navbar() {
                 >
                   <Wallet size={20} />
                   <span className="text-xs font-bold text-slate-600">
-                    {isWalletLoading ? '...' : `${(walletData?.balance || 0).toLocaleString('vi-VN')}đ`}
+                    {isWalletLoading
+                      ? '...'
+                      : `${(walletData?.balance || 0).toLocaleString('vi-VN')}đ`}
                   </span>
                 </div>
 
@@ -226,23 +226,23 @@ export function Navbar() {
                   <Search size={24} />
                 </button>
 
-                <div className="hidden border-l border-slate-200 pl-4 sm:block overflow-visible">
+                <div className="hidden overflow-visible border-l border-slate-200 pl-4 sm:block">
                   <NavbarUserDropdown user={user} onLogout={logout} />
                 </div>
               </>
             ) : (
               <div className="flex items-center gap-3">
-                {/* Dành cho khách chưa đăng nhập */}
-                <div className="hidden sm:block mr-2 border-r border-slate-200 pr-4">
+                <div className="mr-2 hidden border-r border-slate-200 pr-4 sm:block">
                   <AboutDropdown />
                 </div>
 
                 <Link
                   to={ROUTES.LOGIN}
-                  className="hidden font-medium text-slate-600 hover:text-slate-900 sm:block whitespace-nowrap"
+                  className="hidden whitespace-nowrap font-medium text-slate-600 hover:text-slate-900 sm:block"
                 >
                   Đăng nhập
                 </Link>
+
                 <Link to={ROUTES.REGISTER}>
                   <Button
                     variant="primary"
@@ -291,10 +291,10 @@ export function Navbar() {
                   key={link.label}
                   to={link.to}
                   className={cn(
-                    "rounded-lg px-2 py-2 font-medium transition-colors",
+                    'rounded-lg px-2 py-2 font-medium transition-colors',
                     isActive
-                      ? "bg-amber-50 text-amber-600"
-                      : "text-slate-700 hover:bg-slate-50 hover:text-amber-500",
+                      ? 'bg-amber-50 text-amber-600'
+                      : 'text-slate-700 hover:bg-slate-50 hover:text-amber-500'
                   )}
                 >
                   {link.label}
@@ -302,23 +302,25 @@ export function Navbar() {
               );
             })}
 
-            {/* Thêm link tĩnh cho mobile menu */}
-            <div className="mt-2 pt-2 border-t border-slate-100/50 flex flex-col gap-1">
-              <p className="px-2 py-1 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="mt-2 flex flex-col gap-1 border-t border-slate-100/50 pt-2">
+              <p className="px-2 py-1 text-xs font-bold uppercase tracking-wider text-slate-400">
                 Thông tin
               </p>
+
               <Link
                 to="/about"
                 className="rounded-lg px-2 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
               >
                 Về chúng tôi
               </Link>
+
               <Link
                 to="/terms"
                 className="rounded-lg px-2 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
               >
                 Điều khoản sử dụng
               </Link>
+
               <Link
                 to="/privacy"
                 className="rounded-lg px-2 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
@@ -328,7 +330,6 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* ... (Phần User/Login mobile giữ nguyên) ... */}
           {isAuthenticated ? (
             <div className="flex flex-col gap-2 pt-2">
               <div className="mb-4 flex items-center gap-3 px-2">
@@ -383,15 +384,24 @@ export function Navbar() {
 
 function OrganizerNeedHelpAction({ user }) {
   const role = user?.role?.toString().toLowerCase();
-  const isOrganizer = role === "organizer";
+  const isOrganizer = role === 'organizer';
   const [isOpen, setIsOpen] = useState(false);
   const anchorRef = useRef(null);
   const panelRef = useRef(null);
   const [anchorRect, setAnchorRect] = useState(null);
 
+  const assignedFilters = useMemo(
+    () => ({
+      status: 'VERIFIED',
+      limit: 6,
+      sortBy: 'assignedAt',
+    }),
+    []
+  );
+
   const { data, refetch } = useOrganizerAssignedRequests(
-    { status: "VERIFIED", limit: 6, sortBy: "assignedAt" },
-    isOrganizer,
+    assignedFilters,
+    isOrganizer
   );
 
   const updateAnchorRect = () => {
@@ -405,16 +415,6 @@ function OrganizerNeedHelpAction({ user }) {
       updateAnchorRect();
     }
   }, [isOpen, isOrganizer, refetch]);
-
-  useEffect(() => {
-    if (!isOrganizer) return undefined;
-
-    const interval = setInterval(() => {
-      refetch();
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, [isOrganizer, refetch]);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -561,8 +561,8 @@ function OrganizerNeedHelpAction({ user }) {
               </div>
             </>,
             document.body
-          ) 
-      : null}
+          )
+        : null}
     </>
   );
 }
@@ -570,8 +570,8 @@ function OrganizerNeedHelpAction({ user }) {
 function UserDropdown({ user, onLogout }) {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef(null);
-  const normalizedRole = String(user?.role || "").toLowerCase();
-  const isOrganizer = normalizedRole === "organizer";
+  const normalizedRole = String(user?.role || '').toLowerCase();
+  const isOrganizer = normalizedRole === 'organizer';
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -580,8 +580,8 @@ function UserDropdown({ user, onLogout }) {
       }
     };
 
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
   return (
@@ -593,10 +593,10 @@ function UserDropdown({ user, onLogout }) {
         <Avatar user={user} size="sm" />
         <div className="hidden text-left leading-tight lg:block">
           <span className="block text-sm font-bold text-slate-900">
-            {user?.fullName || "Alex Doe"}
+            {user?.fullName || 'Alex Doe'}
           </span>
           <span className="block text-xs capitalize text-slate-500">
-            {user?.role || "Nhà tài trợ"}
+            {user?.role || 'Nhà tài trợ'}
           </span>
         </div>
         <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
@@ -617,8 +617,8 @@ function UserDropdown({ user, onLogout }) {
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
           >
-            <LayoutDashboard size={16} />{" "}
-            {isOrganizer ? "Không gian làm việc của bạn" : "Bảng điều khiển"}
+            <LayoutDashboard size={16} />{' '}
+            {isOrganizer ? 'Không gian làm việc của bạn' : 'Bảng điều khiển'}
           </Link>
 
           <div className="mx-4 my-1 h-px bg-slate-100" />
@@ -629,6 +629,7 @@ function UserDropdown({ user, onLogout }) {
               onLogout();
             }}
             className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm font-medium text-red-600 transition-colors hover:bg-red-50"
+            type="button"
           >
             <LogOut size={16} /> Đăng xuất
           </button>
@@ -637,4 +638,5 @@ function UserDropdown({ user, onLogout }) {
     </div>
   );
 }
+
 export default Navbar;

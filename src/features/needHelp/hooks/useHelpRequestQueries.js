@@ -1,28 +1,35 @@
-import { useQuery } from '@tanstack/react-query';
-import { helpRequestAPI } from '../api/helpRequestAPI';
+import { useQuery } from "@tanstack/react-query";
+import { helpRequestAPI } from "../api/helpRequestAPI";
 
 export const HELP_REQUEST_KEYS = {
-  all: ['helpRequests'],
-  lists: () => [...HELP_REQUEST_KEYS.all, 'list'],
+  all: ["helpRequests"],
+  lists: () => [...HELP_REQUEST_KEYS.all, "list"],
   list: (filters) => [...HELP_REQUEST_KEYS.lists(), { filters }],
-  myLists: () => [...HELP_REQUEST_KEYS.all, 'my-list'],
+  myLists: () => [...HELP_REQUEST_KEYS.all, "my-list"],
   myList: (filters) => [...HELP_REQUEST_KEYS.myLists(), { filters }],
-  urgent: () => [...HELP_REQUEST_KEYS.all, 'urgent'],
-  nearby: (params) => [...HELP_REQUEST_KEYS.all, 'nearby', params],
-  map: () => [...HELP_REQUEST_KEYS.all, 'map'],
-  mapViewport: (params) => [...HELP_REQUEST_KEYS.all, 'map-viewport', params],
-  organizerAssignedRoot: () => [...HELP_REQUEST_KEYS.all, 'organizer-assigned'],
-  organizerAssigned: (filters) => [...HELP_REQUEST_KEYS.organizerAssignedRoot(), filters],
+  urgent: () => [...HELP_REQUEST_KEYS.all, "urgent"],
+  nearby: (params) => [...HELP_REQUEST_KEYS.all, "nearby", params],
+  map: () => [...HELP_REQUEST_KEYS.all, "map"],
+  mapViewport: (params) => [...HELP_REQUEST_KEYS.all, "map-viewport", params],
+  organizerAssignedRoot: () => [...HELP_REQUEST_KEYS.all, "organizer-assigned"],
+  organizerAssigned: (filters) => [
+    ...HELP_REQUEST_KEYS.organizerAssignedRoot(),
+    filters,
+  ],
   organizerSuggestions: (id, filters) => [
     ...HELP_REQUEST_KEYS.all,
-    'organizer-suggestions',
+    "organizer-suggestions",
     id,
     filters,
   ],
-  adminActionLogs: (filters) => [...HELP_REQUEST_KEYS.all, 'admin-action-logs', filters],
-  details: () => [...HELP_REQUEST_KEYS.all, 'detail'],
+  adminActionLogs: (filters) => [
+    ...HELP_REQUEST_KEYS.all,
+    "admin-action-logs",
+    filters,
+  ],
+  details: () => [...HELP_REQUEST_KEYS.all, "detail"],
   detail: (id) => [...HELP_REQUEST_KEYS.details(), id],
-  asProject: (id) => [...HELP_REQUEST_KEYS.all, 'as-project', id],
+  asProject: (id) => [...HELP_REQUEST_KEYS.all, "as-project", id],
 };
 
 export const useHelpRequests = (filters = {}, page = 1, limit = 12) => {
@@ -35,6 +42,8 @@ export const useHelpRequests = (filters = {}, page = 1, limit = 12) => {
         ...filters,
       }),
     staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     placeholderData: (previousData) => previousData,
   });
 };
@@ -44,6 +53,8 @@ export const useMyHelpRequests = (filters = {}) => {
     queryKey: HELP_REQUEST_KEYS.myList(filters),
     queryFn: () => helpRequestAPI.getMyRequests(filters),
     staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -52,6 +63,8 @@ export const useUrgentHelpRequests = () => {
     queryKey: HELP_REQUEST_KEYS.urgent(),
     queryFn: () => helpRequestAPI.getUrgent({ limit: 5 }),
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -67,6 +80,8 @@ export const useNearbyHelpRequests = (coordinates, maxDistance = 50000) => {
       }),
     enabled: !!coordinates?.length,
     staleTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -107,6 +122,8 @@ export const useHelpRequestDetail = (id) => {
     queryFn: () => helpRequestAPI.getById(id),
     enabled: !!id,
     staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -116,6 +133,8 @@ export const useHelpRequestAsProjectData = (id) => {
     queryFn: () => helpRequestAPI.getAsProjectData(id),
     enabled: !!id,
     staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -124,7 +143,12 @@ export const useOrganizerAssignedRequests = (filters = {}, enabled = true) => {
     queryKey: HELP_REQUEST_KEYS.organizerAssigned(filters),
     queryFn: () => helpRequestAPI.getOrganizerAssigned(filters),
     enabled,
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnMount: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
     placeholderData: (previousData) => previousData,
   });
 };
@@ -135,6 +159,9 @@ export const useOrganizerSuggestions = (id, filters = {}, enabled = true) => {
     queryFn: () => helpRequestAPI.getOrganizerSuggestions(id, filters),
     enabled: Boolean(id && enabled),
     staleTime: 60 * 1000,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
   });
 };
 
@@ -144,7 +171,9 @@ export const useAdminHelpRequestActionLogs = (filters = {}, enabled = true) => {
     queryFn: () => helpRequestAPI.getAdminActionLogs(filters),
     enabled,
     staleTime: 30 * 1000,
-    refetchInterval: 10 * 1000,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    refetchInterval: false,
     placeholderData: (previousData) => previousData,
   });
 };

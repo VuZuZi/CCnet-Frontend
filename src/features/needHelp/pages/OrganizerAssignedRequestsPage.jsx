@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   CalendarDays,
@@ -47,45 +47,99 @@ const TAB_OPTIONS = [
   },
 ];
 
-function RejectConfirmModal({ isOpen, requestTitle, onConfirm, onCancel, isPending }) {
+function RejectConfirmModal({
+  isOpen,
+  requestTitle,
+  onConfirm,
+  onCancel,
+  isPending,
+}) {
+  const safeTitle = requestTitle || 'yêu cầu này';
+
+  useEffect(() => {
+    if (!isOpen || isPending) return undefined;
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isOpen, isPending, onCancel]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-[2px]">
-      <div className="w-full max-w-md rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_30px_80px_-24px_rgba(15,23,42,0.3)]">
-        <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
-          <XIcon size={22} />
-        </div>
+    <div
+      className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-950/45 px-4 py-6 backdrop-blur-[2px]"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !isPending) {
+          onCancel();
+        }
+      }}
+      role="presentation"
+    >
+      <div
+        className="w-full max-w-[560px] overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_30px_80px_-24px_rgba(15,23,42,0.35)]"
+        onMouseDown={(event) => event.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reject-assignment-title"
+      >
+        <div className="max-h-[88vh] overflow-y-auto px-6 py-6 sm:px-8 sm:py-7">
+          <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-rose-50 text-rose-600">
+            <XIcon size={24} strokeWidth={2.5} />
+          </div>
 
-        <h3 className="text-xl font-black tracking-tight text-slate-900">
-          Từ chối giao việc
-        </h3>
-
-        <p className="mt-3 text-sm leading-7 text-slate-500">
-          Bạn có chắc chắn muốn từ chối giao việc cho{' '}
-          <span className="font-semibold text-slate-800">"{requestTitle}"</span>? Yêu cầu này 
-          sẽ được trả lại cho quản trị viên để gán lại.
-        </p>
-
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={isPending}
-            className="rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          <h3
+            id="reject-assignment-title"
+            className="text-2xl font-black tracking-tight text-slate-950"
           >
-            Hủy
-          </button>
+            Từ chối giao việc
+          </h3>
 
-          <button
-            type="button"
-            onClick={onConfirm}
-            disabled={isPending}
-            className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isPending ? <Loader2 size={14} className="animate-spin" /> : <XIcon size={14} />}
-            {isPending ? 'Đang từ chối...' : 'Từ chối giao việc'}
-          </button>
+          <div className="mt-4 space-y-3 text-sm leading-7 text-slate-500 sm:text-base">
+            <p>Bạn có chắc chắn muốn từ chối giao việc cho</p>
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+              <p
+                className="line-clamp-3 break-words text-sm font-bold leading-6 text-slate-900"
+                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+                title={safeTitle}
+              >
+                “{safeTitle}”
+              </p>
+            </div>
+
+            <p>Yêu cầu này sẽ được trả lại cho quản trị viên để gán lại.</p>
+          </div>
+
+          <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isPending}
+              className="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 text-sm font-bold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Hủy
+            </button>
+
+            <button
+              type="button"
+              onClick={onConfirm}
+              disabled={isPending}
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 text-sm font-bold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isPending ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <XIcon size={16} strokeWidth={3} />
+              )}
+              {isPending ? 'Đang từ chối...' : 'Từ chối giao việc'}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -96,20 +150,31 @@ function SummaryCard({ label, value, active = false }) {
   return (
     <div
       className={`rounded-[22px] border px-4 py-4 shadow-sm transition-all ${
-        active
-          ? 'border-amber-200 bg-amber-50'
-          : 'border-slate-200 bg-white'
+        active ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-white'
       }`}
     >
-      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">{label}</p>
-      <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">{value}</p>
+      <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+        {label}
+      </p>
+      <p className="mt-2 text-3xl font-black tracking-tight text-slate-950">
+        {value}
+      </p>
     </div>
   );
 }
 
-function AssignedRequestCard({ request, onAccept, onReject, isResponding, activeTab }) {
-  const urgencyStyle = URGENCY_STYLES[request.urgencyLevel] || URGENCY_STYLES.MEDIUM;
-  const categoryLabel = CATEGORY_LABELS[request.category] || 'Other';
+function AssignedRequestCard({
+  request,
+  onAccept,
+  onReject,
+  isResponding,
+  activeTab,
+}) {
+  const urgencyStyle =
+    URGENCY_STYLES[request.urgencyLevel] || URGENCY_STYLES.MEDIUM;
+
+  const categoryLabel = CATEGORY_LABELS[request.category] || 'Khác';
+
   const coverImage = request.evidences?.find(
     (item) => item?.mediaType === 'image' || !item?.mediaType
   )?.url;
@@ -166,10 +231,18 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                   to={`/need-help/${request._id}`}
                   className="block text-2xl font-black tracking-tight text-slate-950 transition-colors hover:text-amber-600"
                 >
-                  <span className="line-clamp-2 break-words">{request.title}</span>
+                  <span
+                    className="line-clamp-2 break-words"
+                    style={{ overflowWrap: 'anywhere' }}
+                  >
+                    {request.title}
+                  </span>
                 </Link>
 
-                <p className="mt-2 line-clamp-2 text-sm leading-7 text-slate-500">
+                <p
+                  className="mt-2 line-clamp-2 text-sm leading-7 text-slate-500"
+                  style={{ overflowWrap: 'anywhere' }}
+                >
                   {request.story || 'Yêu cầu này chưa có câu chuyện mô tả.'}
                 </p>
               </div>
@@ -192,7 +265,9 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                   Kinh phí
                 </div>
                 <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
-                  {request.amountNeeded ? formatVND(request.amountNeeded) : 'Linh hoạt'}
+                  {request.amountNeeded
+                    ? formatVND(request.amountNeeded)
+                    : 'Linh hoạt'}
                 </p>
               </div>
 
@@ -231,7 +306,7 @@ function AssignedRequestCard({ request, onAccept, onReject, isResponding, active
                     className="inline-flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm font-semibold text-rose-700 transition-colors hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     <XIcon size={16} strokeWidth={3} />
-                    Decline
+                    Từ chối
                   </button>
                 </>
               ) : null}
@@ -286,6 +361,7 @@ export function OrganizerAssignedRequestsPage() {
     limit: 50,
     sortBy: 'assignedAt',
   });
+
   const respondMutation = useRespondHelpRequestAssignment();
 
   const allItems = data?.data || [];
@@ -342,13 +418,23 @@ export function OrganizerAssignedRequestsPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Kiểm duyệt các yêu cầu được admin giao, xác nhận những yêu cầu bạn có thể xử lý, và tiếp tục dòng công việc hỗ trợ với không gian làm việc sạch hơn.
+                Kiểm duyệt các yêu cầu được admin giao, xác nhận những yêu cầu
+                bạn có thể xử lý, và tiếp tục dòng công việc hỗ trợ với không
+                gian làm việc sạch hơn.
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
-              <SummaryCard label="Pending" value={pendingItems.length} active={activeTab === 'pending'} />
-              <SummaryCard label="Accepted" value={acceptedItems.length} active={activeTab === 'accepted'} />
+              <SummaryCard
+                label="Pending"
+                value={pendingItems.length}
+                active={activeTab === 'pending'}
+              />
+              <SummaryCard
+                label="Accepted"
+                value={acceptedItems.length}
+                active={activeTab === 'accepted'}
+              />
             </div>
           </div>
         </div>
@@ -368,7 +454,11 @@ export function OrganizerAssignedRequestsPage() {
           <div className="w-full max-w-xl">
             <div className="grid grid-cols-2 gap-2 rounded-[22px] bg-slate-100 p-1.5">
               {TAB_OPTIONS.map((tab) => {
-                const count = tab.key === 'pending' ? pendingItems.length : acceptedItems.length;
+                const count =
+                  tab.key === 'pending'
+                    ? pendingItems.length
+                    : acceptedItems.length;
+
                 const isActive = activeTab === tab.key;
 
                 return (
@@ -377,18 +467,18 @@ export function OrganizerAssignedRequestsPage() {
                     type="button"
                     onClick={() => setActiveTab(tab.key)}
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
-  isActive
-    ? 'bg-amber-400 text-slate-950 shadow-sm'
-    : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'
-}`}
+                      isActive
+                        ? 'bg-amber-400 text-slate-950 shadow-sm'
+                        : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'
+                    }`}
                   >
                     <span>{tab.label}</span>
                     <span
                       className={`inline-flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-[10px] font-black ${
-  isActive
-    ? 'bg-white/80 text-slate-950'
-    : 'bg-slate-200 text-slate-500'
-}`}
+                        isActive
+                          ? 'bg-white/80 text-slate-950'
+                          : 'bg-slate-200 text-slate-500'
+                      }`}
                     >
                       {count}
                     </span>

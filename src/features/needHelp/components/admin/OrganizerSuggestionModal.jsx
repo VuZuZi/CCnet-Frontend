@@ -35,8 +35,69 @@ const formatJoinDate = (dateStr) => {
   }
 };
 
+const getReadableText = (value, fallback = '') => {
+  if (value === undefined || value === null) {
+    return fallback;
+  }
+
+  if (typeof value === 'string') {
+    return value.trim() || fallback;
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (Array.isArray(value)) {
+    const text = value
+      .map((item) => getReadableText(item, ''))
+      .filter(Boolean)
+      .join(', ');
+
+    return text || fallback;
+  }
+
+  if (typeof value === 'object') {
+    const directText =
+      value.address ||
+      value.fullAddress ||
+      value.name ||
+      value.label ||
+      value.description ||
+      value.email ||
+      value.phone;
+
+    if (directText) {
+      return getReadableText(directText, fallback);
+    }
+
+    const locationParts = [
+      value.ward,
+      value.district,
+      value.city,
+      value.province,
+      value.country,
+    ]
+      .map((item) => getReadableText(item, ''))
+      .filter(Boolean);
+
+    if (locationParts.length) {
+      return locationParts.join(', ');
+    }
+
+    return fallback;
+  }
+
+  return fallback;
+};
+
+const getLocationText = (location, fallback = 'Chưa xác định') =>
+  getReadableText(location, fallback);
+
 function InfoRow({ icon: Icon, label, value }) {
-  if (!value) return null;
+  const displayValue = getReadableText(value, '');
+
+  if (!displayValue) return null;
 
   return (
     <div>
@@ -45,7 +106,7 @@ function InfoRow({ icon: Icon, label, value }) {
       </p>
       <p className="mt-1 flex items-start gap-2 text-sm text-slate-700">
         <Icon size={14} className="mt-0.5 shrink-0 text-slate-400" />
-        <span className="break-words">{value}</span>
+        <span className="break-words">{displayValue}</span>
       </p>
     </div>
   );
@@ -58,7 +119,9 @@ function OrganizerPreviewCard({ organizer }) {
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
           <UserRound size={28} className="text-slate-300" />
         </div>
-        <p className="text-sm font-semibold text-slate-500">Di chuột lên một organizer</p>
+        <p className="text-sm font-semibold text-slate-500">
+          Di chuột lên một organizer
+        </p>
         <p className="mt-1 text-xs leading-6 text-slate-400">
           Xem trước chi tiết hồ sơ và độ phù hợp trước khi giao.
         </p>
@@ -66,8 +129,12 @@ function OrganizerPreviewCard({ organizer }) {
     );
   }
 
-  const skills = organizer.skills || [];
+  const skills = Array.isArray(organizer.skills)
+    ? organizer.skills.map((skill) => getReadableText(skill, '')).filter(Boolean)
+    : [];
+
   const joinDate = formatJoinDate(organizer.createdAt);
+  const locationText = getLocationText(organizer.location);
 
   return (
     <div className="flex h-full flex-col">
@@ -141,11 +208,7 @@ function OrganizerPreviewCard({ organizer }) {
             </div>
           ) : null}
 
-          <InfoRow
-            icon={MapPin}
-            label="Địa điểm"
-            value={organizer.location || 'Chưa xác định'}
-          />
+          <InfoRow icon={MapPin} label="Địa điểm" value={locationText} />
           <InfoRow icon={Phone} label="Điện thoại" value={organizer.phone} />
           <InfoRow icon={Mail} label="Email" value={organizer.email} />
           <InfoRow icon={CalendarDays} label="Tham gia" value={joinDate} />
@@ -229,9 +292,16 @@ function OrganizerPreviewCard({ organizer }) {
   );
 }
 
-function OrganizerRow({ organizer, hoveredOrganizer, setHoveredOrganizer, onAssign, isAssigning }) {
+function OrganizerRow({
+  organizer,
+  hoveredOrganizer,
+  setHoveredOrganizer,
+  onAssign,
+  isAssigning,
+}) {
   const isHovered = hoveredOrganizer?._id === organizer._id;
-  const subtitle = organizer.location || organizer.email || 'Hồ sơ organizer';
+  const locationText = getLocationText(organizer.location, '');
+  const subtitle = locationText || organizer.email || 'Hồ sơ organizer';
   const score = organizer.match?.score ?? 0;
 
   return (
@@ -302,7 +372,7 @@ export function OrganizerSuggestionModal({
   const [hoveredOrganizer, setHoveredOrganizer] = useState(null);
 
   const queryFilters = useMemo(() => ({ search, limit: 30 }), [search]);
-  const { data, isLoading } = useOrganizerSuggestions(
+  const { data, isLoading, isError, error } = useOrganizerSuggestions(
     helpRequest?._id,
     queryFilters,
     isOpen
@@ -372,13 +442,21 @@ export function OrganizerSuggestionModal({
               </div>
             ) : null}
 
-            {!isLoading && !organizers.length ? (
+            {!isLoading && isError ? (
+              <div className="rounded-[22px] border border-rose-200 bg-rose-50 px-6 py-10 text-center text-sm text-rose-600">
+                {error?.response?.data?.message ||
+                  error?.message ||
+                  'Không thể tải danh sách organizer.'}
+              </div>
+            ) : null}
+
+            {!isLoading && !isError && !organizers.length ? (
               <div className="rounded-[22px] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
                 Không tìm thấy organizer phù hợp với bộ lọc này.
               </div>
             ) : null}
 
-            {!isLoading && organizers.length ? (
+            {!isLoading && !isError && organizers.length ? (
               <div className="space-y-3">
                 {organizers.map((organizer) => (
                   <OrganizerRow
