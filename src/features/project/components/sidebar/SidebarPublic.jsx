@@ -61,7 +61,7 @@ export function SidebarPublic({ project }) {
     try {
       if (navigator.share) {
         await navigator.share({
-          title: project?.title || "Project",
+    title: project?.title || "Dự án",
           text: "Xem dự án này trên CCNet",
           url: shareUrl,
         });

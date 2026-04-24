@@ -18,7 +18,7 @@ function NeedHelpMapSidebarComponent({
   if (!isOpen) return null;
 
   return (
-    <aside className="pointer-events-auto absolute left-5 top-[128px] bottom-5 z-[2200] flex w-[360px] min-h-0 flex-col overflow-hidden rounded-[30px] border border-white/80 bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+    <aside className="pointer-events-auto absolute bottom-5 left-5 top-[128px] z-[2200] flex min-h-0 w-[min(360px,calc(100vw-40px))] flex-col overflow-hidden rounded-[30px] border border-white/80 bg-white/90 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
       <div className="border-b border-slate-100 px-5 pb-4 pt-5">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">

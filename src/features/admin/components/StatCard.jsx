@@ -58,39 +58,41 @@ export default function StatCard({ title, value, icon = "default" }) {
   const tone = toneMap[icon] || toneMap.default;
 
   return (
-    <div className="group overflow-hidden rounded-[28px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(251,191,36,0.16)] md:p-6">
-      <div className="flex items-start justify-between gap-4">
+    <div className="group flex min-h-[210px] min-w-0 flex-col overflow-hidden rounded-[26px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)] transition duration-300 hover:-translate-y-0.5 hover:shadow-[0_18px_44px_rgba(251,191,36,0.16)]">
+      <div className="flex min-w-0 items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div
-            className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] ${tone.badge}`}
+            className={`ccnet-nowrap-label inline-flex max-w-full items-center rounded-full border px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.08em] ${tone.badge}`}
           >
             Thống kê
           </div>
 
-          <p className="mt-4 text-sm font-semibold leading-6 text-slate-500 md:text-[15px]">
+          <p className="mt-4 line-clamp-2 min-h-[48px] text-sm font-semibold leading-6 text-slate-500">
             {title}
           </p>
 
-          <p className="mt-3 break-words text-3xl font-black tracking-tight text-slate-900 md:text-4xl">
+          <p className="ccnet-safe-text mt-3 text-[clamp(1.85rem,2.35vw,2.4rem)] font-black leading-tight tracking-tight text-slate-900">
             {normalizeValue(value)}
           </p>
         </div>
 
         <div
-          className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] shadow-sm transition duration-300 group-hover:scale-[1.04] ${tone.iconWrap}`}
+          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] shadow-sm transition duration-300 group-hover:scale-[1.04] ${tone.iconWrap}`}
         >
-          <Icon size={26} strokeWidth={2.2} />
+          <Icon size={23} strokeWidth={2.2} />
         </div>
       </div>
 
-      <div className="mt-5 h-px w-full bg-gradient-to-r from-amber-100 via-slate-100 to-transparent" />
+      <div className="mt-auto pt-5">
+        <div className="h-px w-full bg-gradient-to-r from-amber-100 via-slate-100 to-transparent" />
 
-      <div className="mt-4 flex items-center justify-between gap-3">
-        <span className="text-xs font-bold uppercase tracking-[0.08em] text-slate-400">
-          Cập nhật theo thời gian thực
-        </span>
+        <div className="mt-4 flex min-w-0 items-center justify-between gap-3">
+          <span className="ccnet-nowrap-label text-xs font-bold uppercase tracking-[0.04em] text-slate-400">
+            Cập nhật theo thời gian thực
+          </span>
 
-        <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#FBBF24]" />
+          <span className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#FBBF24]" />
+        </div>
       </div>
     </div>
   );

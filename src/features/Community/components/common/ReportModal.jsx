@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { usePostMutations } from "../../hooks/usePostMutations";
 import { Button } from "@/shared/components/ui/Button/Button";
+import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
 
 const REPORT_REASONS = [
-  { value: "spam", label: "Spam / Quảng cáo" },
+  { value: "spam", label: "Thư rác / quảng cáo" },
   { value: "harassment", label: "Quấy rối / Bắt nạt" },
   { value: "inappropriate", label: "Nội dung không phù hợp / Phản cảm" },
 ];
@@ -15,6 +16,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
   const [message, setMessage] = useState(null);
 
   const { reportPost } = usePostMutations();
+  useBodyScrollLock(isOpen);
 
   const handleFiles = (e) => {
     const selectedFiles = Array.from(e.target.files);
@@ -69,8 +71,8 @@ export default function ReportModal({ isOpen, onClose, postId }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1050] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in-up">
-      <div className="bg-white rounded-[24px] shadow-xl w-full max-w-lg flex flex-col max-h-[90vh]">
+    <div className="ccnet-modal-overlay fixed inset-0 z-[1050] flex items-center justify-center bg-slate-950/45 p-4">
+      <div className="ccnet-modal-panel flex max-h-[90vh] w-full max-w-lg flex-col rounded-[24px] bg-white shadow-xl">
         <div className="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-white rounded-t-[24px]">
           <h5 className="font-bold text-xl m-0">Báo cáo bài viết</h5>
           <button
@@ -82,7 +84,7 @@ export default function ReportModal({ isOpen, onClose, postId }) {
           </button>
         </div>
 
-        <div className="p-6 overflow-y-auto">
+        <div className="ccnet-modal-scroll overflow-y-auto p-6">
           {message && (
             <div
               className={`p-4 rounded-xl mb-5 ${

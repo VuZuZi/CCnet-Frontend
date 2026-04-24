@@ -13,7 +13,7 @@ function buildProjectApplicationsUrl(projectId, status = null) {
 
 function ensureApplicationId(applicationId) {
   if (!applicationId) {
-    throw new Error("Application ID is required");
+    throw new Error("Thiếu mã đơn đăng ký.");
   }
 }
 

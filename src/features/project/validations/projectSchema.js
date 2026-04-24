@@ -229,7 +229,7 @@ const validateFundedMilestones = (
   if (!milestones || milestones.length === 0) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Bắt buộc phải có ít nhất 1 mốc hoạt động (Milestone)",
+      message: "Bắt buộc phải có ít nhất 1 mốc hoạt động",
       path: ["milestones"],
     });
     return;
@@ -287,7 +287,7 @@ const validateVolunteerOnlyMilestones = (
     if ((Number(milestone.targetAmount) || 0) > 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Dự án Volunteer không có ngân sách",
+        message: "Dự án tình nguyện không có ngân sách",
         path: ["milestones", index, "targetAmount"],
       });
     }
@@ -437,7 +437,7 @@ export const strictStep2Schema = (
         if (!data.needsVolunteers) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Dự án Volunteer-only bắt buộc phải bật tính năng Tuyển tình nguyện viên",
+            message: "Dự án chỉ tình nguyện bắt buộc phải bật tính năng tuyển tình nguyện viên",
             path: ["needsVolunteers"],
           });
         }
@@ -524,7 +524,7 @@ export const createProjectSubmitSchema = (
             deliverables: z.string().optional().default(""),
           }),
         )
-        .min(1, "Phải có ít nhất 1 milestone"),
+        .min(1, "Phải có ít nhất 1 mốc hoạt động"),
       needsVolunteers: z.boolean().optional().default(false),
       volunteerRoles: z.array(volunteerRoleSchema).optional().default([]),
     })
@@ -556,7 +556,7 @@ export const createProjectSubmitSchema = (
         if (data.targetAmount <= 0) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Dự án FUNDED phải có mục tiêu gây quỹ lớn hơn 0",
+            message: "Dự án gây quỹ phải có mục tiêu gây quỹ lớn hơn 0",
             path: ["targetAmount"],
           });
         }
@@ -611,7 +611,7 @@ export const createProjectSubmitSchema = (
           if ((Number(milestone.targetAmount) || 0) > 0) {
             ctx.addIssue({
               code: z.ZodIssueCode.custom,
-              message: "Dự án Volunteer-only không được gán ngân sách cho milestone",
+              message: "Dự án chỉ tình nguyện không được gán ngân sách cho mốc hoạt động",
               path: ["milestones", index, "targetAmount"],
             });
           }
@@ -620,7 +620,7 @@ export const createProjectSubmitSchema = (
         if (!data.needsVolunteers) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Dự án Volunteer-only bắt buộc phải bật tính năng Tuyển tình nguyện viên",
+            message: "Dự án chỉ tình nguyện bắt buộc phải bật tính năng tuyển tình nguyện viên",
             path: ["needsVolunteers"],
           });
         }

@@ -30,7 +30,7 @@ function AdminDetailHeader({ title }) {
 
             <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
               <ShieldCheck size={14} />
-              Kiểm duyệt chi tiết của Admin
+              Kiểm duyệt chi tiết
             </div>
 
             <h1 className="mt-4 break-words text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">
@@ -38,7 +38,7 @@ function AdminDetailHeader({ title }) {
             </h1>
 
             <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-slate-500 sm:text-base">
-              Theo dõi đầy đủ nội dung yêu cầu, thông tin hỗ trợ và gán organizer phù hợp
+              Theo dõi đầy đủ nội dung yêu cầu, thông tin hỗ trợ và gán nhà tổ chức phù hợp
               trong không gian quản trị rõ ràng hơn.
             </p>
           </div>

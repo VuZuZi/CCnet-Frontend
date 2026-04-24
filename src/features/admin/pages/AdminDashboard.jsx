@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Activity, Flag, ShieldAlert, Sparkles } from "lucide-react";
+import { Flag } from "lucide-react";
 
 import StatCard from "../components/StatCard";
 import ActivityTable from "../components/ActivityTable";
@@ -27,8 +27,6 @@ const AdminDashboard = () => {
     handleResolveReport,
     updateProjectStatus,
     toggleBanUser,
-    isStatsFetching,
-    isReportsFetching,
   } = useAdminDashboard("overview");
 
   const [selectedReport, setSelectedReport] = useState(null);
@@ -48,8 +46,6 @@ const AdminDashboard = () => {
     setSelectedReport(null);
   };
 
-  const isRefreshing = isStatsFetching || isReportsFetching;
-
   const totalUsers = stats?.users?.total || 0;
   const bannedUsers = stats?.users?.banned || 0;
   const totalProjects = stats?.projects?.total || 0;
@@ -59,9 +55,11 @@ const AdminDashboard = () => {
     stats?.refunds?.byStatus?.find((item) => item._id === "PENDING")?.count || 0;
 
   return (
-    <div className="space-y-8">
-
-      <section className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+    <div className="mx-auto min-w-0 max-w-[1320px] space-y-7 lg:space-y-8">
+      <section
+        className="ccnet-auto-grid gap-4 lg:gap-5"
+        style={{ "--ccnet-grid-min": "280px" }}
+      >
         <StatCard
           title="Tổng người dùng"
           value={totalUsers}
@@ -99,11 +97,11 @@ const AdminDashboard = () => {
         />
       </section>
 
-      <section className="overflow-hidden rounded-[32px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] shadow-[0_16px_45px_rgba(15,23,42,0.06)]">
-        <div className="border-b border-amber-100 px-5 py-5 md:px-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <section className="min-w-0 overflow-hidden rounded-[30px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] shadow-[0_16px_45px_rgba(15,23,42,0.06)]">
+        <div className="border-b border-amber-100 px-4 py-5 sm:px-5 md:px-6">
+          <div className="flex min-w-0 flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="min-w-0">
-              <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.1em] text-amber-800">
+              <div className="ccnet-nowrap-label inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] font-black uppercase tracking-[0.08em] text-amber-800">
                 <Flag size={13} />
                 Moderation Queue
               </div>
@@ -118,7 +116,10 @@ const AdminDashboard = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:w-auto">
+            <div
+              className="ccnet-auto-grid w-full gap-3 lg:max-w-[390px]"
+              style={{ "--ccnet-grid-min": "170px" }}
+            >
               <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-center shadow-sm">
                 <p className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-slate-500">
                   Chờ xử lý
@@ -140,8 +141,8 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="p-4 md:p-6">
-          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-sm">
+        <div className="p-3 sm:p-4 md:p-5">
+          <div className="min-w-0 overflow-hidden rounded-[22px] border border-slate-200 bg-white shadow-sm">
             <ActivityTable
               activities={pendingReports}
               loading={loading}

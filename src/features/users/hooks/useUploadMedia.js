@@ -19,8 +19,8 @@ export const useUploadMedia = (type = 'avatar') => {
             
             updateUser(updatedUser);
 
-            const mediaName = type === 'avatar' ? 'Avatar' : 'Cover Photo';
-            toast.success(`${mediaName} updated successfully!`);
+            const mediaName = type === 'avatar' ? 'Ảnh đại diện' : 'Ảnh bìa';
+            toast.success(`Đã cập nhật ${mediaName.toLowerCase()} thành công!`);
         },
         onError: (error) => {
             toast.error(getErrorMessage(error));

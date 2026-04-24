@@ -94,11 +94,41 @@ function MessageBubbleComponent({
   seenUsers = [],
   onJumpToMessage,
 }) {
-  const [previewAttachment, setPreviewAttachment] = useState(null);
-
   if (isSystemMessage(message)) {
     return <SystemMessage message={message} currentUserId={currentUserId} />;
   }
+
+  return (
+    <UserMessageBubble
+      message={message}
+      conversationId={conversationId}
+      currentUserId={currentUserId}
+      compact={compact}
+      showSenderName={showSenderName}
+      showSenderAvatar={showSenderAvatar}
+      showSeenAvatars={showSeenAvatars}
+      showDeliveryStatus={showDeliveryStatus}
+      deliveryStatus={deliveryStatus}
+      seenUsers={seenUsers}
+      onJumpToMessage={onJumpToMessage}
+    />
+  );
+}
+
+function UserMessageBubble({
+  message,
+  conversationId,
+  currentUserId,
+  compact,
+  showSenderName,
+  showSenderAvatar,
+  showSeenAvatars,
+  showDeliveryStatus,
+  deliveryStatus,
+  seenUsers,
+  onJumpToMessage,
+}) {
+  const [previewAttachment, setPreviewAttachment] = useState(null);
 
   const senderId = getSenderId(message?.senderId);
   const mine = String(senderId) === String(currentUserId);

@@ -26,7 +26,11 @@ function DetailRow({ icon: Icon, label, children }) {
   );
 }
 
-export function HelpRequestVerification({ helpRequest }) {
+export function HelpRequestVerification({
+  helpRequest,
+  showEvidence = true,
+  compact = false,
+}) {
   const {
     rejectionReason,
     assignedOrganizerId,
@@ -40,32 +44,35 @@ export function HelpRequestVerification({ helpRequest }) {
   const linkedProject = getPopulatedEntity(linkedProjectId);
 
   return (
-    <section className="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+    <section
+      className={`rounded-[24px] border border-slate-200 bg-white shadow-sm ${
+        compact ? 'p-5' : 'p-6'
+      }`}
+    >
       <div className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700 ring-1 ring-amber-200">
         <ShieldCheck size={13} />
-        Xác minh
+        Theo dõi xử lý
       </div>
 
-      <h2 className="mt-4 text-xl font-black tracking-tight text-slate-950">
-        Chi tiết giao việc và thông tin hỗ trợ
+      <h2
+        className={`mt-4 font-black tracking-tight text-slate-950 ${
+          compact ? 'text-lg' : 'text-xl'
+        }`}
+      >
+        Thông tin xử lý
       </h2>
 
-      <p className="mt-2 text-sm leading-7 text-slate-500">
-        Kiểm tra organizer được giao, thông tin dự án liên kết, liên hệ,
-        và minh chứng đính kèm của yêu cầu này.
-      </p>
-
       <div className="mt-6 grid gap-4">
-        <DetailRow icon={UserRound} label="Organizer được giao">
+        <DetailRow icon={UserRound} label="Nhà tổ chức được giao">
           {organizer ? (
             <>
               <p className="font-semibold text-slate-900">{organizer.fullName}</p>
               <p className="text-slate-500">
-                {organizer.email || 'Thông tin liên hệ organizer có trong hồ sơ.'}
+                {organizer.email || 'Thông tin liên hệ nhà tổ chức có trong hồ sơ.'}
               </p>
             </>
           ) : (
-            <p className="text-slate-500">Chưa có organizer nào được giao.</p>
+            <p className="text-slate-500">Chưa có nhà tổ chức nào được giao.</p>
           )}
         </DetailRow>
 
@@ -82,7 +89,7 @@ export function HelpRequestVerification({ helpRequest }) {
           )}
         </DetailRow>
 
-        {(contactPhone || contactEmail) && (
+        {(contactPhone || contactEmail) && !compact && (
           <DetailRow icon={Phone} label="Thông tin liên hệ">
             <div className="flex flex-col gap-3">
               {contactPhone ? (
@@ -119,20 +126,22 @@ export function HelpRequestVerification({ helpRequest }) {
         ) : null}
       </div>
 
-      <div className="mt-6 border-t border-slate-100 pt-6">
-        <div className="mb-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-          <FileStack size={13} />
-          Minh chứng & Tệp đính kèm
-        </div>
-
-        {evidences.length > 0 ? (
-          <EvidenceGallery evidences={evidences} />
-        ) : (
-          <div className="rounded-[20px] border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-sm text-slate-500">
-            Chưa có tệp minh chứng nào được đính kèm cho yêu cầu này.
+      {showEvidence ? (
+        <div className="mt-6 border-t border-slate-100 pt-6">
+          <div className="mb-4 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
+            <FileStack size={13} />
+            Minh chứng & Tệp đính kèm
           </div>
-        )}
-      </div>
+
+          {evidences.length > 0 ? (
+            <EvidenceGallery evidences={evidences} />
+          ) : (
+            <div className="rounded-[20px] border border-dashed border-slate-300 bg-slate-50 px-5 py-6 text-sm text-slate-500">
+              Chưa có tệp minh chứng nào được đính kèm cho yêu cầu này.
+            </div>
+          )}
+        </div>
+      ) : null}
     </section>
   );
 }

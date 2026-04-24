@@ -3,9 +3,9 @@ import { Ban, CheckCircle2, History } from "lucide-react";
 export const ADMIN_ACTION_LOG_PAGE_SIZE = 10;
 
 export const ACTION_LABELS = {
-  BAN_USER: "Ban user",
-  UNBAN_USER: "Unban user",
-  UPDATE_USER_STATUS: "Update user status",
+  BAN_USER: "Khóa người dùng",
+  UNBAN_USER: "Mở khóa người dùng",
+  UPDATE_USER_STATUS: "Cập nhật trạng thái người dùng",
 };
 
 export const ACTION_STYLES = {
@@ -15,26 +15,25 @@ export const ACTION_STYLES = {
 };
 
 export const ACTION_OPTIONS = [
-  { value: "", label: "All actions" },
-  { value: "BAN_USER", label: "Ban user" },
-  { value: "UNBAN_USER", label: "Unban user" },
-  { value: "UPDATE_USER_STATUS", label: "Update user status" },
+  { value: "", label: "Tất cả hành động" },
+  { value: "BAN_USER", label: "Khóa người dùng" },
+  { value: "UNBAN_USER", label: "Mở khóa người dùng" },
+  { value: "UPDATE_USER_STATUS", label: "Cập nhật trạng thái người dùng" },
 ];
 
-export const getErrorMessage = (error, fallback = "Something went wrong.") =>
+export const getErrorMessage = (error, fallback = "Đã xảy ra lỗi.") =>
   error?.response?.data?.message || error?.message || fallback;
 
 export const formatDateTimeSingleLine = (value) => {
   if (!value) return "--";
 
   try {
-    return new Intl.DateTimeFormat("en-US", {
+    return new Intl.DateTimeFormat("vi-VN", {
       month: "short",
       day: "numeric",
       year: "numeric",
       hour: "numeric",
       minute: "2-digit",
-      hour12: true,
     }).format(new Date(value));
   } catch {
     return String(value);

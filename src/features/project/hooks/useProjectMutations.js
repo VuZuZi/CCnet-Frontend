@@ -113,7 +113,7 @@ export const useUpdateUpdatingProject = () => {
       }
 
       invalidateAllProjectQueries(queryClient);
-      toast.success("Đã cập nhật milestone của dự án");
+      toast.success("Đã cập nhật mốc hoạt động của dự án");
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

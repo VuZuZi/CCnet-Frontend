@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../../../auth/stores/useAuthStore";
+import { getRoleLabel } from "@/shared/lib/roleLabels";
 
 const ProfileWidget = () => {
   const { user } = useAuthStore();
@@ -28,7 +29,7 @@ const ProfileWidget = () => {
             {fullName}
           </h1>
           <p className="text-slate-500 text-xs font-medium">
-            {user?.role || "Người dùng"}
+            {getRoleLabel(user?.role)}
           </p>
         </div>
       </div>

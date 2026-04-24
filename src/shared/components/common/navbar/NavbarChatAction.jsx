@@ -9,6 +9,7 @@ import { useConversations } from '@/features/chat/hooks/conversations/useConvers
 import { useChatViewport } from '@/features/chat/hooks/layout/useChatViewport';
 import { useChatRealtime } from '@/features/chat/hooks/realtime/useChatRealtime';
 import { useChatStore, chatSelectors } from '@/features/chat/stores/useChatStore';
+import { useNavbarFloatingPanelStore } from '@/shared/stores/useNavbarFloatingPanelStore';
 
 function getUnreadCount(conversation, userId) {
   const unreadCounts = conversation?.unreadCounts;
@@ -28,9 +29,12 @@ function formatBadgeCount(value) {
 }
 
 export function NavbarChatAction({ hideWidget = false }) {
-  const [isOpen, setIsOpen] = useState(false);
   const anchorRef = useRef(null);
   const [anchorRect, setAnchorRect] = useState(null);
+  const activePanel = useNavbarFloatingPanelStore((state) => state.activePanel);
+  const togglePanel = useNavbarFloatingPanelStore((state) => state.togglePanel);
+  const closePanel = useNavbarFloatingPanelStore((state) => state.closePanel);
+  const isOpen = activePanel === 'chat';
 
   const { mode, isMobile, isTablet } = useChatViewport();
 
@@ -100,12 +104,12 @@ export function NavbarChatAction({ hideWidget = false }) {
   const handleToggle = () => {
     if (hideWidget) return;
     updateAnchorRect();
-    setIsOpen((prev) => !prev);
+    togglePanel('chat');
   };
 
   const handleConversationSelected = () => {
     updateAnchorRect();
-    setIsOpen(false);
+    closePanel();
   };
 
   useEffect(() => {
@@ -119,7 +123,7 @@ export function NavbarChatAction({ hideWidget = false }) {
 
     const handleEscape = (event) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        closePanel();
       }
     };
 
@@ -132,13 +136,13 @@ export function NavbarChatAction({ hideWidget = false }) {
       window.removeEventListener('scroll', handleViewportChange, true);
       window.removeEventListener('keydown', handleEscape);
     };
-  }, [isOpen, hideWidget]);
+  }, [isOpen, hideWidget, closePanel]);
 
   useEffect(() => {
     if (hideWidget && isOpen) {
-      setIsOpen(false);
+      closePanel();
     }
-  }, [hideWidget, isOpen]);
+  }, [hideWidget, isOpen, closePanel]);
 
   return (
     <>
@@ -170,7 +174,7 @@ export function NavbarChatAction({ hideWidget = false }) {
                 <button
                   type="button"
                   aria-label="Đóng tiện ích chat"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closePanel}
                   className="fixed inset-0 z-[6190] bg-transparent"
                 />
               ) : null}
@@ -179,7 +183,7 @@ export function NavbarChatAction({ hideWidget = false }) {
                 <div className="pointer-events-auto">
                   <ChatWidget
                     isOpen={isOpen}
-                    onClose={() => setIsOpen(false)}
+                    onClose={closePanel}
                     anchorRect={anchorRect}
                     onConversationSelected={handleConversationSelected}
                     mode={mode}

@@ -4,6 +4,7 @@ import { useAdminFinanceSummary } from '../hooks/useAdminFinanceQueries';
 import { formatProjectCurrencyVND } from '@/features/project/utils/projectDisplay.utils';
 import { PageLoader } from '@/shared/components/ui/PageLoader';
 import { Activity, ChevronRight, AlertCircle, FileCheck } from 'lucide-react';
+import { getStatusLabel } from '@/shared/lib/statusLabels';
 
 export default function AdminFinanceSummaryPage() {
     const navigate = useNavigate();
@@ -15,22 +16,25 @@ export default function AdminFinanceSummaryPage() {
     const projects = data?.projects ?? [];
 
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
+        <div className="mx-auto min-w-0 max-w-7xl space-y-6 p-4 sm:p-6">
             <header>
                 <h1 className="text-3xl font-black text-slate-900 flex flex-wrap items-center gap-3">
                     <Activity className="text-emerald-600" size={32} />
-                    Finance Ledger Control
+                    Kiểm soát sổ cái tài chính
                 </h1>
                 <p className="text-slate-500 mt-2">Giám sát dòng tiền và phê duyệt nghiệm thu toàn hệ thống.</p>
             </header>
 
-            <div className="overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-sm">
-                <div className="overflow-x-auto">
-                <table className="w-full min-w-[860px] table-fixed text-left border-collapse">
+            <div className="min-w-0 overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-sm">
+                <div className="ccnet-safe-scroll">
+                <table
+                    className="ccnet-safe-table text-left"
+                    style={{ "--ccnet-table-min": "920px" }}
+                >
                     <thead>
                         <tr className="bg-slate-50/50 border-b border-slate-100">
                             <th className="w-[44%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Dự án</th>
-                            <th className="w-[18%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Số dư Escrow</th>
+                            <th className="w-[18%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Số dư ký quỹ</th>
                             <th className="w-[16%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400">Đã chi</th>
                             <th className="w-[16%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center">Chờ duyệt</th>
                             <th className="w-[6%] px-6 py-5 text-[10px] font-black uppercase tracking-widest text-slate-400"></th>
@@ -46,7 +50,7 @@ export default function AdminFinanceSummaryPage() {
     >
         {proj.title}
     </p>
-    <span className="text-[10px] font-medium text-slate-400 uppercase">{proj.status}</span>
+    <span className="text-[10px] font-medium text-slate-400 uppercase">{getStatusLabel(proj.status)}</span>
 </td>
                                 <td className="px-6 py-5 text-sm font-black text-slate-700">
                                     {formatProjectCurrencyVND(proj.escrowBalance)}

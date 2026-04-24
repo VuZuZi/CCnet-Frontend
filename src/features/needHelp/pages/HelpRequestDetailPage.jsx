@@ -1,16 +1,17 @@
-import { useLocation, useNavigate, useParams, Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   ArrowLeft,
-  CircleAlert,
-  Loader2,
-  Pencil,
-  Trash2,
-  Mail,
-  Phone,
-  MapPin,
   CalendarDays,
+  CircleAlert,
   Expand,
+  FolderKanban,
+  Loader2,
+  Mail,
+  MapPin,
+  Pencil,
+  Phone,
+  Trash2,
 } from 'lucide-react';
 
 import { ROUTES } from '@/shared/constants/routes';
@@ -18,9 +19,19 @@ import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore
 
 import { HelpRequestFundingCard } from '../components/detail/HelpRequestFundingCard';
 import { HelpRequestVerification } from '../components/detail/HelpRequestVerification';
+import { EvidenceGallery } from '../components/detail/EvidenceGallery';
 import { useHelpRequestDetail } from '../hooks/useHelpRequestQueries';
 import { useDeleteHelpRequest } from '../hooks/useHelpRequestMutations';
 import { AdminAssignmentPanel } from '../components/admin/AdminAssignmentPanel';
+import { HELP_REQUEST_CATEGORIES, URGENCY_LEVELS } from '../validations/helpRequestSchema';
+
+const CATEGORY_LABELS = Object.fromEntries(
+  HELP_REQUEST_CATEGORIES.map((item) => [item.value, item.label])
+);
+
+const URGENCY_LABELS = Object.fromEntries(
+  URGENCY_LEVELS.map((item) => [item.value, item.label])
+);
 
 function getHelpRequestImage(helpRequest) {
   if (!helpRequest) return '';
@@ -57,10 +68,22 @@ function getHelpRequestImage(helpRequest) {
   return '';
 }
 
+function getInitials(name = '') {
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part.charAt(0).toUpperCase())
+      .join('') || 'CC'
+  );
+}
+
 function InfoBadge({ children, tone = 'default' }) {
   const styles = {
     default: 'border-[#e7dfcf] bg-[#fcfaf5] text-slate-700',
     blue: 'border-sky-200 bg-sky-50 text-sky-700',
+    rose: 'border-rose-200 bg-rose-50 text-rose-700',
   };
 
   return (
@@ -102,6 +125,20 @@ function ContactRow({ icon: Icon, children, href }) {
   return content;
 }
 
+function SectionCard({ eyebrow, title, children }) {
+  return (
+    <section className="rounded-[28px] border border-[#ece7dc] bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.05)] sm:p-8">
+      <div className="mb-5">
+        <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-slate-500">
+          {eyebrow}
+        </div>
+        <h2 className="mt-3 text-2xl font-black tracking-tight text-slate-950">{title}</h2>
+      </div>
+      {children}
+    </section>
+  );
+}
+
 function ImagePreviewModal({ isOpen, imageUrl, title, onClose }) {
   useEffect(() => {
     if (!isOpen) return;
@@ -127,7 +164,7 @@ function ImagePreviewModal({ isOpen, imageUrl, title, onClose }) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Image preview"
+      aria-label="Xem trước ảnh"
     >
       <div className="flex h-screen w-screen items-center justify-center p-3">
         <img
@@ -193,7 +230,7 @@ export function HelpRequestDetailPage() {
   if (isLoading) {
     return (
       <main className="min-h-screen bg-[#f8f7f3]">
-        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-[1440px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
           <div className="flex min-h-[320px] items-center justify-center rounded-[32px] border border-[#ece7dc] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="animate-spin text-amber-500" size={34} />
@@ -224,8 +261,7 @@ export function HelpRequestDetailPage() {
             <button
               type="button"
               onClick={handleBack}
-              className="relative isolate z-[9999] mt-8 inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e7b10a] bg-[#f4b400] px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_10px_24px_rgba(244,180,0,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[#e0a800] focus:outline-none focus:ring-2 focus:ring-[#f4b400]/50"
-              style={{ pointerEvents: 'auto' }}
+              className="mt-8 inline-flex cursor-pointer items-center gap-2 rounded-full border border-[#e7b10a] bg-[#f4b400] px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_10px_24px_rgba(244,180,0,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[#e0a800] focus:outline-none focus:ring-2 focus:ring-[#f4b400]/50"
             >
               <ArrowLeft size={16} />
               Quay lại
@@ -239,56 +275,68 @@ export function HelpRequestDetailPage() {
   const imageUrl = getHelpRequestImage(helpRequest);
   const requester =
     typeof helpRequest.requesterId === 'object' ? helpRequest.requesterId : null;
+  const linkedProject =
+    helpRequest.linkedProjectId &&
+    typeof helpRequest.linkedProjectId === 'object' &&
+    !Array.isArray(helpRequest.linkedProjectId)
+      ? helpRequest.linkedProjectId
+      : null;
 
   const title = helpRequest.title || 'Yêu cầu trợ giúp không có tiêu đề';
-  const description =
-    helpRequest.description ||
-    'Yêu cầu này được hiển thị cho cộng đồng để các nhà tổ chức và những người muốn hỗ trợ có thể xem xét trường hợp, xác minh thông tin và phản hồi một cách có trách nhiệm.';
+  const description = helpRequest.description?.trim() || '';
+  const storyText = helpRequest.story?.trim() || '';
+  const leadText = description && description !== storyText ? description : '';
 
-  const requesterName = requester?.name || requester?.fullName || 'Người dùng ẩn danh';
+  const requesterName =
+    requester?.name || requester?.fullName || helpRequest.requesterName || 'Người dùng ẩn danh';
   const requesterEmail =
     helpRequest.contactEmail || requester?.email || 'Không cung cấp email liên hệ';
   const requesterPhone = helpRequest.contactPhone || 'Không cung cấp số điện thoại';
 
-  const category =
-    helpRequest.category || helpRequest.requestType || helpRequest.type || 'Cần trợ giúp';
-
-  const urgency =
-    helpRequest.urgency || helpRequest.priority || helpRequest.severity || 'Trung bình';
-
+  const categoryValue =
+    helpRequest.category || helpRequest.requestType || helpRequest.type || 'KHAC';
+  const urgencyValue =
+    helpRequest.urgencyLevel || helpRequest.urgency || helpRequest.priority || 'MEDIUM';
+  const category = CATEGORY_LABELS[categoryValue] || categoryValue || 'Cần trợ giúp';
+  const urgency = URGENCY_LABELS[urgencyValue] || urgencyValue || 'Trung bình';
   const locationText =
     helpRequest.locationText ||
     helpRequest.location?.address ||
     helpRequest.address ||
-    'Vị trí sẽ xác định';
-
+    'Địa điểm đang cập nhật';
   const submittedAt = helpRequest.createdAt
     ? new Date(helpRequest.createdAt).toLocaleDateString('vi-VN')
     : 'Được gửi gần đây';
 
+  const urgencyTone =
+    urgencyValue === 'CRITICAL' || urgencyValue === 'HIGH'
+      ? 'rose'
+      : urgencyValue === 'LOW'
+        ? 'default'
+        : 'blue';
+
   return (
     <>
       <main className="min-h-screen bg-[#f8f7f3]">
-        <div className="mx-auto max-w-7xl px-4 pb-16 pt-8 sm:px-6 lg:px-8">
-          <div className="relative isolate z-[9999] mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto max-w-[1440px] px-4 pb-16 pt-8 sm:px-6 lg:px-8">
+          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <button
               type="button"
               onClick={handleBack}
-              className="inline-flex w-fit cursor-pointer items-center gap-2 rounded-full border border-[#e7b10a] bg-[#f4b400] px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_10px_24px_rgba(244,180,0,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[#e0a800] focus:outline-none focus:ring-2 focus:ring-[#f4b400]/50"
-              style={{ pointerEvents: 'auto' }}
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-[#e7b10a] bg-[#f4b400] px-5 py-2.5 text-sm font-semibold text-slate-900 shadow-[0_10px_24px_rgba(244,180,0,0.24)] transition-all hover:-translate-y-0.5 hover:bg-[#e0a800] focus:outline-none focus:ring-2 focus:ring-[#f4b400]/50"
             >
               <ArrowLeft size={16} />
               Quay lại
             </button>
 
-            {isOwner && (
+            {isOwner ? (
               <div className="flex flex-wrap gap-3">
                 <Link
                   to={`/need-help/${helpRequest._id}/edit`}
                   className="inline-flex items-center gap-2 rounded-2xl border border-[#f1d58a] bg-white px-5 py-2.5 text-sm font-semibold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-[#fff8e6]"
                 >
                   <Pencil size={16} />
-                  Chỉnh sửa yêu cầu
+                  Chỉnh sửa
                 </Link>
 
                 <button
@@ -301,49 +349,37 @@ export function HelpRequestDetailPage() {
                   {deleteMutation.isPending ? 'Đang xóa...' : 'Xóa yêu cầu'}
                 </button>
               </div>
-            )}
+            ) : null}
           </div>
 
           <div className="space-y-6">
             {isAdmin ? <AdminAssignmentPanel helpRequest={helpRequest} /> : null}
 
-            <section className="overflow-hidden rounded-[32px] border border-[#ece7dc] bg-white shadow-[0_18px_50px_rgba(15,23,42,0.05)]">
-              <div className="p-5 sm:p-6 lg:p-8">
-                <div className="flex flex-wrap items-center gap-2">
-                  <InfoBadge>{category}</InfoBadge>
-                  <InfoBadge tone="blue">{urgency}</InfoBadge>
-                  <MetaChip icon={MapPin}>{locationText}</MetaChip>
-                  <MetaChip icon={CalendarDays}>{submittedAt}</MetaChip>
-                </div>
+            <section className="rounded-[32px] border border-[#ece7dc] bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.05)] sm:p-8">
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_360px]">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <InfoBadge>{category}</InfoBadge>
+                    <InfoBadge tone={urgencyTone}>{urgency}</InfoBadge>
+                    <MetaChip icon={MapPin}>{locationText}</MetaChip>
+                    <MetaChip icon={CalendarDays}>{submittedAt}</MetaChip>
+                  </div>
 
-                <div className="mt-6 border-b border-slate-200 pb-6">
-                  <h1 className="max-w-3xl break-all text-[42px] font-bold leading-[1.08] tracking-[-0.03em] text-[#0f172a]">
+                  <h1 className="mt-5 max-w-4xl break-words text-[clamp(2rem,4vw,3.2rem)] font-black leading-[1.08] tracking-tight text-slate-950">
                     {title}
                   </h1>
 
-                  <p className="mt-5 max-w-2xl break-all whitespace-pre-wrap text-[18px] leading-8 text-slate-600">
-                    {description}
-                  </p>
-                </div>
-
-                <div className="mt-6">
-                  <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                    Câu chuyện
-                  </div>
-
-                  <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
-                    <p className="max-w-none whitespace-pre-wrap break-all text-[15px] leading-8 text-slate-700">
-                      {helpRequest.story || 'Chưa có câu chuyện nào được cung cấp.'}
+                  {leadText ? (
+                    <p className="mt-4 max-w-3xl whitespace-pre-wrap break-words text-[17px] leading-8 text-slate-600">
+                      {leadText}
                     </p>
-                  </div>
-                </div>
+                  ) : null}
 
-                <div className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)]">
                   {imageUrl ? (
-                    <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-5 sm:p-6">
+                    <div className="mt-6 rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-5 sm:p-6">
                       <div className="mb-4 flex items-center justify-between gap-3">
                         <div className="text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                          Image
+                          Hình ảnh đính kèm
                         </div>
 
                         <button
@@ -352,7 +388,7 @@ export function HelpRequestDetailPage() {
                           className="inline-flex items-center gap-2 rounded-full border border-[#e7dfcf] bg-white px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] text-slate-600 transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700"
                         >
                           <Expand className="h-3.5 w-3.5" />
-                          Xem
+                          Phóng to
                         </button>
                       </div>
 
@@ -371,12 +407,26 @@ export function HelpRequestDetailPage() {
                       </button>
                     </div>
                   ) : null}
+                </div>
 
-                  <div className="flex flex-col gap-4">
-                    <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
-                      <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                        Được gửi bởi
-                      </div>
+                <div className="space-y-4">
+                  <section className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
+                    <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
+                      Người gửi yêu cầu
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      {requester?.avatar ? (
+                        <img
+                          src={requester.avatar}
+                          alt={requesterName}
+                          className="h-14 w-14 rounded-full object-cover ring-2 ring-white"
+                        />
+                      ) : (
+                        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 text-base font-bold text-amber-700">
+                          {getInitials(requesterName)}
+                        </div>
+                      )}
 
                       <div className="min-w-0">
                         <div className="break-all text-xl font-semibold text-slate-900">
@@ -387,48 +437,92 @@ export function HelpRequestDetailPage() {
                         </div>
                       </div>
                     </div>
+                  </section>
 
-                    <div className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
-                      <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
-                        Liên hệ
-                      </div>
-
-                      <div className="space-y-3">
-                        <ContactRow
-                          icon={Phone}
-                          href={
-                            requesterPhone !== 'Không cung cấp số điện thoại'
-                              ? `tel:${requesterPhone}`
-                              : undefined
-                          }
-                        >
-                          {requesterPhone}
-                        </ContactRow>
-
-                        <ContactRow
-                          icon={Mail}
-                          href={
-                            requesterEmail !== 'Không cung cấp email liên hệ'
-                              ? `mailto:${requesterEmail}`
-                              : undefined
-                          }
-                        >
-                          {requesterEmail}
-                        </ContactRow>
-                      </div>
+                  <section className="rounded-[28px] border border-[#ebe5d8] bg-[#fcfbf8] p-6">
+                    <div className="mb-4 text-xs font-extrabold uppercase tracking-[0.24em] text-[#8b7b5e]">
+                      Liên hệ nhanh
                     </div>
-                  </div>
-                </div>
 
-                <div className="mt-6">
+                    <div className="space-y-3">
+                      <ContactRow
+                        icon={Phone}
+                        href={
+                          requesterPhone !== 'Không cung cấp số điện thoại'
+                            ? `tel:${requesterPhone}`
+                            : undefined
+                        }
+                      >
+                        {requesterPhone}
+                      </ContactRow>
+
+                      <ContactRow
+                        icon={Mail}
+                        href={
+                          requesterEmail !== 'Không cung cấp email liên hệ'
+                            ? `mailto:${requesterEmail}`
+                            : undefined
+                        }
+                      >
+                        {requesterEmail}
+                      </ContactRow>
+                    </div>
+                  </section>
+
+                  {linkedProject ? (
+                    <section className="rounded-[28px] border border-[#ebe5d8] bg-white p-6 shadow-sm">
+                      <div className="mb-3 flex items-center gap-2 text-xs font-extrabold uppercase tracking-[0.24em] text-slate-400">
+                        <FolderKanban size={14} />
+                        Dự án liên kết
+                      </div>
+
+                      <Link
+                        to={`/projects/${linkedProject._id || linkedProject.id}`}
+                        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900 transition-colors hover:text-amber-700"
+                      >
+                        {linkedProject.title || 'Mở dự án liên kết'}
+                      </Link>
+                    </section>
+                  ) : null}
+
                   <HelpRequestFundingCard amountNeeded={helpRequest.amountNeeded} />
-                </div>
-
-                <div className="mt-6">
-                  <HelpRequestVerification helpRequest={helpRequest} />
                 </div>
               </div>
             </section>
+
+            <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+              <div className="min-w-0 space-y-6">
+                {storyText ? (
+                  <SectionCard eyebrow="Câu chuyện" title="Hoàn cảnh cần hỗ trợ">
+                    <div className="space-y-4 text-[15px] leading-8 text-slate-700">
+                      {storyText
+                        .split('\n')
+                        .map((paragraph) => paragraph.trim())
+                        .filter(Boolean)
+                        .map((paragraph, index) => (
+                          <p key={`${index}-${paragraph.slice(0, 20)}`} className="break-words whitespace-pre-wrap">
+                            {paragraph}
+                          </p>
+                        ))}
+                    </div>
+                  </SectionCard>
+                ) : null}
+
+                {Array.isArray(helpRequest.evidences) && helpRequest.evidences.length > 0 ? (
+                  <SectionCard eyebrow="Minh chứng" title="Tệp người gửi đã cung cấp">
+                    <EvidenceGallery evidences={helpRequest.evidences} />
+                  </SectionCard>
+                ) : null}
+              </div>
+
+              <div className="space-y-6 xl:sticky xl:top-24 xl:self-start">
+                <HelpRequestVerification
+                  helpRequest={helpRequest}
+                  showEvidence={false}
+                  compact
+                />
+              </div>
+            </div>
           </div>
         </div>
       </main>

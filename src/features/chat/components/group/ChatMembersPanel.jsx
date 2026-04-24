@@ -91,14 +91,14 @@ export default function ChatMembersPanel({
       <div className="flex-1 space-y-4 overflow-y-auto p-5">
         <ActionCard
           icon={<Images className="h-5 w-5" />}
-          title="File phương tiện"
-          subtitle="Xem hình ảnh và file"
+          title="Tệp phương tiện"
+          subtitle="Xem hình ảnh và tệp"
           onClick={() => onOpenAssets?.('image')}
         />
 
         <ActionCard
           icon={<FolderOpen className="h-5 w-5" />}
-          title="File"
+          title="Tệp"
           subtitle="Xem tệp đính kèm"
           onClick={() => onOpenAssets?.('file')}
         />
@@ -130,8 +130,8 @@ export default function ChatMembersPanel({
             {showMembers ? (
               <div className="border-t border-slate-200 p-3">
                 <div className="space-y-1">
-                  {members.map((member) => {
-                    const key = String(member?._id || member?.id || member?.email || Math.random());
+                  {members.map((member, index) => {
+                    const key = String(member?._id || member?.id || member?.email || index);
                     return <MemberItem key={key} member={member} />;
                   })}
                 </div>

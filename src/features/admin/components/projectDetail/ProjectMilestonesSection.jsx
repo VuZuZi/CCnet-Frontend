@@ -95,7 +95,7 @@ export default function ProjectMilestonesSection({ milestones = [] }) {
 
           <div>
             <h4 className="text-base font-black text-slate-900 md:text-lg">
-              Milestones
+              Các mốc hoạt động
             </h4>
             <p className="mt-1 text-sm text-slate-600">
               Hiển thị đầy đủ thông tin từng mốc của dự án.
@@ -118,7 +118,7 @@ export default function ProjectMilestonesSection({ milestones = [] }) {
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0">
                     <div className="inline-flex max-w-full items-center rounded-full border border-amber-200 bg-amber-100/80 px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.12em] text-amber-800">
-                      Milestone {index + 1}
+                      Mốc hoạt động {index + 1}
                     </div>
 
                     <h5 className="mt-3 break-words text-xl font-black leading-tight text-slate-900 md:text-2xl">
@@ -202,7 +202,7 @@ export default function ProjectMilestonesSection({ milestones = [] }) {
 
                       <div className="min-w-0">
                         <p className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-slate-500">
-                          Địa điểm milestone
+                          Địa điểm mốc hoạt động
                         </p>
                         <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-6 text-slate-700">
                           {getTextValue(milestone?.location?.address)}
@@ -221,7 +221,7 @@ export default function ProjectMilestonesSection({ milestones = [] }) {
             <Flag size={24} strokeWidth={2.2} />
           </div>
           <p className="mt-4 text-sm font-bold text-slate-600">
-            Dự án chưa có milestone để hiển thị
+            Dự án chưa có mốc hoạt động để hiển thị
           </p>
         </div>
       )}

@@ -107,7 +107,7 @@ export default function useAdminNotificationComposer() {
     } catch (error) {
       setAlert({
         type: "error",
-        message: error.message || "Invalid notification payload.",
+        message: error.message || "Dữ liệu thông báo không hợp lệ.",
       });
       return;
     }
@@ -139,7 +139,7 @@ export default function useAdminNotificationComposer() {
         message:
           error?.response?.data?.message ||
           error?.message ||
-          "Failed to send notification.",
+          "Gửi thông báo thất bại.",
       });
     } finally {
       setIsSubmitting(false);

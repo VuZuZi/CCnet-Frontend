@@ -146,7 +146,7 @@ export function useAdminUsersManager() {
     const trimmedReason = String(actionReason || "").trim();
 
     if (!trimmedReason) {
-      toast.error("Reason is required for this action.");
+      toast.error("Vui lòng nhập lý do cho thao tác này.");
       return;
     }
 
@@ -196,13 +196,13 @@ export function useAdminUsersManager() {
 
       toast.success(
         isBanned
-          ? "User has been unbanned successfully."
-          : "User has been banned successfully."
+          ? "Đã mở khóa người dùng thành công."
+          : "Đã khóa người dùng thành công."
       );
 
       closeModal();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Failed to update ban status."));
+      toast.error(getErrorMessage(error, "Cập nhật trạng thái khóa thất bại."));
     } finally {
       setPendingBanUserId(null);
     }

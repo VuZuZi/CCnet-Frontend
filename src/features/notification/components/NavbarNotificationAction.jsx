@@ -7,14 +7,19 @@ import NotificationSettingsModal from './NotificationSettingsModal';
 import { useNotifications } from '../hooks/useNotifications';
 import { useUnreadNotificationCount } from '../hooks/useUnreadNotificationCount';
 import { useNotificationActions } from '../hooks/useNotificationActions';
+import { getNavbarFloatingPanelMetrics } from '@/shared/lib/navbarFloatingPanel';
+import { useNavbarFloatingPanelStore } from '@/shared/stores/useNavbarFloatingPanelStore';
 
 export default function NavbarNotificationAction() {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const anchorRef = useRef(null);
   const panelRef = useRef(null);
   const [anchorRect, setAnchorRect] = useState(null);
+  const activePanel = useNavbarFloatingPanelStore((state) => state.activePanel);
+  const togglePanel = useNavbarFloatingPanelStore((state) => state.togglePanel);
+  const closePanel = useNavbarFloatingPanelStore((state) => state.closePanel);
+  const isDropdownOpen = activePanel === 'notification';
 
   const notificationsQuery = useNotifications({ page: 1, limit: 20 });
   const unreadCountQuery = useUnreadNotificationCount();
@@ -42,7 +47,7 @@ export default function NavbarNotificationAction() {
   const handleBellClick = () => {
     setIsSettingsOpen(false);
     updateAnchorRect();
-    setIsDropdownOpen((previous) => !previous);
+    togglePanel('notification');
   };
 
   const handleOpenSettings = () => {
@@ -64,7 +69,7 @@ export default function NavbarNotificationAction() {
       const clickedPanel = panelRef.current?.contains(target);
 
       if (!clickedAnchor && !clickedPanel) {
-        setIsDropdownOpen(false);
+        closePanel();
       }
     };
 
@@ -74,7 +79,7 @@ export default function NavbarNotificationAction() {
           setIsSettingsOpen(false);
           return;
         }
-        setIsDropdownOpen(false);
+        closePanel();
       }
     };
 
@@ -89,24 +94,18 @@ export default function NavbarNotificationAction() {
       document.removeEventListener('mousedown', handleMouseDown);
       document.removeEventListener('keydown', handleEscape);
     };
-  }, [isDropdownOpen, isSettingsOpen]);
+  }, [isDropdownOpen, isSettingsOpen, closePanel]);
 
   const portalWrapperStyle = useMemo(() => {
-    if (!anchorRect) return undefined;
-
-    const top = anchorRect.bottom + 12;
-    const right =
-      typeof window !== 'undefined'
-        ? Math.max(16, window.innerWidth - anchorRect.right)
-        : 16;
+    const metrics = getNavbarFloatingPanelMetrics(anchorRect, { width: 408 });
 
     return {
       position: 'fixed',
-      top,
-      right,
+      top: metrics.top,
+      right: metrics.right,
       zIndex: 6000,
-      width: 384,
-      maxWidth: 'calc(100vw - 24px)',
+      width: metrics.width,
+      maxWidth: metrics.maxWidth,
     };
   }, [anchorRect]);
 
@@ -138,7 +137,7 @@ export default function NavbarNotificationAction() {
               <button
                 type="button"
                 aria-label="Đóng thông báo"
-                onClick={() => setIsDropdownOpen(false)}
+                onClick={closePanel}
                 className="fixed inset-0 z-[5990] cursor-default bg-transparent"
               />
 
@@ -153,7 +152,7 @@ export default function NavbarNotificationAction() {
                     items={items}
                     unreadCount={unreadCount}
                     isLoading={notificationsQuery.isLoading}
-                    onClose={() => setIsDropdownOpen(false)}
+                    onClose={closePanel}
                     onOpenSettings={handleOpenSettings}
                     onMarkAllRead={() => markAllAsRead.mutate()}
                     onRead={(id) => markAsRead.mutate(id)}

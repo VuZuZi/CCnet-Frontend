@@ -19,7 +19,7 @@ export function useGoogleLogin() {
       
       setAuthSuccess(user, tokens.accessToken);
       
-      toast.success(`Welcome via Google, ${user.fullName}!`);
+      toast.success(`Chào mừng ${user.fullName} đăng nhập bằng Google!`);
       devConfig.log('Google Login successful:', user.email); 
       
       navigate(getDefaultRouteByRole(user?.role), { replace: true });

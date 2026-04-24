@@ -3,24 +3,22 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import PropTypes from 'prop-types';
 import clsx from 'clsx';
+import { useBodyScrollLock } from '@/shared/hooks/useBodyScrollLock';
 
 export function Modal({ isOpen, open, onClose, title, children, maxWidth = 'max-w-md' }) {
     const isModalOpen = isOpen || open;
+    useBodyScrollLock(isModalOpen);
 
     useEffect(() => {
         if (!isModalOpen) return;
 
-        const originalStyle = window.getComputedStyle(document.body).overflow;
-        
         const handleEscape = (e) => {
             if (e.key === 'Escape') onClose();
         };
 
-        document.body.style.overflow = 'hidden';
         window.addEventListener('keydown', handleEscape);
 
         return () => {
-            document.body.style.overflow = originalStyle;
             window.removeEventListener('keydown', handleEscape);
         };
     }, [isModalOpen, onClose]);
@@ -35,13 +33,13 @@ export function Modal({ isOpen, open, onClose, title, children, maxWidth = 'max-
 
     return createPortal(
         <div 
-            className="fixed inset-0 z-[9999] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto"
+            className="ccnet-modal-overlay fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/45"
             onMouseDown={handleBackdropClick}
         >
-            <div className="min-h-screen px-4 py-12 flex items-center justify-center pointer-events-none">
+            <div className="ccnet-modal-scroll min-h-screen px-4 py-12 flex items-center justify-center pointer-events-none">
                 <div
                     className={clsx(
-                        "relative w-full transform rounded-[24px] bg-white shadow-2xl transition-all animate-in zoom-in-95 duration-200 pointer-events-auto",
+                        "ccnet-modal-panel relative w-full rounded-[24px] bg-white shadow-2xl pointer-events-auto",
                         maxWidth
                     )}
                     role="dialog"
@@ -53,7 +51,7 @@ export function Modal({ isOpen, open, onClose, title, children, maxWidth = 'max-
                         <button
                             onClick={onClose}
                             className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-50 text-slate-400 transition-colors hover:bg-slate-200 hover:text-slate-700 outline-none"
-                            aria-label="Close modal"
+                            aria-label="Đóng hộp thoại"
                         >
                             <X size={18} strokeWidth={2.5} />
                         </button>

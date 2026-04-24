@@ -21,15 +21,15 @@ export const ADMIN_PROJECT_ACTION_KEYS = {
 };
 
 export const ADMIN_PROJECT_ACTION_LABELS = {
-  [ADMIN_PROJECT_ACTION_KEYS.APPROVE_PROJECT]: "Approve Project",
-  [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_REVISION]: "Request Revision",
-  [ADMIN_PROJECT_ACTION_KEYS.REJECT_PROJECT]: "Reject Project",
-  [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_UPDATE]: "Request Update",
-  [ADMIN_PROJECT_ACTION_KEYS.PAUSE_PROJECT]: "Pause Project",
-  [ADMIN_PROJECT_ACTION_KEYS.RESUME_PROJECT]: "Resume Project",
-  [ADMIN_PROJECT_ACTION_KEYS.COMPLETE_PROJECT]: "Complete Project",
-  [ADMIN_PROJECT_ACTION_KEYS.CANCEL_PROJECT]: "Cancel Project",
-  [ADMIN_PROJECT_ACTION_KEYS.UPDATE_PROJECT_STATUS]: "Update Status",
+  [ADMIN_PROJECT_ACTION_KEYS.APPROVE_PROJECT]: "Phê duyệt dự án",
+  [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_REVISION]: "Yêu cầu chỉnh sửa",
+  [ADMIN_PROJECT_ACTION_KEYS.REJECT_PROJECT]: "Từ chối dự án",
+  [ADMIN_PROJECT_ACTION_KEYS.REQUEST_PROJECT_UPDATE]: "Yêu cầu cập nhật",
+  [ADMIN_PROJECT_ACTION_KEYS.PAUSE_PROJECT]: "Tạm dừng dự án",
+  [ADMIN_PROJECT_ACTION_KEYS.RESUME_PROJECT]: "Tiếp tục dự án",
+  [ADMIN_PROJECT_ACTION_KEYS.COMPLETE_PROJECT]: "Hoàn thành dự án",
+  [ADMIN_PROJECT_ACTION_KEYS.CANCEL_PROJECT]: "Hủy dự án",
+  [ADMIN_PROJECT_ACTION_KEYS.UPDATE_PROJECT_STATUS]: "Cập nhật trạng thái",
 };
 
 export const ADMIN_PROJECT_ACTION_BADGE_STYLES = {
@@ -70,7 +70,7 @@ const CANCELLABLE_STATUSES = [
 ];
 
 export function getProjectActionLabel(actionKey) {
-  return ADMIN_PROJECT_ACTION_LABELS[actionKey] || actionKey || "Action";
+  return ADMIN_PROJECT_ACTION_LABELS[actionKey] || actionKey || "Hành động";
 }
 
 export function getProjectActionBadgeClass(actionKey) {
@@ -163,9 +163,9 @@ export function getPrimaryProjectAction(project) {
   if (isReviewableProjectStatus(realStatus)) {
     return {
       actionKey: ADMIN_PROJECT_ACTION_KEYS.APPROVE_PROJECT,
-      label: "Approve",
+      label: "Phê duyệt",
       nextStatus: getApprovedStatus(project),
-      title: "Approve project",
+      title: "Phê duyệt dự án",
       className:
         "inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-600 disabled:opacity-50",
     };

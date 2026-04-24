@@ -1,4 +1,5 @@
 import { REPORT_REASONS } from "./utils/projectSidebar.utils";
+import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
 
 export function ProjectReportModal({
   isOpen,
@@ -11,10 +12,12 @@ export function ProjectReportModal({
   onSubmit,
   isReporting,
 }) {
+  useBodyScrollLock(isOpen);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[1050] flex items-center justify-center bg-slate-950/60 p-4">
       <div className="w-full max-w-xl rounded-3xl bg-white shadow-xl">
         <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4">
           <div>

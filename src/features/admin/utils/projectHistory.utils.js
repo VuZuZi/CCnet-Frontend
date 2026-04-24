@@ -19,55 +19,55 @@ const PROJECT_HISTORY_ACTION_ORDER = [
 ];
 
 const PROJECT_HISTORY_ACTION_LABEL_OVERRIDES = {
-  APPROVE_PROJECT: "Approve Project",
-  REQUEST_PROJECT_REVISION: "Request Revision",
-  REJECT_PROJECT: "Reject Project",
-  REQUEST_PROJECT_UPDATE: "Request Update",
-  PAUSE_PROJECT: "Pause Project",
-  RESUME_PROJECT: "Resume Project",
-  COMPLETE_PROJECT: "Complete Project",
-  CANCEL_PROJECT: "Cancel Project",
-  DELETE_PROJECT: "Delete Project",
-  UPDATE_PROJECT_STATUS: "Update Status",
+  APPROVE_PROJECT: "Phê duyệt dự án",
+  REQUEST_PROJECT_REVISION: "Yêu cầu chỉnh sửa",
+  REJECT_PROJECT: "Từ chối dự án",
+  REQUEST_PROJECT_UPDATE: "Yêu cầu cập nhật",
+  PAUSE_PROJECT: "Tạm dừng dự án",
+  RESUME_PROJECT: "Tiếp tục dự án",
+  COMPLETE_PROJECT: "Hoàn thành dự án",
+  CANCEL_PROJECT: "Hủy dự án",
+  DELETE_PROJECT: "Xóa dự án",
+  UPDATE_PROJECT_STATUS: "Cập nhật trạng thái",
 };
 
 const PROJECT_HISTORY_STATUS_LABEL_OVERRIDES = {
-  DRAFT: "Draft",
-  UNDER_REVIEW: "Pending Review",
-  PENDING_APPROVAL: "Pending Review",
-  REVISION_REQUESTED: "Revision Requested",
-  REJECTED: "Rejected",
+  DRAFT: "Bản nháp",
+  UNDER_REVIEW: "Chờ kiểm duyệt",
+  PENDING_APPROVAL: "Chờ kiểm duyệt",
+  REVISION_REQUESTED: "Yêu cầu chỉnh sửa",
+  REJECTED: "Đã từ chối",
 
-  FUNDING: "Fundraising",
-  RECRUITING: "Recruiting Volunteers",
-  EXECUTING: "Executing",
-  ACTIVE: "Active",
-  UPDATING: "Updating",
-  PAUSED: "Paused",
+  FUNDING: "Đang gây quỹ",
+  RECRUITING: "Đang tuyển tình nguyện viên",
+  EXECUTING: "Đang thực hiện",
+  ACTIVE: "Đang hoạt động",
+  UPDATING: "Đang cập nhật",
+  PAUSED: "Tạm dừng",
 
-  COMPLETED_SUCCESSFULLY: "Completed",
-  COMPLETED_PARTIAL: "Partially Completed",
-  COMPLETED: "Completed",
+  COMPLETED_SUCCESSFULLY: "Đã hoàn thành",
+  COMPLETED_PARTIAL: "Hoàn thành một phần",
+  COMPLETED: "Đã hoàn thành",
 
-  CANCELLED_BY_PLATFORM: "Cancelled",
-  CANCELLED_BY_ORGANIZER: "Cancelled",
-  CANCELLED_FRAUD: "Cancelled",
-  CANCELLED: "Cancelled",
+  CANCELLED_BY_PLATFORM: "Đã hủy",
+  CANCELLED_BY_ORGANIZER: "Đã hủy",
+  CANCELLED_FRAUD: "Đã hủy",
+  CANCELLED: "Đã hủy",
 
-  DELETED: "Deleted",
+  DELETED: "Đã xóa",
 };
 
 const PROJECT_TYPE_LABEL_OVERRIDES = {
-  FUNDING: "Fundraising",
-  FUNDED: "Fundraising",
-  FUNDRAISING: "Fundraising",
-  VOLUNTEER: "Volunteer",
-  VOLUNTEER_ONLY: "Volunteer",
-  HYBRID: "Hybrid",
+  FUNDING: "Gây quỹ",
+  FUNDED: "Gây quỹ",
+  FUNDRAISING: "Gây quỹ",
+  VOLUNTEER: "Tình nguyện",
+  VOLUNTEER_ONLY: "Tình nguyện",
+  HYBRID: "Kết hợp",
 };
 
 export const PROJECT_HISTORY_ACTION_OPTIONS = [
-  { value: "", label: "All Actions" },
+  { value: "", label: "Tất cả hành động" },
   ...PROJECT_HISTORY_ACTION_ORDER.map((actionKey) => ({
     value: actionKey,
     label:
@@ -81,7 +81,7 @@ export const formatProjectHistoryDateTime = (value) => {
   if (!value) return "--";
 
   try {
-    return new Intl.DateTimeFormat("en-GB", {
+    return new Intl.DateTimeFormat("vi-VN", {
       year: "numeric",
       month: "2-digit",
       day: "2-digit",

@@ -9,7 +9,7 @@ function unwrapResponse(response) {
 
 function assertRequired(value, fieldName) {
   if (!value) {
-    throw new Error(`Invalid ${fieldName}`);
+  throw new Error(`${fieldName} không hợp lệ`);
   }
 }
 

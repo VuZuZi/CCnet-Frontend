@@ -63,7 +63,7 @@ export function useOrganizerRequestDetail(id) {
         queryKey: ["organizer-request", "me"],
       });
 
-      toast.success("Đã duyệt hồ sơ Organizer");
+      toast.success("Đã duyệt hồ sơ nhà tổ chức");
     },
     onError: (error, _variables, context) => {
       if (context?.previousRequest) {
@@ -128,7 +128,7 @@ export function useOrganizerRequestDetail(id) {
         queryKey: ["organizer-request", "me"],
       });
 
-      toast.success("Đã từ chối hồ sơ Organizer");
+      toast.success("Đã từ chối hồ sơ nhà tổ chức");
     },
     onError: (error, _variables, context) => {
       if (context?.previousRequest) {

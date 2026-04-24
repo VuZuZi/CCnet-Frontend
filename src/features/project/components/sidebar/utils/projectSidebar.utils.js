@@ -1,10 +1,10 @@
 export const REPORT_REASONS = [
-  { value: "spam", label: "Spam" },
-  { value: "harassment", label: "Harassment" },
-  { value: "inappropriate", label: "Inappropriate" },
-  { value: "violence", label: "Violence" },
-  { value: "hate_speech", label: "Hate speech" },
-  { value: "other", label: "Other" },
+  { value: "spam", label: "Thư rác" },
+  { value: "harassment", label: "Quấy rối" },
+  { value: "inappropriate", label: "Nội dung không phù hợp" },
+  { value: "violence", label: "Bạo lực" },
+  { value: "hate_speech", label: "Ngôn từ thù ghét" },
+  { value: "other", label: "Khác" },
 ];
 
 export const normalizeSidebarProjectId = (value) => {

@@ -22,10 +22,10 @@ export default function OrganizerActionLogsTable({
   onPageChange,
 }) {
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <div className="min-w-0 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
       <div className="border-b border-slate-100 px-6 py-5">
-        <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <div>
+        <div className="flex min-w-0 flex-col gap-2 md:flex-row md:items-center md:justify-between">
+          <div className="min-w-0">
             <h2 className="text-[20px] font-black text-slate-900">
               Lịch sử Quản duyệt Tổ chức
             </h2>
@@ -34,14 +34,17 @@ export default function OrganizerActionLogsTable({
             </p>
           </div>
 
-          <div className="rounded-2xl bg-slate-50 px-4 py-2 text-sm font-medium text-slate-500">
+          <div className="ccnet-nowrap-label max-w-full rounded-2xl bg-slate-50 px-4 py-2 text-sm font-medium text-slate-500">
             Đang hiển thị {items.length} bản ghi trên trang này
           </div>
         </div>
       </div>
 
-      <div className="min-h-[460px] overflow-hidden">
-        <table className="w-full table-fixed text-sm">
+      <div className="ccnet-safe-scroll min-h-[460px]">
+        <table
+          className="ccnet-safe-table text-sm"
+          style={{ "--ccnet-table-min": "1180px" }}
+        >
           <thead className="bg-slate-50/90">
             <tr className="text-left text-slate-500">
               <th className="w-[18%] px-6 py-4 font-bold">Hành động</th>
@@ -100,7 +103,9 @@ export default function OrganizerActionLogsTable({
                       <div className="space-y-1">
                         <div className="inline-flex items-center gap-2 text-[15px] font-black text-slate-900">
                           <UserRound size={14} className="text-slate-400" />
-                          <span>{log.actorName || log.actorEmail || "--"}</span>
+                          <span className="truncate">
+                            {log.actorName || log.actorEmail || "--"}
+                          </span>
                         </div>
                         <div className="break-all text-sm text-slate-500">
                           {log.actorEmail || "--"}

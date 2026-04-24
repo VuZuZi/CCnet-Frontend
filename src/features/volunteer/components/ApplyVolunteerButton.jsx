@@ -325,7 +325,7 @@ export const ApplyVolunteerButton = ({
             className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-bold ${statusConfig.className} ${className}`}
           >
             <StatusIcon className="h-5 w-5" />
-            {isUpdatingProject ? "Tạm khóa đăng ký volunteer" : statusConfig.text}
+            {isUpdatingProject ? "Tạm khóa đăng ký tình nguyện viên" : statusConfig.text}
           </button>
 
           {isCheckingApplication ? (
@@ -441,7 +441,7 @@ export const ApplyVolunteerButton = ({
           className={`flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all ${statusConfig.className} ${className}`}
         >
           <Users className="h-5 w-5" />
-          {isUpdatingProject ? "Tạm khóa đăng ký volunteer" : statusConfig.text}
+          {isUpdatingProject ? "Tạm khóa đăng ký tình nguyện viên" : statusConfig.text}
         </button>
 
         {isCheckingApplication ? (

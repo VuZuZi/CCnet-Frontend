@@ -35,7 +35,7 @@ export function RequestDisbursementModal({ project, milestone, onClose }) {
                     <h3 className="mt-2 text-3xl font-black">{formatProjectCurrencyVND(requiredDisbursementAmount)}</h3>
                     
                     <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                        <p className="text-[11px] text-slate-400">Khả dụng trong Ví Escrow:</p>
+                        <p className="text-[11px] text-slate-400">Khả dụng trong ví ký quỹ:</p>
                         <p className={`text-xs font-bold ${hasNoWithdrawableBalance ? 'text-red-400' : 'text-blue-400'}`}>
                             {formatProjectCurrencyVND(withdrawableBalance)}
                         </p>
@@ -53,7 +53,7 @@ export function RequestDisbursementModal({ project, milestone, onClose }) {
                     <div className="rounded-xl bg-red-50 p-4 border border-red-100 flex gap-3">
                         <AlertTriangle className="text-red-500 shrink-0 mt-0.5" size={18} />
                         <p className="text-[11px] text-red-800 leading-relaxed font-medium">
-                            Hiện không còn số dư khả dụng trong Escrow để tạo yêu cầu giải ngân. Vui lòng kiểm tra mốc trước hoặc liên hệ Admin.
+                            Hiện không còn số dư khả dụng trong tài khoản ký quỹ để tạo yêu cầu giải ngân. Vui lòng kiểm tra mốc trước hoặc liên hệ quản trị viên.
                         </p>
                     </div>
                 ) : (

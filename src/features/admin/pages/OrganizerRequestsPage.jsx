@@ -19,12 +19,12 @@ const buildVisiblePages = (current, total) => {
 
 const StatCard = ({ label, value, className = "" }) => (
   <div
-    className={`rounded-[22px] border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${className}`}
+    className={`min-w-0 rounded-[22px] border px-4 py-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md ${className}`}
   >
-    <p className="text-[10px] font-bold uppercase tracking-[0.14em]">
+    <p className="ccnet-nowrap-label text-[10px] font-bold uppercase tracking-[0.08em]">
       {label}
     </p>
-    <p className="mt-2 text-[30px] font-black leading-none">{value}</p>
+    <p className="mt-2 text-[clamp(1.5rem,2.2vw,1.875rem)] font-black leading-none">{value}</p>
   </div>
 );
 
@@ -50,16 +50,16 @@ export function OrganizerRequestsPage() {
   }, [items, pagination.total]);
 
   return (
-    <div className="space-y-5">
-      <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-5 shadow-sm">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div className="flex-1">
-            <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-amber-700">
+    <div className="min-w-0 space-y-5">
+      <div className="min-w-0 rounded-[28px] border border-slate-200 bg-white px-5 py-5 shadow-sm sm:px-6">
+        <div className="flex min-w-0 flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 inline-flex max-w-full items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-amber-700">
               <FileClock size={11} />
               Quản trị viên duyệt Ban tổ chức
             </div>
 
-            <h1 className="text-[28px] font-black leading-none tracking-tight text-slate-900">
+            <h1 className="text-[clamp(1.5rem,2.5vw,1.75rem)] font-black leading-tight tracking-tight text-slate-900">
               Yêu cầu Ban tổ chức
             </h1>
 
@@ -68,12 +68,15 @@ export function OrganizerRequestsPage() {
             </p>
           </div>
 
-          <div className="flex flex-col items-end gap-3">
+          <div className="flex w-full min-w-0 flex-col items-stretch gap-3 xl:w-auto xl:items-end">
             <AdminHistoryButton
               onClick={() => navigate("/admin/organizer-action-logs")}
             />
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 xl:min-w-[460px]">
+            <div
+              className="ccnet-auto-grid w-full gap-3 xl:max-w-[520px]"
+              style={{ "--ccnet-grid-min": "112px" }}
+            >
               <StatCard
                 label="Tổng cộng"
                 value={stats.total}

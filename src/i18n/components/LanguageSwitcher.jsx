@@ -10,7 +10,7 @@ export const LanguageSwitcher = ({ className = '' }) => {
 
     const languages = [
         { code: 'vi', label: 'Tiếng Việt', flag: '🇻🇳' },
-        { code: 'en', label: 'English', flag: '🇺🇸' }
+        { code: 'en', label: 'Tiếng Anh', flag: '🇺🇸' }
     ];
 
     const handleLanguageChange = (langCode) => {
@@ -38,7 +38,7 @@ export const LanguageSwitcher = ({ className = '' }) => {
             >
                 <Globe className="w-5 h-5 text-gray-600" />
                 <span className="text-sm font-medium text-gray-700">
-                    {currentLanguage === 'vi' ? 'Tiếng Việt' : 'English'}
+                    {currentLanguage === 'vi' ? 'Tiếng Việt' : 'Tiếng Anh'}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
             </button>

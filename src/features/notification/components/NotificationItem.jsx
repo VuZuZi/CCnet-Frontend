@@ -184,7 +184,7 @@ function getReasonBlock(item) {
   if (type === 'volunteer_withdraw_rejected') {
     return {
       icon: BadgeInfo,
-      label: 'Ghi chú từ organizer',
+      label: 'Ghi chú từ nhà tổ chức',
       value: reason,
       tone:
         'border-amber-200 bg-amber-50/80 text-amber-700',

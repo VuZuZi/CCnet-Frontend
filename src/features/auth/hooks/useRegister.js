@@ -15,7 +15,7 @@ export function useRegister() {
     onSuccess: (data) => {
       const { userId, email } = data.data;
       
-      toast.success(`Verification code sent to ${email}`);
+    toast.success(`Đã gửi mã xác thực đến ${email}`);
       
       navigate(ROUTES.VERIFY_OTP, { 
         state: { userId, email },

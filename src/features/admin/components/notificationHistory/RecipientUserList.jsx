@@ -13,6 +13,16 @@ function getRoleBadgeClass(role) {
   }
 }
 
+function getRoleLabel(role) {
+  const normalized = String(role || "").toLowerCase();
+
+  if (normalized === "admin") return "Quản trị viên";
+  if (normalized === "organizer") return "Nhà tổ chức";
+  if (normalized === "user") return "Người dùng";
+
+  return role || "Người dùng";
+}
+
 export default function RecipientUserList({
   title,
   users = [],
@@ -24,7 +34,7 @@ export default function RecipientUserList({
         users
           .map(
             (user) =>
-              `${user.fullName} | ${user.email} | ${user.role} | ${user._id}`
+              `${user.fullName} | ${user.email} | ${getRoleLabel(user.role)} | ${user._id}`
           )
           .join("\n")
       );
@@ -94,7 +104,7 @@ export default function RecipientUserList({
                     user.role
                   )}`}
                 >
-                  {user.role}
+                  {getRoleLabel(user.role)}
                 </span>
               </div>
             </div>

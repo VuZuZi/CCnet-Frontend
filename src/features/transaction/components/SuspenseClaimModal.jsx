@@ -128,7 +128,7 @@ export function SuspenseClaimModal({ isOpen, onClose }) {
                                         <UploadCloud className="text-amber-500" size={24} />
                                     </div>
                                     <span className="text-sm font-bold text-slate-600">Nhấn để chọn biên lai</span>
-                                    <span className="text-xs text-slate-400 mt-1">Hỗ trợ JPG, PNG (Max 5MB)</span>
+                                    <span className="text-xs text-slate-400 mt-1">Hỗ trợ JPG, PNG (tối đa 5MB)</span>
                                 </>
                             )}
                             <input

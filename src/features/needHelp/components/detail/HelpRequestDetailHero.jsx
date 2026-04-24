@@ -91,7 +91,7 @@ export function HelpRequestDetailHero({ helpRequest }) {
     const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
     const shareData = {
       title,
-      text: `Hỗ trợ yêu cầu NeedHelp này trên CCNet: ${title}`,
+      text: `Hỗ trợ yêu cầu cần giúp đỡ này trên CCNet: ${title}`,
       url: shareUrl,
     };
 
@@ -165,14 +165,9 @@ export function HelpRequestDetailHero({ helpRequest }) {
               </div>
 
               <div className="mt-6">
-                <h1 className="max-w-4xl text-3xl font-black leading-[1.15] tracking-tight text-slate-950 sm:text-[40px]">
+                <h1 className="max-w-4xl text-3xl font-black leading-[1.15] tracking-tight text-slate-950 sm:text-[36px]">
                   {title}
                 </h1>
-
-                <p className="mt-4 max-w-3xl text-[15px] leading-8 text-slate-500">
-                  Yêu cầu này hiển thị cho cộng đồng để nhà tổ chức và người hỗ trợ có thể
-                  xem xét, xác minh thông tin và phản hồi một cách có trách nhiệm.
-                </p>
               </div>
 
               <div className="mt-8 grid gap-4 lg:grid-cols-2">
