@@ -10,6 +10,63 @@ import {
   getUserId,
 } from '../../utils/group';
 
+function normalizeId(value) {
+  if (!value) return '';
+
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+
+  if (typeof value === 'object') {
+    return String(
+      value._id ||
+        value.id ||
+        value.userId ||
+        value.organizerId ||
+        value.ownerId ||
+        value.createdBy ||
+        ''
+    );
+  }
+
+  return '';
+}
+
+function collectOwnerCandidateIds(conversation) {
+  const candidates = [
+    conversation?.ownerId,
+    conversation?.groupOwnerId,
+    conversation?.createdBy,
+    conversation?.creatorId,
+    conversation?.groupCreatorId,
+    conversation?.organizerId,
+    conversation?.organizer,
+    conversation?.projectOrganizerId,
+    conversation?.project?.organizerId,
+    conversation?.project?.organizer,
+    conversation?.projectId?.organizerId,
+    conversation?.projectId?.organizer,
+    conversation?.projectSnapshot?.organizerId,
+    conversation?.projectSnapshot?.organizer,
+    conversation?.metadata?.organizerId,
+    conversation?.metadata?.ownerId,
+    conversation?.metadata?.projectOrganizerId,
+  ];
+
+  return candidates.map(normalizeId).filter(Boolean);
+}
+
+function isProjectGroupConversation(conversation) {
+  return Boolean(
+    conversation?.projectId ||
+      conversation?.project ||
+      conversation?.projectSnapshot ||
+      conversation?.metadata?.projectId ||
+      conversation?.type === 'PROJECT_GROUP' ||
+      conversation?.conversationType === 'PROJECT_GROUP' ||
+      conversation?.kind === 'PROJECT_GROUP'
+  );
+}
+
 export function ManageGroupModal({
   open,
   onClose,
@@ -83,6 +140,26 @@ export function ManageGroupModal({
   const isGroupAdmin = useMemo(() => {
     return adminIds.includes(myIdStr);
   }, [adminIds, myIdStr]);
+
+  const ownerCandidateIds = useMemo(() => {
+    return collectOwnerCandidateIds(conversation);
+  }, [conversation]);
+
+  const isGroupOwner = useMemo(() => {
+    if (!myIdStr) return false;
+
+    if (ownerCandidateIds.includes(myIdStr)) {
+      return true;
+    }
+
+    if (isProjectGroupConversation(conversation) && isGroupAdmin) {
+      return true;
+    }
+
+    return false;
+  }, [conversation, isGroupAdmin, myIdStr, ownerCandidateIds]);
+
+  const canLeaveGroup = Boolean(onLeaveGroup) && !isGroupOwner;
 
   const currentParticipants = useMemo(() => {
     return Array.isArray(conversation?.participants)
@@ -177,8 +254,12 @@ export function ManageGroupModal({
                 </div>
                 <div className="truncate text-base text-slate-500">
                   {isGroupAdmin
-                    ? 'Đổi tên, đổi ảnh, thêm xóa thành viên hoặc rời nhóm'
-                    : 'Xem thành viên hiện tại hoặc rời nhóm'}
+                    ? isGroupOwner
+                      ? 'Đổi tên, đổi ảnh, thêm hoặc xoá thành viên'
+                      : 'Đổi tên, đổi ảnh, thêm xoá thành viên hoặc rời nhóm'
+                    : canLeaveGroup
+                      ? 'Xem thành viên hiện tại hoặc rời nhóm'
+                      : 'Xem thành viên hiện tại'}
                 </div>
               </div>
             </div>
@@ -255,23 +336,25 @@ export function ManageGroupModal({
                   </div>
                 </div>
 
-                <div className="rounded-[30px] border border-red-200 bg-red-50 p-5">
-                  <div className="mb-2 text-base font-black text-red-700">
-                    Rời nhóm
-                  </div>
-                  <p className="mb-4 text-sm text-red-600">
-                    Bạn sẽ rời khỏi nhóm chat này.
-                  </p>
+                {canLeaveGroup ? (
+                  <div className="rounded-[30px] border border-red-200 bg-red-50 p-5">
+                    <div className="mb-2 text-base font-black text-red-700">
+                      Rời nhóm
+                    </div>
+                    <p className="mb-4 text-sm text-red-600">
+                      Bạn sẽ rời khỏi nhóm chat này.
+                    </p>
 
-                  <button
-                    type="button"
-                    onClick={onLeaveGroup}
-                    disabled={isLeavingGroup}
-                    className="rounded-2xl bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isLeavingGroup ? 'Đang xử lý...' : 'Rời nhóm'}
-                  </button>
-                </div>
+                    <button
+                      type="button"
+                      onClick={onLeaveGroup}
+                      disabled={isLeavingGroup}
+                      className="rounded-2xl bg-red-600 px-5 py-3 text-sm font-black text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {isLeavingGroup ? 'Đang xử lý...' : 'Rời nhóm'}
+                    </button>
+                  </div>
+                ) : null}
               </div>
 
               {isGroupAdmin ? (

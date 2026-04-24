@@ -2,6 +2,7 @@ import { RouterProvider } from "react-router-dom";
 import { QueryProvider } from "./providers/QueryProvider";
 import { ToastProvider } from "@/shared/contexts/ToastContext";
 import NotificationStreamBootstrap from "@/features/notification/components/NotificationStreamBootstrap";
+import ChatSocketBootstrap from "@/features/chat/components/ChatSocketBootstrap";
 import { router } from "./router";
 import { useAuthInit } from "@/features/auth/hooks/useAuthInit";
 
@@ -34,6 +35,7 @@ function AppContent() {
   return (
     <>
       <NotificationStreamBootstrap />
+      <ChatSocketBootstrap />
       <RouterProvider router={router} />
     </>
   );
