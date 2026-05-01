@@ -1,15 +1,15 @@
 import { NavLink, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Users,
-  Rocket,
-  Flag,
-  LogOut,
-  ShieldCheck,
-  HeartHandshake,
   Bell,
+  Flag,
+  HeartHandshake,
   Landmark,
-  RotateCcw
+  LayoutDashboard,
+  LogOut,
+  Rocket,
+  RotateCcw,
+  ShieldCheck,
+  Users,
 } from "lucide-react";
 
 const MENU_ITEMS = [
@@ -62,9 +62,9 @@ const MENU_ITEMS = [
     end: false,
     matchPaths: ["/admin/reports"],
   },
-{
+  {
     path: "/admin/finance",
-    label: "Sổ cái & Nghiệm thu",
+    label: "Tài chính & Nghiệm thu",
     icon: Landmark,
     end: false,
     matchPaths: ["/admin/finance"],

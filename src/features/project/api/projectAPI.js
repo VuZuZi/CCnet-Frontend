@@ -154,6 +154,11 @@ export const projectAPI = {
     return getData(response);
   },
 
+  async getLandingMetrics() {
+    const response = await httpClient.get("/project/landing-metrics");
+    return getData(response);
+  },
+
   async getExplore(params) {
     const response = await httpClient.get("/project/explore", { params });
     return getData(response);

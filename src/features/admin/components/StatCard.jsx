@@ -82,18 +82,6 @@ export default function StatCard({ title, value, icon = "default" }) {
           <Icon size={23} strokeWidth={2.2} />
         </div>
       </div>
-
-      <div className="mt-auto pt-5">
-        <div className="h-px w-full bg-gradient-to-r from-amber-100 via-slate-100 to-transparent" />
-
-        <div className="mt-4 flex min-w-0 items-center justify-between gap-3">
-          <span className="ccnet-nowrap-label text-xs font-bold uppercase tracking-[0.04em] text-slate-400">
-            Cập nhật theo thời gian thực
-          </span>
-
-          <span className="inline-flex h-2.5 w-2.5 shrink-0 rounded-full bg-[#FBBF24]" />
-        </div>
-      </div>
     </div>
   );
 }
