@@ -367,7 +367,7 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
                             </div>
                             <div className="h-px w-full bg-slate-100 my-4"></div>
                             <p className="text-[0.75rem] text-slate-500 leading-relaxed italic">
-                                * Số tiền quét mã đã bao gồm phí nền tảng siêu nhỏ (khoảng 0.75%) để hỗ trợ duy trì và vận hành hệ thống.
+                                * Khoản quyên góp này được ghi nhận trực tiếp vào quỹ dự án, không cộng thêm phần trăm khi quét QR.
                             </p>
                         </div>
 
@@ -402,7 +402,7 @@ export function DonateModal({ isOpen, onClose, projectId, projectTitle, projectS
                             {/* Dành cho Tablet/Mobile */}
                             <div className="xl:hidden w-full rounded-2xl bg-slate-50 border border-slate-200 p-4 mt-2">
                                 <p className="text-sm font-bold text-slate-800 mb-1 flex items-center gap-1"><Info size={16} className="text-amber-500"/> Lưu ý</p>
-                                <p className="text-[0.75rem] text-slate-600">Vui lòng không thay đổi nội dung chuyển khoản. Số tiền đã kèm phí nền tảng 0.75%.</p>
+                                <p className="text-[0.75rem] text-slate-600">Vui lòng không thay đổi nội dung chuyển khoản. Hệ thống sẽ ghi nhận đúng số tiền bạn ủng hộ cho project.</p>
                             </div>
                         </div>
 

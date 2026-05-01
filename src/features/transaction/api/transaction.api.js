@@ -6,6 +6,11 @@ export const transactionAPI = {
         return response.data;
     },
 
+    createSupportDonation: async (payload) => {
+        const response = await httpClient.post('/transactions/support-donation', payload);
+        return response.data;
+    },
+
     withdraw: async (payload) => {
         const response = await httpClient.post('/transactions/withdraw', payload);
         return response.data;

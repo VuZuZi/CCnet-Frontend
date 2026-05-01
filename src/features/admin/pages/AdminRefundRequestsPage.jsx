@@ -1,33 +1,34 @@
-import { useMemo, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { adminAPI } from '../api/adminAPI';
-import { useToast } from '@/shared/contexts/ToastContext';
-import { formatDistanceToNow } from 'date-fns';
-import { vi } from 'date-fns/locale';
-import { getStatusLabel } from '@/shared/lib/statusLabels';
+import { useMemo, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
+
+import { adminAPI } from "../api/adminAPI";
+import { useToast } from "@/shared/contexts/ToastContext";
+import { getStatusLabel } from "@/shared/lib/statusLabels";
 
 const STATUS_OPTIONS = [
-  { value: 'PENDING', label: 'Chờ duyệt' },
-  { value: 'COMPLETED', label: 'Đã duyệt' },
-  { value: 'REJECTED', label: 'Đã từ chối' },
-  { value: 'ALL', label: 'Tất cả' },
+  { value: "PENDING", label: "Chờ duyệt" },
+  { value: "COMPLETED", label: "Đã duyệt" },
+  { value: "REJECTED", label: "Đã từ chối" },
+  { value: "ALL", label: "Tất cả" },
 ];
 
 const STATUS_CLASS = {
-  PENDING: 'bg-amber-50 text-amber-700 border-amber-100',
-  COMPLETED: 'bg-emerald-50 text-emerald-700 border-emerald-100',
-  REJECTED: 'bg-rose-50 text-rose-700 border-rose-100',
+  PENDING: "bg-amber-50 text-amber-700 border-amber-100",
+  COMPLETED: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  REJECTED: "bg-rose-50 text-rose-700 border-rose-100",
 };
 
-const REFUND_QUERY_KEY = ['admin', 'refund-requests'];
+const REFUND_QUERY_KEY = ["admin", "refund-requests"];
 
 function formatVnd(value) {
-  return `${Number(value || 0).toLocaleString('vi-VN')}đ`;
+  return `${Number(value || 0).toLocaleString("vi-VN")}đ`;
 }
 
 export default function AdminRefundRequestsPage() {
-  const [status, setStatus] = useState('PENDING');
-  const [note, setNote] = useState('');
+  const [status, setStatus] = useState("PENDING");
+  const [note, setNote] = useState("");
   const [activeRequestId, setActiveRequestId] = useState(null);
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -44,28 +45,28 @@ export default function AdminRefundRequestsPage() {
   const approveMutation = useMutation({
     mutationFn: ({ id, payload }) => adminAPI.approveRefundRequest(id, payload),
     onSuccess: () => {
-      toast.success('Đã duyệt yêu cầu hoàn tiền.');
-      setNote('');
+      toast.success("Đã duyệt yêu cầu hoàn tiền.");
+      setNote("");
       setActiveRequestId(null);
       queryClient.invalidateQueries({ queryKey: REFUND_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Duyệt yêu cầu thất bại.');
+      toast.error(error?.response?.data?.message || "Duyệt yêu cầu thất bại.");
     },
   });
 
   const rejectMutation = useMutation({
     mutationFn: ({ id, payload }) => adminAPI.rejectRefundRequest(id, payload),
     onSuccess: () => {
-      toast.success('Đã từ chối yêu cầu hoàn tiền.');
-      setNote('');
+      toast.success("Đã từ chối yêu cầu hoàn tiền.");
+      setNote("");
       setActiveRequestId(null);
       queryClient.invalidateQueries({ queryKey: REFUND_QUERY_KEY });
-      queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
     onError: (error) => {
-      toast.error(error?.response?.data?.message || 'Từ chối yêu cầu thất bại.');
+      toast.error(error?.response?.data?.message || "Từ chối yêu cầu thất bại.");
     },
   });
 
@@ -86,9 +87,11 @@ export default function AdminRefundRequestsPage() {
       <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-slate-900">Xử lý yêu cầu hoàn tiền</h1>
+            <h1 className="text-2xl font-black tracking-tight text-slate-900">
+              Xử lý yêu cầu hoàn tiền
+            </h1>
             <p className="mt-1 text-sm text-slate-500">
-              Quản trị viên duyệt hoặc từ chối yêu cầu hoàn tiền. Khi duyệt, ví người dùng nhận lại 98% và 2% chuyển vào quỹ duy trì hệ thống.
+              Quản trị viên duyệt hoặc từ chối yêu cầu hoàn tiền để cập nhật trạng thái và số dư đúng cho người dùng.
             </p>
           </div>
 
@@ -100,8 +103,8 @@ export default function AdminRefundRequestsPage() {
                 onClick={() => setStatus(option.value)}
                 className={`rounded-xl border px-3 py-1.5 text-xs font-bold transition ${
                   status === option.value
-                    ? 'border-slate-900 bg-slate-900 text-white'
-                    : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
                 }`}
               >
                 {option.label}
@@ -113,53 +116,82 @@ export default function AdminRefundRequestsPage() {
 
       <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm md:p-6">
         {isLoading ? (
-          <div className="py-20 text-center text-slate-400">Đang tải yêu cầu hoàn tiền...</div>
+          <div className="py-20 text-center text-slate-400">
+            Đang tải yêu cầu hoàn tiền...
+          </div>
         ) : items.length === 0 ? (
-          <div className="py-20 text-center text-slate-400">Không có yêu cầu hoàn tiền phù hợp.</div>
+          <div className="py-20 text-center text-slate-400">
+            Không có yêu cầu hoàn tiền phù hợp.
+          </div>
         ) : (
           <div className="space-y-4">
             {items.map((item) => {
-              const isPending = item.status === 'PENDING';
-              const statusClass = STATUS_CLASS[item.status] || 'bg-slate-50 text-slate-600 border-slate-100';
+              const isPending = item.status === "PENDING";
+              const statusClass =
+                STATUS_CLASS[item.status] ||
+                "bg-slate-50 text-slate-600 border-slate-100";
               const isCurrent = activeRequestId === item.id;
 
               return (
-                <div key={item.id} className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4">
+                <div
+                  key={item.id}
+                  className="rounded-2xl border border-slate-200 bg-slate-50/40 p-4"
+                >
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                    <div className="space-y-2 min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className={`rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${statusClass}`}>
+                        <span
+                          className={`rounded-full border px-2.5 py-1 text-[11px] font-black uppercase tracking-wide ${statusClass}`}
+                        >
                           {getStatusLabel(item.status)}
                         </span>
-                        <span className="text-xs text-slate-500">Yêu cầu #{String(item.id).slice(-8).toUpperCase()}</span>
+                        <span className="text-xs text-slate-500">
+                          Yêu cầu #{String(item.id).slice(-8).toUpperCase()}
+                        </span>
                       </div>
 
-                      <h3 className="text-base font-extrabold text-slate-900 truncate" title={item.project?.title}>
-                        {item.project?.title || 'Dự án không xác định'}
+                      <h3
+                        className="truncate text-base font-extrabold text-slate-900"
+                        title={item.project?.title}
+                      >
+                        {item.project?.title || "Dự án không xác định"}
                       </h3>
 
                       <div className="text-sm text-slate-600">
-                        <p>Người gửi: <b>{item.donor?.fullName || 'Không xác định'}</b> ({item.donor?.email || '---'})</p>
-                        <p>Giao dịch gốc: <b>{String(item.sourceTransactionId || '').slice(-8).toUpperCase() || '---'}</b></p>
-                        <p>Lý do: <b>{item.reason || 'Không có'}</b></p>
+                        <p>
+                          Người gửi:{" "}
+                          <b>{item.donor?.fullName || "Không xác định"}</b> (
+                          {item.donor?.email || "---"})
+                        </p>
+                        <p>
+                          Giao dịch gốc:{" "}
+                          <b>
+                            {String(item.sourceTransactionId || "")
+                              .slice(-8)
+                              .toUpperCase() || "---"}
+                          </b>
+                        </p>
+                        <p>
+                          Lý do: <b>{item.reason || "Không có"}</b>
+                        </p>
                         <p className="text-xs text-slate-500">
-                          Gửi {formatDistanceToNow(new Date(item.requestedAt), { addSuffix: true, locale: vi })}
+                          Gửi{" "}
+                          {formatDistanceToNow(new Date(item.requestedAt), {
+                            addSuffix: true,
+                            locale: vi,
+                          })}
                         </p>
                       </div>
                     </div>
 
-                    <div className="min-w-[210px] rounded-xl bg-white p-3 border border-slate-200 text-sm">
+                    <div className="min-w-[210px] rounded-xl border border-slate-200 bg-white p-3 text-sm">
                       <p className="flex items-center justify-between">
                         <span className="text-slate-500">Tiền donate gốc:</span>
                         <b className="text-slate-900">{formatVnd(item.originalAmount)}</b>
                       </p>
                       <p className="mt-1 flex items-center justify-between">
-                        <span className="text-slate-500">Hoàn cho người dùng:</span>
+                        <span className="text-slate-500">Số tiền hoàn:</span>
                         <b className="text-emerald-700">{formatVnd(item.refundAmount)}</b>
-                      </p>
-                      <p className="mt-1 flex items-center justify-between">
-                        <span className="text-slate-500">Phí hệ thống 2%:</span>
-                        <b className="text-rose-600">{formatVnd(item.retainedFee)}</b>
                       </p>
                     </div>
                   </div>
@@ -171,10 +203,10 @@ export default function AdminRefundRequestsPage() {
                       </label>
                       <textarea
                         rows={2}
-                        value={isCurrent ? note : ''}
+                        value={isCurrent ? note : ""}
                         onFocus={() => {
                           setActiveRequestId(item.id);
-                          setNote('');
+                          setNote("");
                         }}
                         onChange={(e) => {
                           setActiveRequestId(item.id);
@@ -210,7 +242,9 @@ export default function AdminRefundRequestsPage() {
           </div>
         )}
 
-        {isFetching ? <p className="pt-4 text-xs text-slate-400">Đang đồng bộ dữ liệu...</p> : null}
+        {isFetching ? (
+          <p className="pt-4 text-xs text-slate-400">Đang đồng bộ dữ liệu...</p>
+        ) : null}
       </div>
     </div>
   );
