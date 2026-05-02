@@ -106,12 +106,12 @@ const sanitizePayload = (values, options = { omitIdentityDocuments: false }) => 
     selfie: options.omitIdentityDocuments ? undefined : normalizeDocument(values.selfie),
     businessLicense: normalizeDocument(values.businessLicense),
     bankProof: normalizeDocument(values.bankProof),
-    commitment: (values.commitment?.isAccepted || values.commitment?.agreements?.length > 0) ? {
-      isAccepted: values.commitment.isAccepted || false,
-      agreements: values.commitment.agreements || [],
-      signerName: values.commitment.signerName?.trim() || "",
-      version: values.commitment.version || "2.0"
-    } : undefined,
+    commitment: {
+      agreements: values.commitment?.agreements || [],
+      signerName: values.commitment?.signerName?.trim() || "",
+      version: "2.1",
+      signatureImageDataUrl: values.commitment?.signatureImageDataUrl || "",
+    },
   };
 
   if (!payload.businessLicense) delete payload.businessLicense;
@@ -186,9 +186,10 @@ export function useOrganizerRequestForm(existingRequest = null, options = { omit
       bankAccountName: existingRequest?.bankAccountName || "",
       notes: existingRequest?.notes || "",
       commitment: {
-        isAccepted: false,
+        agreements: [],
         signerName: currentUser?.fullName || "",
-        version: "2.0",
+        version: "2.1",
+        signatureImageDataUrl: "",
       },
     }),
     [existingRequest, currentUser]

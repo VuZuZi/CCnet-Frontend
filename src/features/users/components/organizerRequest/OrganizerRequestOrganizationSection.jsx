@@ -1,4 +1,3 @@
-import { useFieldArray } from "react-hook-form";
 import { Building2, ChevronDown } from "lucide-react";
 import OrganizerSectionCard from "./OrganizerSectionCard";
 import FormErrorText from "./FormErrorText";
@@ -12,11 +11,16 @@ import {
   selectClass,
 } from "../../constants/organizerRequestStyles";
 
+const organizationTypeOptions = ORGANIZATION_TYPES.some(
+  (item) => item.value === "OTHER"
+)
+  ? ORGANIZATION_TYPES
+  : [...ORGANIZATION_TYPES, { value: "OTHER", label: "Khác" }];
+
 export function OrganizerRequestOrganizationSection({
   register,
   errors,
   watch,
-  control,
 }) {
   const legalType = watch("organizationLegalType");
   const isLegalEntity = [
@@ -24,15 +28,6 @@ export function OrganizerRequestOrganizationSection({
     "REGISTERED_NGO",
     "HOUSEHOLD_BUSINESS",
   ].includes(legalType);
-  const isCommunity = legalType === "COMMUNITY_GROUP";
-  const isOther = legalType === "OTHER";
-  const proofLinksErrorMessage =
-    errors.proofLinks?.message || errors.proofLinks?.root?.message;
-
-  const { fields: proofLinkFields, append, remove } = useFieldArray({
-    control,
-    name: "proofLinks",
-  });
 
   return (
     <OrganizerSectionCard
@@ -54,7 +49,7 @@ export function OrganizerRequestOrganizationSection({
         <div className="relative">
           <label className={labelClass}>Lĩnh vực hoạt động</label>
           <select {...register("organizationType")} className={selectClass}>
-            {ORGANIZATION_TYPES.map((item) => (
+            {organizationTypeOptions.map((item) => (
               <option key={item.value} value={item.value}>
                 {item.label}
               </option>
@@ -120,69 +115,12 @@ export function OrganizerRequestOrganizationSection({
           </>
         )}
 
-        {(isCommunity || isOther) && (
-          <>
-            <div className="md:col-span-2 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-              <p className="text-sm text-amber-800">
-                {isCommunity
-                  ? "Không bắt buộc nhập mã số thuế cá nhân. Vui lòng cung cấp mô tả hoạt động và liên kết minh chứng như fanpage, website, bài viết hoặc chiến dịch đã thực hiện."
-                  : "Vui lòng mô tả rõ loại hình hoạt động và cung cấp liên kết minh chứng nếu có."}
-              </p>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className={labelClass}>Mô tả hoạt động</label>
-              <textarea
-                {...register("activityDescription")}
-                rows={3}
-                placeholder="Mô tả ngắn gọn về hoạt động của tổ chức hoặc nhóm..."
-                className={inputClass}
-              />
-              <FormErrorText>{errors.activityDescription?.message}</FormErrorText>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className={labelClass}>
-                Liên kết minh chứng (Tối đa 5 liên kết)
-              </label>
-              <div className="space-y-3">
-                {proofLinkFields.map((field, index) => (
-                  <div key={field.id} className="space-y-2">
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <input
-                          {...register(`proofLinks.${index}`)}
-                          placeholder="https://"
-                          className={inputClass}
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => remove(index)}
-                        className="rounded-xl bg-rose-50 px-4 text-sm font-semibold text-rose-600 hover:bg-rose-100"
-                      >
-                        Xóa
-                      </button>
-                    </div>
-                    <FormErrorText>
-                      {errors.proofLinks?.[index]?.message}
-                    </FormErrorText>
-                  </div>
-                ))}
-              </div>
-              <FormErrorText>{proofLinksErrorMessage}</FormErrorText>
-
-              {proofLinkFields.length < 5 && (
-                <button
-                  type="button"
-                  onClick={() => append("")}
-                  className="mt-3 rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-600 hover:bg-blue-100"
-                >
-                  + Thêm liên kết minh chứng
-                </button>
-              )}
-            </div>
-          </>
+        {!isLegalEntity && legalType && (
+          <div className="md:col-span-2 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+            <p className="text-sm text-amber-800">
+              Mô tả hoạt động và liên kết minh chứng sẽ được cung cấp ở bước tiếp theo.
+            </p>
+          </div>
         )}
 
         <div className="md:col-span-2">

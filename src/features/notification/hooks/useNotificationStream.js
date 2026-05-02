@@ -21,6 +21,7 @@ import {
 } from "@/features/project/hooks/useProjectQueries";
 import { volunteerQueryKeys } from "@/features/volunteer/hooks/useVolunteerQueries";
 import {
+  ADMIN_QUERY_KEYS,
   ADMIN_PROJECTS_QUERY_KEY,
   ADMIN_STATS_QUERY_KEY,
 } from "@/features/admin/constants/admin.queryKeys";
@@ -615,6 +616,37 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         });
         queryClient.invalidateQueries({
           queryKey: GLOBAL_QUERY_KEYS.PROFILE_ME,
+        });
+
+        const status =
+          item.metadata?.status ||
+          payload.notification?.metadata?.status ||
+          payload.metadata?.status ||
+          null;
+
+        if (status === "APPROVED") {
+          toast.success(
+            "Hồ sơ đã được phê duyệt nội bộ. Bạn có thể tạo dự án gây quỹ."
+          );
+        } else if (status === "DECLINED") {
+          toast.error(
+            "Hồ sơ đăng ký Ban tổ chức chưa được chấp thuận. Vui lòng xem lý do và cập nhật lại nếu cần."
+          );
+        }
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.ORGANIZER_REQUEST_SUBMITTED) {
+        toast.info(
+          "Có hồ sơ đăng ký Ban tổ chức mới đang chờ xem xét."
+        );
+        queryClient.invalidateQueries({
+          queryKey: ADMIN_QUERY_KEYS.organizerRequests.all(),
+          exact: false,
+        });
+        queryClient.refetchQueries({
+          queryKey: ADMIN_QUERY_KEYS.organizerRequests.all(),
+          exact: false,
+          type: "active",
         });
       }
 

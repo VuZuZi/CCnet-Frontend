@@ -25,6 +25,7 @@ export const REALTIME_NOTIFICATION_TYPES = Object.freeze({
   HELP_REQUEST_ASSIGNMENT_RESPONDED: "help_request_assignment_responded",
 
   ORGANIZER_REQUEST_UPDATED: "organizer_request_updated",
+  ORGANIZER_REQUEST_SUBMITTED: "organizer_request_submitted",
   PROJECT_UPDATED: "project_updated",
 
   DONATION_SUCCESSFUL: "donation_successful",

@@ -35,20 +35,6 @@ export const organizerRequestAdminAPI = {
     });
     return unwrap(res);
   },
-
-  async runMockVerification(id) {
-    const res = await httpClient.post(
-      `/admin/organizer-requests/${id}/verification-checks/mock`
-    );
-    return unwrap(res)?.check ?? null;
-  },
-
-  async listVerificationChecks(id) {
-    const res = await httpClient.get(
-      `/admin/organizer-requests/${id}/verification-checks`
-    );
-    return unwrap(res)?.checks ?? [];
-  },
 };
 
 export { getErrorMessage };

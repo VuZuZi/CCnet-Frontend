@@ -4,7 +4,7 @@ import { CheckCircle2, Clock3, FileWarning, ShieldCheck, Info } from "lucide-rea
 const STATUS_STYLES = {
   SYSTEM_CHECKING: "bg-indigo-100 text-indigo-800",
   PENDING: "bg-amber-100 text-amber-800",
-  APPROVED: "bg-emerald-100 text-emerald-700",
+  APPROVED: "bg-blue-100 text-blue-800",
   DECLINED: "bg-rose-100 text-rose-700",
 };
 
@@ -18,10 +18,8 @@ const STATUS_LABELS = {
 const STATUS_MESSAGE = {
   SYSTEM_CHECKING:
     "Hệ thống đang chạy kiểm tra tự động. Quá trình này có thể mất vài phút, vui lòng kiểm tra lại sau.",
-  PENDING:
-    "Đơn đăng ký của bạn đang được quản trị viên xem xét. Vui lòng chờ phản hồi.",
-  APPROVED:
-    "Đơn đăng ký của bạn đã được phê duyệt. Nếu vai trò Ban tổ chức chưa được cập nhật trên giao diện, vui lòng đăng xuất và đăng nhập lại.",
+  PENDING: "Hồ sơ đang chờ xem xét nội bộ",
+  APPROVED: "Hồ sơ đã được phê duyệt nội bộ. Bạn có thể tạo dự án gây quỹ.",
   DECLINED:
     "Đơn đăng ký của bạn không được phê duyệt. Bạn có thể chỉnh sửa thông tin và gửi lại đơn.",
 };
@@ -156,12 +154,12 @@ export function OrganizerRequestStatusCard({
         )}
 
         {isApproved && (
-          <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
+          <div className="mt-6 rounded-2xl border border-blue-200 bg-blue-50 p-5">
             <div className="flex items-start gap-3">
-              <div className="mt-0.5 text-emerald-700">
+              <div className="mt-0.5 text-blue-700">
                 <CheckCircle2 size={18} />
               </div>
-              <p className="text-sm leading-6 text-emerald-700">
+              <p className="text-sm leading-6 text-blue-800">
                 {STATUS_MESSAGE.APPROVED}
               </p>
             </div>

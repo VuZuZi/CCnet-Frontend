@@ -1,3 +1,13 @@
+/**
+ * SAFETY NOTICE: Legacy/deprecated organizer identity upload component.
+ *
+ * This component contains raw CCCD/CMND/selfie upload fields from the old
+ * organizer onboarding flow. Do not reintroduce it into the active Become
+ * Organizer flow unless an official provider/legal phase explicitly approves
+ * raw CCCD/CMND/selfie/liveness collection.
+ *
+ * Current product direction: privacy-minimized manual internal review.
+ */
 import { ShieldCheck } from "lucide-react";
 import OrganizerSectionCard from "./OrganizerSectionCard";
 import OrganizerDocumentField from "./OrganizerDocumentField";
