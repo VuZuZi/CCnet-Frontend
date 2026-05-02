@@ -5,6 +5,15 @@ const BANK_ACCOUNT_REGEX = /^\d{8,19}$/;
 const ACCOUNT_NAME_REGEX = /^[\p{L}\s.'-]{2,150}$/u;
 const FULL_NAME_REGEX = /^[\p{L}\s.'-]{2,100}$/u;
 const ORG_NAME_REGEX = /^[\p{L}0-9\s&.,'/-]{2,200}$/u;
+const REQUIRED_AGREEMENT_CODES = [
+  "TRUTHFUL_INFO",
+  "REPRESENTATION",
+  "PROPER_USE",
+  "FINANCIAL_USE",
+  "PROGRESS_REPORTING",
+  "COOPERATION",
+  "ACCOUNTABILITY",
+];
 
 const emptyToUndefined = (value) => {
   if (typeof value !== "string") return value;
@@ -233,18 +242,31 @@ export const organizerRequestSchema = z
       z.string().max(1000, "Ghi chú tối đa 1000 ký tự").optional().default("")
     ),
 
-    commitment: z
-      .object({
-        isAccepted: z.boolean().optional(),
-        agreements: z
-          .array(z.string())
-          .min(5, "Bạn phải đồng ý với tất cả các điều khoản"),
-        signerName: z
-          .string()
-          .min(2, "Họ và tên người ký phải có ít nhất 2 ký tự"),
-        version: z.string().min(1),
-      })
-      .optional(),
+    commitment: z.object({
+      agreements: z
+        .array(z.string())
+        .length(7, "Bạn phải đồng ý với toàn bộ nội dung cam kết")
+        .refine((codes) => {
+          const received = [...codes].sort();
+          const required = [...REQUIRED_AGREEMENT_CODES].sort();
+          return (
+            received.length === required.length &&
+            received.every((code, index) => code === required[index])
+          );
+        }, "Danh sách điều khoản cam kết không hợp lệ"),
+      signerName: z
+        .string()
+        .trim()
+        .min(2, "Họ và tên người ký phải có ít nhất 2 ký tự"),
+      version: z.literal("2.1"),
+      signatureImageDataUrl: z
+        .string()
+        .min(100, "Vui lòng ký tên vào ô chữ ký")
+        .max(200000, "Dữ liệu chữ ký quá lớn")
+        .refine((value) => value.startsWith("data:image/png;base64,"), {
+          message: "Chữ ký phải là PNG hợp lệ",
+        }),
+    }),
   })
   .superRefine((data, ctx) => {
     const {

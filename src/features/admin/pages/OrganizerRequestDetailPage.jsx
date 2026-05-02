@@ -1,9 +1,10 @@
 import { useNavigate, useParams } from "react-router-dom";
-import { AlertTriangle, ArrowLeft, Info, CheckCircle2, FlaskConical } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Info, CheckCircle2 } from "lucide-react";
 import OrganizerRequestStatusBadge from "../components/organizerRequest/OrganizerRequestStatusBadge";
 import OrganizerDocumentList from "../components/organizerRequest/OrganizerDocumentList";
 import OrganizerReviewActions from "../components/organizerRequest/OrganizerReviewActions";
 import { useOrganizerRequestDetail } from "../hooks/useOrganizerRequestDetail";
+import AgreementA4Preview from "../../users/components/organizerRequest/AgreementA4Preview";
 
 function InfoBox({ label, children }) {
   return (
@@ -48,10 +49,6 @@ export function OrganizerRequestDetailPage() {
     decline,
     isApproving,
     isDeclining,
-    verificationChecks,
-    isLoadingChecks,
-    runMockVerification,
-    isRunningMockVerification,
   } = useOrganizerRequestDetail(id);
 
   if (isLoading) {
@@ -94,7 +91,6 @@ export function OrganizerRequestDetailPage() {
     Boolean(currentName) && currentName !== request.fullNameSnapshot;
 
   const isApproved = request.status === "APPROVED";
-  const canRunMockVerification = request.status === "PENDING";
 
   return (
     <div className="space-y-6">
@@ -118,7 +114,7 @@ export function OrganizerRequestDetailPage() {
             <p className="mt-2 text-sm text-slate-500">Mã: {request._id}</p>
 
             {isApproved && (
-              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
+              <div className="mt-4 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-900">
                 <CheckCircle2 size={18} />
                 Hồ sơ đã được phê duyệt nội bộ và tài khoản đã được cấp vai trò Ban tổ chức.
               </div>
@@ -204,112 +200,6 @@ export function OrganizerRequestDetailPage() {
                 )}
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Verification Provider Card */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <FlaskConical size={18} className="text-blue-500" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-800">
-              Đối chiếu nhà cung cấp
-            </h2>
-          </div>
-          <span className="rounded-full bg-amber-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700">
-            Mô phỏng nội bộ
-          </span>
-        </div>
-
-        {verificationChecks.length > 0 ? (
-          <div className="space-y-3">
-            {verificationChecks.slice(0, 3).map((check) => (
-              <div
-                key={check._id}
-                className="rounded-xl border border-slate-100 bg-slate-50 p-4"
-              >
-                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Nhà cung cấp
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-slate-700">
-                      {check.providerName === "INTERNAL_MOCK"
-                        ? "Mô phỏng nội bộ"
-                        : check.providerName}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Trạng thái
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-amber-700">
-                      {check.status === "SIMULATED"
-                        ? "Kết quả mô phỏng"
-                        : check.status}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Điểm mô phỏng
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-slate-700">
-                      {check.score ?? 0}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Thời điểm
-                    </p>
-                    <p className="mt-0.5 text-sm font-medium text-slate-700">
-                      {check.checkedAt
-                        ? new Date(check.checkedAt).toLocaleString("vi-VN")
-                        : "—"}
-                    </p>
-                  </div>
-                </div>
-                {check.resultSummary && (
-                  <p className="mt-2 text-xs text-slate-500">
-                    {check.resultSummary}
-                  </p>
-                )}
-                {check.disclaimer && (
-                  <p className="mt-1 text-[11px] italic text-amber-600">
-                    {check.disclaimer}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-500">
-            Chưa có phiên đối chiếu mô phỏng.
-          </p>
-        )}
-
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-relaxed text-slate-400">
-            Chức năng này chỉ kiểm tra luồng tích hợp nội bộ, chưa thay thế
-            xác minh chính thức. Kết quả không ảnh hưởng quyết định phê duyệt.
-          </p>
-          <div className="flex flex-col items-end gap-1.5">
-            <button
-              type="button"
-              disabled={isRunningMockVerification || !canRunMockVerification}
-              onClick={() => runMockVerification()}
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <FlaskConical size={14} />
-              {isRunningMockVerification
-                ? "Đang chạy..."
-                : "Chạy mô phỏng đối chiếu"}
-            </button>
-            {!canRunMockVerification && (
-              <p className="text-[11px] text-slate-400">
-                Chỉ có thể chạy mô phỏng khi hồ sơ đang chờ xét duyệt.
-              </p>
-            )}
           </div>
         </div>
       </div>
@@ -454,7 +344,7 @@ export function OrganizerRequestDetailPage() {
             {/* 4. Commitment */}
             <div className="mb-4 mt-6 border-b border-slate-100 pb-2">
               <h2 className="text-lg font-bold text-slate-900">
-                4. Thông tin Cam kết
+                4. Bản cam kết trách nhiệm
               </h2>
             </div>
 
@@ -463,36 +353,25 @@ export function OrganizerRequestDetailPage() {
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
                     <CheckCircle2 size={16} />
-                    <span>Bản ghi cam kết nội bộ</span>
+                    <span>Bản cam kết trách nhiệm</span>
                   </div>
 
-                  <div className="rounded-xl border border-slate-200 bg-white p-4">
-                    <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                      Nội dung đã xác nhận
+                  <AgreementA4Preview
+                    contentSnapshot={agreementRecord.contentSnapshot}
+                    signatureSnapshot={agreementRecord.signatureSnapshot}
+                    signerName={agreementRecord.signerName || request.fullNameSnapshot}
+                    signedAt={agreementRecord.signedAt}
+                    version={agreementRecord.version}
+                    integrityHash={agreementRecord.integrityHash}
+                    isSealed={Boolean(agreementRecord.isSealed)}
+                    sealedAt={agreementRecord.sealedAt}
+                  />
+
+                  {!agreementRecord.signatureSnapshot && (
+                    <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium leading-relaxed text-amber-900">
+                      Hồ sơ nộp trước phiên bản yêu cầu chữ ký vẽ tay (v2.1).
                     </p>
-                    {agreementRecord.contentSnapshot?.title && (
-                      <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
-                        <p className="text-sm font-bold text-slate-900">
-                          {agreementRecord.contentSnapshot.title}
-                        </p>
-                        <p className="mt-1 text-xs font-medium text-slate-500">
-                          Phiên bản {agreementRecord.contentSnapshot.version || agreementRecord.version} · Ngôn ngữ {agreementRecord.contentSnapshot.language || agreementRecord.language || "vi"}
-                        </p>
-                      </div>
-                    )}
-                    <div className="space-y-3">
-                      {(agreementRecord.contentSnapshot?.sections || []).map((section) => (
-                        <div key={section.code} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                          <p className="text-sm font-bold text-slate-900">
-                            {section.title}
-                          </p>
-                          <p className="mt-1 text-sm leading-relaxed text-slate-700">
-                            {section.body}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
+                  )}
 
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="rounded-xl border border-slate-200 bg-white p-3">
@@ -532,6 +411,20 @@ export function OrganizerRequestDetailPage() {
                         {AGREEMENT_RECORD_STATUS_LABELS[agreementRecord.status] || agreementRecord.status || "Đang hiệu lực"}
                       </p>
                     </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Niêm phong
+                      </p>
+                      <p className="mt-1 text-sm text-slate-900 font-medium">
+                        {agreementRecord.isSealed ? "Đã niêm phong" : "Chưa niêm phong"}
+                      </p>
+                      {agreementRecord.sealedAt && (
+                        <p className="mt-1 text-xs text-slate-500">
+                          {new Date(agreementRecord.sealedAt).toLocaleString("vi-VN")}
+                        </p>
+                      )}
+                    </div>
                   </div>
 
                   {agreementRecord.integrityHash && (
@@ -546,7 +439,7 @@ export function OrganizerRequestDetailPage() {
                   )}
 
                   <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium leading-relaxed text-amber-800">
-                    Đây là bản ghi cam kết nội bộ trên nền tảng, chưa thay thế hồ sơ pháp lý hoặc chứng thực chính thức.
+                    Đây là bản ghi cam kết nội bộ trên nền tảng, dùng để phục vụ quá trình xem xét thủ công và lưu vết trách nhiệm.
                   </p>
                 </div>
               ) : hasCommitment ? (

@@ -7,13 +7,6 @@ import {
 import { ADMIN_QUERY_KEYS } from "../constants/admin.queryKeys";
 import { queryKeys } from "@/shared/constants/queryKeys";
 
-const verificationChecksKey = (id) => [
-  "admin",
-  "organizer-request",
-  id,
-  "verification-checks",
-];
-
 export function useOrganizerRequestDetail(id) {
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -21,12 +14,6 @@ export function useOrganizerRequestDetail(id) {
   const detailQuery = useQuery({
     queryKey: ADMIN_QUERY_KEYS.organizerRequests.detail(id),
     queryFn: () => organizerRequestAdminAPI.getRequestDetail(id),
-    enabled: Boolean(id),
-  });
-
-  const checksQuery = useQuery({
-    queryKey: verificationChecksKey(id),
-    queryFn: () => organizerRequestAdminAPI.listVerificationChecks(id),
     enabled: Boolean(id),
   });
 
@@ -168,24 +155,6 @@ export function useOrganizerRequestDetail(id) {
     },
   });
 
-  const runMockVerificationMutation = useMutation({
-    mutationFn: () => organizerRequestAdminAPI.runMockVerification(id),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: ADMIN_QUERY_KEYS.organizerRequests.detail(id),
-      });
-      await queryClient.invalidateQueries({
-        queryKey: verificationChecksKey(id),
-      });
-      toast.success(
-        "Đã chạy mô phỏng đối chiếu nội bộ. Kết quả không ảnh hưởng quyết định phê duyệt."
-      );
-    },
-    onError: (error) => {
-      toast.error(getErrorMessage(error));
-    },
-  });
-
   return {
     request: detailQuery.data || null,
     isLoading: detailQuery.isLoading,
@@ -196,10 +165,6 @@ export function useOrganizerRequestDetail(id) {
     decline: declineMutation.mutateAsync,
     isApproving: approveMutation.isPending,
     isDeclining: declineMutation.isPending,
-    verificationChecks: checksQuery.data || [],
-    isLoadingChecks: checksQuery.isLoading,
-    runMockVerification: runMockVerificationMutation.mutateAsync,
-    isRunningMockVerification: runMockVerificationMutation.isPending,
   };
 }
 
