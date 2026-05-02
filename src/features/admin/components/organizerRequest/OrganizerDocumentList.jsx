@@ -20,12 +20,12 @@ const DOCUMENT_ITEMS = [
   },
   {
     key: "businessLicense",
-    title: "Giấy phép kinh doanh",
+    title: "Giấy tờ pháp lý / QĐ thành lập",
     emptyText: "Chưa cung cấp",
   },
   {
     key: "bankProof",
-    title: "Minh chứng ngân hàng",
+    title: "Tài liệu hỗ trợ đối chiếu ngân hàng",
     emptyText: "Chưa cung cấp",
   },
 ];
@@ -39,6 +39,11 @@ export function OrganizerDocumentList({ request }) {
     return DOCUMENT_ITEMS.filter((item) => {
       if (LEGACY_IDENTITY_KEYS.has(item.key)) {
         return Boolean(request?.[item.key]);
+      }
+      if (item.key === "businessLicense" && !request?.businessLicense) {
+        if (request?.organizationLegalType === "COMMUNITY_GROUP" || request?.organizationLegalType === "OTHER") {
+          return false;
+        }
       }
       return true;
     }).map((item) => ({

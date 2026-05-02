@@ -323,11 +323,11 @@ export function BecomeOrganizerWizard({
                 Tài liệu bổ sung
               </h3>
               <p className="mb-4 text-sm text-gray-500">
-                Vui lòng tải lên giấy phép, quyết định thành lập hoặc tài liệu tương đương.
+                Nếu có, bạn có thể tải lên giấy phép, quyết định thành lập hoặc tài liệu tương đương để hỗ trợ quản trị viên đối chiếu.
               </p>
               <div className="max-w-sm">
                 <OrganizerDocumentField
-                  label="Giấy phép tổ chức"
+                  label="Giấy phép tổ chức (tùy chọn)"
                   description="Tài liệu PDF hoặc Hình ảnh"
                   accept=".pdf"
                   value={watch("businessLicense")}

@@ -6,9 +6,52 @@ import { useReviewEvidenceMutation } from '../../hooks/useEvidenceMutations';
 import { formatProjectCurrencyVND } from '@/features/project/utils/projectDisplay.utils';
 import { 
     Loader2, ShieldCheck, FileText, Map as MapIcon, 
-    Receipt, ZoomIn, X, Clock 
+    Receipt, ZoomIn, X, Clock, Download
 } from 'lucide-react';
 import clsx from 'clsx';
+
+const getMediaUrl = (media) => media?.url || media?.secure_url || '';
+const getMediaName = (media) => media?.originalName || media?.fileName || media?.name || 'Tệp đính kèm';
+const getMediaMime = (media) => String(media?.mimetype || media?.mimeType || '').toLowerCase();
+const getMediaExtension = (media) => {
+    const name = getMediaName(media).toLowerCase();
+    const url = getMediaUrl(media).toLowerCase().split('?')[0];
+    const match = `${name} ${url}`.match(/\.([a-z0-9]+)(?:\s|$)/);
+    return match?.[1] || '';
+};
+const isImageMedia = (media) => {
+    const mime = getMediaMime(media);
+    if (mime.startsWith('image/')) return true;
+    if (getMediaUrl(media).toLowerCase().includes('/image/upload')) return true;
+    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(getMediaExtension(media));
+};
+const isPdfMedia = (media) => getMediaMime(media).includes('application/pdf') || getMediaExtension(media) === 'pdf';
+const getDocumentLabel = (media) => {
+    if (isPdfMedia(media)) return 'Tài liệu PDF';
+    const ext = getMediaExtension(media);
+    if (['doc', 'docx'].includes(ext)) return 'Tài liệu Word';
+    if (['xls', 'xlsx'].includes(ext)) return 'Bảng tính Excel';
+    if (['ppt', 'pptx'].includes(ext)) return 'Tệp trình chiếu';
+    if (ext === 'txt') return 'Tệp văn bản';
+    return 'Tệp đính kèm';
+};
+const downloadFile = async (url, fileName) => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = fileName || 'tep-dinh-kem';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+        console.error('[AdminEvidenceReviewModal] Tải tệp thất bại', err);
+    }
+};
 
 export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
     const { data: evidence, isLoading } = useEvidenceDetail(evidenceId);
@@ -16,7 +59,7 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
     
     const [reviewNotes, setReviewNotes] = useState('');
     const [decision, setDecision] = useState(null);
-    const [previewImg, setPreviewImg] = useState(null);
+    const [previewMedia, setPreviewMedia] = useState(null);
 
     // 1. Guard Clause: Loading
     if (isLoading) return (
@@ -93,18 +136,29 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
                             <div className="grid grid-cols-1 gap-3">
                                 {expenseItems.length > 0 ? expenseItems.map((item, idx) => (
                                     <div key={idx} className="group flex items-center gap-4 p-3 rounded-2xl border border-slate-100 bg-white hover:shadow-md transition-all">
-                                        <div 
-                                            className="relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-slate-100 cursor-zoom-in border border-slate-100"
-                                            onClick={() => setPreviewImg(item.receiptMediaId?.url)}
+                                        <div
+                                            className={clsx(
+                                                "relative h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-slate-100 border border-slate-100",
+                                                isImageMedia(item.receiptMediaId) && "cursor-zoom-in"
+                                            )}
+                                            onClick={() => {
+                                                if (isImageMedia(item.receiptMediaId)) setPreviewMedia(item.receiptMediaId);
+                                            }}
                                         >
-                                            <img 
-                                                src={item.receiptMediaId?.url} 
-                                                className="h-full w-full object-cover" 
-                                                alt="Receipt" 
-                                                onError={(e) => { e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
-                                            />
+                                            {isImageMedia(item.receiptMediaId) ? (
+                                                <img
+                                                    src={getMediaUrl(item.receiptMediaId)}
+                                                    className="h-full w-full object-cover"
+                                                    alt={getMediaName(item.receiptMediaId)}
+                                                    onError={(e) => { e.target.src = 'https://placehold.co/100x100?text=No+Image'; }}
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center bg-slate-50 text-slate-500">
+                                                    <FileText size={24} className={isPdfMedia(item.receiptMediaId) ? "text-red-500" : "text-slate-500"} />
+                                                </div>
+                                            )}
                                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                                <ZoomIn className="text-white" size={16} />
+                                                {isImageMedia(item.receiptMediaId) ? <ZoomIn className="text-white" size={16} /> : <Download className="text-white" size={16} />}
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -116,6 +170,20 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
                                                 )}
                                             </div>
                                             <p className="text-[11px] text-slate-400 truncate">{item.note || 'Chứng từ hợp lệ'}</p>
+                                            {!isImageMedia(item.receiptMediaId) && getMediaUrl(item.receiptMediaId) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        downloadFile(getMediaUrl(item.receiptMediaId), getMediaName(item.receiptMediaId));
+                                                    }}
+                                                    className="mt-2 inline-flex items-center gap-1 rounded-xl bg-slate-100 px-3 py-1.5 text-[11px] font-bold text-slate-700 hover:bg-amber-50"
+                                                >
+                                                    <Download size={12} />
+                                                    Tải xuống
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 )) : (
@@ -135,15 +203,41 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
                             </h4>
                             <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                 {evidence.mediaIds.map((media) => (
-                                    <div 
-                                        key={media._id} 
-                                        className="group relative aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-zoom-in shadow-sm"
-                                        onClick={() => setPreviewImg(media.url)}
+                                    <div
+                                        key={media._id}
+                                        className={clsx(
+                                            "group relative aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200 shadow-sm",
+                                            isImageMedia(media) && "cursor-zoom-in"
+                                        )}
+                                        onClick={() => {
+                                            if (isImageMedia(media)) setPreviewMedia(media);
+                                        }}
                                     >
-                                        <img src={media.url} className="h-full w-full object-cover" alt="Evidence" />
+                                        {isImageMedia(media) ? (
+                                            <img src={getMediaUrl(media)} className="h-full w-full object-cover" alt={getMediaName(media)} />
+                                        ) : (
+                                            <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-center text-slate-500">
+                                                <FileText size={24} className={isPdfMedia(media) ? "text-red-500" : "text-slate-500"} />
+                                                <span className="line-clamp-2 text-[9px] font-bold">{getDocumentLabel(media)}</span>
+                                            </div>
+                                        )}
                                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                            <ZoomIn className="text-white" size={20} />
+                                            {isImageMedia(media) ? <ZoomIn className="text-white" size={20} /> : <Download className="text-white" size={20} />}
                                         </div>
+                                        {!isImageMedia(media) && getMediaUrl(media) && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    downloadFile(getMediaUrl(media), getMediaName(media));
+                                                }}
+                                                className="absolute bottom-2 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-1 rounded-full bg-white px-2 py-1 text-[10px] font-bold text-slate-700 shadow-sm hover:bg-amber-50"
+                                            >
+                                                <Download size={11} />
+                                                Tải xuống
+                                            </button>
+                                        )}
                                         {(media.captureMetadata?.lat !== null && media.captureMetadata?.lng !== null) && (
                                             <div className="absolute top-1.5 left-1.5 flex items-center gap-1 rounded-full bg-emerald-500 px-1.5 py-0.5 text-[7px] font-black text-white uppercase tracking-tighter">
                                                 GPS OK
@@ -258,19 +352,20 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
             </div>
 
             {/* LIGHTBOX PREVIEW */}
-            {previewImg && (
+            {previewMedia && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/95 p-4 animate-in fade-in duration-200">
                     <button 
-                        onClick={() => setPreviewImg(null)}
+                        onClick={() => setPreviewMedia(null)}
                         className="absolute top-8 right-8 p-3 rounded-full bg-white/10 text-white hover:bg-white/20 transition-all hover:rotate-90"
                     >
                         <X size={24} />
                     </button>
-                    <img 
-                        src={previewImg} 
-                        className="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain animate-in zoom-in-95" 
-                        alt="Preview" 
+                    <img
+                        src={getMediaUrl(previewMedia)}
+                        className="max-w-full max-h-[90vh] rounded-xl shadow-2xl object-contain animate-in zoom-in-95"
+                        alt={getMediaName(previewMedia)}
                     />
+
                 </div>
             )}
         </Modal>

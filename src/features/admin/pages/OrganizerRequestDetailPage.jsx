@@ -32,6 +32,12 @@ function getSafeTextDisplay(text) {
   return text;
 }
 
+const AGREEMENT_RECORD_STATUS_LABELS = {
+  ACTIVE: "Đang hiệu lực",
+  SUPERSEDED: "Đã được thay thế",
+  VOIDED: "Đã hủy",
+};
+
 export function OrganizerRequestDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -60,7 +66,17 @@ export function OrganizerRequestDetailPage() {
 
   const hasManualReview = request.ekycMetadata?.verificationStatus === "MANUAL_REVIEW";
   const resubmissionCount = Number(request.resubmissionCount) || 0;
-  const hasCommitment = Boolean(request.agreements || request.signatureHash || request.isAccepted || request.commitment);
+  const agreementRecord =
+    request.agreementRecordId && typeof request.agreementRecordId === "object"
+      ? request.agreementRecordId
+      : null;
+  const hasCommitment = Boolean(
+    agreementRecord ||
+      request.agreements ||
+      request.signatureHash ||
+      request.isAccepted ||
+      request.commitment
+  );
   const hasBankInfo = Boolean(request.bankAccountNumber && request.bankName);
 
   const currentName = request.userId?.fullName;
@@ -93,7 +109,7 @@ export function OrganizerRequestDetailPage() {
             {isApproved && (
               <div className="mt-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700">
                 <CheckCircle2 size={18} />
-                Yêu cầu đã được phê duyệt — người dùng đã được cấp vai trò Ban tổ chức (KYC Bậc 1).
+                Hồ sơ đã được phê duyệt nội bộ và tài khoản đã được cấp vai trò Ban tổ chức.
               </div>
             )}
           </div>
@@ -134,7 +150,7 @@ export function OrganizerRequestDetailPage() {
                 {hasManualReview ? (
                   <span className="inline-flex font-medium text-sm text-amber-600">Cần xem xét thủ công</span>
                 ) : (
-                  <span className="inline-flex font-medium text-sm text-slate-600">Chưa có xác minh tự động</span>
+                  <span className="inline-flex font-medium text-sm text-slate-600">Chưa có đối chiếu tự động</span>
                 )}
               </div>
             </div>
@@ -203,7 +219,7 @@ export function OrganizerRequestDetailPage() {
             {/* 1. Applicant */}
             <div className="mb-4 border-b border-slate-100 pb-2">
               <h2 className="text-lg font-bold text-slate-900">
-                1. Thông tin Định danh (Ảnh chụp)
+                1. Thông tin Người đại diện
               </h2>
             </div>
 
@@ -254,13 +270,18 @@ export function OrganizerRequestDetailPage() {
                 </p>
               </InfoBox>
 
-              {(request.taxCode || request.legalRegistrationNumber) && (
-                <InfoBox label="Mã số / Giấy phép">
+              <InfoBox label="Thông tin đăng ký pháp lý">
+                <div className="space-y-1">
                   <p className="text-sm font-semibold text-slate-900">
-                    {request.taxCode || request.legalRegistrationNumber}
+                    <span className="font-normal text-slate-500 mr-1">Mã số thuế:</span>
+                    {request.taxCode || "Chưa cung cấp"}
                   </p>
-                </InfoBox>
-              )}
+                  <p className="text-sm font-semibold text-slate-900">
+                    <span className="font-normal text-slate-500 mr-1">Số đăng ký / quyết định:</span>
+                    {request.legalRegistrationNumber || "Chưa cung cấp"}
+                  </p>
+                </div>
+              </InfoBox>
             </div>
 
             {(request.activityDescription) && (
@@ -272,6 +293,24 @@ export function OrganizerRequestDetailPage() {
                 </InfoBox>
               </div>
             )}
+
+            <div className="mt-4">
+              <InfoBox label="Liên kết hỗ trợ đối chiếu hoạt động">
+                {request.proofLinks && request.proofLinks.length > 0 ? (
+                  <ul className="list-disc list-inside space-y-1">
+                    {request.proofLinks.map((link, idx) => (
+                      <li key={idx} className="truncate">
+                        <a href={link} target="_blank" rel="noreferrer noopener" className="text-blue-600 hover:text-blue-700 hover:underline text-sm font-medium">
+                          {link}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-slate-500 font-medium">Chưa cung cấp</p>
+                )}
+              </InfoBox>
+            </div>
 
             {/* 3. Bank */}
             <div className="mb-4 mt-6 border-b border-slate-100 pb-2">
@@ -303,12 +342,102 @@ export function OrganizerRequestDetailPage() {
             </div>
 
             <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
-              {hasCommitment ? (
+              {agreementRecord ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
+                    <CheckCircle2 size={16} />
+                    <span>Bản ghi cam kết nội bộ</span>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 bg-white p-4">
+                    <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      Nội dung đã xác nhận
+                    </p>
+                    {agreementRecord.contentSnapshot?.title && (
+                      <div className="mb-4 rounded-xl border border-slate-100 bg-slate-50 p-3">
+                        <p className="text-sm font-bold text-slate-900">
+                          {agreementRecord.contentSnapshot.title}
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-slate-500">
+                          Phiên bản {agreementRecord.contentSnapshot.version || agreementRecord.version} · Ngôn ngữ {agreementRecord.contentSnapshot.language || agreementRecord.language || "vi"}
+                        </p>
+                      </div>
+                    )}
+                    <div className="space-y-3">
+                      {(agreementRecord.contentSnapshot?.sections || []).map((section) => (
+                        <div key={section.code} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                          <p className="text-sm font-bold text-slate-900">
+                            {section.title}
+                          </p>
+                          <p className="mt-1 text-sm leading-relaxed text-slate-700">
+                            {section.body}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Người đại diện xác nhận
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900 text-sm">
+                        {agreementRecord.signerName || request.fullNameSnapshot}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Thời gian xác nhận
+                      </p>
+                      <p className="mt-1 text-sm text-slate-900 font-medium">
+                        {agreementRecord.signedAt
+                          ? new Date(agreementRecord.signedAt).toLocaleString("vi-VN")
+                          : "Chưa ghi nhận"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Phiên bản
+                      </p>
+                      <p className="mt-1 text-sm text-slate-900 font-medium">
+                        {agreementRecord.version || "2.0"}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Trạng thái
+                      </p>
+                      <p className="mt-1 text-sm text-slate-900 font-medium">
+                        {AGREEMENT_RECORD_STATUS_LABELS[agreementRecord.status] || agreementRecord.status || "Đang hiệu lực"}
+                      </p>
+                    </div>
+                  </div>
+
+                  {agreementRecord.integrityHash && (
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Mã kiểm tra toàn vẹn
+                      </p>
+                      <p className="mt-1 break-all font-mono text-xs text-slate-600">
+                        {agreementRecord.integrityHash}
+                      </p>
+                    </div>
+                  )}
+
+                  <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-medium leading-relaxed text-amber-800">
+                    Đây là bản ghi cam kết nội bộ trên nền tảng, chưa thay thế hồ sơ pháp lý hoặc chứng thực chính thức.
+                  </p>
+                </div>
+              ) : hasCommitment ? (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
                     <CheckCircle2 size={16} />
                     <span>
-                      Đã ký cam kết điện tử (Phiên bản {request.commitment?.version || "1.0"})
+                      Đã ghi nhận cam kết trên nền tảng (Phiên bản {request.commitment?.version || "1.0"})
                     </span>
                   </div>
 
@@ -340,7 +469,7 @@ export function OrganizerRequestDetailPage() {
                     {(request.commitment?.signatureHash || request.signatureHash) && (
                       <div className="rounded-xl border border-slate-200 bg-white p-3">
                         <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                          Mã chữ ký (Hash)
+                          Mã kiểm tra toàn vẹn
                         </p>
                         <p className="mt-1 font-mono text-xs text-slate-600 truncate" title={request.commitment?.signatureHash || request.signatureHash}>
                           {(request.commitment?.signatureHash || request.signatureHash).substring(0, 16)}...
@@ -369,7 +498,7 @@ export function OrganizerRequestDetailPage() {
               ) : (
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
                   <p className="text-sm font-semibold text-amber-800">
-                    Chưa có thông tin cam kết điện tử trong hồ sơ này.
+                    Chưa có thông tin cam kết trên nền tảng trong hồ sơ này.
                   </p>
                   <p className="mt-1 text-xs text-amber-700">
                     Người dùng chưa hoàn thành bước ký cam kết hoặc hồ sơ được nộp trước khi hệ thống yêu cầu cam kết.

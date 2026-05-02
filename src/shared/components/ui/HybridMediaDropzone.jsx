@@ -1,9 +1,52 @@
 import React, { useCallback, useRef, useState } from 'react';
-import { Camera, Image as ImageIcon, X, Loader2, UploadCloud } from 'lucide-react';
+import { Camera, Image as ImageIcon, X, Loader2, UploadCloud, FileText, Download } from 'lucide-react';
 import { useHybridUploader } from '@/shared/hooks/useHybridUploader';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { devConfig } from '@/config/app.config';
 import clsx from 'clsx';
+
+const getMediaUrl = (media) => media?.url || media?.secure_url || '';
+const getMediaName = (media) => media?.fileName || media?.originalName || media?.name || 'Tệp đính kèm';
+const getMediaMime = (media) => String(media?.mimeType || media?.mimetype || '').toLowerCase();
+const getMediaExtension = (media) => {
+    const name = getMediaName(media).toLowerCase();
+    const url = getMediaUrl(media).toLowerCase().split('?')[0];
+    const match = `${name} ${url}`.match(/\.([a-z0-9]+)(?:\s|$)/);
+    return match?.[1] || '';
+};
+const isImageMedia = (media) => {
+    const mime = getMediaMime(media);
+    if (mime.startsWith('image/')) return true;
+    if (getMediaUrl(media).toLowerCase().includes('/image/upload')) return true;
+    return ['png', 'jpg', 'jpeg', 'gif', 'webp', 'bmp', 'svg'].includes(getMediaExtension(media));
+};
+const isPdfMedia = (media) => getMediaMime(media).includes('application/pdf') || getMediaExtension(media) === 'pdf';
+const getDocumentLabel = (media) => {
+    if (isPdfMedia(media)) return 'Tài liệu PDF';
+    const ext = getMediaExtension(media);
+    if (['doc', 'docx'].includes(ext)) return 'Tài liệu Word';
+    if (['xls', 'xlsx'].includes(ext)) return 'Bảng tính Excel';
+    if (['ppt', 'pptx'].includes(ext)) return 'Tệp trình chiếu';
+    if (ext === 'txt') return 'Tệp văn bản';
+    return 'Tệp đính kèm';
+};
+const downloadFile = async (url, fileName) => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Download failed: ${response.status}`);
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = objectUrl;
+        link.download = fileName || 'tep-dinh-kem';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+        devConfig.error('[HybridMediaDropzone] Tải tệp thất bại', err);
+    }
+};
 
 export function HybridMediaDropzone({
     value = [],
@@ -139,19 +182,54 @@ export function HybridMediaDropzone({
 
             {value.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
-                    {value.map((media) => (
-                        <div key={media.id} className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                            <img
-                                src={media.url}
-                                alt="Preview"
-                                className="h-full w-full object-cover"
-                            />
+                    {value.map((media) => {
+                        const url = getMediaUrl(media);
+                        const name = getMediaName(media);
+                        const image = isImageMedia(media);
+                        const pdf = isPdfMedia(media);
+
+                        return (
+                            <div key={media.id} className="group relative aspect-square overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                            {image ? (
+                                <img
+                                    src={url}
+                                    alt={name}
+                                    className="h-full w-full object-cover"
+                                />
+                            ) : (
+                                <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-center">
+                                    <div className={clsx(
+                                        "flex h-12 w-12 items-center justify-center rounded-2xl",
+                                        pdf ? "bg-red-50 text-red-500" : "bg-slate-200 text-slate-600"
+                                    )}>
+                                        <FileText size={22} />
+                                    </div>
+                                    <div className="min-w-0 space-y-1">
+                                        <p className="truncate text-xs font-black text-slate-900">{name}</p>
+                                        <p className="text-[10px] font-bold uppercase tracking-tight text-slate-500">{getDocumentLabel(media)}</p>
+                                    </div>
+                                    {url && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                downloadFile(url, name);
+                                            }}
+                                            className="inline-flex h-7 items-center gap-1 rounded-full bg-white px-2 text-[10px] font-bold text-slate-700 shadow-sm hover:bg-amber-50"
+                                        >
+                                            <Download size={11} />
+                                            Tải xuống
+                                        </button>
+                                    )}
+                                </div>
+                            )}
 
                             <div className={clsx(
                                 "absolute left-2 top-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold text-white backdrop-blur-md",
                                 media.isCamera ? "bg-emerald-500/80" : "bg-slate-900/60"
                             )}>
-                                {media.isCamera ? <Camera size={10} /> : <ImageIcon size={10} />}
+                                {media.isCamera ? <Camera size={10} /> : image ? <ImageIcon size={10} /> : <FileText size={10} />}
                             {media.isCamera ? "GPS trực tiếp" : "Tệp"}
                             </div>
 
@@ -162,8 +240,9 @@ export function HybridMediaDropzone({
                             >
                                 <X size={14} />
                             </button>
-                        </div>
-                    ))}
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 

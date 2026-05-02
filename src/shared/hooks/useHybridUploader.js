@@ -106,8 +106,10 @@ export function useHybridUploader() {
                 publicId: cloudRes.data.public_id,
                 url: cloudRes.data.secure_url,
                 size: cloudRes.data.bytes,
-                mimetype: cloudRes.data.original_extension || file.type,
+                mimetype: file.type || "application/octet-stream",
                 originalName: file.name,
+                width: cloudRes.data.width ?? 0,
+                height: cloudRes.data.height ?? 0,
                 context: folderContext
             };
 
