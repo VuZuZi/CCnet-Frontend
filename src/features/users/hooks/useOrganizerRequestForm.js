@@ -188,7 +188,7 @@ export function useOrganizerRequestForm(existingRequest = null, options = { omit
       commitment: {
         isAccepted: false,
         signerName: currentUser?.fullName || "",
-        version: "1.0",
+        version: "2.0",
       },
     }),
     [existingRequest, currentUser]

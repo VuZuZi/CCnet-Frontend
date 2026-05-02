@@ -201,7 +201,7 @@ export const organizerRequestSchema = z
     idCardFront: optionalDocumentSchema,
     idCardBack: optionalDocumentSchema,
     selfie: optionalDocumentSchema,
-    businessLicense: requiredDocumentSchema,
+    businessLicense: optionalDocumentSchema,
     bankProof: requiredDocumentSchema,
 
     bankName: z

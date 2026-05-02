@@ -5,6 +5,7 @@ import {
   getErrorMessage,
 } from "../api/organizerRequestAdminAPI";
 import { ADMIN_QUERY_KEYS } from "../constants/admin.queryKeys";
+import { queryKeys } from "@/shared/constants/queryKeys";
 
 export function useOrganizerRequestDetail(id) {
   const toast = useToast();
@@ -57,6 +58,10 @@ export function useOrganizerRequestDetail(id) {
           "admin",
           "organizer-action-logs",
         ],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.organizerRequests.me(),
       });
 
       await queryClient.invalidateQueries({
@@ -122,6 +127,10 @@ export function useOrganizerRequestDetail(id) {
           "admin",
           "organizer-action-logs",
         ],
+      });
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.organizerRequests.me(),
       });
 
       await queryClient.invalidateQueries({
