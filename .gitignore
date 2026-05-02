@@ -28,3 +28,15 @@ dist-ssr
 .env.local
 .env.*.local
 .env.development
+
+# Local AI/tooling artifacts
+.claude/
+.gitnexus/
+CLAUDE.md
+diff.txt
+
+# Temporary recovery files
+decoded*.jsx
+restored*.jsx
+ascii_only.jsx
+decoded_correct.txt

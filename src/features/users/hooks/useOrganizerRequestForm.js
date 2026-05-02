@@ -79,7 +79,7 @@ const readFileAsDataUrl = (file) =>
     reader.readAsDataURL(file);
   });
 
-const sanitizePayload = (values) => {
+const sanitizePayload = (values, options = { omitIdentityDocuments: false }) => {
   const payload = {
     ...values,
     fullNameSnapshot:
@@ -90,21 +90,45 @@ const sanitizePayload = (values) => {
     organizationName:
       values.organizationName?.trim().replace(/\s+/g, " ") || "",
     organizationWebsite: values.organizationWebsite?.trim() || "",
+    organizationLegalType: values.organizationLegalType || undefined,
+    taxCode: values.taxCode?.trim() || undefined,
+    legalRegistrationNumber: values.legalRegistrationNumber?.trim() || undefined,
+    activityDescription: values.activityDescription?.trim() || undefined,
+    proofLinks: (values.proofLinks || []).map(link => link.trim()).filter(link => link.length > 0),
     bankName: values.bankName?.trim() || "",
     bankBin: values.bankBin?.trim() || "",
     bankAccountNumber: values.bankAccountNumber?.trim() || "",
     bankAccountName:
       values.bankAccountName?.trim().replace(/\s+/g, " ") || "",
     notes: values.notes?.trim() || "",
-    idCardFront: normalizeDocument(values.idCardFront),
-    idCardBack: normalizeDocument(values.idCardBack),
-    selfie: normalizeDocument(values.selfie),
+    idCardFront: options.omitIdentityDocuments ? undefined : normalizeDocument(values.idCardFront),
+    idCardBack: options.omitIdentityDocuments ? undefined : normalizeDocument(values.idCardBack),
+    selfie: options.omitIdentityDocuments ? undefined : normalizeDocument(values.selfie),
     businessLicense: normalizeDocument(values.businessLicense),
     bankProof: normalizeDocument(values.bankProof),
+    commitment: (values.commitment?.isAccepted || values.commitment?.agreements?.length > 0) ? {
+      isAccepted: values.commitment.isAccepted || false,
+      agreements: values.commitment.agreements || [],
+      signerName: values.commitment.signerName?.trim() || "",
+      version: values.commitment.version || "2.0"
+    } : undefined,
   };
 
   if (!payload.businessLicense) delete payload.businessLicense;
   if (!payload.bankProof) delete payload.bankProof;
+
+  if (["COMPANY", "REGISTERED_NGO", "HOUSEHOLD_BUSINESS"].includes(payload.organizationLegalType)) {
+    delete payload.activityDescription;
+    delete payload.proofLinks;
+  } else if (["COMMUNITY_GROUP", "OTHER"].includes(payload.organizationLegalType)) {
+    delete payload.taxCode;
+    delete payload.legalRegistrationNumber;
+  }
+
+  if (!payload.taxCode) delete payload.taxCode;
+  if (!payload.legalRegistrationNumber) delete payload.legalRegistrationNumber;
+  if (!payload.activityDescription) delete payload.activityDescription;
+  if (payload.proofLinks && payload.proofLinks.length === 0) delete payload.proofLinks;
 
   return payload;
 };
@@ -127,7 +151,7 @@ const getFirstErrorMessage = (errors) => {
   return visit(errors);
 };
 
-export function useOrganizerRequestForm(existingRequest = null) {
+export function useOrganizerRequestForm(existingRequest = null, options = { omitIdentityDocuments: false }) {
   const toast = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -146,9 +170,14 @@ export function useOrganizerRequestForm(existingRequest = null) {
       organizationName: existingRequest?.organizationName || "",
       organizationType: existingRequest?.organizationType || "COMMUNITY",
       organizationWebsite: existingRequest?.organizationWebsite || "",
-      idCardFront: normalizeDocument(existingRequest?.idCardFront),
-      idCardBack: normalizeDocument(existingRequest?.idCardBack),
-      selfie: normalizeDocument(existingRequest?.selfie),
+      organizationLegalType: existingRequest?.organizationLegalType || "",
+      taxCode: existingRequest?.taxCode || "",
+      legalRegistrationNumber: existingRequest?.legalRegistrationNumber || "",
+      activityDescription: existingRequest?.activityDescription || "",
+      proofLinks: existingRequest?.proofLinks?.length > 0 ? existingRequest.proofLinks : [""],
+      idCardFront: options.omitIdentityDocuments ? undefined : normalizeDocument(existingRequest?.idCardFront),
+      idCardBack: options.omitIdentityDocuments ? undefined : normalizeDocument(existingRequest?.idCardBack),
+      selfie: options.omitIdentityDocuments ? undefined : normalizeDocument(existingRequest?.selfie),
       businessLicense: normalizeDocument(existingRequest?.businessLicense),
       bankProof: normalizeDocument(existingRequest?.bankProof),
       bankName: existingRequest?.bankName || "",
@@ -156,6 +185,11 @@ export function useOrganizerRequestForm(existingRequest = null) {
       bankAccountNumber: existingRequest?.bankAccountNumber || "",
       bankAccountName: existingRequest?.bankAccountName || "",
       notes: existingRequest?.notes || "",
+      commitment: {
+        isAccepted: false,
+        signerName: currentUser?.fullName || "",
+        version: "1.0",
+      },
     }),
     [existingRequest, currentUser]
   );
@@ -227,7 +261,7 @@ export function useOrganizerRequestForm(existingRequest = null) {
   };
 
   const onValid = async (values) => {
-    const payload = sanitizePayload(values);
+    const payload = sanitizePayload(values, options);
     await mutation.mutateAsync(payload);
   };
 

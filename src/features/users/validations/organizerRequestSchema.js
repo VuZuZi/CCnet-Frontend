@@ -12,6 +12,16 @@ const emptyToUndefined = (value) => {
   return trimmed === "" ? undefined : trimmed;
 };
 
+const emptyArrayItemsToUndefined = (value) => {
+  if (!Array.isArray(value)) return value;
+
+  const filtered = value
+    .map((item) => (typeof item === "string" ? item.trim() : item))
+    .filter(Boolean);
+
+  return filtered.length > 0 ? filtered : undefined;
+};
+
 const normalizeText = (value) =>
   typeof value === "string" ? value.trim().replace(/\s+/g, " ") : value;
 
@@ -53,6 +63,10 @@ const optionalDocumentSchema = z.preprocess((value) => {
   return value;
 }, documentSchema.optional());
 
+const requiredDocumentSchema = optionalDocumentSchema.refine((v) => !!v, {
+  message: "Vui lòng tải lên tệp này.",
+});
+
 const locationSchema = z
   .object({
     type: z.literal("Point"),
@@ -73,108 +87,223 @@ const locationSchema = z
     }
   );
 
-export const organizerRequestSchema = z.object({
-  fullNameSnapshot: z
-    .string()
-    .transform(normalizeText)
-    .refine((v) => typeof v === "string" && v.length >= 2, {
-      message: "Họ và tên phải có ít nhất 2 ký tự",
-    })
-    .refine((v) => v.length <= 100, {
-      message: "Họ và tên tối đa 100 ký tự",
-    })
-    .refine((v) => FULL_NAME_REGEX.test(v), {
-      message:
-        "Họ và tên chỉ được gồm chữ cái, khoảng trắng, dấu chấm, dấu nháy hoặc gạch nối",
-    }),
-
-  emailSnapshot: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .min(1, "Email là bắt buộc")
-    .email("Email không hợp lệ"),
-
-  phoneSnapshot: z.preprocess(
-    (value) => {
-      if (typeof value !== "string") return value;
-      return value.replace(/\s|[-.]/g, "");
-    },
-    z
+export const organizerRequestSchema = z
+  .object({
+    fullNameSnapshot: z
       .string()
-      .min(1, "Số điện thoại là bắt buộc")
-      .regex(VN_PHONE_REGEX, "Số điện thoại phải đúng định dạng Việt Nam")
-  ),
+      .transform(normalizeText)
+      .refine((v) => typeof v === "string" && v.length >= 2, {
+        message: "Họ và tên phải có ít nhất 2 ký tự",
+      })
+      .refine((v) => v.length <= 100, {
+        message: "Họ và tên tối đa 100 ký tự",
+      })
+      .refine((v) => FULL_NAME_REGEX.test(v), {
+        message:
+          "Họ và tên chỉ được gồm chữ cái, khoảng trắng, dấu chấm, dấu nháy hoặc gạch nối",
+      }),
 
-  locationSnapshot: locationSchema,
+    emailSnapshot: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .min(1, "Email là bắt buộc")
+      .email("Email không hợp lệ"),
 
-  organizationName: z
-    .string()
-    .transform(normalizeText)
-    .refine((v) => typeof v === "string" && v.length >= 2, {
-      message: "Tên tổ chức phải có ít nhất 2 ký tự",
-    })
-    .refine((v) => v.length <= 200, {
-      message: "Tên tổ chức tối đa 200 ký tự",
-    })
-    .refine((v) => ORG_NAME_REGEX.test(v), {
-      message: "Tên tổ chức chứa ký tự không hợp lệ",
-    }),
+    phoneSnapshot: z.preprocess(
+      (value) => {
+        if (typeof value !== "string") return value;
+        return value.replace(/\s|[-.]/g, "");
+      },
+      z
+        .string()
+        .min(1, "Số điện thoại là bắt buộc")
+        .regex(VN_PHONE_REGEX, "Số điện thoại phải đúng định dạng Việt Nam")
+    ),
 
-  organizationType: z.enum([
-    "NGO",
-    "CHARITY",
-    "COMMUNITY",
-    "EDUCATION",
-    "MEDICAL",
-    "RELIGIOUS",
-    "OTHER",
-  ]),
+    locationSnapshot: locationSchema,
 
-  organizationWebsite: z.preprocess(
-    (value) => {
-      if (typeof value !== "string") return value;
-      const trimmed = value.trim();
-      return trimmed === "" ? "" : trimmed;
-    },
-    z.union([z.string().url("Website không hợp lệ"), z.literal("")]).default("")
-  ),
+    organizationName: z
+      .string()
+      .transform(normalizeText)
+      .refine((v) => typeof v === "string" && v.length >= 1, {
+        message: "Vui lòng nhập thông tin này.",
+      })
+      .refine((v) => typeof v === "string" && v.length >= 2, {
+        message: "Tên tổ chức phải có ít nhất 2 ký tự",
+      })
+      .refine((v) => v.length <= 200, {
+        message: "Tên tổ chức tối đa 200 ký tự",
+      })
+      .refine((v) => ORG_NAME_REGEX.test(v), {
+        message: "Tên tổ chức chứa ký tự không hợp lệ",
+      }),
 
-  idCardFront: documentSchema,
-  idCardBack: documentSchema,
-  selfie: documentSchema,
-  businessLicense: optionalDocumentSchema,
-  bankProof: optionalDocumentSchema,
+    organizationType: z.enum([
+      "NGO",
+      "CHARITY",
+      "COMMUNITY",
+      "EDUCATION",
+      "MEDICAL",
+      "RELIGIOUS",
+      "OTHER",
+    ]),
 
-  bankName: z
-    .string()
-    .trim()
-    .min(2, "Vui lòng chọn hoặc nhập tên ngân hàng")
-    .max(200, "Tên ngân hàng quá dài"),
+    organizationWebsite: z.preprocess(
+      emptyToUndefined,
+      z
+        .string({ required_error: "Vui lòng nhập thông tin này." })
+        .url("Website không hợp lệ")
+        .min(1, "Vui lòng nhập thông tin này.")
+    ),
 
-  bankBin: z
-    .string()
-    .trim()
-    .max(10, "Mã BIN không hợp lệ")
-    .optional()
-    .default(""),
+    organizationLegalType: z.preprocess(
+      emptyToUndefined,
+      z
+        .string({
+          required_error: "Vui lòng chọn hình thức pháp lý của tổ chức/nhóm.",
+          invalid_type_error: "Vui lòng chọn hình thức pháp lý của tổ chức/nhóm.",
+        })
+        .min(1, "Vui lòng chọn hình thức pháp lý của tổ chức/nhóm.")
+        .refine(
+          (val) =>
+            [
+              "COMPANY",
+              "REGISTERED_NGO",
+              "HOUSEHOLD_BUSINESS",
+              "COMMUNITY_GROUP",
+              "OTHER",
+            ].includes(val),
+          { message: "Vui lòng chọn hình thức pháp lý của tổ chức/nhóm." }
+        )
+    ),
 
-  bankAccountNumber: z.preprocess(
-    (value) => (typeof value === "string" ? value.trim() : value),
-    z.string().regex(BANK_ACCOUNT_REGEX, "Số tài khoản phải từ 8 đến 19 chữ số")
-  ),
+    taxCode: z.string().trim().optional(),
+    legalRegistrationNumber: z.string().trim().optional(),
+    activityDescription: z.string().trim().optional().or(z.literal("")),
+    proofLinks: z.preprocess(
+      emptyArrayItemsToUndefined,
+      z
+        .array(
+          z
+            .string()
+            .trim()
+            .url("Liên kết minh chứng phải bắt đầu bằng http:// hoặc https://.")
+            .regex(
+              /^https?:\/\//i,
+              "Liên kết minh chứng phải bắt đầu bằng http:// hoặc https://."
+            )
+        )
+        .max(5, "Tối đa 5 liên kết")
+        .optional()
+    ),
 
-  bankAccountName: z
-    .string()
-    .transform(normalizeText)
-    .refine((v) => ACCOUNT_NAME_REGEX.test(v), {
-      message: "Tên chủ tài khoản chỉ được gồm chữ cái và khoảng trắng",
-    }),
+    idCardFront: optionalDocumentSchema,
+    idCardBack: optionalDocumentSchema,
+    selfie: optionalDocumentSchema,
+    businessLicense: requiredDocumentSchema,
+    bankProof: requiredDocumentSchema,
 
-  notes: z.preprocess(
-    (value) => (typeof value === "string" ? value.trim() : value),
-    z.string().max(1000, "Ghi chú tối đa 1000 ký tự").optional().default("")
-  ),
-});
+    bankName: z
+      .string()
+      .trim()
+      .min(1, "Vui lòng nhập thông tin này.")
+      .max(200, "Tên ngân hàng quá dài"),
+
+    bankBin: z.string().trim().max(10, "Mã BIN không hợp lệ").optional().default(""),
+
+    bankAccountNumber: z.preprocess(
+      (value) => (typeof value === "string" ? value.trim() : value),
+      z
+        .string()
+        .min(1, "Vui lòng nhập thông tin này.")
+        .regex(BANK_ACCOUNT_REGEX, "Số tài khoản phải từ 8 đến 19 chữ số")
+    ),
+
+    bankAccountName: z
+      .string()
+      .transform(normalizeText)
+      .refine((v) => typeof v === "string" && v.length > 0, { message: "Vui lòng nhập thông tin này." })
+      .refine((v) => ACCOUNT_NAME_REGEX.test(v), {
+        message: "Tên chủ tài khoản chỉ được gồm chữ cái và khoảng trắng",
+      }),
+
+    notes: z.preprocess(
+      (value) => (typeof value === "string" ? value.trim() : value),
+      z.string().max(1000, "Ghi chú tối đa 1000 ký tự").optional().default("")
+    ),
+
+    commitment: z
+      .object({
+        isAccepted: z.boolean().optional(),
+        agreements: z
+          .array(z.string())
+          .min(5, "Bạn phải đồng ý với tất cả các điều khoản"),
+        signerName: z
+          .string()
+          .min(2, "Họ và tên người ký phải có ít nhất 2 ký tự"),
+        version: z.string().min(1),
+      })
+      .optional(),
+  })
+  .superRefine((data, ctx) => {
+    const {
+      organizationLegalType,
+      taxCode,
+      legalRegistrationNumber,
+      activityDescription,
+      proofLinks,
+    } = data;
+
+    if (
+      ["COMPANY", "REGISTERED_NGO", "HOUSEHOLD_BUSINESS"].includes(
+        organizationLegalType
+      )
+    ) {
+      if (!taxCode) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Vui lòng nhập thông tin này.",
+          path: ["taxCode"],
+        });
+      }
+      if (!legalRegistrationNumber) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Vui lòng nhập thông tin này.",
+          path: ["legalRegistrationNumber"],
+        });
+      }
+    }
+
+    if (organizationLegalType === "COMMUNITY_GROUP") {
+      if (!activityDescription || activityDescription.length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "Vui lòng mô tả hoạt động tối thiểu 10 ký tự.",
+          path: ["activityDescription"],
+        });
+      }
+      if (!proofLinks || proofLinks.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Vui lòng cung cấp ít nhất 1 liên kết minh chứng hoạt động.",
+          path: ["proofLinks"],
+        });
+      }
+    }
+
+    if (organizationLegalType === "OTHER") {
+      if (!activityDescription || activityDescription.length < 10) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "Vui lòng mô tả hoạt động tối thiểu 10 ký tự.",
+          path: ["activityDescription"],
+        });
+      }
+    }
+  });
 
 export default organizerRequestSchema;

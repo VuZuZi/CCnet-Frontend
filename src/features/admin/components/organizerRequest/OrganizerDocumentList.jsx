@@ -6,17 +6,17 @@ const DOCUMENT_ITEMS = [
   {
     key: "idCardFront",
     title: "Mặt trước CMND/CCCD",
-    emptyText: "Chưa cung cấp",
+    emptyText: "Hồ sơ này không bao gồm ảnh giấy tờ cá nhân theo quy trình mới.",
   },
   {
     key: "idCardBack",
     title: "Mặt sau CMND/CCCD",
-    emptyText: "Chưa cung cấp",
+    emptyText: "Hồ sơ này không bao gồm ảnh giấy tờ cá nhân theo quy trình mới.",
   },
   {
     key: "selfie",
     title: "Ảnh chân dung tự chụp",
-    emptyText: "Chưa cung cấp ảnh",
+    emptyText: "Hồ sơ này không bao gồm ảnh chân dung theo quy trình mới.",
   },
   {
     key: "businessLicense",
@@ -30,20 +30,33 @@ const DOCUMENT_ITEMS = [
   },
 ];
 
+const LEGACY_IDENTITY_KEYS = new Set(["idCardFront", "idCardBack", "selfie"]);
+
 export function OrganizerDocumentList({ request }) {
   const [previewItem, setPreviewItem] = useState(null);
 
-  const items = useMemo(
-    () =>
-      DOCUMENT_ITEMS.map((item) => ({
-        ...item,
-        file: request?.[item.key] || null,
-      })),
-    [request]
-  );
+  const items = useMemo(() => {
+    return DOCUMENT_ITEMS.filter((item) => {
+      if (LEGACY_IDENTITY_KEYS.has(item.key)) {
+        return Boolean(request?.[item.key]);
+      }
+      return true;
+    }).map((item) => ({
+      ...item,
+      file: request?.[item.key] || null,
+    }));
+  }, [request]);
+
+  const hasAnyLegacyDoc =
+    request?.idCardFront || request?.idCardBack || request?.selfie;
 
   return (
     <>
+      {!hasAnyLegacyDoc && (
+        <div className="mb-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-500">
+          Hồ sơ áp dụng quy trình mới, không yêu cầu tải lên ảnh giấy tờ cá nhân (CCCD/CMND/Selfie) để bảo vệ quyền riêng tư.
+        </div>
+      )}
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
         {items.map((item) => (
           <OrganizerDocumentCard

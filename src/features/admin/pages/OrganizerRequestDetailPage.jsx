@@ -16,6 +16,22 @@ function InfoBox({ label, children }) {
   );
 }
 
+const AGREEMENT_LABELS = {
+  TRUTHFUL_INFORMATION: "Tôi xác nhận mọi thông tin trong hồ sơ là trung thực, đầy đủ và có thể giải trình khi được yêu cầu.",
+  TERMS: "Tôi cam kết chỉ sử dụng hồ sơ này để đại diện đúng tổ chức hoặc nhóm đã khai báo trên CCNet.",
+  FINANCIAL_RESPONSIBILITY: "Tôi cam kết sử dụng tiền, hiện vật hoặc nguồn lực được ủng hộ đúng mục đích đã công bố.",
+  TRANSPARENCY_REPORTING: "Tôi cam kết cập nhật tiến độ, bằng chứng và báo cáo minh bạch theo quy định của nền tảng.",
+  PLATFORM_ENFORCEMENT: "Tôi chấp nhận việc CCNet kiểm tra, tạm dừng hoặc xử lý hồ sơ nếu phát hiện thông tin sai lệch hoặc sử dụng sai mục đích."
+};
+
+function getSafeTextDisplay(text) {
+  if (!text || typeof text !== "string") return text;
+  if (text.startsWith("Invalid input: expected string") || text.includes("Invalid input: expected string")) {
+    return "Dữ liệu mô tả không hợp lệ, cần yêu cầu người nộp cập nhật.";
+  }
+  return text;
+}
+
 export function OrganizerRequestDetailPage() {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -42,6 +58,11 @@ export function OrganizerRequestDetailPage() {
     request.riskFlags?.includes("CROSS_LINKED_BANK") ||
     request.notes?.includes("[SYSTEM FLAG]");
 
+  const hasManualReview = request.ekycMetadata?.verificationStatus === "MANUAL_REVIEW";
+  const resubmissionCount = Number(request.resubmissionCount) || 0;
+  const hasCommitment = Boolean(request.agreements || request.signatureHash || request.isAccepted || request.commitment);
+  const hasBankInfo = Boolean(request.bankAccountNumber && request.bankName);
+  
   const currentName = request.userId?.fullName;
   const isNameChanged =
     Boolean(currentName) && currentName !== request.fullNameSnapshot;
@@ -76,8 +97,87 @@ export function OrganizerRequestDetailPage() {
               </div>
             )}
           </div>
+        </div>
+        
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+          <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-slate-800">
+            Tổng quan đánh giá
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Trạng thái hồ sơ
+              </p>
+              <div className="mt-1.5">
+                <OrganizerRequestStatusBadge status={request.status} />
+              </div>
+            </div>
 
-          <OrganizerRequestStatusBadge status={request.status} />
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Cảnh báo hệ thống
+              </p>
+              <div className="mt-1.5">
+                {hasRiskFlag ? (
+                  <span className="inline-flex font-medium text-sm text-rose-600">Có cảnh báo cần kiểm tra</span>
+                ) : (
+                  <span className="inline-flex font-medium text-sm text-slate-600">Chưa có cảnh báo hệ thống hiển thị</span>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Định danh
+              </p>
+              <div className="mt-1.5">
+                {hasManualReview ? (
+                  <span className="inline-flex font-medium text-sm text-amber-600">Cần xem xét thủ công</span>
+                ) : (
+                  <span className="inline-flex font-medium text-sm text-slate-600">Chưa có xác minh tự động</span>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Lịch sử nộp
+              </p>
+              <div className="mt-1.5">
+                {resubmissionCount > 0 ? (
+                  <span className="inline-flex font-medium text-sm text-amber-600">Đã nộp lại {resubmissionCount} lần</span>
+                ) : (
+                  <span className="inline-flex font-medium text-sm text-slate-600">Nộp lần đầu</span>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Cam kết
+              </p>
+              <div className="mt-1.5">
+                {hasCommitment ? (
+                  <span className="inline-flex font-medium text-sm text-slate-600">Đã ghi nhận cam kết trách nhiệm</span>
+                ) : (
+                  <span className="inline-flex font-medium text-sm text-amber-600">Chưa có cam kết điện tử</span>
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                Ngân hàng
+              </p>
+              <div className="mt-1.5">
+                {hasBankInfo ? (
+                  <span className="inline-flex font-medium text-sm text-amber-700">Đã cung cấp thông tin ngân hàng — cần đối chiếu</span>
+                ) : (
+                  <span className="inline-flex font-medium text-sm text-amber-600">Thiếu thông tin ngân hàng</span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -100,6 +200,7 @@ export function OrganizerRequestDetailPage() {
           )}
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            {/* 1. Applicant */}
             <div className="mb-4 border-b border-slate-100 pb-2">
               <h2 className="text-lg font-bold text-slate-900">
                 1. Thông tin Định danh (Ảnh chụp)
@@ -130,6 +231,7 @@ export function OrganizerRequestDetailPage() {
               </InfoBox>
             </div>
 
+            {/* 2. Organization */}
             <div className="mb-4 mt-6 border-b border-slate-100 pb-2">
               <h2 className="text-lg font-bold text-slate-900">
                 2. Thông tin Tổ chức
@@ -151,8 +253,27 @@ export function OrganizerRequestDetailPage() {
                   {request.organizationWebsite || "Không có"}
                 </p>
               </InfoBox>
+              
+              {(request.taxCode || request.legalRegistrationNumber) && (
+                <InfoBox label="Mã số / Giấy phép">
+                  <p className="text-sm font-semibold text-slate-900">
+                    {request.taxCode || request.legalRegistrationNumber}
+                  </p>
+                </InfoBox>
+              )}
             </div>
+            
+            {(request.activityDescription) && (
+              <div className="mt-4">
+                <InfoBox label="Mô tả Hoạt động">
+                  <p className="text-sm font-medium text-slate-800 whitespace-pre-wrap">
+                    {getSafeTextDisplay(request.activityDescription)}
+                  </p>
+                </InfoBox>
+              </div>
+            )}
 
+            {/* 3. Bank */}
             <div className="mb-4 mt-6 border-b border-slate-100 pb-2">
               <h2 className="text-lg font-bold text-slate-900">
                 3. Thông tin Ngân hàng
@@ -173,17 +294,91 @@ export function OrganizerRequestDetailPage() {
                 </p>
               </InfoBox>
             </div>
+            
+            {/* 4. Commitment */}
+            <div className="mb-4 mt-6 border-b border-slate-100 pb-2">
+              <h2 className="text-lg font-bold text-slate-900">
+                4. Thông tin Cam kết
+              </h2>
+            </div>
+            
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-5">
+              {hasCommitment ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-semibold text-blue-700">
+                    <CheckCircle2 size={16} />
+                    <span>
+                      Đã ký cam kết điện tử (Phiên bản {request.commitment?.version || "1.0"})
+                    </span>
+                  </div>
 
-            {request.resubmissionCount > 0 && (
-              <div className="mt-6 rounded-xl bg-slate-800 p-4 text-white">
-                <p className="flex items-center gap-2 text-sm font-semibold">
-                  <Info size={16} className="text-sky-400" />
-                  Yêu cầu này là lần nộp thứ #{request.resubmissionCount + 1}
-                </p>
-              </div>
-            )}
+                  {request.commitment?.agreements && Array.isArray(request.commitment.agreements) && (
+                    <div className="rounded-xl border border-slate-200 bg-white p-4">
+                      <p className="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Nội dung đã xác nhận
+                      </p>
+                      <ul className="list-inside list-disc space-y-1.5 text-sm text-slate-700">
+                        {request.commitment.agreements.map((agreementKey) => (
+                          <li key={agreementKey}>
+                            {AGREEMENT_LABELS[agreementKey] || agreementKey}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
-            <div className="mt-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="rounded-xl border border-slate-200 bg-white p-3">
+                      <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                        Người đại diện ký
+                      </p>
+                      <p className="mt-1 font-semibold text-slate-900 text-sm">
+                        {request.commitment?.signerName || request.fullNameSnapshot}
+                      </p>
+                    </div>
+
+                    {(request.commitment?.signatureHash || request.signatureHash) && (
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Mã chữ ký (Hash)
+                        </p>
+                        <p className="mt-1 font-mono text-xs text-slate-600 truncate" title={request.commitment?.signatureHash || request.signatureHash}>
+                          {(request.commitment?.signatureHash || request.signatureHash).substring(0, 16)}...
+                        </p>
+                      </div>
+                    )}
+                    
+                    {request.commitment?.signedAt && (
+                      <div className="rounded-xl border border-slate-200 bg-white p-3">
+                        <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          Thời gian ký
+                        </p>
+                        <p className="mt-1 text-sm text-slate-900 font-medium">
+                          {new Date(request.commitment.signedAt).toLocaleString('vi-VN')}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {(!request.commitment?.version || request.commitment.version === "1.0") && (
+                    <p className="text-xs text-slate-500 mt-2 italic">
+                      Lưu ý: Đây là hồ sơ sử dụng cam kết phiên bản cũ (v1).
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                  <p className="text-sm font-semibold text-amber-800">
+                    Chưa có thông tin cam kết điện tử trong hồ sơ này.
+                  </p>
+                  <p className="mt-1 text-xs text-amber-700">
+                    Người dùng chưa hoàn thành bước ký cam kết hoặc hồ sơ được nộp trước khi hệ thống yêu cầu cam kết.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="mt-8">
               <OrganizerReviewActions
                 status={request.status}
                 onApprove={approve}
