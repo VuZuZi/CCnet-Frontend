@@ -19,6 +19,34 @@ const reasonSchema = z.object({
     .max(1000, "Lý do không được vượt quá 1000 ký tự"),
 });
 
+const approveSchema = reasonSchema.extend({
+  checklist: z.object({
+    manualIdentityReviewAcknowledged: z.literal(true, {
+      errorMap: () => ({ message: "Bắt buộc xác nhận" }),
+    }),
+    commitmentReviewed: z.literal(true, {
+      errorMap: () => ({ message: "Bắt buộc xác nhận" }),
+    }),
+    organizationInfoReviewed: z.literal(true, {
+      errorMap: () => ({ message: "Bắt buộc xác nhận" }),
+    }),
+    bankInfoReviewed: z.literal(true, {
+      errorMap: () => ({ message: "Bắt buộc xác nhận" }),
+    }),
+    riskFlagsReviewed: z.literal(true, {
+      errorMap: () => ({ message: "Bắt buộc xác nhận" }),
+    }),
+  }),
+});
+
+const CHECKLIST_ITEMS = [
+  { id: "manualIdentityReviewAcknowledged", label: "Tôi đã xem xét trạng thái danh tính/xét duyệt thủ công của người đăng ký." },
+  { id: "commitmentReviewed", label: "Tôi đã kiểm tra bản cam kết trách nhiệm và thông tin người ký." },
+  { id: "organizationInfoReviewed", label: "Tôi đã xem xét thông tin tổ chức/nhóm và các minh chứng liên quan nếu có." },
+  { id: "bankInfoReviewed", label: "Tôi đã xem xét thông tin tài khoản ngân hàng và các cảnh báo liên quan nếu có." },
+  { id: "riskFlagsReviewed", label: "Tôi đã xem xét các cảnh báo rủi ro của hệ thống trước khi ra quyết định." }
+];
+
 const NON_PENDING_STATES = {
   AWAITING_MICRO_DEPOSIT: {
     title: "Đang chờ xác minh giao dịch",
@@ -66,23 +94,37 @@ function ActionModal({
 }) {
   useModalScrollLock(isOpen);
 
+  const isApprove = type === "approve";
+
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isValid },
     reset,
   } = useForm({
-    resolver: zodResolver(reasonSchema),
-    defaultValues: { reviewReason: "" },
+    resolver: zodResolver(isApprove ? approveSchema : reasonSchema),
+    defaultValues: {
+      reviewReason: "",
+      checklist: isApprove ? {
+        manualIdentityReviewAcknowledged: false,
+        commitmentReviewed: false,
+        organizationInfoReviewed: false,
+        bankInfoReviewed: false,
+        riskFlagsReviewed: false
+      } : undefined
+    },
+    mode: "onChange"
   });
 
   if (!isOpen) return null;
 
-  const isApprove = type === "approve";
-
   const submit = async (data) => {
     try {
-      await onConfirm(data.reviewReason);
+      if (isApprove) {
+        await onConfirm({ reviewReason: data.reviewReason, checklist: data.checklist });
+      } else {
+        await onConfirm({ reviewReason: data.reviewReason });
+      }
       onClose();
       reset();
     } catch {}
@@ -123,7 +165,7 @@ function ActionModal({
           <textarea
             {...register("reviewReason")}
             disabled={isProcessing}
-            rows={4}
+            rows={isApprove ? 2 : 4}
             className="w-full rounded-2xl border border-slate-200 p-4 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
           />
 
@@ -131,6 +173,38 @@ function ActionModal({
             <p className="mt-2 text-xs text-rose-500">
               {errors.reviewReason.message}
             </p>
+          )}
+
+          {isApprove && (
+            <div className="mt-6 border-t border-slate-100 pt-5">
+              <label className="mb-3 block text-sm font-semibold text-slate-700">
+                Danh mục kiểm tra bắt buộc
+              </label>
+              <div className="space-y-3">
+                {CHECKLIST_ITEMS.map((item) => (
+                  <label key={item.id} className="flex items-start gap-3 cursor-pointer p-2 hover:bg-slate-50 rounded-xl transition-colors">
+                    <div className="flex h-5 items-center">
+                      <input
+                        type="checkbox"
+                        {...register(`checklist.${item.id}`)}
+                        disabled={isProcessing}
+                        className="h-4 w-4 rounded border-slate-300 text-emerald-500 focus:ring-emerald-500"
+                      />
+                    </div>
+                    <div>
+                      <span className="text-xs font-semibold text-slate-700">
+                        {item.label}
+                      </span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+              {errors.checklist && (
+                <p className="mt-2 text-xs text-rose-500">
+                  Vui lòng xác nhận tất cả các mục kiểm tra.
+                </p>
+              )}
+            </div>
           )}
 
           <div className="mt-8 flex justify-end gap-3">
@@ -145,8 +219,8 @@ function ActionModal({
 
             <button
               type="submit"
-              disabled={isProcessing}
-              className={`rounded-xl px-6 py-2.5 text-sm font-bold text-white ${
+              disabled={isProcessing || (isApprove && !isValid)}
+              className={`rounded-xl px-6 py-2.5 text-sm font-bold text-white disabled:opacity-50 disabled:cursor-not-allowed ${
                 isApprove
                   ? "bg-emerald-500 hover:bg-emerald-600"
                   : "bg-rose-500 hover:bg-rose-600"
@@ -207,7 +281,7 @@ export function OrganizerReviewActions({
       </h3>
 
       <p className="mb-6 mt-1 text-sm text-slate-500">
-        Đảm bảo bạn đã kiểm tra kỹ các giấy tờ tùy thân và thông tin tổ chức trước khi đưa ra quyết định.
+        Trước khi phê duyệt, hãy xem xét thông tin tổ chức, minh chứng hoạt động, thông tin ngân hàng, cam kết trách nhiệm và các cảnh báo rủi ro liên quan.
       </p>
 
       <div className="flex justify-end gap-4">
@@ -229,7 +303,7 @@ export function OrganizerReviewActions({
       <ActionModal
         isOpen={approveModalOpen}
         onClose={() => setApproveModalOpen(false)}
-        onConfirm={(reviewReason) => onApprove({ reviewReason })}
+        onConfirm={(payload) => onApprove(payload)}
         isProcessing={isApproving}
         type="approve"
       />
@@ -237,7 +311,7 @@ export function OrganizerReviewActions({
       <ActionModal
         isOpen={declineModalOpen}
         onClose={() => setDeclineModalOpen(false)}
-        onConfirm={(reviewReason) => onDecline({ reviewReason })}
+        onConfirm={(payload) => onDecline(payload)}
         isProcessing={isDeclining}
         type="decline"
       />

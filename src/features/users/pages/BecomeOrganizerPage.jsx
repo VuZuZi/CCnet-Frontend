@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { organizerRequestAPI } from "../api/organizerRequestAPI";
 import { queryKeys } from "@/shared/constants/queryKeys";
 import OrganizerRequestForm from "../components/organizerRequest/OrganizerRequestForm";
+import BecomeOrganizerWizard from "../components/organizerRequest/BecomeOrganizerWizard";
 import OrganizerRequestStatusCard from "../components/organizerRequest/OrganizerRequestStatusCard";
 import MicroDepositVerification from "../components/organizerRequest/MicroDepositVerification";
 import { useOrganizerRequestForm } from "../hooks/useOrganizerRequestForm";
@@ -16,7 +17,7 @@ export function BecomeOrganizerPage() {
   });
 
   const { form, onSubmit, onDocumentChange, isSubmitting } =
-    useOrganizerRequestForm(request?.status === "DECLINED" ? request : null);
+    useOrganizerRequestForm(request?.status === "DECLINED" ? request : null, { omitIdentityDocuments: true });
 
   if (isLoading) {
     return (
@@ -51,7 +52,7 @@ export function BecomeOrganizerPage() {
         </div>
       )}
 
-      <OrganizerRequestForm
+      <BecomeOrganizerWizard
         form={form}
         onSubmit={onSubmit}
         onDocumentChange={onDocumentChange}
