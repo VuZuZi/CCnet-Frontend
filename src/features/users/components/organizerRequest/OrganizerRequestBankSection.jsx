@@ -75,6 +75,9 @@ export function OrganizerRequestBankSection({
         </div>
 
         <div className="md:col-span-2">
+          <p className="mb-3 text-sm text-gray-500">
+            Vui lòng tải lên minh chứng tài khoản ngân hàng (sao kê, ảnh màn hình app hoặc giấy xác nhận).
+          </p>
           <OrganizerDocumentField
             label="Minh chứng tài khoản"
             description="Ảnh hoặc PDF sao kê / xác nhận tài khoản"
