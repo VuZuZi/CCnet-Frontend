@@ -1,9 +1,4 @@
 import {
-  getPrimaryProjectAction,
-  buildProjectStatusOptions,
-} from "../../utils/projectAction.utils";
-import {
-  getAdminUIStatusStyle,
   mapProjectStatusToUI,
   normalizeProjectStatus,
 } from "../../utils/projectStatus.utils";
@@ -26,16 +21,14 @@ import AdminProjectCardFooterActions from "./AdminProjectCardFooterActions";
 export default function AdminProjectCard({
   project,
   pendingProjectId,
-  onRequestProjectAction,
-  onApprove,
   onOpenHistory,
   onOpenDetail,
+  onOpenReview,
+  onRequestProjectAction,
 }) {
   const realStatus = normalizeProjectStatus(project?.status);
   const uiStatus = mapProjectStatusToUI(realStatus);
   const tone = getCardTone(uiStatus);
-  const statusOptions = buildProjectStatusOptions(project);
-  const primaryAction = getPrimaryProjectAction(project);
 
   const { currentAmount, targetAmount, isFundraising, fundsPercent } =
     resolveFundingSummary(project);
@@ -58,8 +51,6 @@ export default function AdminProjectCard({
   const organizer = resolveProjectOrganizer(project);
 
   const isUpdatingThisProject = pendingProjectId === project._id;
-  const hasStatusOptions = statusOptions.length > 1;
-
   return (
     <div
       className={`group overflow-hidden rounded-2xl border shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md ${tone.card}`}
@@ -68,17 +59,11 @@ export default function AdminProjectCard({
         project={project}
         tone={tone}
         uiStatus={uiStatus}
-        realStatus={realStatus}
-        statusOptions={statusOptions}
-        primaryAction={primaryAction}
         organizer={organizer}
         coverUrl={coverUrl}
         documentsCount={documentsCount}
         descriptionText={descriptionText}
         isUpdatingThisProject={isUpdatingThisProject}
-        hasStatusOptions={hasStatusOptions}
-        onRequestProjectAction={onRequestProjectAction}
-        onApprove={onApprove}
         onOpenHistory={onOpenHistory}
       />
 
@@ -108,6 +93,8 @@ export default function AdminProjectCard({
           project={project}
           onOpenDetail={onOpenDetail}
           onOpenHistory={onOpenHistory}
+          onOpenReview={onOpenReview}
+          onRequestProjectAction={onRequestProjectAction}
         />
       </div>
     </div>

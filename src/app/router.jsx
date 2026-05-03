@@ -1,5 +1,5 @@
 import { createBrowserRouter, Outlet } from "react-router-dom";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, createElement } from "react";
 
 import { RootLayout } from "@/shared/components/layouts/RootLayout";
 import { AdminLayout } from "@/features/admin/components/AdminLayout";
@@ -17,6 +17,7 @@ import OrganizerRequestsPage from "@/features/admin/pages/OrganizerRequestsPage"
 import OrganizerRequestDetailPage from "@/features/admin/pages/OrganizerRequestDetailPage";
 import OrganizerActionLogsPage from "@/features/admin/pages/OrganizerActionLogsPage";
 import AdminProjectPreviewPage from "@/features/admin/pages/AdminProjectPreviewPage";
+import AdminProjectReviewPage from "@/features/admin/pages/AdminProjectReviewPage";
 import AdminNotificationsPage from "@/features/admin/pages/AdminNotificationsPage";
 import AdminNotificationHistoryPage from "@/features/admin/pages/AdminNotificationHistoryPage";
 import AdminActionLogsPage from "@/features/admin/pages/AdminActionLogsPage";
@@ -225,7 +226,7 @@ const MockAdminPage = ({ title }) => (
 
 const withSuspense = (Component) => (
   <Suspense fallback={<PageLoader />}>
-    <Component />
+    {createElement(Component)}
   </Suspense>
 );
 
@@ -434,6 +435,7 @@ export const router = createBrowserRouter([
       },
       { path: "need-help/:id", element: <AdminHelpRequestDetailPage /> },
       { path: "projects", element: <ProjectManagement /> },
+      { path: "projects/:id/review", element: <AdminProjectReviewPage /> },
       { path: "finance", element: <AdminFinanceSummaryPage /> },
       { path: "finance/:projectId", element: <AdminFinanceDetailPage /> },
       { path: "projects/:id", element: <AdminProjectPreviewPage /> },

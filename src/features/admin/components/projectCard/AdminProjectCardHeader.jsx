@@ -1,35 +1,25 @@
-import {
-  CheckCircle2,
-  History,
-  Loader2,
-  Mail,
-  Users,
-} from "lucide-react";
+import { History, Mail, Users } from "lucide-react";
 
 import {
   getAdminUIStatusLabel,
   getAdminUIStatusStyle,
   getProjectTypeLabel,
+  isReviewableProjectStatus,
 } from "../../utils/projectStatus.utils";
 
 export default function AdminProjectCardHeader({
   project,
   tone,
   uiStatus,
-  realStatus,
-  statusOptions,
-  primaryAction,
   organizer,
   coverUrl,
   documentsCount,
   descriptionText,
   isUpdatingThisProject,
-  hasStatusOptions,
-  onRequestProjectAction,
-  onApprove,
   onOpenHistory,
 }) {
   const statusStyle = getAdminUIStatusStyle(uiStatus);
+  const reviewStage = isReviewableProjectStatus(project?.status);
 
   return (
     <div className={`border-b ${tone.header}`}>
@@ -65,7 +55,7 @@ export default function AdminProjectCardHeader({
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-slate-100 text-base">
-                    📁
+                    -
                   </div>
                 )}
               </div>
@@ -96,55 +86,21 @@ export default function AdminProjectCardHeader({
             </div>
           </div>
 
-          <div className="flex w-full shrink-0 flex-col gap-2.5 xl:w-[240px]">
-            <select
-              value={realStatus}
-              onChange={(event) => {
-                const selectedStatus = event.target.value;
-                if (selectedStatus !== realStatus) {
-                  onRequestProjectAction(project, selectedStatus);
-                }
-              }}
-              disabled={isUpdatingThisProject || !hasStatusOptions}
-              className="h-10 w-full rounded-xl border border-amber-300 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition hover:border-amber-400 focus:border-amber-500 focus:ring-4 focus:ring-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
+          <div className="flex w-full shrink-0 flex-col items-end gap-2.5 xl:w-[220px]">
+            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs font-semibold leading-5 text-amber-800">
+              {reviewStage
+                ? "Mở cockpit kiểm duyệt để quyết định phê duyệt, yêu cầu chỉnh sửa hoặc từ chối."
+                : "Dùng thao tác vòng đời để tạm dừng, yêu cầu cập nhật, tiếp tục, hoàn thành hoặc hủy dự án."}
+            </p>
+            <button
+              type="button"
+              onClick={() => onOpenHistory(project)}
+              disabled={isUpdatingThisProject}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
+              title="Xem lịch sử"
             >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <div className="flex items-center justify-end gap-2">
-              {primaryAction ? (
-                <button
-                  type="button"
-                  onClick={() => onApprove(project)}
-                  disabled={isUpdatingThisProject}
-                  className={`${primaryAction.className} h-10 flex-1 rounded-xl shadow-sm`}
-                  title={primaryAction.title}
-                >
-                  {isUpdatingThisProject ? (
-                    <Loader2 size={16} className="animate-spin" />
-                  ) : (
-                    <>
-                      <CheckCircle2 size={16} />
-                      {primaryAction.label}
-                    </>
-                  )}
-                </button>
-              ) : null}
-
-              <button
-                type="button"
-                onClick={() => onOpenHistory(project)}
-                disabled={isUpdatingThisProject}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-amber-300 hover:bg-amber-50 hover:text-amber-700 disabled:cursor-not-allowed disabled:opacity-50"
-                title="Xem lịch sử"
-              >
-                <History size={16} />
-              </button>
-            </div>
+              <History size={16} />
+            </button>
           </div>
         </div>
       </div>
