@@ -14,6 +14,7 @@ import { ROUTES } from "@/shared/constants/routes";
 import { Button } from "@/shared/components/ui/Button/Button";
 import { ProjectCard } from "@/features/landing/components/ProjectCard";
 import { LandingFooter } from "@/features/landing/components/LandingFooter";
+import { PROJECT_QUERY_KEYS } from "@/features/project/hooks/useProjectQueries";
 import {
   impactJourneys,
   transparencyPromises,
@@ -131,7 +132,7 @@ function AnimatedMetric({ label, value, formatter, accent = "amber" }) {
 
 export function LandingPage() {
   const landingMetricsQuery = useQuery({
-    queryKey: ["landing", "metrics"],
+    queryKey: PROJECT_QUERY_KEYS.landingMetrics,
     queryFn: () => projectAPI.getLandingMetrics(),
     staleTime: 10 * 1000,
     refetchInterval: 20 * 1000,
