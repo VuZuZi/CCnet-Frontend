@@ -42,6 +42,12 @@ const AdminDashboard = () => {
   const pendingReports = useMemo(() => getPendingReports(reports), [reports]);
   const finance = stats?.finance || {};
 
+  const totalInbound =
+    Number(finance?.inbound?.projectDonations || 0) +
+    Number(finance?.inbound?.supportDonations || 0);
+  const totalOutbound = Number(finance?.outbound?.disbursements || 0);
+  const netCashFlow = totalInbound - totalOutbound;
+
   const handleActionClick = (reportId) => {
     setSelectedReport(reportId);
   };
@@ -85,21 +91,52 @@ const AdminDashboard = () => {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(360px,0.8fr)]">
         <div className="overflow-hidden rounded-[30px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] shadow-[0_16px_45px_rgba(15,23,42,0.06)]">
           <div className="border-b border-amber-100 px-5 py-5 md:px-6">
-            <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-amber-100 p-3 text-amber-700">
-                <Landmark size={20} />
-              </div>
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.12em] text-amber-700">
-                  Vận hành tài chính
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div className="min-w-0">
+                <div className="flex items-center gap-3">
+                  <div className="rounded-2xl bg-amber-100 p-3 text-amber-700">
+                    <Landmark size={20} />
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-black uppercase tracking-[0.12em] text-amber-700">
+                      Vận hành tài chính
+                    </p>
+                    <h2 className="mt-1 text-xl font-black text-slate-900">
+                      Tổng quan quỹ và giải ngân
+                    </h2>
+                  </div>
+                </div>
+
+                <p className="mt-4 max-w-3xl text-sm leading-6 text-slate-500">
+                  Gom các dòng tiền chính về một chỗ để theo dõi tốc độ vào, ra và phần
+                  chênh lệch đang còn trong hệ thống.
                 </p>
-                <h2 className="mt-1 text-xl font-black text-slate-900">
-                  Tổng quan quỹ và giải ngân
-                </h2>
               </div>
+
+              <div className="inline-flex w-fit items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-[11px] font-black uppercase tracking-[0.08em] text-amber-800 shadow-sm">
+                Dòng tiền trung tâm
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-3">
+              <FinanceSnapshotCard
+                label="Tổng dòng tiền vào"
+                value={formatMoney(totalInbound)}
+                tone="emerald"
+              />
+              <FinanceSnapshotCard
+                label="Tổng dòng tiền ra"
+                value={formatMoney(totalOutbound)}
+                tone="sky"
+              />
+              <FinanceSnapshotCard
+                label="Chênh lệch thu chi"
+                value={formatMoney(netCashFlow)}
+                tone="slate"
+              />
             </div>
           </div>
 
@@ -131,84 +168,46 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="grid gap-6">
-          <DashboardListCard
-            title="Dự án có nguồn quỹ nổi bật"
-            subtitle="Những dự án đang có nguồn lực tốt để tiếp tục triển khai và giải ngân đúng tiến độ."
-            items={finance?.projectBalances || []}
-            renderItem={(item, index) => (
-              <div
-                key={`${item.title}-${index}`}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-slate-900">
-                      {item.title}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                      {getStatusLabel(item.status)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-black text-slate-900">
-                      {formatMoney(item.availableBalance)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Đã giải ngân: {formatMoney(item.totalDisbursed)}
-                    </p>
-                  </div>
+        <DashboardListCard
+          title="Giải ngân gần nhất"
+          subtitle="Theo dõi các khoản chuyển tiền mới nhất để nắm tiến độ xử lý."
+          items={finance?.recentDisbursements || []}
+          renderItem={(item) => (
+            <div
+              key={item.id}
+              className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-black text-slate-900">
+                    {item.projectTitle}
+                  </p>
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
+                    {getStatusLabel(item.status)}
+                  </p>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-slate-500">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">
-                    Đang chờ giải ngân: {formatMoney(item.pendingDisbursementAmount)}
-                  </span>
+                <div className="text-right">
+                  <p className="text-sm font-black text-slate-900">
+                    {formatMoney(item.approvedAmount || item.requestedAmount)}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Yêu cầu: {formatMoney(item.requestedAmount)}
+                  </p>
                 </div>
               </div>
-            )}
-          />
-
-          <DashboardListCard
-            title="Giải ngân gần nhất"
-            subtitle="Theo dõi các khoản chuyển tiền mới nhất để nắm tiến độ xử lý."
-            items={finance?.recentDisbursements || []}
-            renderItem={(item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-slate-900">
-                      {item.projectTitle}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                      {getStatusLabel(item.status)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-black text-slate-900">
-                      {formatMoney(item.approvedAmount || item.requestedAmount)}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Yêu cầu: {formatMoney(item.requestedAmount)}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-slate-500">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">
-                    Ref: {item.bankTransactionRef || "Chưa chuyển"}
-                  </span>
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-sky-700">
-                    {item.transferredAt
-                      ? new Date(item.transferredAt).toLocaleString("vi-VN")
-                      : "Chưa có thời điểm chuyển"}
-                  </span>
-                </div>
+              <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-slate-500">
+                <span className="rounded-full bg-slate-100 px-3 py-1">
+                  Ref: {item.bankTransactionRef || "Chưa chuyển"}
+                </span>
+                <span className="rounded-full bg-sky-50 px-3 py-1 text-sky-700">
+                  {item.transferredAt
+                    ? new Date(item.transferredAt).toLocaleString("vi-VN")
+                    : "Chưa có thời điểm chuyển"}
+                </span>
               </div>
-            )}
-          />
-        </div>
+            </div>
+          )}
+        />
       </section>
 
       <section className="min-w-0 overflow-hidden rounded-[30px] border border-amber-100 bg-[linear-gradient(180deg,#FFFDF7_0%,#FFFFFF_100%)] shadow-[0_16px_45px_rgba(15,23,42,0.06)]">
@@ -224,7 +223,8 @@ const AdminDashboard = () => {
               </h2>
 
               <p className="mt-1 text-sm leading-6 text-slate-500">
-                Danh sách các báo cáo đang chờ xử lý để quản trị viên kiểm duyệt nhanh và chính xác hơn.
+                Danh sách các báo cáo đang chờ xử lý để quản trị viên kiểm duyệt nhanh
+                và chính xác hơn.
               </p>
             </div>
 
@@ -278,6 +278,26 @@ const AdminDashboard = () => {
 
 function HeartIcon(props) {
   return <HeartHandshake {...props} />;
+}
+
+function FinanceSnapshotCard({ label, value, tone = "emerald" }) {
+  const toneMap = {
+    amber: "border-amber-100 bg-amber-50/70 text-amber-900",
+    emerald: "border-emerald-100 bg-emerald-50/70 text-emerald-900",
+    sky: "border-sky-100 bg-sky-50/70 text-sky-900",
+    slate: "border-slate-200 bg-slate-50 text-slate-900",
+  };
+
+  return (
+    <div
+      className={`rounded-2xl border px-4 py-3 shadow-sm ${toneMap[tone] || toneMap.emerald}`}
+    >
+      <p className="text-[11px] font-black uppercase tracking-[0.12em] text-slate-500">
+        {label}
+      </p>
+      <p className="mt-2 text-lg font-black leading-tight">{value}</p>
+    </div>
+  );
 }
 
 function FinanceMiniCard({ icon: Icon, label, value, tone = "amber" }) {
