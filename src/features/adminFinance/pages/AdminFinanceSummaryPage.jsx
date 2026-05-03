@@ -68,89 +68,6 @@ export default function AdminFinanceSummaryPage() {
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <FinancePanel
-          title="Dự án có nguồn quỹ nổi bật"
-          subtitle="Những dự án đang có nguồn lực tốt để tiếp tục triển khai."
-        >
-          <div className="space-y-3">
-            {(overview.projectBalances || []).map((item, index) => (
-              <div
-                key={`${item.title}-${index}`}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-slate-900">
-                      {item.title}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                      {getStatusLabel(item.status)}
-                    </p>
-                  </div>
-                  <p className="text-sm font-black text-slate-900">
-                    {formatProjectCurrencyVND(item.availableBalance)}
-                  </p>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-slate-500">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">
-                    Đã giải ngân {formatProjectCurrencyVND(item.totalDisbursed)}
-                  </span>
-                  <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
-                    Đang chờ {formatProjectCurrencyVND(item.pendingDisbursementAmount)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </FinancePanel>
-
-        <FinancePanel
-          title="Giải ngân gần nhất"
-          subtitle="Các khoản chuyển tiền mới nhất giúp bạn theo dõi tiến độ triển khai."
-        >
-          <div className="space-y-3">
-            {(overview.recentDisbursements || []).map((item) => (
-              <div
-                key={item.id}
-                className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-black text-slate-900">
-                      {item.projectTitle}
-                    </p>
-                    <p className="mt-1 text-xs font-semibold uppercase tracking-[0.08em] text-slate-400">
-                      {getStatusLabel(item.status)}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-black text-slate-900">
-                      {formatProjectCurrencyVND(
-                        item.approvedAmount || item.requestedAmount,
-                      )}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-500">
-                      Yêu cầu {formatProjectCurrencyVND(item.requestedAmount)}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-bold text-slate-500">
-                  <span className="rounded-full bg-slate-100 px-3 py-1">
-                    Ref: {item.bankTransactionRef || "Chưa có"}
-                  </span>
-                  <span className="rounded-full bg-sky-50 px-3 py-1 text-sky-700">
-                    {item.transferredAt
-                      ? new Date(item.transferredAt).toLocaleString("vi-VN")
-                      : "Chưa chuyển"}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </FinancePanel>
-      </section>
-
       <div className="min-w-0 overflow-hidden rounded-[32px] border border-slate-100 bg-white shadow-sm">
         <div className="ccnet-safe-scroll">
           <table
@@ -268,18 +185,6 @@ function OverviewCard({ icon: Icon, tone, title, value, subtitle }) {
           <Icon size={20} className="text-slate-700" />
         </div>
       </div>
-    </div>
-  );
-}
-
-function FinancePanel({ title, subtitle, children }) {
-  return (
-    <div className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-100 px-5 py-5 md:px-6">
-        <h3 className="text-lg font-black text-slate-900">{title}</h3>
-        <p className="mt-1 text-sm leading-6 text-slate-500">{subtitle}</p>
-      </div>
-      <div className="p-5 md:p-6">{children}</div>
     </div>
   );
 }
