@@ -79,7 +79,7 @@ export const useTransferActionMutation = (actionType, options = {}) => {
         retry: false,
         ...options,
         onSuccess: (data, variables, context) => {
-            toast.success(actionType === 'confirm' ? 'Xác nhận chuyển khoản thành công!' : 'Đã báo lỗi chuyển khoản cho nhà tổ chức!');
+            toast.success(actionType === 'confirm' ? 'Xác nhận chuyển khoản thành công!' : 'Đã báo lỗi chuyển khoản cho tổ chức!');
             queryClient.invalidateQueries({ queryKey: DISBURSEMENT_QUERY_KEYS.detail(variables.id) });
             
             const projectId = data?.projectId?._id || data?.projectId;

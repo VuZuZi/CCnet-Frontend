@@ -11,7 +11,7 @@ export function DisbursementMultiSigProgress({ request }) {
     const isTransferDone = request.status === 'COMPLETED';
 
     const steps = [];
-    steps.push({ label: 'Nhà tổ chức yêu cầu', status: 'DONE' });
+    steps.push({ label: 'Tổ chức yêu cầu', status: 'DONE' });
 
     if (required === 1) {
         steps.push({

@@ -21,21 +21,33 @@ export const cleanProjectFilters = (filters = {}) =>
 
 export const PROJECT_QUERY_KEYS = {
   all: PROJECT_BASE_KEY,
+
   explore: (filters = {}) => [
     ...PROJECT_BASE_KEY,
     "explore",
     cleanProjectFilters(filters),
   ],
+
   workspace: (filters = {}) => [
     ...PROJECT_BASE_KEY,
     "workspace",
     cleanProjectFilters(filters),
   ],
+
   detail: (id) => [...PROJECT_BASE_KEY, "detail", id],
+
   draftDetail: (id) => [...PROJECT_BASE_KEY, "draft-detail", id],
+
+  revisionDetail: (id) => [...PROJECT_BASE_KEY, "revision-detail", id],
+
+  rejectedEditSeed: (id) => [...PROJECT_BASE_KEY, "rejected-edit-seed", id],
+
   updatingDetail: (id) => [...PROJECT_BASE_KEY, "updating-detail", id],
+
   featured: [...PROJECT_BASE_KEY, "featured"],
+
   volunteerNeeded: [...PROJECT_BASE_KEY, "volunteer-needed"],
+
   categoryCount: (filters = {}, category) => [
     ...PROJECT_BASE_KEY,
     "category-count",
@@ -85,6 +97,22 @@ export const useProjectDraftDetail = (id) =>
     queryKey: PROJECT_QUERY_KEYS.draftDetail(id),
     queryFn: () => projectAPI.getDraftDetail(id),
     enabled: Boolean(id),
+    staleTime: 60 * 1000,
+  });
+
+export const useProjectRevisionDetail = (id) =>
+  useQuery({
+    queryKey: PROJECT_QUERY_KEYS.revisionDetail(id),
+    queryFn: () => projectAPI.getRevisionDetail(id),
+    enabled: Boolean(id),
+    staleTime: 60 * 1000,
+  });
+
+export const useRejectedProjectEditSeed = (id, enabled = true) =>
+  useQuery({
+    queryKey: PROJECT_QUERY_KEYS.rejectedEditSeed(id),
+    queryFn: () => projectAPI.seedRejectedProjectForEdit(id),
+    enabled: Boolean(id) && Boolean(enabled),
     staleTime: 60 * 1000,
   });
 

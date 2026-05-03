@@ -86,7 +86,7 @@ export default function useAdminProjectPreviewPage() {
 
       toast.success(
         modalState.intent === PROJECT_INTENTS.REVISION
-          ? "Đã gửi yêu cầu chỉnh sửa đến nhà tổ chức."
+          ? "Đã gửi yêu cầu chỉnh sửa đến tổ chức."
           : "Dự án đã bị từ chối."
       );
 

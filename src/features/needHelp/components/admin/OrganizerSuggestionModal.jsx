@@ -120,10 +120,10 @@ function OrganizerPreviewCard({ organizer }) {
           <UserRound size={28} className="text-slate-300" />
         </div>
         <p className="text-sm font-semibold text-slate-500">
-          Di chuột lên một nhà tổ chức
+          Di chuột lên một tổ chức
         </p>
         <p className="mt-1 text-xs leading-6 text-slate-400">
-          Xem trước chi tiết hồ sơ và độ phù hợp trước khi giao.
+          Xem trước chi tiết hồ sơ và độ phù hợp trước khi gợi ý.
         </p>
       </div>
     );
@@ -301,7 +301,7 @@ function OrganizerRow({
 }) {
   const isHovered = hoveredOrganizer?._id === organizer._id;
   const locationText = getLocationText(organizer.location, '');
-  const subtitle = locationText || organizer.email || 'Hồ sơ nhà tổ chức';
+  const subtitle = locationText || organizer.email || 'Hồ sơ tổ chức';
   const score = organizer.match?.score ?? 0;
 
   return (
@@ -355,7 +355,7 @@ function OrganizerRow({
         disabled={isAssigning}
         className="shrink-0 rounded-xl bg-amber-500 px-4 py-2 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Giao
+        gợi ý
       </button>
     </div>
   );
@@ -392,7 +392,7 @@ export function OrganizerSuggestionModal({
           <div className="mb-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-amber-700">
               <Sparkles size={13} />
-              Xem trước nhà tổ chức
+              Xem trước tổ chức
             </div>
           </div>
 
@@ -403,10 +403,10 @@ export function OrganizerSuggestionModal({
           <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-6">
             <div>
               <h3 className="text-xl font-bold tracking-tight text-slate-900">
-                Giao nhà tổ chức
+                Gợi ý cho tổ chức
               </h3>
               <p className="mt-1 text-sm text-slate-500">
-                Duyệt gợi ý, xem trước hồ sơ và giao cho người phù hợp nhất.
+                Duyệt gợi ý, xem trước hồ sơ và gợi ý cho người phù hợp nhất.
               </p>
             </div>
 
@@ -428,7 +428,7 @@ export function OrganizerSuggestionModal({
               <input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Tìm nhà tổ chức theo tên, email hoặc địa điểm..."
+                placeholder="Tìm tổ chức theo tên, email hoặc địa điểm..."
                 className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
               />
             </label>
@@ -438,7 +438,7 @@ export function OrganizerSuggestionModal({
             {isLoading ? (
               <div className="flex items-center justify-center py-14 text-slate-500">
                 <Loader2 size={18} className="mr-2 animate-spin" />
-                Đang tải danh sách nhà tổ chức...
+                Đang tải danh sách tổ chức...
               </div>
             ) : null}
 
@@ -446,13 +446,13 @@ export function OrganizerSuggestionModal({
               <div className="rounded-[22px] border border-rose-200 bg-rose-50 px-6 py-10 text-center text-sm text-rose-600">
                 {error?.response?.data?.message ||
                   error?.message ||
-                  'Không thể tải danh sách nhà tổ chức.'}
+                  'Không thể tải danh sách tổ chức.'}
               </div>
             ) : null}
 
             {!isLoading && !isError && !organizers.length ? (
               <div className="rounded-[22px] border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500">
-                Không tìm thấy nhà tổ chức phù hợp với bộ lọc này.
+                Không tìm thấy tổ chức phù hợp với bộ lọc này.
               </div>
             ) : null}
 

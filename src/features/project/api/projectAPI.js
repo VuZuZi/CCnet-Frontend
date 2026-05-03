@@ -51,12 +51,26 @@ const sanitizeMediaPayload = (mediaArray) => {
     .filter((media) => media._id || (media.url && media.publicId));
 };
 
+const normalizeCoverMediaForForm = (coverMedia) => {
+  if (!coverMedia) return [];
+
+  if (Array.isArray(coverMedia)) {
+    return coverMedia.filter(Boolean);
+  }
+
+  if (coverMedia.url || coverMedia.publicId || coverMedia._id) {
+    return [coverMedia];
+  }
+
+  return [];
+};
 
 const sanitizeVolunteerRoles = (roles) => {
   if (!Array.isArray(roles)) return undefined;
 
   return roles
     .map((role) => ({
+      roleId: role?.roleId || undefined,
       title: String(role?.title || "").trim(),
       quantity: Number(role?.quantity || 0),
       skillsRequired: Array.isArray(role?.skillsRequired)
@@ -120,6 +134,55 @@ const prepareUpdatingPayload = (data = {}) => ({
   milestones: sanitizeMilestones(data?.milestones) || [],
 });
 
+const mapProjectToDraftForm = (project = {}) => ({
+  projectType: project?.projectType || "FUNDED",
+  title: project?.title || "",
+  category: project?.category || "",
+  location: project?.location || null,
+  description: project?.description || "",
+  beneficiaryInfo: project?.beneficiaryInfo || { details: "" },
+
+  startDate: project?.startDate || "",
+  endDate: project?.endDate || "",
+
+  targetAmount: Number(project?.targetAmount || 0),
+
+  milestones: Array.isArray(project?.milestones)
+    ? project.milestones.map((milestone) => ({
+        milestoneId: milestone?.milestoneId || undefined,
+        title: milestone?.title || "",
+        description: milestone?.description || "",
+        targetAmount: Number(milestone?.targetAmount || 0),
+        startDate: milestone?.startDate || "",
+        endDate: milestone?.endDate || "",
+        deliverables: milestone?.deliverables || "",
+        location: milestone?.location || null,
+        evidencePolicy: milestone?.evidencePolicy || null,
+      }))
+    : [],
+
+  needsVolunteers: Boolean(project?.needsVolunteers),
+
+  volunteerRoles: Array.isArray(project?.volunteerRoles)
+    ? project.volunteerRoles.map((role) => ({
+        roleId: role?.roleId || undefined,
+        title: role?.title || "",
+        quantity: Number(role?.quantity || 0),
+        skillsRequired: Array.isArray(role?.skillsRequired)
+          ? role.skillsRequired
+          : [],
+        location: role?.location || "",
+        duration: role?.duration || "",
+      }))
+    : [],
+
+  coverMedia: normalizeCoverMediaForForm(project?.coverMedia),
+  documents: Array.isArray(project?.documents) ? project.documents : [],
+  deletedDocumentIds: [],
+
+  fromHelpRequestId: project?.fromHelpRequestId || null,
+});
+
 const getData = (response) => response.data?.data;
 
 export const projectAPI = {
@@ -177,6 +240,33 @@ export const projectAPI = {
   async getDraftDetail(id) {
     const response = await httpClient.get(`/project/${id}/draft`);
     return getData(response);
+  },
+
+  async getRevisionDetail(id) {
+    const response = await httpClient.get(`/project/${id}/revision`);
+    return getData(response);
+  },
+
+  async updateRevision({ id, data }) {
+    const response = await httpClient.put(
+      `/project/${id}/revision`,
+      prepareProjectPayload(data),
+    );
+    return getData(response);
+  },
+
+  async resubmitRevision(id) {
+    const response = await httpClient.post(`/project/${id}/resubmit`);
+    return getData(response);
+  },
+
+  async seedRejectedProjectForEdit(id) {
+    const project = await this.getRevisionDetail(id);
+
+    return {
+      project,
+      formData: mapProjectToDraftForm(project),
+    };
   },
 
   async getUpdatingDetail(id) {

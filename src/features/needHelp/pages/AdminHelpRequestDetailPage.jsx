@@ -38,7 +38,7 @@ function AdminDetailHeader({ title }) {
             </h1>
 
             <p className="mt-3 max-w-2xl break-words text-sm leading-7 text-slate-500 sm:text-base">
-              Theo dõi đầy đủ nội dung yêu cầu, thông tin hỗ trợ và gán nhà tổ chức phù hợp
+              Theo dõi đầy đủ nội dung yêu cầu, thông tin hỗ trợ và gợi ý tổ chức phù hợp
               trong không gian quản trị rõ ràng hơn.
             </p>
           </div>

@@ -21,11 +21,11 @@ import { useDebounce } from "@/shared/hooks/useDebounce";
 
 const ACTION_META = {
   HELP_REQUEST_ASSIGNED: {
-    label: "Đã giao",
+    label: "Đã gợi ý",
     className: "border-amber-200 bg-amber-50 text-amber-700",
   },
   HELP_REQUEST_REASSIGNED: {
-    label: "Giao lại",
+    label: "Gợi ý lại",
     className: "border-orange-200 bg-orange-50 text-orange-700",
   },
   HELP_REQUEST_VERIFIED: {
@@ -209,7 +209,7 @@ function LogCard({ log, isLast }) {
 
                 {organizerName ? (
                   <InfoPill icon={UserCircle2} tone="amber">
-                    Nhà tổ chức: {organizerName}
+                    Tổ chức: {organizerName}
                   </InfoPill>
                 ) : null}
 
@@ -249,7 +249,7 @@ function LogCard({ log, isLast }) {
               {organizerName || organizerEmail ? (
                 <div className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4">
                   <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Nhà tổ chức được giao
+                      Tổ chức được gợi ý
                   </p>
                   <p className="mt-2 text-sm font-bold text-slate-900">
                     {organizerName || "--"}
@@ -289,21 +289,21 @@ function LogCard({ log, isLast }) {
                 log?.nextState?.assignedOrganizerId ? (
                   <div className="mt-4 flex flex-wrap items-center gap-2">
                     <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
-                      Giao việc
+                      gợi ý tổ chức
                     </span>
 
                     <span className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-semibold text-slate-600">
                       {log?.previousState?.assignedOrganizerId
-                        ? "Đã có nhà tổ chức"
-                        : "Chưa có nhà tổ chức"}
+                        ? "Đã có tổ chức"
+                        : "Chưa có tổ chức"}
                     </span>
 
                     <span className="text-slate-400">→</span>
 
                     <span className="inline-flex items-center rounded-full border border-amber-200 bg-white px-3 py-1 text-sm font-semibold text-amber-700">
                       {log?.nextState?.assignedOrganizerId
-                        ? "Đã giao"
-                        : "Bỏ giao"}
+                        ? "Đã gợi ý"
+                        : "Bỏ gợi ý"}
                     </span>
                   </div>
                 ) : null}
@@ -412,7 +412,7 @@ export function AdminNeedHelpActionLogsPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Theo dõi hoạt động kiểm duyệt, luồng giao việc cho nhà tổ chức và
+                Theo dõi hoạt động kiểm duyệt, luồng gợi ý cho tổ chức và
                 các cập nhật quan trọng trong một dòng thời gian rõ ràng.
               </p>
             </div>
@@ -426,7 +426,7 @@ export function AdminNeedHelpActionLogsPage() {
               />
               <SummaryCard
                 icon={History}
-                label="Lượt giao việc"
+                label="Lượt gợi ý"
                 value={stats.assigned}
                 tone="slate"
               />
@@ -450,7 +450,7 @@ export function AdminNeedHelpActionLogsPage() {
           <input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Tìm theo tiêu đề yêu cầu, quản trị viên, nhà tổ chức hoặc lý do..."
+            placeholder="Tìm theo tiêu đề yêu cầu, quản trị viên, tổ chức hoặc lý do..."
             className="h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-700 outline-none transition-all focus:border-amber-400 focus:bg-white focus:ring-4 focus:ring-amber-100"
           />
         </label>

@@ -14,8 +14,8 @@ const FIELD_CONFIG = {
     description: 'Cập nhật quan trọng liên quan đến các dự án.',
   },
   organizerRequestEnabled: {
-    label: 'Cập nhật yêu cầu nhà tổ chức',
-    description: 'Thay đổi trạng thái cho ứng dụng nhà tổ chức của bạn.',
+    label: 'Cập nhật yêu cầu tổ chức',
+    description: 'Thay đổi trạng thái cho ứng dụng tổ chức của bạn.',
   },
 };
 

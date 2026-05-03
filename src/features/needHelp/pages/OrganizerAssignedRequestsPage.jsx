@@ -36,13 +36,13 @@ const TAB_OPTIONS = [
   {
     key: 'pending',
     label: 'Đang chờ xử lý',
-    emptyText: 'Hiện tại không có giao việc nào đang chờ xử lý.',
+    emptyText: 'Hiện tại không có gợi ý nào đang chờ xử lý.',
     helper: 'Các yêu cầu đang chờ xác nhận của bạn.',
   },
   {
     key: 'accepted',
     label: 'Đã chấp nhận',
-    emptyText: 'Bạn chưa chấp nhận bất kỳ giao việc nào.',
+    emptyText: 'Bạn chưa chấp nhận bất kỳ gợi ý nào.',
     helper: 'Các yêu cầu đang xử lý của bạn.',
   },
 ];
@@ -97,11 +97,11 @@ function RejectConfirmModal({
             id="reject-assignment-title"
             className="text-2xl font-black tracking-tight text-slate-950"
           >
-            Từ chối giao việc
+            Từ chối gợi ý
           </h3>
 
           <div className="mt-4 space-y-3 text-sm leading-7 text-slate-500 sm:text-base">
-            <p>Bạn có chắc chắn muốn từ chối giao việc cho</p>
+            <p>Bạn có chắc chắn muốn từ chối gợi ý cho</p>
 
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
               <p
@@ -113,7 +113,7 @@ function RejectConfirmModal({
               </p>
             </div>
 
-            <p>Yêu cầu này sẽ được trả lại cho quản trị viên để gán lại.</p>
+            <p>Yêu cầu này sẽ được trả lại cho quản trị viên để gợi ý lại.</p>
           </div>
 
           <div className="mt-7 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
@@ -137,7 +137,7 @@ function RejectConfirmModal({
               ) : (
                 <XIcon size={16} strokeWidth={3} />
               )}
-              {isPending ? 'Đang từ chối...' : 'Từ chối giao việc'}
+              {isPending ? 'Đang từ chối...' : 'Từ chối gợi ý'}
             </button>
           </div>
         </div>
@@ -410,15 +410,15 @@ export function OrganizerAssignedRequestsPage() {
             <div className="max-w-3xl">
               <div className="inline-flex items-center gap-2 rounded-full border border-amber-300 bg-amber-50 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-amber-700">
                 <Sparkles size={14} />
-                Trung tâm giao việc cho nhà tổ chức
+                Trung tâm gợi ý cho tổ chức
               </div>
 
               <h1 className="mt-4 text-3xl font-black tracking-tight text-slate-950 sm:text-5xl">
-                Các yêu cầu trợ giúp đã giao
+                Các yêu cầu trợ giúp đã gợi ý
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Kiểm duyệt các yêu cầu được admin giao, xác nhận những yêu cầu
+                Kiểm duyệt các yêu cầu được admin gợi ý, xác nhận những yêu cầu
                 bạn có thể xử lý, và tiếp tục dòng công việc hỗ trợ với không
                 gian làm việc sạch hơn.
               </p>
@@ -444,7 +444,7 @@ export function OrganizerAssignedRequestsPage() {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-sm font-semibold text-slate-900">
-              Hàng chờ giao việc
+              Hàng chờ gợi ý
             </p>
             <p className="mt-1 text-sm text-slate-500">
               {currentTabConfig?.helper}

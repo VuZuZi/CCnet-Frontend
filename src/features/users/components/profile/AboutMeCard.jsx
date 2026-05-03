@@ -24,7 +24,7 @@ export function AboutMeCard({
   return (
     <article className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm">
       <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-gray-400">
-        {isOrganizer ? "Giới thiệu nhà tổ chức" : "Giới thiệu bản thân"}
+        {isOrganizer ? "Giới thiệu tổ chức" : "Giới thiệu bản thân"}
       </h2>
 
       <div className="space-y-4">
@@ -32,7 +32,7 @@ export function AboutMeCard({
           <p className="text-sm leading-relaxed text-gray-600">
             {about ||
               (isOrganizer
-                ? "Nhà tổ chức này chưa thêm mô tả về tổ chức."
+                ? "Tổ chức này chưa thêm mô tả về tổ chức."
                 : "Người dùng này chưa viết gì về bản thân.")}
           </p>
         </div>
@@ -41,7 +41,7 @@ export function AboutMeCard({
           <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
             <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-emerald-800">
               <ShieldCheck className="h-4 w-4" />
-              Nhà tổ chức đã xác minh
+              Tổ chức đã xác minh
             </div>
             <p className="text-sm text-emerald-700">{organization.name}</p>
           </div>

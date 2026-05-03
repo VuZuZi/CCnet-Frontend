@@ -10,7 +10,7 @@ export default function NotificationList({ items, onRead, onDelete, onClose }) {
         </div>
           <h4 className="text-base font-bold text-slate-800">Chưa có thông báo nào</h4>
         <p className="mt-2 max-w-xs text-sm leading-6 text-slate-500">
-          Khi có cập nhật mới từ dự án, yêu cầu nhà tổ chức hoặc hệ thống, chúng sẽ xuất hiện ở đây.
+          Khi có cập nhật mới từ dự án, yêu cầu tổ chức hoặc hệ thống, chúng sẽ xuất hiện ở đây.
         </p>
       </div>
     );

@@ -20,7 +20,7 @@ export const impactJourneys = [
   {
     id: 'organize',
     icon: ShieldCheck,
-    title: 'Trở thành một Nhà tổ chức',
+    title: 'Trở thành một Tổ chức',
     description: 'Khởi động phong trào xã hội của riêng bạn, dẫn dắt thay đổi và quản lý tác động của bạn với sự minh bạch hoàn toàn.',
     iconBg: 'bg-blue-100',
     iconColor: 'text-blue-600',
@@ -61,7 +61,7 @@ export const mockProjects = [
 ];
 
 export const transparencyPromises = [
-  { id: 'kyc', icon: UserCheck, text: 'Mọi nhà tổ chức đều được xác minh KYC.' },
+  { id: 'kyc', icon: UserCheck, text: 'Mọi tổ chức đều được xác minh KYC.' },
   { id: 'ledger', icon: LineChart, text: 'Mọi giao dịch được theo dõi trên sổ cái công khai của chúng tôi.' },
   { id: 'proof', icon: ClipboardCheck, text: 'Mỗi dự án đều yêu cầu bằng chứng giải ngân để phát hành quỹ.' },
 ];

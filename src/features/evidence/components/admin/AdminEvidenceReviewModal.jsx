@@ -295,7 +295,7 @@ export function AdminEvidenceReviewModal({ evidenceId, onClose }) {
                                 <div className="space-y-2">
                                     <label className="text-[9px] font-black uppercase text-slate-400 tracking-widest px-1">Lý do phản hồi</label>
                                     <textarea
-                                        placeholder="Nhập lý do chi tiết cho nhà tổ chức..."
+                                        placeholder="Nhập lý do chi tiết cho tổ chức..."
                                         value={reviewNotes}
                                         onChange={(e) => setReviewNotes(e.target.value)}
                                         className="w-full rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs min-h-[100px] outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all shadow-inner"

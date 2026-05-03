@@ -84,7 +84,7 @@ export default function NotificationSettingsModal({
         <div className="max-h-[75vh] overflow-y-auto px-6 py-6">
           {!isAllowedRole ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">
-              Cài đặt thông báo chỉ khả dụng cho các tài khoản người dùng và nhà tổ chức.
+              Cài đặt thông báo chỉ khả dụng cho các tài khoản người dùng và tổ chức.
             </div>
           ) : settingsQuery.isLoading ? (
             <div className="rounded-2xl border border-slate-200 bg-slate-50 p-6 text-sm text-slate-500">

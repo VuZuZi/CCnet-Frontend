@@ -68,7 +68,7 @@ export const getRoleLabel = (role) => {
   const normalized = String(role || "").toLowerCase();
 
   if (normalized === "admin") return "Quản trị viên";
-  if (normalized === "organizer") return "Nhà tổ chức";
+  if (normalized === "organizer") return "Tổ chức";
   if (normalized === "user") return "Người dùng";
 
   return role || "Người dùng";

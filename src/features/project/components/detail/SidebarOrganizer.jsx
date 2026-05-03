@@ -47,7 +47,7 @@ export function SidebarOrganizer({
         <div>
           <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/25 bg-[#FFFBEB] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-[#B45309]">
             <Sparkles size={11} />
-            Chế độ nhà tổ chức
+            Chế độ tổ chức
           </div>
           <h2 className="text-lg font-extrabold text-slate-900">Quản lý dự án</h2>
           <p className="mt-1 text-sm text-slate-500">
@@ -58,7 +58,7 @@ export function SidebarOrganizer({
         <div className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-3 py-1.5 text-white shadow-sm">
           <ShieldCheck className="h-4 w-4" />
           <span className="text-[11px] font-bold uppercase tracking-[0.14em]">
-            Nhà tổ chức
+           Tổ chức
           </span>
         </div>
       </div>

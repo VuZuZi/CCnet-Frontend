@@ -32,7 +32,7 @@ export function OrganizerRequestForm({
     <form onSubmit={onSubmit} className="space-y-6">
       <div className="mb-8 text-center">
         <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
-          Đăng ký trở thành nhà tổ chức
+          Đăng ký trở thành tổ chức
         </h1>
         <p className="mt-3 text-sm text-slate-500 md:text-base">
           Gửi hồ sơ xác minh để tạo và quản lý các dự án thiện nguyện.

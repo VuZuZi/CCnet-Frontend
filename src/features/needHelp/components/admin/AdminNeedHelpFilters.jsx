@@ -38,7 +38,7 @@ export function AdminNeedHelpFilters({ filters, onChange }) {
               Bảng điều khiển
             </div>
             <p className="mt-3 text-sm text-slate-500">
-              Tìm kiếm và thu hẹp yêu cầu trước khi mở quy trình giao việc.
+              Tìm kiếm và thu hẹp yêu cầu trước khi mở quy trình gợi ý.
             </p>
           </div>
         </div>

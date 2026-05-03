@@ -15,7 +15,7 @@ export default function ProjectOrganizerCard({
       }}
     >
       <div className="mb-4 flex items-center justify-between">
-        <h4 className="text-base font-black text-slate-900">Nhà tổ chức</h4>
+        <h4 className="text-base font-black text-slate-900">Tổ chức</h4>
 
         {canOpenOrganizerProfile ? (
           <div className="inline-flex items-center gap-1 text-xs font-bold text-amber-700">
@@ -30,7 +30,7 @@ export default function ProjectOrganizerCard({
           {organizer?.avatar ? (
             <img
               src={organizer.avatar}
-              alt="Nhà tổ chức"
+              alt="Tổ chức"
               className="h-full w-full object-cover"
             />
           ) : (
@@ -43,7 +43,7 @@ export default function ProjectOrganizerCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
             <p className="truncate text-sm font-black text-slate-900 md:text-base">
-              {organizer?.fullName || "Nhà tổ chức Ẩn danh"}
+              {organizer?.fullName || "Tổ chức Ẩn danh"}
             </p>
 
             {organizer?.isVerified ? (

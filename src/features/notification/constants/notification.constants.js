@@ -26,7 +26,11 @@ export const REALTIME_NOTIFICATION_TYPES = Object.freeze({
 
   ORGANIZER_REQUEST_UPDATED: "organizer_request_updated",
   ORGANIZER_REQUEST_SUBMITTED: "organizer_request_submitted",
+
   PROJECT_UPDATED: "project_updated",
+  PROJECT_APPROVED: "project_approved",
+  PROJECT_REJECTED: "project_rejected",
+  PROJECT_REVISION_REQUESTED: "project_revision_requested",
   PROJECT_REVIEW_SUBMITTED_TO_ADMINS: "project_review_submitted_to_admins",
   PROJECT_RESUBMITTED_FOR_APPROVAL: "project_resubmitted_for_approval",
   PROJECT_AI_REVIEW_COMPLETED: "project_ai_review_completed",
