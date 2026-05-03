@@ -1,4 +1,5 @@
 import { FolderKanban, Loader2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import useProjectManagementPage from "../hooks/useProjectManagementPage";
 import AdminProjectDetailModal from "../components/projectDetail/AdminProjectDetailModal";
 import ProjectActionHistoryModal from "../components/projects/ProjectActionHistoryModal";
@@ -8,6 +9,7 @@ import ProjectManagementHeader from "../components/projects/ProjectManagementHea
 import ProjectManagementPagination from "../components/projects/ProjectManagementPagination";
 
 const ProjectManagement = () => {
+  const navigate = useNavigate();
   const {
     loading,
     isProjectsFetching,
@@ -34,7 +36,6 @@ const ProjectManagement = () => {
     reasonModal,
     isReasonSubmitting,
     closeReasonModal,
-    handleApprove,
     requestProjectAction,
     handleReasonConfirm,
   } = useProjectManagementPage();
@@ -99,9 +100,11 @@ const ProjectManagement = () => {
                 project={project}
                 pendingProjectId={pendingProjectId}
                 onRequestProjectAction={requestProjectAction}
-                onApprove={handleApprove}
                 onOpenHistory={setHistoryProject}
                 onOpenDetail={setSelectedProject}
+                onOpenReview={(item) =>
+                  navigate(`/admin/projects/${item._id}/review`)
+                }
               />
             ))}
           </div>

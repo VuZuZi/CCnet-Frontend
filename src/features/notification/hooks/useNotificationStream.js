@@ -25,6 +25,7 @@ import {
   ADMIN_PROJECTS_QUERY_KEY,
   ADMIN_STATS_QUERY_KEY,
 } from "@/features/admin/constants/admin.queryKeys";
+import { ADMIN_PROJECT_REVIEW_QUERY_KEYS } from "@/features/admin/constants/adminProjectReview.queryKeys";
 
 const SESSION_REQUEST_COOLDOWN_MS = 2000;
 const MAX_RECONNECT_DELAY_MS = 30000;
@@ -658,6 +659,20 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           null;
 
         patchProjectQueries(queryClient, projectId, nextStatus);
+      }
+
+      if (
+        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_REVIEW_SUBMITTED_TO_ADMINS ||
+        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_RESUBMITTED_FOR_APPROVAL ||
+        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_COMPLETED ||
+        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_FAILED
+      ) {
+        queryClient.invalidateQueries({ queryKey: ADMIN_PROJECTS_QUERY_KEY });
+        if (projectId) {
+          queryClient.invalidateQueries({
+            queryKey: ADMIN_PROJECT_REVIEW_QUERY_KEYS.detail(projectId),
+          });
+        }
       }
 
       if (

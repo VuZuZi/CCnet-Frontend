@@ -1,8 +1,8 @@
-import { CheckCircle, History, X } from "lucide-react";
+import { ArrowRight, History, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import {
   getAdminUIStatusLabel,
   getAdminUIStatusStyle,
-  getApprovedStatus,
   isReviewableProjectStatus,
   mapProjectStatusToUI,
 } from "../../utils/projectStatus.utils";
@@ -12,14 +12,14 @@ export default function ProjectDetailHeader({
   project,
   onClose,
   onOpenHistory,
-  onRequestProjectAction,
 }) {
+  const navigate = useNavigate();
   const uiStatus = mapProjectStatusToUI(project?.status);
   const currentStatusStyle = getAdminUIStatusStyle(uiStatus);
   const currentStatusLabel = getAdminUIStatusLabel(uiStatus);
   const StatusIcon = STATUS_ICON_MAP[uiStatus] || STATUS_ICON_MAP.DEFAULT;
 
-  const canApprove = isReviewableProjectStatus(project?.status);
+  const canReview = isReviewableProjectStatus(project?.status);
   const canOpenHistory = Boolean(onOpenHistory);
 
   return (
@@ -41,16 +41,14 @@ export default function ProjectDetailHeader({
           {currentStatusLabel}
         </div>
 
-        {canApprove ? (
+        {canReview ? (
           <button
             type="button"
-            onClick={() =>
-              onRequestProjectAction?.(project, getApprovedStatus(project))
-            }
-            className="inline-flex items-center gap-2 rounded-2xl bg-emerald-500 px-4 py-2.5 text-sm font-black text-white transition hover:bg-emerald-600"
+            onClick={() => navigate(`/admin/projects/${project._id}/review`)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-4 py-2.5 text-sm font-black text-slate-950 transition hover:bg-amber-500"
           >
-            <CheckCircle size={15} />
-            Phê duyệt
+            <ArrowRight size={15} />
+            Mở cockpit kiểm duyệt
           </button>
         ) : null}
 
@@ -61,7 +59,7 @@ export default function ProjectDetailHeader({
             className="inline-flex items-center gap-2 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm font-black text-amber-700 transition hover:bg-amber-100"
           >
             <History size={15} />
-            Xem Lịch sử
+            Xem lịch sử
           </button>
         ) : null}
 
