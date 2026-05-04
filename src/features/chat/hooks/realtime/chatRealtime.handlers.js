@@ -12,7 +12,12 @@ import { chatKeys } from '@/features/chat/constants/chat.queryKeys';
 import { getEntityId } from '@/features/chat/utils/id';
 
 function getIncomingConversationId(payload) {
-  return String(payload?.conversationId || payload?.message?.conversationId || payload?.pin?.conversationId || '');
+  return String(
+    payload?.conversationId ||
+      payload?.message?.conversationId ||
+      payload?.pin?.conversationId ||
+      ''
+  );
 }
 
 function getIncomingMessage(payload) {
@@ -29,6 +34,28 @@ function patchConversationList(queryClient, updater) {
 
 function patchPinnedList(queryClient, conversationId, updater) {
   queryClient.setQueryData(chatKeys.pinnedMessages(conversationId), updater);
+}
+
+function getConversationListCache(queryClient) {
+  return queryClient.getQueryData(chatKeys.conversations());
+}
+
+function hasConversationInCache(queryClient, conversationId) {
+  const conversations = getConversationListCache(queryClient);
+
+  if (!Array.isArray(conversations)) return false;
+
+  return conversations.some(
+    (conversation) =>
+      String(conversation?._id || conversation?.id || '') ===
+      String(conversationId || '')
+  );
+}
+
+function refreshConversationList(queryClient) {
+  queryClient.invalidateQueries({
+    queryKey: chatKeys.conversations(),
+  });
 }
 
 function upsertPinnedItem(list, item) {
@@ -60,6 +87,8 @@ export function onRealtimeMessageNew(
 
   if (!incomingCid || !message) return;
 
+  const conversationExists = hasConversationInCache(queryClient, incomingCid);
+
   patchConversationList(queryClient, (oldData) =>
     applyIncomingMessageToConversationList(oldData, incomingCid, message, {
       myId,
@@ -67,6 +96,10 @@ export function onRealtimeMessageNew(
       markMineAsRead: markActiveConversationAsRead,
     })
   );
+
+  if (!conversationExists) {
+    refreshConversationList(queryClient);
+  }
 
   patchMessageList(queryClient, incomingCid, (oldData) =>
     replaceOptimisticMessage(oldData, message)
@@ -86,6 +119,10 @@ export function onRealtimeMessageUpdated(payload, { queryClient }) {
   patchConversationList(queryClient, (oldData) =>
     patchConversationLastMessage(oldData, incomingCid, message)
   );
+
+  if (!hasConversationInCache(queryClient, incomingCid)) {
+    refreshConversationList(queryClient);
+  }
 }
 
 export function onRealtimeMessageRead(payload, { queryClient, myId }) {
@@ -112,6 +149,10 @@ export function onRealtimeConversationUpdated(payload, { queryClient }) {
   patchConversationList(queryClient, (oldData) =>
     patchConversationById(oldData, conversation)
   );
+
+  if (!hasConversationInCache(queryClient, incomingCid)) {
+    refreshConversationList(queryClient);
+  }
 }
 
 export function onRealtimeMessagePinned(payload, { queryClient }) {

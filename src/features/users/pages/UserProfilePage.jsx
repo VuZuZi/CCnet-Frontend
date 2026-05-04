@@ -21,7 +21,6 @@ import { SkillsSection } from "../components/profile/SkillsSection";
 import { UpgradeBanner } from "../components/profile/UpgradeBanner";
 import { DonationHistoryList } from '@/features/transaction/components/DonationHistoryList';
 import { WalletDashboard } from '@/features/wallet/components/WalletDashboard';
-import { BankAccountManager } from '@/features/bank/components/BankAccountManager';
 import { CreatePostComposer } from '@/features/Community/components/post/CreatePostComposer';
 
 const isOrganizerProfile = (user) => {
@@ -137,16 +136,17 @@ export function UserProfilePage() {
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const [reportError, setReportError] = useState(null);
+
   const resolveFinanceTab = (params) => {
     const requestedTab = String(
       params.get('tab') || params.get('walletTab') || ''
     ).toLowerCase();
 
-    if (requestedTab === 'wallet' || requestedTab === 'donation' || requestedTab === 'bank') {
-      return requestedTab;
+    if (requestedTab === 'donation') {
+      return 'donation';
     }
 
-    return 'bank';
+    return 'wallet';
   };
 
   const [financeTab, setFinanceTab] = useState(() => resolveFinanceTab(searchParams));
@@ -155,8 +155,17 @@ export function UserProfilePage() {
 
   useEffect(() => {
     if (!showWalletView) return;
-    setFinanceTab(resolveFinanceTab(searchParams));
-  }, [showWalletView, searchParams]);
+
+    const nextTab = resolveFinanceTab(searchParams);
+    setFinanceTab(nextTab);
+
+    if (searchParams.get('tab') === 'bank') {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set('view', 'wallet');
+      nextParams.set('tab', 'wallet');
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [showWalletView, searchParams, setSearchParams]);
 
   const handleFinanceTabChange = (tab) => {
     setFinanceTab(tab);
@@ -269,28 +278,11 @@ export function UserProfilePage() {
               <div className="mb-5">
                 <h2 className="text-xl font-black text-slate-900">Trung tâm tài chính</h2>
                 <p className="mt-1 text-sm text-slate-500">
-                  Quản lý ngân hàng, ví và ủng hộ theo từng nhóm để thao tác nhanh hơn.
+                  Quản lý ví, giao dịch, tài khoản nhận tiền và lịch sử ủng hộ.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-                <button
-                  type="button"
-                  onClick={() => handleFinanceTabChange('bank')}
-                  className={`rounded-2xl border px-4 py-3 text-left transition-colors ${
-                    financeTab === 'bank'
-                      ? 'border-amber-300 bg-amber-50 text-amber-900'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center gap-2 text-sm font-black">
-                    <Building2 size={16} /> Ngân hàng
-                  </div>
-                  <p className="mt-1 text-xs font-medium text-slate-500">
-                    Đăng ký tài khoản nhận tiền
-                  </p>
-                </button>
-
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 <button
                   type="button"
                   onClick={() => handleFinanceTabChange('wallet')}
@@ -304,7 +296,7 @@ export function UserProfilePage() {
                     <Wallet size={16} /> Ví & giao dịch
                   </div>
                   <p className="mt-1 text-xs font-medium text-slate-500">
-                    Số dư, rút tiền, sao kê ví
+                    Số dư, rút tiền, sao kê ví và tài khoản ngân hàng
                   </p>
                 </button>
 
@@ -327,25 +319,25 @@ export function UserProfilePage() {
               </div>
             </div>
 
-            {financeTab === 'bank' ? <BankAccountManager /> : null}
             {financeTab === 'wallet' ? <WalletDashboard /> : null}
+
             {financeTab === 'donation' ? <DonationHistoryList /> : null}
           </div>
         ) : (
           <div className="grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-[minmax(0,2fr)_minmax(280px,1fr)]">
             <section className="min-w-0 space-y-8">
               <ProfileHeroCard
-  user={userProfile}
-  achievementBadges={userProfile?.achievementBadges || []}
-  isOwnProfile={isOwnProfile}
-  isFollowing={isFollowing}
-  onToggleFollow={handleToggleFollow}
-  onChat={handleOpenChat}
-  onReport={handleReportUser}
-  isChatLoading={isChatLoading}
-  isFollowLoading={isToggleLoading}
-  isReportLoading={isReportLoading}
-/>
+                user={userProfile}
+                achievementBadges={userProfile?.achievementBadges || []}
+                isOwnProfile={isOwnProfile}
+                isFollowing={isFollowing}
+                onToggleFollow={handleToggleFollow}
+                onChat={handleOpenChat}
+                onReport={handleReportUser}
+                isChatLoading={isChatLoading}
+                isFollowLoading={isToggleLoading}
+                isReportLoading={isReportLoading}
+              />
 
               <ImpactMetrics
                 supportedCount={supportedCount}
@@ -361,7 +353,7 @@ export function UserProfilePage() {
               {isOwnProfile ? (
                 <CreatePostComposer
                   title="Đăng bài trên hồ sơ của bạn"
-                  subtitle="Mở popup để soạn bài, thêm ảnh/video và chọn Công khai hoặc Riêng tư."
+                  subtitle="Mở popup để soạn bài, thêm ảnh và chọn Công khai hoặc Riêng tư."
                   defaultPrivacy="public"
                   showPrivacySelector
                   buttonLabel="Đăng lên hồ sơ"

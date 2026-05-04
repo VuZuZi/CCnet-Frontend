@@ -4,7 +4,6 @@ import { usePostMutations } from "../../hooks/usePostMutations";
 import EditPostModal from "./EditPostModal";
 import PostTheaterMode from "./PostTheaterMode";
 import TextOnlyPostView from "./TextOnlyPostView";
-// CHÚ Ý IMPORT:
 import { SharedEntityCard } from "./SharedEntityCard";
 
 const POST_TYPE_LABELS = {
@@ -54,8 +53,33 @@ const useClickOutside = (ref, handler) => {
   }, [ref, handler]);
 };
 
+const getAuthorId = (author) =>
+  author?._id ||
+  author?.id ||
+  author?.userId?._id ||
+  author?.userId?.id ||
+  author?.userId ||
+  author?.user?._id ||
+  author?.user?.id ||
+  null;
+
 const getAuthorName = (author) =>
-  author?.fullName || author?.username || "Người ẩn danh";
+  author?.fullName ||
+  author?.username ||
+  author?.userId?.fullName ||
+  author?.userId?.username ||
+  author?.user?.fullName ||
+  author?.user?.username ||
+  author?.email ||
+  author?.userId?.email ||
+  author?.user?.email ||
+  "Người ẩn danh";
+
+const getAuthorAvatar = (author) =>
+  author?.avatar ||
+  author?.userId?.avatar ||
+  author?.user?.avatar ||
+  "";
 
 const HeartIcon = ({ filled, className = "" }) => (
   <svg
@@ -70,8 +94,6 @@ const HeartIcon = ({ filled, className = "" }) => (
     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
   </svg>
 );
-
- 
 
 const CommentIcon = ({ className = "" }) => (
   <svg
@@ -88,16 +110,28 @@ const CommentIcon = ({ className = "" }) => (
 );
 
 const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
-  const name = getAuthorName(user);
-  const profileLink = `/users/${user?._id || user?.id}`;
+  const [imgError, setImgError] = useState(false);
 
-  if (user?.avatar) {
+  const name = getAuthorName(user);
+  const avatar = getAuthorAvatar(user);
+  const authorId = getAuthorId(user);
+  const profileLink = authorId ? `/users/${authorId}` : "#";
+  const firstChar = String(name || "?").trim().charAt(0).toUpperCase() || "?";
+
+  if (avatar && !imgError) {
     return (
       <Link
         to={profileLink}
-        className={`bg-center bg-cover rounded-full ring-2 ring-white shadow-sm shrink-0 block hover:opacity-80 transition-opacity ${size}`}
-        style={{ backgroundImage: `url("${user.avatar}")` }}
-      />
+        className={`shrink-0 block rounded-full ring-2 ring-white shadow-sm hover:opacity-80 transition-opacity ${size}`}
+      >
+        <img
+          src={avatar}
+          alt={name}
+          onError={() => setImgError(true)}
+          className="h-full w-full rounded-full object-cover"
+          loading="lazy"
+        />
+      </Link>
     );
   }
 
@@ -106,7 +140,7 @@ const Avatar = ({ user, size = "size-10", textSize = "text-lg" }) => {
       to={profileLink}
       className={`bg-gradient-to-br from-amber-100 to-yellow-200 text-amber-700 font-bold flex items-center justify-center rounded-full shrink-0 hover:opacity-80 transition-opacity ring-2 ring-white shadow-sm ${size} ${textSize}`}
     >
-      {name.charAt(0).toUpperCase()}
+      {firstChar}
     </Link>
   );
 };
@@ -159,7 +193,6 @@ const ImageGrid = ({ images, onImageClick }) => {
   );
 };
 
-// --- COMPONENT CHÍNH POSTCARD ---
 const PostCard = ({ post, currentUserId, onReport }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -170,15 +203,18 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   const menuRef = useRef(null);
   useClickOutside(menuRef, () => setShowMenu(false));
 
-  const { toggleReaction, deletePost, toggleSavePost, addComment } = usePostMutations();
+  const { toggleReaction, deletePost, toggleSavePost, addComment } =
+    usePostMutations();
 
   if (!post) return null;
 
-  const isAuthor = currentUserId === post?.author?._id;
+  const authorId = getAuthorId(post.author);
+  const isAuthor = String(currentUserId || "") === String(authorId || "");
   const isLiked = post?.userReaction === "like";
   const stats = post?.stats || { likes: 0, comments: 0 };
   const relativeTime = getRelativeTime(post?.createdAt);
   const privacyInfo = PRIVACY_LABELS[post?.privacy] || PRIVACY_LABELS.public;
+  const profileLink = authorId ? `/users/${authorId}` : "#";
 
   const openCommentView = () => {
     setIsCommentViewOpen(true);
@@ -193,7 +229,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             <div>
               <div className="flex items-center flex-wrap gap-1">
                 <Link
-                  to={`/users/${post.author?._id}`}
+                  to={profileLink}
                   className="text-slate-900 font-bold text-[14px] hover:underline"
                 >
                   {getAuthorName(post.author)}
@@ -230,7 +266,6 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             </div>
           </div>
 
-          {/* Menu Dropdown */}
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setShowMenu((prev) => !prev)}
@@ -240,6 +275,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                 more_horiz
               </span>
             </button>
+
             {showMenu && (
               <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-20">
                 {isAuthor ? (
@@ -257,8 +293,9 @@ const PostCard = ({ post, currentUserId, onReport }) => {
                       label="Xóa bài viết"
                       variant="danger"
                       onClick={() => {
-                        if (window.confirm("Xóa bài viết này?"))
+                        if (window.confirm("Xóa bài viết này?")) {
                           deletePost.mutate(post._id);
+                        }
                         setShowMenu(false);
                       }}
                     />
@@ -289,13 +326,9 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           </div>
         </div>
 
-        {/* Nội dung text */}
         {post.content && (
           <div className="px-5 pb-3 w-full overflow-hidden">
-            <Link
-              to={`/community/${post._id}`}
-              className="block w-full"
-            >
+            <Link to={`/community/${post._id}`} className="block w-full">
               <p className="text-slate-800 text-[15px] leading-relaxed whitespace-pre-wrap break-words">
                 {post.content}
               </p>
@@ -303,7 +336,6 @@ const PostCard = ({ post, currentUserId, onReport }) => {
           </div>
         )}
 
-        {/* HIỂN THỊ THẺ SHARE HOẶC ẢNH */}
         {post.sharedEntity ? (
           <SharedEntityCard entity={post.sharedEntity} isPreview={false} />
         ) : (
@@ -325,6 +357,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
             ) : (
               <span />
             )}
+
             {stats.comments > 0 && (
               <button
                 onClick={openCommentView}
@@ -342,16 +375,16 @@ const PostCard = ({ post, currentUserId, onReport }) => {
               toggleReaction.mutate({ postId: post._id, type: "like" })
             }
             disabled={!currentUserId}
-            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] transition-all duration-200 active:scale-95 disabled:opacity-30
-              ${
-                isLiked
-                  ? "text-rose-500 hover:bg-rose-50"
-                  : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
-              }`}
+            className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] transition-all duration-200 active:scale-95 disabled:opacity-30 ${
+              isLiked
+                ? "text-rose-500 hover:bg-rose-50"
+                : "text-slate-500 hover:bg-slate-50 hover:text-slate-700"
+            }`}
           >
             <HeartIcon filled={isLiked} className="size-5" />
             <span>Thích</span>
           </button>
+
           <button
             onClick={openCommentView}
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg font-semibold text-[13px] text-slate-500 hover:bg-slate-50 hover:text-slate-700 transition-all duration-200 active:scale-95"
@@ -362,7 +395,6 @@ const PostCard = ({ post, currentUserId, onReport }) => {
         </div>
       </article>
 
-      {/* Modals */}
       {isEditOpen && (
         <EditPostModal
           isOpen={isEditOpen}
@@ -393,23 +425,20 @@ const PostCard = ({ post, currentUserId, onReport }) => {
   );
 };
 
-// ─── SUB-COMPONENTS ───
 const MenuBtn = ({ icon, label, onClick, variant = "default" }) => (
   <button
     onClick={onClick}
-    className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors
-      ${
-        variant === "danger"
-          ? "text-red-600 hover:bg-red-50"
-          : variant === "warning"
-            ? "text-orange-600 hover:bg-orange-50"
-            : "text-slate-700 hover:bg-slate-50"
-      }`}
+    className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors ${
+      variant === "danger"
+        ? "text-red-600 hover:bg-red-50"
+        : variant === "warning"
+          ? "text-orange-600 hover:bg-orange-50"
+          : "text-slate-700 hover:bg-slate-50"
+    }`}
   >
     <span className="material-symbols-outlined text-[18px]">{icon}</span>
     {label}
   </button>
 );
-
 
 export default PostCard;
