@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   CalendarDays,
   Check,
@@ -10,42 +10,49 @@ import {
   MapPin,
   Sparkles,
   X as XIcon,
-} from 'lucide-react';
+} from "lucide-react";
 
-import { formatVND, formatDate } from '@/shared/lib/formatters';
-import { useOrganizerAssignedRequests } from '../hooks/useHelpRequestQueries';
-import { useRespondHelpRequestAssignment } from '../hooks/useHelpRequestMutations';
+import { formatVND, formatDate } from "@/shared/lib/formatters";
+import { useOrganizerAssignedRequests } from "../hooks/useHelpRequestQueries";
+import { useRespondHelpRequestAssignment } from "../hooks/useHelpRequestMutations";
 
 const URGENCY_STYLES = {
-  CRITICAL: 'border-rose-200 bg-rose-50 text-rose-700',
-  HIGH: 'border-orange-200 bg-orange-50 text-orange-700',
-  MEDIUM: 'border-amber-200 bg-amber-50 text-amber-700',
-  LOW: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  CRITICAL: "border-rose-200 bg-rose-50 text-rose-700",
+  HIGH: "border-orange-200 bg-orange-50 text-orange-700",
+  MEDIUM: "border-amber-200 bg-amber-50 text-amber-700",
+  LOW: "border-emerald-200 bg-emerald-50 text-emerald-700",
 };
 
 const CATEGORY_LABELS = {
-  Y_TE: 'Hỗ trợ y tế',
-  GIAO_DUC: 'Giáo dục',
-  THIEN_TAI: 'Cứu trợ thảm họa',
-  XAY_DUNG: 'Xây dựng',
-  MOI_TRUONG: 'Môi trường',
-  KHAC: 'Khác',
+  Y_TE: "Hỗ trợ y tế",
+  GIAO_DUC: "Giáo dục",
+  THIEN_TAI: "Cứu trợ thảm họa",
+  XAY_DUNG: "Xây dựng",
+  MOI_TRUONG: "Môi trường",
+  KHAC: "Khác",
 };
 
 const TAB_OPTIONS = [
   {
-    key: 'pending',
-    label: 'Đang chờ xử lý',
-    emptyText: 'Hiện tại không có gợi ý nào đang chờ xử lý.',
-    helper: 'Các yêu cầu đang chờ xác nhận của bạn.',
+    key: "pending",
+    label: "Đang chờ xử lý",
+    emptyText: "Hiện tại không có gợi ý nào đang chờ xử lý.",
+    helper: "Các yêu cầu đang chờ xác nhận của bạn.",
   },
   {
-    key: 'accepted',
-    label: 'Đã chấp nhận',
-    emptyText: 'Bạn chưa chấp nhận bất kỳ gợi ý nào.',
-    helper: 'Các yêu cầu đang xử lý của bạn.',
+    key: "accepted",
+    label: "Đã chấp nhận",
+    emptyText: "Bạn chưa chấp nhận bất kỳ gợi ý nào.",
+    helper: "Các yêu cầu đang xử lý của bạn.",
   },
 ];
+
+const getLinkedProjectId = (linkedProjectId) => {
+  if (!linkedProjectId) return "";
+  return typeof linkedProjectId === "object"
+    ? linkedProjectId._id || linkedProjectId.id || ""
+    : linkedProjectId;
+};
 
 function RejectConfirmModal({
   isOpen,
@@ -54,19 +61,19 @@ function RejectConfirmModal({
   onCancel,
   isPending,
 }) {
-  const safeTitle = requestTitle || 'yêu cầu này';
+  const safeTitle = requestTitle || "yêu cầu này";
 
   useEffect(() => {
     if (!isOpen || isPending) return undefined;
 
     const handleEscape = (event) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         onCancel();
       }
     };
 
-    window.addEventListener('keydown', handleEscape);
-    return () => window.removeEventListener('keydown', handleEscape);
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
   }, [isOpen, isPending, onCancel]);
 
   if (!isOpen) return null;
@@ -106,7 +113,7 @@ function RejectConfirmModal({
             <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
               <p
                 className="line-clamp-3 break-words text-sm font-bold leading-6 text-slate-900"
-                style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}
+                style={{ overflowWrap: "anywhere", wordBreak: "break-word" }}
                 title={safeTitle}
               >
                 “{safeTitle}”
@@ -137,7 +144,7 @@ function RejectConfirmModal({
               ) : (
                 <XIcon size={16} strokeWidth={3} />
               )}
-              {isPending ? 'Đang từ chối...' : 'Từ chối gợi ý'}
+              {isPending ? "Đang từ chối..." : "Từ chối gợi ý"}
             </button>
           </div>
         </div>
@@ -150,7 +157,7 @@ function SummaryCard({ label, value, active = false }) {
   return (
     <div
       className={`rounded-[22px] border px-4 py-4 shadow-sm transition-all ${
-        active ? 'border-amber-200 bg-amber-50' : 'border-slate-200 bg-white'
+        active ? "border-amber-200 bg-amber-50" : "border-slate-200 bg-white"
       }`}
     >
       <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">
@@ -173,14 +180,15 @@ function AssignedRequestCard({
   const urgencyStyle =
     URGENCY_STYLES[request.urgencyLevel] || URGENCY_STYLES.MEDIUM;
 
-  const categoryLabel = CATEGORY_LABELS[request.category] || 'Khác';
+  const categoryLabel = CATEGORY_LABELS[request.category] || "Khác";
 
   const coverImage = request.evidences?.find(
-    (item) => item?.mediaType === 'image' || !item?.mediaType
+    (item) => item?.mediaType === "image" || !item?.mediaType
   )?.url;
 
-  const isPending = activeTab === 'pending';
-  const isAccepted = request.status === 'IN_PROGRESS';
+  const isPending = activeTab === "pending";
+  const isAccepted = request.status === "IN_PROGRESS";
+  const linkedProjectId = getLinkedProjectId(request.linkedProjectId);
 
   const handleAccept = async () => {
     await onAccept(request._id);
@@ -206,7 +214,7 @@ function AssignedRequestCard({
             <span
               className={`inline-flex items-center rounded-full border px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] ${urgencyStyle}`}
             >
-              {request.urgencyLevel || 'MEDIUM'}
+              {request.urgencyLevel || "MEDIUM"}
             </span>
 
             <span className="inline-flex items-center rounded-full border border-white/70 bg-white/90 px-3 py-1 text-[11px] font-bold text-slate-700 backdrop-blur">
@@ -233,7 +241,7 @@ function AssignedRequestCard({
                 >
                   <span
                     className="line-clamp-2 break-words"
-                    style={{ overflowWrap: 'anywhere' }}
+                    style={{ overflowWrap: "anywhere" }}
                   >
                     {request.title}
                   </span>
@@ -241,9 +249,9 @@ function AssignedRequestCard({
 
                 <p
                   className="mt-2 line-clamp-2 text-sm leading-7 text-slate-500"
-                  style={{ overflowWrap: 'anywhere' }}
+                  style={{ overflowWrap: "anywhere" }}
                 >
-                  {request.story || 'Yêu cầu này chưa có câu chuyện mô tả.'}
+                  {request.story || "Yêu cầu này chưa có câu chuyện mô tả."}
                 </p>
               </div>
             </div>
@@ -255,7 +263,7 @@ function AssignedRequestCard({
                   Địa điểm
                 </div>
                 <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
-                  {request.location?.address || 'Không có địa điểm'}
+                  {request.location?.address || "Không có địa điểm"}
                 </p>
               </div>
 
@@ -267,7 +275,7 @@ function AssignedRequestCard({
                 <p className="mt-2 line-clamp-1 text-sm font-semibold text-slate-700">
                   {request.amountNeeded
                     ? formatVND(request.amountNeeded)
-                    : 'Linh hoạt'}
+                    : "Linh hoạt"}
                 </p>
               </div>
 
@@ -277,7 +285,7 @@ function AssignedRequestCard({
                   Ngày gửi
                 </div>
                 <p className="mt-2 text-sm font-semibold text-slate-700">
-                  {formatDate(request.createdAt) || 'Gần đây'}
+                  {formatDate(request.createdAt) || "Gần đây"}
                 </p>
               </div>
             </div>
@@ -311,7 +319,7 @@ function AssignedRequestCard({
                 </>
               ) : null}
 
-              {isAccepted && !request.linkedProjectId ? (
+              {isAccepted && !linkedProjectId ? (
                 <Link
                   to={`/projects/create?helpRequestId=${request._id}`}
                   className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400"
@@ -321,17 +329,13 @@ function AssignedRequestCard({
                 </Link>
               ) : null}
 
-              {isAccepted && request.linkedProjectId ? (
+              {isAccepted && linkedProjectId ? (
                 <Link
-                  to={`/projects/${
-                    typeof request.linkedProjectId === 'object'
-                      ? request.linkedProjectId._id
-                      : request.linkedProjectId
-                  }`}
+                  to={`/projects/create/${linkedProjectId}/edit`}
                   className="inline-flex items-center gap-2 rounded-2xl bg-amber-500 px-5 py-3 text-sm font-bold text-slate-950 transition-colors hover:bg-amber-400"
                 >
                   <ExternalLink size={16} strokeWidth={3} />
-                  Xem dự án
+                  Tiếp tục điền dự án
                 </Link>
               ) : null}
 
@@ -350,16 +354,16 @@ function AssignedRequestCard({
 }
 
 export function OrganizerAssignedRequestsPage() {
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeTab, setActiveTab] = useState("pending");
   const [rejectModal, setRejectModal] = useState({
     isOpen: false,
     requestId: null,
-    requestTitle: '',
+    requestTitle: "",
   });
 
   const { data, isLoading } = useOrganizerAssignedRequests({
     limit: 50,
-    sortBy: 'assignedAt',
+    sortBy: "assignedAt",
   });
 
   const respondMutation = useRespondHelpRequestAssignment();
@@ -367,20 +371,20 @@ export function OrganizerAssignedRequestsPage() {
   const allItems = data?.data || [];
 
   const pendingItems = useMemo(
-    () => allItems.filter((request) => request.status === 'VERIFIED'),
+    () => allItems.filter((request) => request.status === "VERIFIED"),
     [allItems]
   );
 
   const acceptedItems = useMemo(
-    () => allItems.filter((request) => request.status === 'IN_PROGRESS'),
+    () => allItems.filter((request) => request.status === "IN_PROGRESS"),
     [allItems]
   );
 
-  const displayItems = activeTab === 'pending' ? pendingItems : acceptedItems;
+  const displayItems = activeTab === "pending" ? pendingItems : acceptedItems;
   const currentTabConfig = TAB_OPTIONS.find((tab) => tab.key === activeTab);
 
   const handleAccept = async (id) => {
-    await respondMutation.mutateAsync({ id, action: 'accept' });
+    await respondMutation.mutateAsync({ id, action: "accept" });
   };
 
   const handleRejectClick = (requestId, requestTitle) => {
@@ -392,14 +396,14 @@ export function OrganizerAssignedRequestsPage() {
 
     await respondMutation.mutateAsync({
       id: rejectModal.requestId,
-      action: 'reject',
+      action: "reject",
     });
 
-    setRejectModal({ isOpen: false, requestId: null, requestTitle: '' });
+    setRejectModal({ isOpen: false, requestId: null, requestTitle: "" });
   };
 
   const handleRejectCancel = () => {
-    setRejectModal({ isOpen: false, requestId: null, requestTitle: '' });
+    setRejectModal({ isOpen: false, requestId: null, requestTitle: "" });
   };
 
   return (
@@ -428,12 +432,12 @@ export function OrganizerAssignedRequestsPage() {
               <SummaryCard
                 label="Pending"
                 value={pendingItems.length}
-                active={activeTab === 'pending'}
+                active={activeTab === "pending"}
               />
               <SummaryCard
                 label="Accepted"
                 value={acceptedItems.length}
-                active={activeTab === 'accepted'}
+                active={activeTab === "accepted"}
               />
             </div>
           </div>
@@ -455,7 +459,7 @@ export function OrganizerAssignedRequestsPage() {
             <div className="grid grid-cols-2 gap-2 rounded-[22px] bg-slate-100 p-1.5">
               {TAB_OPTIONS.map((tab) => {
                 const count =
-                  tab.key === 'pending'
+                  tab.key === "pending"
                     ? pendingItems.length
                     : acceptedItems.length;
 
@@ -468,16 +472,16 @@ export function OrganizerAssignedRequestsPage() {
                     onClick={() => setActiveTab(tab.key)}
                     className={`inline-flex items-center justify-center gap-2 rounded-2xl px-4 py-3 text-sm font-bold transition-all ${
                       isActive
-                        ? 'bg-amber-400 text-slate-950 shadow-sm'
-                        : 'text-slate-500 hover:bg-white/60 hover:text-slate-700'
+                        ? "bg-amber-400 text-slate-950 shadow-sm"
+                        : "text-slate-500 hover:bg-white/60 hover:text-slate-700"
                     }`}
                   >
                     <span>{tab.label}</span>
                     <span
                       className={`inline-flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-[10px] font-black ${
                         isActive
-                          ? 'bg-white/80 text-slate-950'
-                          : 'bg-slate-200 text-slate-500'
+                          ? "bg-white/80 text-slate-950"
+                          : "bg-slate-200 text-slate-500"
                       }`}
                     >
                       {count}

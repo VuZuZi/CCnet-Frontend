@@ -79,26 +79,38 @@ const buildProjectFormData = (projectData = {}) => ({
 
 const buildHelpRequestFormData = (helpRequestData, helpRequestId) => {
   const inferredProjectType =
-    helpRequestData.isFundraising === false ? "VOLUNTEER_ONLY" : "FUNDED";
+    helpRequestData?.isFundraising === false ? "VOLUNTEER_ONLY" : "FUNDED";
 
   return {
-    projectType: helpRequestData.projectType || inferredProjectType,
-    title: helpRequestData.title || "",
-    category: helpRequestData.category || "",
-    location: helpRequestData.location || null,
-    description: helpRequestData.description || "",
-    beneficiaryInfo: helpRequestData.beneficiaryInfo || { details: "" },
-    targetAmount: Number(helpRequestData.targetAmount || 0),
+    projectType: helpRequestData?.projectType || inferredProjectType,
+    title: helpRequestData?.title || "",
+    category: helpRequestData?.category || "",
+    location: helpRequestData?.location || null,
+    description: helpRequestData?.description || "",
+    beneficiaryInfo: helpRequestData?.beneficiaryInfo || { details: "" },
+    targetAmount: Number(helpRequestData?.targetAmount || 0),
     startDate: "",
     endDate: "",
     needsVolunteers: false,
     milestones: [],
     volunteerRoles: [],
-    coverMedia: normalizeCoverMedia(helpRequestData.coverMedia),
-    documents: normalizeDocuments(helpRequestData.documents),
+    coverMedia: normalizeCoverMedia(helpRequestData?.coverMedia),
+    documents: normalizeDocuments(helpRequestData?.documents),
     deletedDocumentIds: [],
     fromHelpRequestId: helpRequestId,
   };
+};
+
+const getRouteSeedKey = ({
+  isRejectedEditMode,
+  isEditMode,
+  id,
+  helpRequestId,
+}) => {
+  if (isRejectedEditMode && id) return `rejected:${id}`;
+  if (isEditMode && id) return `draft:${id}`;
+  if (helpRequestId) return `help-request:${helpRequestId}`;
+  return "manual:create";
 };
 
 export function CreateProjectPage() {
@@ -108,6 +120,7 @@ export function CreateProjectPage() {
   const toast = useToast();
 
   const seededKeyRef = useRef("");
+  const [readySeedKey, setReadySeedKey] = useState("");
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
@@ -124,6 +137,17 @@ export function CreateProjectPage() {
     isEditMode &&
     (mode === "rejected" || resubmit === "true" || resubmit === "1");
 
+  const expectedSeedKey = useMemo(
+    () =>
+      getRouteSeedKey({
+        isRejectedEditMode,
+        isEditMode,
+        id,
+        helpRequestId,
+      }),
+    [isRejectedEditMode, isEditMode, id, helpRequestId],
+  );
+
   const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
   useBodyScrollLock(isDiscardModalOpen);
 
@@ -131,7 +155,6 @@ export function CreateProjectPage() {
     currentStep,
     updateFormData,
     resetDraft,
-    projectId,
     seedDraftFromProject,
     editMode,
     editingRejectedProject,
@@ -155,23 +178,35 @@ export function CreateProjectPage() {
     isError: isHelpRequestError,
   } = useHelpRequestAsProjectData(helpRequestId);
 
+  /*
+    Quan trọng:
+    Khi đổi từ helpRequest A sang helpRequest B, component có thể không unmount.
+    Phải reset store ngay theo route key mới để tránh Step1/Step2 auto-save bằng dữ liệu cũ.
+  */
   useEffect(() => {
     seededKeyRef.current = "";
-  }, [id, mode, resubmit, helpRequestId]);
+    setReadySeedKey("");
+
+    resetDraft();
+
+    if (expectedSeedKey === "manual:create") {
+      setReadySeedKey(expectedSeedKey);
+    }
+  }, [expectedSeedKey, resetDraft]);
 
   useEffect(() => {
-    if (!isEditMode && !helpRequestId) {
+    if (expectedSeedKey === "manual:create") {
       return;
     }
 
-    if (isRejectedEditMode && rejectedSeedData?.project) {
-      const seedKey = `rejected:${id}`;
+    if (seededKeyRef.current === expectedSeedKey) {
+      return;
+    }
 
-      if (seededKeyRef.current === seedKey) {
-        return;
-      }
+    if (isRejectedEditMode) {
+      if (!rejectedSeedData?.project) return;
 
-      seededKeyRef.current = seedKey;
+      seededKeyRef.current = expectedSeedKey;
 
       seedDraftFromProject({
         projectId: id,
@@ -182,17 +217,14 @@ export function CreateProjectPage() {
         step: 1,
       });
 
+      setReadySeedKey(expectedSeedKey);
       return;
     }
 
-    if (isEditMode && !isRejectedEditMode && draftData) {
-      const seedKey = `draft:${id}`;
+    if (isEditMode && !isRejectedEditMode) {
+      if (!draftData) return;
 
-      if (seededKeyRef.current === seedKey) {
-        return;
-      }
-
-      seededKeyRef.current = seedKey;
+      seededKeyRef.current = expectedSeedKey;
 
       seedDraftFromProject({
         projectId: id,
@@ -201,34 +233,34 @@ export function CreateProjectPage() {
         step: 1,
       });
 
+      setReadySeedKey(expectedSeedKey);
       return;
     }
 
-    if (helpRequestId && helpRequestData) {
-      const seedKey = `help-request:${helpRequestId}`;
+    if (helpRequestId) {
+      if (!helpRequestData) return;
 
-      if (seededKeyRef.current === seedKey) {
-        return;
-      }
+      seededKeyRef.current = expectedSeedKey;
 
-      seededKeyRef.current = seedKey;
-
-      if (projectId) {
-        resetDraft();
-      }
-
+      /*
+        Với flow tạo project từ NeedHelp:
+        - luôn bắt đầu bằng projectId null
+        - luôn seed đúng form theo helpRequestId hiện tại
+        - không reuse draft/form/projectId cũ trong zustand
+      */
       updateFormData(buildHelpRequestFormData(helpRequestData, helpRequestId));
+
+      setReadySeedKey(expectedSeedKey);
     }
   }, [
-    isEditMode,
+    expectedSeedKey,
     isRejectedEditMode,
+    isEditMode,
     rejectedSeedData,
     draftData,
     helpRequestId,
     helpRequestData,
     id,
-    projectId,
-    resetDraft,
     seedDraftFromProject,
     updateFormData,
   ]);
@@ -245,23 +277,17 @@ export function CreateProjectPage() {
   };
 
   const isLoading =
+    readySeedKey !== expectedSeedKey ||
     (isRejectedEditMode && isRejectedSeedLoading) ||
     (!isRejectedEditMode && isEditMode && isDraftLoading) ||
-    (helpRequestId && isHelpRequestLoading);
+    (Boolean(helpRequestId) && isHelpRequestLoading);
 
   const isError =
     (isRejectedEditMode && isRejectedSeedError) ||
     (!isRejectedEditMode && isEditMode && isDraftError) ||
-    (helpRequestId && isHelpRequestError);
+    (Boolean(helpRequestId) && isHelpRequestError);
 
-  const isPageReady =
-    !isEditMode && !helpRequestId
-      ? true
-      : Boolean(
-          (isRejectedEditMode && rejectedSeedData?.project) ||
-            (!isRejectedEditMode && isEditMode && draftData) ||
-            (helpRequestId && helpRequestData),
-        );
+  const isPageReady = readySeedKey === expectedSeedKey;
 
   if (isLoading) {
     return (
@@ -346,6 +372,7 @@ export function CreateProjectPage() {
 
             <span className="mx-2 text-slate-300">|</span>
             <button
+              type="button"
               onClick={() => setIsDiscardModalOpen(true)}
               className="flex items-center gap-1 font-medium text-red-500 transition-colors hover:text-red-600"
             >
@@ -357,7 +384,7 @@ export function CreateProjectPage() {
           </div>
         </div>
 
-        <div className="mt-12 pb-32">
+        <div className="mt-12 pb-32" key={expectedSeedKey}>
           {currentStep === 1 ? <Step1Story /> : null}
           {currentStep === 2 ? <Step2Budget /> : null}
           {currentStep === 3 ? <Step3Preview /> : null}
@@ -384,6 +411,7 @@ export function CreateProjectPage() {
 
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => setIsDiscardModalOpen(false)}
                   className="flex-1 rounded-xl bg-slate-100 px-4 py-2.5 font-bold text-slate-700 transition-colors hover:bg-slate-200"
                 >
@@ -391,6 +419,7 @@ export function CreateProjectPage() {
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleDiscardDraft}
                   className="flex-1 rounded-xl bg-red-500 px-4 py-2.5 font-bold text-white shadow-lg shadow-red-500/20 transition-colors hover:bg-red-600"
                 >

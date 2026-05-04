@@ -199,6 +199,7 @@ const NotificationDetailPage = lazy(() =>
     default: m.NotificationDetailPage || m.default,
   })),
 );
+
 const AboutPage = lazy(() =>
   import("@/pages/info/AboutPage").then((m) => ({
     default: m.AboutPage || m.default,
@@ -216,6 +217,7 @@ const PrivacyPage = lazy(() =>
     default: m.PrivacyPage || m.default,
   })),
 );
+
 const MockAdminPage = ({ title }) => (
   <div className="flex h-[60vh] items-center justify-center rounded-2xl border border-slate-100 bg-white p-8 shadow-sm">
     <h2 className="text-2xl font-bold text-slate-400">
@@ -311,17 +313,35 @@ export const router = createBrowserRouter([
 
       { path: "search", element: withSuspense(SearchPage) },
 
-      { path: "projects", element: withSuspense(ProjectListPage) },
-      { path: "projects/map", element: withSuspense(ProjectMapPage) },
-      { path: "projects/:id", element: withSuspense(ProjectDetailPage) },
       { path: "users/:id", element: withSuspense(UserProfilePage) },
+
       { path: "need-help", element: withSuspense(NeedHelpPage) },
       { path: "need-help/map", element: withSuspense(NeedHelpMapPage) },
+
+      {
+        path: "need-help/create",
+        element: (
+          <ProtectedRoute>
+            {withSuspense(CreateHelpRequestPage)}
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "need-help/:id/edit",
+        element: (
+          <ProtectedRoute>
+            {withSuspense(EditHelpRequestPage)}
+          </ProtectedRoute>
+        ),
+      },
+
       { path: "need-help/:id", element: withSuspense(HelpRequestDetailPage) },
+
       { path: "payment/result", element: <PaymentResultPage /> },
       { path: "about", element: withSuspense(AboutPage) },
       { path: "terms", element: withSuspense(TermsPage) },
       { path: "privacy", element: withSuspense(PrivacyPage) },
+
       {
         element: (
           <ProtectedRoute>
@@ -374,36 +394,6 @@ export const router = createBrowserRouter([
           { path: "following", element: withSuspense(FollowingPage) },
           { path: "community", element: withSuspense(CommunityPage) },
           { path: "community/:id", element: withSuspense(PostDetailPage) },
-          {
-            path: "need-help/create",
-            element: withSuspense(CreateHelpRequestPage),
-          },
-          {
-            path: "need-help/:id/edit",
-            element: withSuspense(EditHelpRequestPage),
-          },
-        ],
-      },
-
-      {
-        element: (
-          <ProtectedRoute allowedRoles={[ROLES.ORGANIZER]}>
-            <Outlet />
-          </ProtectedRoute>
-        ),
-        children: [
-          {
-            path: "projects/create",
-            element: withSuspense(CreateProjectPage),
-          },
-          {
-            path: "workspace/projects",
-            element: withSuspense(OrganizerWorkspacePage),
-          },
-          {
-            path: "workspace/stats",
-            element: <MockAdminPage title="Thống Kê Gây Quỹ" />,
-          },
         ],
       },
     ],

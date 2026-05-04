@@ -54,6 +54,13 @@ function extractHelpRequestCover(item) {
   return imageEvidence?.url || null;
 }
 
+function getLinkedProjectId(linkedProjectId) {
+  if (!linkedProjectId) return "";
+  return typeof linkedProjectId === "object"
+    ? linkedProjectId._id || linkedProjectId.id || ""
+    : linkedProjectId;
+}
+
 function EmptyState({ activeTab }) {
   return (
     <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-8 text-center">
@@ -73,8 +80,7 @@ function AssignmentCard({ item, activeTab, isResponding, onAccept, onReject }) {
   const coverUrl = extractHelpRequestCover(item);
   const urgencyClass = URGENCY_STYLES[item?.urgencyLevel] || URGENCY_STYLES.MEDIUM;
   const categoryLabel = CATEGORY_LABELS[item?.category] || "Khác";
-  const linkedProjectId =
-    typeof item?.linkedProjectId === "object" ? item?.linkedProjectId?._id : item?.linkedProjectId;
+  const linkedProjectId = getLinkedProjectId(item?.linkedProjectId);
 
   return (
     <article className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm transition hover:shadow-md">
@@ -112,7 +118,9 @@ function AssignmentCard({ item, activeTab, isResponding, onAccept, onReject }) {
           <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-500">
             <span className="inline-flex items-center gap-1">
               <MapPin size={12} />
-              <span className="line-clamp-1">{item?.location?.address || "Không có địa điểm"}</span>
+              <span className="line-clamp-1">
+                {item?.location?.address || "Không có địa điểm"}
+              </span>
             </span>
             <span className="inline-flex items-center gap-1">
               <CalendarDays size={12} />
@@ -131,7 +139,11 @@ function AssignmentCard({ item, activeTab, isResponding, onAccept, onReject }) {
               disabled={isResponding}
               className="inline-flex items-center gap-1.5 rounded-lg bg-amber-500 px-3 py-1.5 text-[11px] font-bold text-slate-950 transition hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {isResponding ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+              {isResponding ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                <Check size={12} />
+              )}
               Nhận việc
             </button>
 
@@ -151,11 +163,11 @@ function AssignmentCard({ item, activeTab, isResponding, onAccept, onReject }) {
           <>
             {linkedProjectId ? (
               <Link
-                to={`/projects/${linkedProjectId}`}
+                to={`/projects/create/${linkedProjectId}/edit`}
                 className="inline-flex items-center gap-1.5 rounded-lg bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-slate-800"
               >
                 <ExternalLink size={12} />
-                Xem dự án
+                Tiếp tục điền
               </Link>
             ) : (
               <Link
@@ -183,6 +195,7 @@ function AssignmentCard({ item, activeTab, isResponding, onAccept, onReject }) {
 export function WorkspaceAssignedNeedHelpSection() {
   const [activeTab, setActiveTab] = useState("pending");
   const [currentPage, setCurrentPage] = useState(1);
+
   const { data, isLoading } = useOrganizerAssignedRequests(
     {
       limit: 50,
@@ -190,16 +203,26 @@ export function WorkspaceAssignedNeedHelpSection() {
     },
     true,
   );
+
   const respondMutation = useRespondHelpRequestAssignment();
 
   const allItems = data?.data || [];
   const pendingItems = allItems.filter((item) => item?.status === "VERIFIED");
   const acceptedItems = allItems.filter((item) => item?.status === "IN_PROGRESS");
   const displayItems = activeTab === "pending" ? pendingItems : acceptedItems;
-  const totalPages = Math.max(1, Math.ceil(displayItems.length / ASSIGNED_ITEMS_PER_PAGE));
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(displayItems.length / ASSIGNED_ITEMS_PER_PAGE),
+  );
+
   const activePage = Math.min(currentPage, totalPages);
   const startIndex = (activePage - 1) * ASSIGNED_ITEMS_PER_PAGE;
-  const paginatedItems = displayItems.slice(startIndex, startIndex + ASSIGNED_ITEMS_PER_PAGE);
+
+  const paginatedItems = displayItems.slice(
+    startIndex,
+    startIndex + ASSIGNED_ITEMS_PER_PAGE,
+  );
 
   const handleRespond = async (id, action) => {
     if (!id || respondMutation.isPending) return;
@@ -233,7 +256,8 @@ export function WorkspaceAssignedNeedHelpSection() {
 
       <div className="mb-4 grid grid-cols-2 gap-2 rounded-2xl bg-slate-100 p-1.5">
         {STATUS_TABS.map((tab) => {
-          const count = tab.key === "pending" ? pendingItems.length : acceptedItems.length;
+          const count =
+            tab.key === "pending" ? pendingItems.length : acceptedItems.length;
           const isActive = activeTab === tab.key;
 
           return (
@@ -253,7 +277,9 @@ export function WorkspaceAssignedNeedHelpSection() {
               {tab.label}
               <span
                 className={`inline-flex min-w-[20px] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-black ${
-                  isActive ? "bg-white/80 text-slate-950" : "bg-slate-200 text-slate-600"
+                  isActive
+                    ? "bg-white/80 text-slate-950"
+                    : "bg-slate-200 text-slate-600"
                 }`}
               >
                 {count}
@@ -303,7 +329,9 @@ export function WorkspaceAssignedNeedHelpSection() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                  onClick={() =>
+                    setCurrentPage((page) => Math.min(totalPages, page + 1))
+                  }
                   disabled={activePage >= totalPages}
                   className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
