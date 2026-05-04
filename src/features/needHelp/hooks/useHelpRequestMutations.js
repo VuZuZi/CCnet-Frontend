@@ -105,7 +105,7 @@ export const useAssignOrganizer = () => {
   return useMutation({
     mutationFn: helpRequestAPI.assignOrganizer,
     onSuccess: (data) => {
-      toast.success('Đã gán nhà tổ chức. Đã gửi thông báo kèm liên kết yêu cầu.');
+      toast.success('Đã gợi ý tổ chức. Đã gửi thông báo kèm liên kết yêu cầu.');
 
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);
@@ -128,7 +128,7 @@ export const useRespondHelpRequestAssignment = () => {
     mutationFn: helpRequestAPI.respondAssignment,
     onSuccess: (data, variables) => {
       const verb = variables?.action === 'accept' ? 'chấp nhận' : 'từ chối';
-      toast.success(`Đã ${verb} giao việc. Đã gửi thông báo kèm liên kết yêu cầu.`);
+      toast.success(`Đã ${verb} gợi ý. Đã gửi thông báo kèm liên kết yêu cầu.`);
 
       invalidateAllHelpRequestQueries(queryClient);
       queryClient.setQueryData(HELP_REQUEST_KEYS.detail(data._id), data);

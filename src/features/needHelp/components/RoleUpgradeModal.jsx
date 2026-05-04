@@ -13,17 +13,17 @@ export function RoleUpgradeModal({ isOpen, onAssignNow, onLater }) {
               <AlertCircle className="h-8 w-8 text-amber-600" />
             </div>
             <h2 className="text-center text-2xl font-bold text-slate-900">
-              Trở thành nhà tổ chức
+              Trở thành tổ chức
             </h2>
             <p className="text-center text-sm text-slate-600">
-              Bạn chưa phải là nhà tổ chức. Bạn có muốn đăng ký làm nhà tổ chức ngay bây giờ không?
+              Bạn chưa phải là tổ chức. Bạn có muốn đăng ký làm tổ chức ngay bây giờ không?
             </p>
           </div>
 
           {/* Benefits */}
           <div className="space-y-2 rounded-xl bg-amber-50 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
-              Khi trở thành nhà tổ chức, bạn có thể:
+              Khi trở thành tổ chức, bạn có thể:
             </p>
             <ul className="space-y-2 text-sm text-amber-900">
               <li className="flex items-start gap-2">
@@ -40,7 +40,7 @@ export function RoleUpgradeModal({ isOpen, onAssignNow, onLater }) {
               </li>
               <li className="flex items-start gap-2">
                 <CheckCircle2 size={16} className="mt-0.5 flex-shrink-0 text-amber-600" />
-                <span>Truy cập không gian làm việc và số liệu dành cho nhà tổ chức</span>
+                <span>Truy cập không gian làm việc và số liệu dành cho tổ chức</span>
               </li>
             </ul>
           </div>

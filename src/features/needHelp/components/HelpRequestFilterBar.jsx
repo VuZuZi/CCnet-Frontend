@@ -1,6 +1,6 @@
-import { Link } from 'react-router-dom';
-import { AlertTriangle, FilterX, Layers, Map, Plus, Search } from 'lucide-react';
-import { CATEGORY_OPTIONS, URGENCY_OPTIONS } from '../hooks/useHelpRequestFilters';
+import { Link } from "react-router-dom";
+import { AlertTriangle, FilterX, Layers, Map, Plus, Search } from "lucide-react";
+import { CATEGORY_OPTIONS, URGENCY_OPTIONS } from "../hooks/useHelpRequestFilters";
 
 export function HelpRequestFilterBar({
   localSearch,
@@ -9,7 +9,6 @@ export function HelpRequestFilterBar({
   onFilterChange,
   hasActiveFilters,
   onResetFilters,
-  onCreateClick,
 }) {
   return (
     <div className="space-y-3">
@@ -18,6 +17,7 @@ export function HelpRequestFilterBar({
           <div className="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-500">
             Bộ lọc
           </div>
+
           <p className="mt-2 text-[13px] leading-6 text-slate-500">
             Thu hẹp danh sách để thấy đúng những yêu cầu phù hợp nhất với khả năng hỗ trợ của bạn.
           </p>
@@ -34,7 +34,6 @@ export function HelpRequestFilterBar({
 
           <Link
             to="/need-help/create"
-            onClick={onCreateClick}
             className="inline-flex h-9 items-center gap-2 rounded-xl bg-amber-400 px-3.5 text-[13px] font-bold text-slate-900 shadow-sm shadow-amber-500/20 transition-colors hover:bg-amber-500"
           >
             <Plus size={15} />
@@ -48,10 +47,11 @@ export function HelpRequestFilterBar({
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Search size={15} className="text-slate-400" />
           </div>
+
           <input
             type="text"
             value={localSearch}
-            onChange={(e) => setLocalSearch(e.target.value)}
+            onChange={(event) => setLocalSearch(event.target.value)}
             placeholder="Tìm tiêu đề, câu chuyện, địa điểm"
             className="block h-9 w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-3 text-[13px] text-slate-900 placeholder-slate-400 transition-colors focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
           />
@@ -61,9 +61,10 @@ export function HelpRequestFilterBar({
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <Layers size={15} className="text-slate-400" />
           </div>
+
           <select
             value={filters.category}
-            onChange={(e) => onFilterChange('category', e.target.value)}
+            onChange={(event) => onFilterChange("category", event.target.value)}
             className="block h-9 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-[13px] text-slate-900 transition-colors focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
           >
             {CATEGORY_OPTIONS.map((option) => (
@@ -78,9 +79,12 @@ export function HelpRequestFilterBar({
           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
             <AlertTriangle size={15} className="text-slate-400" />
           </div>
+
           <select
             value={filters.urgencyLevel}
-            onChange={(e) => onFilterChange('urgencyLevel', e.target.value)}
+            onChange={(event) =>
+              onFilterChange("urgencyLevel", event.target.value)
+            }
             className="block h-9 w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-9 pr-8 text-[13px] text-slate-900 transition-colors focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/40"
           >
             {URGENCY_OPTIONS.map((option) => (
@@ -107,3 +111,5 @@ export function HelpRequestFilterBar({
     </div>
   );
 }
+
+export default HelpRequestFilterBar;

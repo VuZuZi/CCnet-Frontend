@@ -22,7 +22,7 @@ const CATEGORY_OPTIONS = [
 ];
 
 const ORGANIZER_SCOPE_OPTIONS = [
-  { value: "ALL", label: "Tất cả nhà tổ chức" },
+  { value: "ALL", label: "Tất cả tổ chức" },
   { value: "FOLLOWED", label: "Đã theo dõi" },
 ];
 
@@ -170,7 +170,7 @@ function ProjectMapToolbarComponent({
             type="text"
             value={searchValue}
             onChange={onSearchChange}
-          placeholder="Tìm dự án, địa điểm, nhà tổ chức..."
+          placeholder="Tìm dự án, địa điểm, tổ chức..."
             className="h-11 w-full rounded-2xl border border-amber-100 bg-white/95 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
           />
         </div>
@@ -188,7 +188,7 @@ function ProjectMapToolbarComponent({
           onChange={onOrganizerScopeChange}
           options={ORGANIZER_SCOPE_OPTIONS}
           icon={Users}
-          placeholder="Nhà tổ chức"
+          placeholder="Tổ chức"
         />
 
         <ToolbarButton onClick={onLocateMe} icon={LocateFixed}>
@@ -236,7 +236,7 @@ function ProjectMapToolbarComponent({
           onChange={onOrganizerScopeChange}
           options={ORGANIZER_SCOPE_OPTIONS}
           icon={Users}
-          placeholder="Nhà tổ chức"
+          placeholder="Tổ chức"
         />
 
         <Link
@@ -266,7 +266,7 @@ function ProjectMapToolbarComponent({
             type="text"
             value={searchValue}
             onChange={onSearchChange}
-            placeholder="Tìm dự án, địa điểm, nhà tổ chức..."
+            placeholder="Tìm dự án, địa điểm,tổ chức..."
             className="h-11 w-full rounded-2xl border border-amber-100 bg-white/95 py-2 pl-9 pr-4 text-sm font-semibold text-slate-700 outline-none transition focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20"
           />
         </div>
@@ -285,7 +285,7 @@ function ProjectMapToolbarComponent({
             onChange={onOrganizerScopeChange}
             options={ORGANIZER_SCOPE_OPTIONS}
             icon={Users}
-            placeholder="Nhà tổ chức"
+            placeholder="Tổ chức"
           />
         </div>
 

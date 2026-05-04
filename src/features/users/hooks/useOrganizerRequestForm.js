@@ -212,7 +212,7 @@ export function useOrganizerRequestForm(existingRequest = null, options = { omit
         queryKey: queryKeys.organizerRequests.me(),
       });
 
-      toast.success("Đã gửi hồ sơ nhà tổ chức thành công");
+      toast.success("Đã gửi hồ sơ tổ chức thành công");
       navigate("/organizer/request");
     },
     onError: async (error) => {

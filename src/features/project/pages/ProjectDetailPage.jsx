@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { MessageCircle } from "lucide-react";
+import { AlertTriangle, MessageCircle } from "lucide-react";
 
 import { useProjectDetail } from "../hooks/useProjectQueries";
 import { useAuthStore } from "@/features/auth/stores/useAuthStore";
@@ -20,6 +20,7 @@ import { SidebarVolunteer } from "../components/sidebar/SidebarVolunteer";
 import { VolunteerManager } from "@/features/volunteer/components/VolunteerManager.jsx";
 import { ProjectCommunityFeed } from "@/features/project/components/community-feed/ProjectCommunityFeed";
 import { ProjectMilestonesTab } from "@/features/evidence/components/ProjectMilestonesTab";
+import { ReadonlySubmittedProjectPreview } from "../components/detail/ReadonlySubmittedProjectPreview";
 
 const PROJECT_GROUP_OPENABLE_STATUSES = [
   "ACTIVE",
@@ -41,8 +42,32 @@ const VOLUNTEER_MEMBER_STATUSES = new Set([
   "EVALUATED",
 ]);
 
-function normalizeProjectTab(tabValue, isOrganizer) {
+const OWNER_REVIEW_ONLY_STATUSES = new Set([
+  "PENDING_APPROVAL",
+  "UNDER_REVIEW",
+]);
+
+const OWNER_BLOCKED_STATUSES = new Set([
+  "DRAFT",
+  "REVISION_REQUESTED",
+]);
+
+const PUBLIC_BLOCKED_STATUSES = new Set([
+  "DRAFT",
+  "PENDING_APPROVAL",
+  "UNDER_REVIEW",
+  "REVISION_REQUESTED",
+  "REJECTED",
+]);
+
+function normalizeProjectTab(tabValue, isOrganizer, isReadOnlyReviewMode) {
   const raw = String(tabValue || "").trim().toLowerCase();
+
+  if (isReadOnlyReviewMode) {
+    if (raw === "financials") return "financials";
+    if (raw === "milestones") return "milestones";
+    return "story";
+  }
 
   if (raw === "volunteer" || raw === "volunteers") {
     return isOrganizer ? "volunteer" : "story";
@@ -91,7 +116,7 @@ function extractProjectApplicationStatus(project) {
   ];
 
   const matched = candidates.find(
-    (value) => value !== null && value !== undefined
+    (value) => value !== null && value !== undefined,
   );
 
   return String(matched || "")
@@ -109,7 +134,7 @@ function extractReviewState({ myReview, project }) {
   ];
 
   const matched = candidates.find(
-    (value) => value !== null && value !== undefined && String(value).trim()
+    (value) => value !== null && value !== undefined && String(value).trim(),
   );
 
   return String(matched || "")
@@ -144,6 +169,46 @@ export function ProjectDetailPage() {
     project?.organizerId ||
     "";
 
+  const projectStatus = String(project?.status || "").toUpperCase();
+
+  const isOrganizer = Boolean(
+    currentUser &&
+      project &&
+      String(currentUserId) &&
+      String(currentUserId) === String(organizerId),
+  );
+
+  const isReadOnlyReviewMode =
+    Boolean(project) &&
+    isOrganizer &&
+    OWNER_REVIEW_ONLY_STATUSES.has(projectStatus);
+
+  const shouldRedirectRejected =
+    Boolean(project) && isOrganizer && projectStatus === "REJECTED";
+
+  const shouldBlockOwnerDetail =
+    Boolean(project) &&
+    isOrganizer &&
+    OWNER_BLOCKED_STATUSES.has(projectStatus);
+
+  const shouldBlockPublicDetail =
+    Boolean(project) &&
+    !isOrganizer &&
+    PUBLIC_BLOCKED_STATUSES.has(projectStatus);
+
+  const shouldBlockProjectDetail =
+    shouldBlockOwnerDetail || shouldBlockPublicDetail;
+
+  useEffect(() => {
+    if (!project) return;
+
+    if (shouldRedirectRejected) {
+      navigate(`/projects/create/${project._id}/edit?mode=rejected&resubmit=true`, {
+        replace: true,
+      });
+    }
+  }, [project, shouldRedirectRejected, navigate]);
+
   const { useApplicationStatus } = useVolunteerQueries();
   const {
     data: currentApplication,
@@ -156,21 +221,14 @@ export function ProjectDetailPage() {
     return (
       conversations.find(
         (conversation) =>
-          String(conversation?.projectId || "") === String(project._id)
+          String(conversation?.projectId || "") === String(project._id),
       ) || null
     );
   }, [conversations, project?._id]);
 
-  const isOrganizer = Boolean(
-    currentUser &&
-      project &&
-      String(currentUserId) &&
-      String(currentUserId) === String(organizerId)
-  );
-
   const projectLevelApplicationStatus = extractProjectApplicationStatus(project);
   const queryLevelApplicationStatus = String(
-    currentApplication?.status || ""
+    currentApplication?.status || "",
   ).toUpperCase();
 
   const effectiveApplicationStatus =
@@ -180,7 +238,7 @@ export function ProjectDetailPage() {
     project?._id,
     {
       enabled: Boolean(project?._id && currentUserId && !isOrganizer),
-    }
+    },
   );
 
   const effectiveReviewStatus = extractReviewState({ myReview, project });
@@ -189,17 +247,19 @@ export function ProjectDetailPage() {
     currentUser &&
       project &&
       !isOrganizer &&
-      (
-        VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus) ||
+      (VOLUNTEER_MEMBER_STATUSES.has(effectiveApplicationStatus) ||
         Boolean(effectiveReviewStatus) ||
-        Boolean(myReview)
-      )
+        Boolean(myReview)),
   );
 
   useEffect(() => {
-    if (!project) return;
+    if (!project || shouldBlockProjectDetail || isReadOnlyReviewMode) return;
 
-    const nextTab = normalizeProjectTab(tabFromQuery, isOrganizer);
+    const nextTab = normalizeProjectTab(
+      tabFromQuery,
+      isOrganizer,
+      isReadOnlyReviewMode,
+    );
     const nextSubTab = normalizeVolunteerSubTab(subTabFromQuery);
 
     setActiveTab(tabFromQuery ? nextTab : "story");
@@ -207,10 +267,17 @@ export function ProjectDetailPage() {
     if (nextTab === "volunteer") {
       setActiveSubTab(nextSubTab);
     }
-  }, [project, tabFromQuery, subTabFromQuery, isOrganizer]);
+  }, [
+    project,
+    tabFromQuery,
+    subTabFromQuery,
+    isOrganizer,
+    shouldBlockProjectDetail,
+    isReadOnlyReviewMode,
+  ]);
 
   useEffect(() => {
-    if (!project) return;
+    if (!project || shouldBlockProjectDetail || isReadOnlyReviewMode) return;
     if (activeTab !== "volunteer") return;
     if (!applicationIdFromQuery) return;
 
@@ -222,7 +289,13 @@ export function ProjectDetailPage() {
     }, 150);
 
     return () => clearTimeout(timer);
-  }, [project, activeTab, applicationIdFromQuery]);
+  }, [
+    project,
+    activeTab,
+    applicationIdFromQuery,
+    shouldBlockProjectDetail,
+    isReadOnlyReviewMode,
+  ]);
 
   const updateSearchParamsPreserveScroll = (updater) => {
     const currentScrollY = window.scrollY;
@@ -235,6 +308,8 @@ export function ProjectDetailPage() {
   };
 
   const handleNavigateToVolunteerTab = (subTab = "pending") => {
+    if (isReadOnlyReviewMode) return;
+
     const normalizedSubTab = normalizeVolunteerSubTab(subTab);
 
     setActiveTab("volunteer");
@@ -248,6 +323,8 @@ export function ProjectDetailPage() {
   };
 
   const handleOpenCommunityTab = () => {
+    if (isReadOnlyReviewMode) return;
+
     setActiveTab("community");
 
     updateSearchParamsPreserveScroll((nextParams) => {
@@ -270,10 +347,14 @@ export function ProjectDetailPage() {
   const handleTabChange = (nextTab) => {
     if (!nextTab) return;
 
+    if (isReadOnlyReviewMode && ["volunteer", "community"].includes(nextTab)) {
+      return;
+    }
+
     setActiveTab(nextTab);
 
     updateSearchParamsPreserveScroll((nextParams) => {
-      if (nextTab === "volunteer" && isOrganizer) {
+      if (nextTab === "volunteer" && isOrganizer && !isReadOnlyReviewMode) {
         nextParams.set("tab", "volunteer");
         nextParams.set("subTab", activeSubTab || "pending");
         return;
@@ -295,7 +376,8 @@ export function ProjectDetailPage() {
   };
 
   const canOpenProjectGroup =
-    PROJECT_GROUP_OPENABLE_STATUSES.includes(String(project?.status || "").toUpperCase()) &&
+    !isReadOnlyReviewMode &&
+    PROJECT_GROUP_OPENABLE_STATUSES.includes(projectStatus) &&
     Boolean(projectConversation?._id);
 
   const handleOpenProjectGroup = () => {
@@ -309,6 +391,8 @@ export function ProjectDetailPage() {
         return <TabStory project={project} />;
 
       case "volunteer":
+        if (isReadOnlyReviewMode) return <TabStory project={project} />;
+
         return (
           <div ref={volunteerManagerRef}>
             <VolunteerManager
@@ -324,6 +408,8 @@ export function ProjectDetailPage() {
         return <ProjectFinancialsTab project={project} />;
 
       case "community":
+        if (isReadOnlyReviewMode) return <TabStory project={project} />;
+
         return (
           <ProjectCommunityFeed project={project} isOrganizer={isOrganizer} />
         );
@@ -351,6 +437,64 @@ export function ProjectDetailPage() {
             Dự án có thể đã bị xóa hoặc bạn không có quyền truy cập.
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (shouldRedirectRejected) {
+    return <PageLoader />;
+  }
+
+  if (shouldBlockProjectDetail) {
+    return (
+      <div className="min-h-screen bg-[#FFFDF8] px-4 py-20 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-3xl rounded-[28px] border border-amber-200 bg-white px-8 py-14 text-center shadow-sm">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-50 text-amber-600">
+            <AlertTriangle size={30} />
+          </div>
+
+          <h1 className="mt-5 text-2xl font-black text-slate-900">
+            Dự án chưa thể hiển thị công khai
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-slate-500">
+            Dự án này hiện đang ở trạng thái{" "}
+            <span className="font-bold text-amber-700">{projectStatus}</span>,
+            nên chưa thể mở trang chi tiết công khai.
+          </p>
+
+          <button
+            type="button"
+            onClick={() => navigate("/projects")}
+            className="mt-6 rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+          >
+            Quay về danh sách dự án
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isReadOnlyReviewMode) {
+    return (
+      <div className="min-h-screen bg-[#f3f4f6] pb-20">
+        <div className="border-b border-[#F59E0B]/15 bg-white/75 backdrop-blur-md">
+          <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#FBBF24]/20 bg-[#FFFBEB] px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#B45309] shadow-sm">
+                Xem lại nội dung đã nộp
+              </div>
+
+              <div className="rounded-full border border-amber-200 bg-amber-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-amber-700">
+                Chỉ xem, không chỉnh sửa
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <main className="mx-auto max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
+          <ReadonlySubmittedProjectPreview project={project} />
+        </main>
       </div>
     );
   }

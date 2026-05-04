@@ -31,6 +31,17 @@ const SESSION_REQUEST_COOLDOWN_MS = 2000;
 const MAX_RECONNECT_DELAY_MS = 30000;
 const DEV_STRICTMODE_CLEANUP_GRACE_MS = 1200;
 
+const PROJECT_STATUS_REALTIME_TYPES = [
+  REALTIME_NOTIFICATION_TYPES.PROJECT_UPDATED,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_APPROVED,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_REJECTED,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_REVISION_REQUESTED,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_REVIEW_SUBMITTED_TO_ADMINS,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_RESUBMITTED_FOR_APPROVAL,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_COMPLETED,
+  REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_FAILED,
+].filter(Boolean);
+
 function patchNotificationListQueries(queryClient, updater) {
   queryClient.setQueriesData({ queryKey: NOTIFICATION_QUERY_KEYS.list }, (previous) => {
     if (!previous) return previous;
@@ -68,7 +79,7 @@ function markNotificationAsRead(previous, notificationId, readAt = null) {
             isRead: true,
             readAt: readAt || item.readAt || null,
           }
-        : item
+        : item,
     ),
   };
 }
@@ -105,9 +116,9 @@ function patchProjectInsideList(list, projectId, nextStatus) {
   if (!Array.isArray(list)) return list;
 
   return list.map((project) =>
-    String(project?._id) === String(projectId)
+    String(project?._id || project?.id || "") === String(projectId)
       ? { ...project, status: nextStatus }
-      : project
+      : project,
   );
 }
 
@@ -122,6 +133,13 @@ function patchAdminProjectsCache(previous, projectId, nextStatus) {
     return {
       ...previous,
       items: patchProjectInsideList(previous.items, projectId, nextStatus),
+    };
+  }
+
+  if (Array.isArray(previous?.projects)) {
+    return {
+      ...previous,
+      projects: patchProjectInsideList(previous.projects, projectId, nextStatus),
     };
   }
 
@@ -166,12 +184,27 @@ function invalidateProjectQueries(queryClient, projectId = null) {
     });
 
     queryClient.invalidateQueries({
+      queryKey: PROJECT_QUERY_KEYS.revisionDetail?.(projectId),
+      exact: true,
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: PROJECT_QUERY_KEYS.rejectedEditSeed?.(projectId),
+      exact: true,
+    });
+
+    queryClient.invalidateQueries({
       queryKey: PROJECT_FEED_QUERY_KEYS.posts(projectId),
       exact: false,
     });
 
     queryClient.invalidateQueries({
       queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId),
+      exact: false,
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: ADMIN_PROJECT_REVIEW_QUERY_KEYS.detail(projectId),
       exact: false,
     });
   }
@@ -208,54 +241,56 @@ function invalidateProjectQueries(queryClient, projectId = null) {
 }
 
 function patchProjectQueries(queryClient, projectId, nextStatus) {
-  if (!projectId || !nextStatus) return;
+  if (!projectId) return;
 
-  queryClient.setQueriesData({ queryKey: PROJECT_QUERY_KEYS.workspace({}) }, (previous) => {
-    if (!previous || !Array.isArray(previous.projects)) return previous;
-    return {
-      ...previous,
-      projects: patchProjectInsideList(previous.projects, projectId, nextStatus),
-    };
-  });
-
-  queryClient.setQueriesData({ queryKey: PROJECT_QUERY_KEYS.all }, (previous) => {
-    if (!previous) return previous;
-
-    if (Array.isArray(previous?.projects)) {
+  if (nextStatus) {
+    queryClient.setQueriesData({ queryKey: PROJECT_QUERY_KEYS.workspace({}) }, (previous) => {
+      if (!previous || !Array.isArray(previous.projects)) return previous;
       return {
         ...previous,
         projects: patchProjectInsideList(previous.projects, projectId, nextStatus),
       };
-    }
+    });
 
-    if (Array.isArray(previous?.items)) {
-      return {
-        ...previous,
-        items: patchProjectInsideList(previous.items, projectId, nextStatus),
-      };
-    }
-
-    return previous;
-  });
-
-  queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (previous) =>
-    patchAdminProjectsCache(previous, projectId, nextStatus)
-  );
-
-  queryClient.setQueryData(PROJECT_QUERY_KEYS.detail(projectId), (previous) => {
-    if (!previous) return previous;
-    if (String(previous._id) !== String(projectId)) return previous;
-    return { ...previous, status: nextStatus };
-  });
-
-  queryClient.setQueriesData(
-    { queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) },
-    (previous) => {
+    queryClient.setQueriesData({ queryKey: PROJECT_QUERY_KEYS.all }, (previous) => {
       if (!previous) return previous;
-      if (String(previous._id) !== String(projectId)) return previous;
+
+      if (Array.isArray(previous?.projects)) {
+        return {
+          ...previous,
+          projects: patchProjectInsideList(previous.projects, projectId, nextStatus),
+        };
+      }
+
+      if (Array.isArray(previous?.items)) {
+        return {
+          ...previous,
+          items: patchProjectInsideList(previous.items, projectId, nextStatus),
+        };
+      }
+
+      return previous;
+    });
+
+    queryClient.setQueryData(ADMIN_PROJECTS_QUERY_KEY, (previous) =>
+      patchAdminProjectsCache(previous, projectId, nextStatus),
+    );
+
+    queryClient.setQueryData(PROJECT_QUERY_KEYS.detail(projectId), (previous) => {
+      if (!previous) return previous;
+      if (String(previous._id || previous.id || "") !== String(projectId)) return previous;
       return { ...previous, status: nextStatus };
-    }
-  );
+    });
+
+    queryClient.setQueriesData(
+      { queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) },
+      (previous) => {
+        if (!previous) return previous;
+        if (String(previous._id || previous.id || "") !== String(projectId)) return previous;
+        return { ...previous, status: nextStatus };
+      },
+    );
+  }
 
   invalidateProjectQueries(queryClient, projectId);
 }
@@ -366,6 +401,48 @@ function invalidateVolunteerQueries(queryClient, projectId = null) {
   });
 
   invalidateProjectQueries(queryClient, projectId);
+}
+
+function getPayloadProjectId({ item, payload }) {
+  return (
+    item?.metadata?.projectId ||
+    item?.projectId ||
+    item?.entityId ||
+    payload?.notification?.metadata?.projectId ||
+    payload?.notification?.projectId ||
+    payload?.notification?.entityId ||
+    payload?.metadata?.projectId ||
+    payload?.projectId ||
+    payload?.entityId ||
+    null
+  );
+}
+
+function getPayloadHelpRequestId({ item, payload }) {
+  return (
+    item?.metadata?.helpRequestId ||
+    item?.helpRequestId ||
+    item?.entityId ||
+    payload?.notification?.metadata?.helpRequestId ||
+    payload?.notification?.helpRequestId ||
+    payload?.notification?.entityId ||
+    payload?.metadata?.helpRequestId ||
+    payload?.helpRequestId ||
+    payload?.entityId ||
+    null
+  );
+}
+
+function getPayloadProjectStatus({ item, payload }) {
+  return (
+    item?.metadata?.status ||
+    item?.status ||
+    payload?.notification?.metadata?.status ||
+    payload?.notification?.status ||
+    payload?.metadata?.status ||
+    payload?.status ||
+    null
+  );
 }
 
 const runtime = {
@@ -503,24 +580,17 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         }
 
         if (!item.isRead) {
-          bumpUnreadCount();
+          if (typeof payload?.unreadCount === "number") {
+            setUnreadCount(payload.unreadCount);
+          } else {
+            bumpUnreadCount();
+          }
         }
       }
 
-      const projectId =
-        item.entityId ||
-        item.metadata?.projectId ||
-        payload.notification?.metadata?.projectId ||
-        payload.notification?.entityId ||
-        payload.metadata?.projectId ||
-        null;
-
-      const helpRequestId =
-        item.entityId ||
-        item.metadata?.helpRequestId ||
-        payload.notification?.metadata?.helpRequestId ||
-        payload.metadata?.helpRequestId ||
-        null;
+      const projectId = getPayloadProjectId({ item, payload });
+      const helpRequestId = getPayloadHelpRequestId({ item, payload });
+      const nextStatus = getPayloadProjectStatus({ item, payload });
 
       if (HELP_REQUEST_REALTIME_TYPES.includes(item.type)) {
         invalidateHelpRequestQueries(queryClient, helpRequestId);
@@ -587,6 +657,67 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         invalidateVolunteerQueries(queryClient, projectId);
       }
 
+      if (PROJECT_STATUS_REALTIME_TYPES.includes(item.type)) {
+        patchProjectQueries(queryClient, projectId, nextStatus);
+
+        queryClient.invalidateQueries({
+          queryKey: ADMIN_PROJECTS_QUERY_KEY,
+          exact: false,
+        });
+
+        queryClient.refetchQueries({
+          queryKey: ADMIN_PROJECTS_QUERY_KEY,
+          exact: false,
+          type: "active",
+        });
+
+        queryClient.invalidateQueries({
+          queryKey: ADMIN_STATS_QUERY_KEY,
+          exact: false,
+        });
+
+        if (projectId) {
+          queryClient.invalidateQueries({
+            queryKey: ADMIN_PROJECT_REVIEW_QUERY_KEYS.detail(projectId),
+            exact: false,
+          });
+
+          queryClient.refetchQueries({
+            queryKey: ADMIN_PROJECT_REVIEW_QUERY_KEYS.detail(projectId),
+            exact: false,
+            type: "active",
+          });
+        }
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_APPROVED) {
+        toast.success("Dự án đã được phê duyệt.");
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_REJECTED) {
+        toast.error("Dự án đã bị từ chối.");
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_REVISION_REQUESTED) {
+        toast.info("Dự án cần được chỉnh sửa/bổ sung.");
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_REVIEW_SUBMITTED_TO_ADMINS) {
+        toast.info("Có dự án mới được gửi đến cockpit kiểm duyệt.");
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_RESUBMITTED_FOR_APPROVAL) {
+        toast.info("Organizer đã gửi lại dự án sau yêu cầu bổ sung.");
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_COMPLETED) {
+        toast.success("AI đã hoàn tất kiểm duyệt dự án.");
+      }
+
+      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_FAILED) {
+        toast.error("AI kiểm duyệt dự án thất bại.");
+      }
+
       if (item.type === REALTIME_NOTIFICATION_TYPES.VOLUNTEER_APPLIED) {
         toast.success("Có đơn đăng ký tình nguyện viên mới.");
       }
@@ -627,18 +758,18 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
         if (status === "APPROVED") {
           toast.success(
-            "Hồ sơ đã được phê duyệt nội bộ. Bạn có thể tạo dự án gây quỹ."
+            "Hồ sơ đã được phê duyệt nội bộ. Bạn có thể tạo dự án gây quỹ.",
           );
         } else if (status === "DECLINED") {
           toast.error(
-            "Hồ sơ đăng ký Ban tổ chức chưa được chấp thuận. Vui lòng xem lý do và cập nhật lại nếu cần."
+            "Hồ sơ đăng ký Ban tổ chức chưa được chấp thuận. Vui lòng xem lý do và cập nhật lại nếu cần.",
           );
         }
       }
 
       if (item.type === REALTIME_NOTIFICATION_TYPES.ORGANIZER_REQUEST_SUBMITTED) {
         toast.info(
-          "Có hồ sơ đăng ký Ban tổ chức mới đang chờ xem xét."
+          "Có hồ sơ đăng ký Ban tổ chức mới đang chờ xem xét.",
         );
         queryClient.invalidateQueries({
           queryKey: ADMIN_QUERY_KEYS.organizerRequests.all(),
@@ -649,30 +780,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           exact: false,
           type: "active",
         });
-      }
-
-      if (item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_UPDATED) {
-        const nextStatus =
-          item.metadata?.status ||
-          payload.notification?.metadata?.status ||
-          payload.metadata?.status ||
-          null;
-
-        patchProjectQueries(queryClient, projectId, nextStatus);
-      }
-
-      if (
-        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_REVIEW_SUBMITTED_TO_ADMINS ||
-        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_RESUBMITTED_FOR_APPROVAL ||
-        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_COMPLETED ||
-        item.type === REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_FAILED
-      ) {
-        queryClient.invalidateQueries({ queryKey: ADMIN_PROJECTS_QUERY_KEY });
-        if (projectId) {
-          queryClient.invalidateQueries({
-            queryKey: ADMIN_PROJECT_REVIEW_QUERY_KEYS.detail(projectId),
-          });
-        }
       }
 
       if (
@@ -704,14 +811,14 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           globalEventBus.dispatchEvent(
             new CustomEvent(APP_EVENTS.DONATION_SUCCESS, {
               detail: { projectId: String(projectId), status: item.type },
-            })
+            }),
           );
         }
       }
 
       if (item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_REFUNDED) {
         toast.success(
-          "Hoàn tiền dự án thành công. Số dư đã được cộng lại vào ví cá nhân của bạn."
+          "Hoàn tiền dự án thành công. Số dư đã được cộng lại vào ví cá nhân của bạn.",
         );
 
         queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
@@ -728,14 +835,14 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
           globalEventBus.dispatchEvent(
             new CustomEvent(APP_EVENTS.REFUND_SUCCESS, {
               detail: { projectId: String(projectId) },
-            })
+            }),
           );
         }
       }
 
       if (item.type === REALTIME_NOTIFICATION_TYPES.REFUND_REQUEST_SUBMITTED) {
         toast.success(
-          "Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xem xét và phản hồi sớm nhất."
+          "Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xem xét và phản hồi sớm nhất.",
         );
 
         queryClient.invalidateQueries({
@@ -745,7 +852,7 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
       if (item.type === REALTIME_NOTIFICATION_TYPES.REFUND_REQUEST_REJECTED) {
         toast.error(
-          "Yêu cầu hoàn tiền đã bị từ chối. Vui lòng xem lại chi tiết trong mục ủng hộ."
+          "Yêu cầu hoàn tiền đã bị từ chối. Vui lòng xem lại chi tiết trong mục ủng hộ.",
         );
 
         queryClient.invalidateQueries({
@@ -888,8 +995,9 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
 
     const scheduleReconnect = () => {
       const now = Date.now();
-      if (runtime.reconnectTimer || !runtime.currentUserId || runtime.subscriberCount === 0)
+      if (runtime.reconnectTimer || !runtime.currentUserId || runtime.subscriberCount === 0) {
         return;
+      }
       if (!notificationApi.hasAccessToken()) return;
       if (runtime.suppressReconnectUntil > now) return;
 

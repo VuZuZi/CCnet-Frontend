@@ -8,7 +8,7 @@ export const SEARCH_GROUP_ORDER = [
 
 export const SEARCH_GROUP_LABELS = {
   user: "Người dùng",
-  organizer: "Nhà tổ chức",
+  organizer: "Tổ chức",
   project: "Dự án",
   needhelp: "Yêu cầu hỗ trợ",
   communitypost: "Bài viết cộng đồng",

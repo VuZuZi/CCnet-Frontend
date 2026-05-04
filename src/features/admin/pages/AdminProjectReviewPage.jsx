@@ -71,6 +71,18 @@ const SEVERITY_WEIGHT = {
   info: 1,
 };
 
+const REVIEWABLE_STATUSES = new Set([
+  "PENDING",
+  "PENDING_APPROVAL",
+  "UNDER_REVIEW",
+  "REVISION_REQUESTED",
+]);
+
+const MAX_DECISION_REASON_LENGTH = 3900;
+
+const clampDecisionReason = (value) =>
+  String(value || "").trim().slice(0, MAX_DECISION_REASON_LENGTH);
+
 const groupFindings = (findings = []) => {
   const bySection = {};
   const byTarget = {};
@@ -120,10 +132,15 @@ export default function AdminProjectReviewPage() {
   const [manualBypassReason, setManualBypassReason] = useState("");
   const [previewFile, setPreviewFile] = useState(null);
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [decisionCompleted, setDecisionCompleted] = useState(false);
 
   const project = review?.project;
   const latestRun = review?.latestAIReviewRun;
   const aiStatus = latestRun?.status || "NONE";
+
+  const currentStatus = String(project?.status || "").toUpperCase();
+  const isReviewableStatus = REVIEWABLE_STATUSES.has(currentStatus);
+  const shouldHideDecisionActions = decisionCompleted || !isReviewableStatus;
 
   const findings = useMemo(
     () => latestRun?.findings || latestRun?.normalizedOutput?.findings || [],
@@ -193,29 +210,36 @@ export default function AdminProjectReviewPage() {
   const insertSuggestion = useCallback((text) => {
     setDecisionReason((prev) => {
       const current = String(prev || "").trim();
-      return current ? `${current}\n\n${text}` : text;
+      const merged = current ? `${current}\n\n${text}` : text;
+      return clampDecisionReason(merged);
     });
   }, []);
 
   const applyFeedbackFromModal = useCallback((text) => {
-    setDecisionReason(text);
+    setDecisionReason(clampDecisionReason(text));
   }, []);
 
-  const buildDecisionPayload = (decision, extra = {}) => ({
-    decision,
-    expectedStatus: project?.status,
-    expectedSubmissionVersion: review?.submissionVersion,
-    expectedProjectSnapshotHash: review?.projectSnapshotHash,
-    checklist: effectiveChecklist,
-    reason: decisionReason,
-    feedback: decisionReason,
-    aiReviewRunId: latestRun?._id || null,
-    manualAiBypassAcknowledged: false,
-    manualAiBypassReason: "",
-    ...extra,
-  });
+  const buildDecisionPayload = (decision, extra = {}) => {
+    const safeReason = clampDecisionReason(decisionReason);
+
+    return {
+      decision,
+      expectedStatus: project?.status,
+      expectedSubmissionVersion: review?.submissionVersion,
+      expectedProjectSnapshotHash: review?.projectSnapshotHash,
+      checklist: effectiveChecklist,
+      reason: safeReason,
+      feedback: safeReason,
+      aiReviewRunId: latestRun?._id || null,
+      manualAiBypassAcknowledged: false,
+      manualAiBypassReason: "",
+      ...extra,
+    };
+  };
 
   const submitDecision = async (decision) => {
+    if (shouldHideDecisionActions) return;
+
     const payload = buildDecisionPayload(decision);
 
     if (decision === "APPROVED" && !aiIsCurrent) {
@@ -224,23 +248,27 @@ export default function AdminProjectReviewPage() {
     }
 
     await decideProject(payload);
+    setDecisionCompleted(true);
+    await refetch();
   };
 
   const confirmManualBypassApproval = async () => {
-    if (!pendingApprovalPayload) return;
+    if (!pendingApprovalPayload || shouldHideDecisionActions) return;
 
     await decideProject({
       ...pendingApprovalPayload,
       manualAiBypassAcknowledged: true,
-      manualAiBypassReason: manualBypassReason,
+      manualAiBypassReason: clampDecisionReason(manualBypassReason),
       checklist: {
         ...pendingApprovalPayload.checklist,
         ai_reviewed_or_bypassed: true,
       },
     });
 
+    setDecisionCompleted(true);
     setPendingApprovalPayload(null);
     setManualBypassReason("");
+    await refetch();
   };
 
   const scrollToSection = (section) => {
@@ -339,9 +367,12 @@ export default function AdminProjectReviewPage() {
             checklist={effectiveChecklist}
             onChecklistChange={updateChecklist}
             decisionReason={decisionReason}
-            onReasonChange={setDecisionReason}
+            onReasonChange={(value) =>
+              setDecisionReason(clampDecisionReason(value))
+            }
             onDecision={submitDecision}
             isSubmitting={isDeciding}
+            isDecisionCompleted={shouldHideDecisionActions}
             aiIsCurrent={aiIsCurrent}
             aiStatus={aiStatus}
             revisionSuggestions={revisionSuggestions}
@@ -354,7 +385,9 @@ export default function AdminProjectReviewPage() {
       <ManualAIBypassConfirmModal
         open={Boolean(pendingApprovalPayload)}
         reason={manualBypassReason}
-        onReasonChange={setManualBypassReason}
+        onReasonChange={(value) =>
+          setManualBypassReason(clampDecisionReason(value))
+        }
         onClose={() => setPendingApprovalPayload(null)}
         onConfirm={confirmManualBypassApproval}
         loading={isDeciding}

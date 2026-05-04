@@ -21,7 +21,7 @@ const STATUS_LABELS = {
   CANCELLATION_PENDING: "Chờ hủy",
   CANCELLED_FRAUD: "Đã hủy do gian lận",
   CANCELLED_BY_PLATFORM: "Nền tảng đã hủy",
-  CANCELLED_BY_ORGANIZER: "Nhà tổ chức đã hủy",
+  CANCELLED_BY_ORGANIZER: "Tổ chức đã hủy",
   FAILED: "Thất bại",
   FAILED_FUNDING: "Gây quỹ thất bại",
   FAILED_EXECUTION: "Thực hiện thất bại",

@@ -1,6 +1,138 @@
-import { Settings, Sparkles } from 'lucide-react';
-import { useAuthStore, authSelectors } from '@/features/auth/stores/useAuthStore';
-import NotificationList from './NotificationList';
+import { Settings, Sparkles } from "lucide-react";
+import { useAuthStore, authSelectors } from "@/features/auth/stores/useAuthStore";
+import NotificationList from "./NotificationList";
+
+const PROJECT_DECISION_TYPES = new Set([
+  "project_approved",
+  "project_rejected",
+  "project_revision_requested",
+  "project_updated",
+]);
+
+function getProjectId(item) {
+  return (
+    item?.metadata?.projectId ||
+    item?.metadata?.project ||
+    item?.projectId ||
+    item?.entityId ||
+    ""
+  );
+}
+
+function getDecisionStatus(item) {
+  const type = String(item?.type || "").toLowerCase();
+  const status = String(item?.metadata?.status || "").toUpperCase();
+  const decision = String(item?.metadata?.decision || "").toUpperCase();
+
+  if (type === "project_approved") return "APPROVED";
+  if (type === "project_rejected") return "REJECTED";
+  if (type === "project_revision_requested") return "REVISION_REQUESTED";
+
+  if (status === "FUNDING" || status === "RECRUITING" || status === "APPROVED") {
+    return "APPROVED";
+  }
+
+  if (status === "REJECTED" || decision === "REJECTED") {
+    return "REJECTED";
+  }
+
+  if (
+    status === "REVISION_REQUESTED" ||
+    decision === "REVISION_REQUESTED"
+  ) {
+    return "REVISION_REQUESTED";
+  }
+
+  return "";
+}
+
+function getFeedbackText(item) {
+  const metadata = item?.metadata || {};
+
+  return (
+    metadata.feedback ||
+    metadata.reason ||
+    metadata.rejectReason ||
+    metadata.reviewNote ||
+    metadata.withdrawReason ||
+    metadata.rejectionReason ||
+    metadata.adminFeedback ||
+    metadata.decisionFeedback ||
+    ""
+  );
+}
+
+function getNotificationTime(item) {
+  const raw = item?.createdAt || item?.created_at || item?.timestamp;
+  const time = raw ? new Date(raw).getTime() : 0;
+  return Number.isFinite(time) ? time : 0;
+}
+
+function getDuplicateKey(item) {
+  const type = String(item?.type || "").toLowerCase();
+
+  if (!PROJECT_DECISION_TYPES.has(type)) {
+    return "";
+  }
+
+  const projectId = getProjectId(item);
+  const decisionStatus = getDecisionStatus(item);
+
+  if (!projectId || !decisionStatus) {
+    return "";
+  }
+
+  return `project:${projectId}:${decisionStatus}`;
+}
+
+function scoreNotification(item) {
+  let score = 0;
+
+  const type = String(item?.type || "").toLowerCase();
+  const feedback = getFeedbackText(item);
+
+  if (feedback) score += 100;
+
+  if (
+    type === "project_approved" ||
+    type === "project_rejected" ||
+    type === "project_revision_requested"
+  ) {
+    score += 50;
+  }
+
+  score += getNotificationTime(item) / 10000000000000;
+
+  return score;
+}
+
+function dedupeProjectDecisionNotifications(items = []) {
+  if (!Array.isArray(items)) return [];
+
+  const selectedByKey = new Map();
+  const passthrough = [];
+
+  items.forEach((item) => {
+    const duplicateKey = getDuplicateKey(item);
+
+    if (!duplicateKey) {
+      passthrough.push(item);
+      return;
+    }
+
+    const existing = selectedByKey.get(duplicateKey);
+
+    if (!existing || scoreNotification(item) > scoreNotification(existing)) {
+      selectedByKey.set(duplicateKey, item);
+    }
+  });
+
+  const selected = Array.from(selectedByKey.values());
+
+  return [...passthrough, ...selected].sort(
+    (a, b) => getNotificationTime(b) - getNotificationTime(a),
+  );
+}
 
 export default function NotificationDropdown({
   isOpen,
@@ -14,8 +146,11 @@ export default function NotificationDropdown({
   onOpenSettings,
 }) {
   const user = useAuthStore(authSelectors.user);
-  const role = String(user?.role || '').toLowerCase();
-  const canManageSettings = role === 'user' || role === 'organizer';
+  const role = String(user?.role || "").toLowerCase();
+  const canManageSettings = role === "user" || role === "organizer";
+
+  const visibleItems = dedupeProjectDecisionNotifications(items);
+  const visibleUnreadCount = visibleItems.filter((item) => !item?.isRead).length;
 
   if (!isOpen) return null;
 
@@ -32,8 +167,9 @@ export default function NotificationDropdown({
             <h3 className="text-[22px] font-extrabold tracking-tight text-slate-900">
               Thông báo
             </h3>
+
             <p className="mt-0.5 text-[11px] font-semibold text-slate-800">
-              {unreadCount} chưa đọc
+              {visibleUnreadCount} chưa đọc
             </p>
           </div>
 
@@ -41,8 +177,8 @@ export default function NotificationDropdown({
             {canManageSettings ? (
               <button
                 type="button"
-          title="Cài đặt thông báo"
-          aria-label="Cài đặt thông báo"
+                title="Cài đặt thông báo"
+                aria-label="Cài đặt thông báo"
                 onClick={(event) => {
                   event.stopPropagation();
                   onOpenSettings?.();
@@ -72,7 +208,7 @@ export default function NotificationDropdown({
       ) : (
         <div className="max-h-[460px] overflow-y-auto bg-white">
           <NotificationList
-            items={items}
+            items={visibleItems}
             onRead={onRead}
             onDelete={onDelete}
             onClose={onClose}

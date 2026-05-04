@@ -170,7 +170,7 @@ export function AdminNeedHelpRequestsPage() {
               </h1>
 
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-500 sm:text-base">
-                Theo dõi các yêu cầu đã được tạo và gán nhà tổ chức phù hợp với
+                Theo dõi các yêu cầu đã được tạo và gợi ý tổ chức phù hợp với
                 quy trình làm việc nhanh hơn và rõ ràng hơn.
               </p>
             </div>
@@ -187,7 +187,7 @@ export function AdminNeedHelpRequestsPage() {
                 />
                 <SummaryCard
                   icon={TimerReset}
-                  label="Đã gán nhà tổ chức"
+                  label="Đã gợi ý tổ chức"
                   value={summary.assigned}
                   tone="amber"
                 />
@@ -199,7 +199,7 @@ export function AdminNeedHelpRequestsPage() {
                 />
                 <SummaryCard
                   icon={ClipboardList}
-                  label="Cần gán nhà tổ chức"
+                  label="Cần gợi ý tổ chức"
                   value={summary.unassigned}
                   tone="emerald"
                 />

@@ -5,7 +5,7 @@ const ACTION_COPY = {
   REQUEST_PROJECT_UPDATE: {
     title: "Yêu cầu cập nhật dự án",
     description:
-      "Nêu rõ nội dung quản trị viên muốn nhà tổ chức cập nhật. Nội dung này sẽ được gửi trực tiếp cho nhà tổ chức dưới dạng thông báo từ quản trị viên.",
+      "Nêu rõ nội dung quản trị viên muốn tổ chức cập nhật. Nội dung này sẽ được gửi trực tiếp cho tổ chức dưới dạng thông báo từ quản trị viên.",
     placeholder:
       "Ví dụ: Vui lòng cập nhật lại mốc hoạt động và phân bổ ngân sách để khớp với số tiền hiện tại của dự án...",
     confirmText: "Gửi yêu cầu cập nhật",

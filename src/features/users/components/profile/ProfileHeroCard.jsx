@@ -311,7 +311,7 @@ export function ProfileHeroCard({
                 <>
                   <BadgeCheck className="h-5 w-5 text-sky-500" />
                   <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">
-                    Nhà tổ chức
+                    Tổ chức
                   </span>
                 </>
               )}

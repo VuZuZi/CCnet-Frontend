@@ -241,7 +241,7 @@ function HeroSection({ metrics }) {
           </h1>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
-            CCNet kết nối nhà tổ chức và tình nguyện viên trên cùng một
+            CCNet kết nối tổ chức và tình nguyện viên trên cùng một
             nền tảng. Quyên góp, giải ngân và tiến độ dự án đều được theo dõi
             rõ ràng thay vì chỉ dừng ở lời hứa.
           </p>

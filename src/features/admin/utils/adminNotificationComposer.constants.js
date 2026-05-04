@@ -8,7 +8,7 @@ export const ROLE_OPTIONS = [
   },
   {
     value: "organizer",
-    label: "Nhà tổ chức",
+    label: "Tổ chức",
     icon: Users,
   },
   {

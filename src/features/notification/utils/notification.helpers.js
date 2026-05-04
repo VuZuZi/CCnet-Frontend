@@ -17,15 +17,22 @@ export function getNotificationLabel(type) {
   switch (type) {
     case 'follow_created':
       return 'Theo dõi';
+
     case 'project_updated':
     case 'project_approved':
     case 'project_cancelled':
     case 'project_rejected':
+    case 'project_revision_requested':
       return 'Dự án';
+
+    case 'volunteer_applied':
+    case 'volunteer_application_approved':
+    case 'volunteer_application_rejected':
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
       return 'Tình nguyện viên';
+
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':
@@ -33,23 +40,29 @@ export function getNotificationLabel(type) {
     case 'help_request_completed':
     case 'help_request_assignment_responded':
       return 'Yêu cầu trợ giúp';
+
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':
     case 'organizer_request_declined':
-      return 'Yêu cầu nhà tổ chức';
+      return 'Yêu cầu tổ chức';
+
     case 'system_announcement':
       return 'Hệ thống';
+
     case 'donation_successful':
     case 'refund_request_submitted':
     case 'transaction_failed':
     case 'transaction_refunded':
     case 'refund_request_rejected':
       return 'Giao dịch';
+
     case 'post_reacted':
       return 'Phản ứng bài viết';
+
     case 'post_commented':
       return 'Bình luận bài viết';
+
     default:
       return 'Thông báo';
   }
@@ -73,15 +86,22 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
 
     case 'help_request_assigned':
     case 'help_request_reassigned':
-      return 'Mở giao việc';
+      return 'Mở gợi ý';
 
     case 'help_request_assignment_responded':
       return 'Mở yêu cầu';
 
-    case 'project_updated':
     case 'project_approved':
+    case 'project_updated':
     case 'project_cancelled':
+      return 'Mở dự án';
+
     case 'project_rejected':
+      return 'Xem dự án';
+
+    case 'project_revision_requested':
+      return 'Chỉnh sửa dự án';
+
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
@@ -125,10 +145,6 @@ export function shouldPreferRelatedNavigation(type, actionUrl) {
     case 'help_request_rejected':
     case 'help_request_completed':
     case 'help_request_assignment_responded':
-    case 'project_updated':
-    case 'project_approved':
-    case 'project_cancelled':
-    case 'project_rejected':
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
@@ -140,6 +156,13 @@ export function shouldPreferRelatedNavigation(type, actionUrl) {
     case 'refund_request_rejected':
     case 'transaction_refunded':
       return true;
+
+    case 'project_updated':
+    case 'project_approved':
+    case 'project_cancelled':
+    case 'project_rejected':
+    case 'project_revision_requested':
+      return false;
 
     default:
       return false;

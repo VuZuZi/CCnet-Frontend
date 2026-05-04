@@ -132,7 +132,6 @@ export function buildProjectDetailRows(project, documents = []) {
     { label: "Danh mục", value: project?.category || "--" },
     { label: "Địa điểm", value: toDisplayValue(project?.location) },
     { label: "Mục tiêu gây quỹ (VND)", value: formatVnd(project?.targetAmount) },
-    { label: "Số tiền hiện có (VND)", value: formatVnd(project?.currentAmount) },
     {
       label: "Mục tiêu tình nguyện viên",
       value: toDisplayValue(

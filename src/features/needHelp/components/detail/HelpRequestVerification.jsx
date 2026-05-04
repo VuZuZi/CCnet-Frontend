@@ -63,16 +63,16 @@ export function HelpRequestVerification({
       </h2>
 
       <div className="mt-6 grid gap-4">
-        <DetailRow icon={UserRound} label="Nhà tổ chức được giao">
+        <DetailRow icon={UserRound} label="Tổ chức được gợi ý">
           {organizer ? (
             <>
               <p className="font-semibold text-slate-900">{organizer.fullName}</p>
               <p className="text-slate-500">
-                {organizer.email || 'Thông tin liên hệ nhà tổ chức có trong hồ sơ.'}
+                {organizer.email || 'Thông tin liên hệ tổ chức có trong hồ sơ.'}
               </p>
             </>
           ) : (
-            <p className="text-slate-500">Chưa có nhà tổ chức nào được giao.</p>
+            <p className="text-slate-500">Chưa có tổ chức nào được gợi ý.</p>
           )}
         </DetailRow>
 

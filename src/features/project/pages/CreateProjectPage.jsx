@@ -1,10 +1,13 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { CheckCircle2, Trash2, AlertTriangle } from "lucide-react";
 
 import { useProjectDraftStore } from "../stores/useProjectDraftStore";
-import { useProjectDraftDetail } from "../hooks/useProjectQueries";
+import {
+  useProjectDraftDetail,
+  useRejectedProjectEditSeed,
+} from "../hooks/useProjectQueries";
 import { useHelpRequestAsProjectData } from "@/features/needHelp/hooks/useHelpRequestQueries";
 import { useToast } from "@/shared/contexts/ToastContext";
 import { useBodyScrollLock } from "@/shared/hooks/useBodyScrollLock";
@@ -26,51 +29,88 @@ const parseDateLocal = (isoString) => {
 
 const normalizeCoverMedia = (coverMedia) => {
   if (!coverMedia) return [];
-  return Array.isArray(coverMedia) ? coverMedia : [coverMedia];
+
+  if (Array.isArray(coverMedia)) {
+    return coverMedia.filter(Boolean);
+  }
+
+  if (coverMedia.url || coverMedia.publicId || coverMedia._id) {
+    return [coverMedia];
+  }
+
+  return [];
 };
 
+const normalizeDocuments = (documents) => {
+  if (!Array.isArray(documents)) return [];
+  return documents.filter(Boolean);
+};
 
-const buildDraftFormData = (draftData) => ({
-  projectType: draftData.projectType || "FUNDED",
-  title: draftData.title || "",
-  category: draftData.category || "",
-  location: draftData.location || null,
-  description: draftData.description || "",
-  beneficiaryInfo: draftData.beneficiaryInfo || { details: "" },
-  targetAmount: Number(draftData.targetAmount || 0),
-  startDate: parseDateLocal(draftData.startDate),
-  endDate: parseDateLocal(draftData.endDate),
-  needsVolunteers: draftData.needsVolunteers || false,
-  milestones: Array.isArray(draftData.milestones) ? draftData.milestones : [],
-  volunteerRoles: Array.isArray(draftData.volunteerRoles) ? draftData.volunteerRoles : [],
-  coverMedia: normalizeCoverMedia(draftData.coverMedia),
-  documents: Array.isArray(draftData.documents) ? draftData.documents : [],
+const normalizeMilestones = (milestones) => {
+  if (!Array.isArray(milestones)) return [];
+
+  return milestones.map((milestone) => ({
+    ...milestone,
+    startDate: parseDateLocal(milestone?.startDate),
+    endDate: parseDateLocal(milestone?.endDate),
+  }));
+};
+
+const buildProjectFormData = (projectData = {}) => ({
+  projectType: projectData.projectType || "FUNDED",
+  title: projectData.title || "",
+  category: projectData.category || "",
+  location: projectData.location || null,
+  description: projectData.description || "",
+  beneficiaryInfo: projectData.beneficiaryInfo || { details: "" },
+  targetAmount: Number(projectData.targetAmount || 0),
+  startDate: parseDateLocal(projectData.startDate),
+  endDate: parseDateLocal(projectData.endDate),
+  needsVolunteers: Boolean(projectData.needsVolunteers),
+  milestones: normalizeMilestones(projectData.milestones),
+  volunteerRoles: Array.isArray(projectData.volunteerRoles)
+    ? projectData.volunteerRoles
+    : [],
+  coverMedia: normalizeCoverMedia(projectData.coverMedia),
+  documents: normalizeDocuments(projectData.documents),
   deletedDocumentIds: [],
-  fromHelpRequestId: draftData.fromHelpRequestId || null,
+  fromHelpRequestId: projectData.fromHelpRequestId || null,
 });
 
 const buildHelpRequestFormData = (helpRequestData, helpRequestId) => {
   const inferredProjectType =
-    helpRequestData.isFundraising === false ? "VOLUNTEER_ONLY" : "FUNDED";
+    helpRequestData?.isFundraising === false ? "VOLUNTEER_ONLY" : "FUNDED";
 
   return {
-    projectType: helpRequestData.projectType || inferredProjectType,
-    title: helpRequestData.title || "",
-    category: helpRequestData.category || "",
-    location: helpRequestData.location || null,
-    description: helpRequestData.description || "",
-    beneficiaryInfo: helpRequestData.beneficiaryInfo || { details: "" },
-    targetAmount: Number(helpRequestData.targetAmount || 0),
+    projectType: helpRequestData?.projectType || inferredProjectType,
+    title: helpRequestData?.title || "",
+    category: helpRequestData?.category || "",
+    location: helpRequestData?.location || null,
+    description: helpRequestData?.description || "",
+    beneficiaryInfo: helpRequestData?.beneficiaryInfo || { details: "" },
+    targetAmount: Number(helpRequestData?.targetAmount || 0),
     startDate: "",
     endDate: "",
     needsVolunteers: false,
     milestones: [],
     volunteerRoles: [],
-    coverMedia: Array.isArray(helpRequestData.coverMedia) ? helpRequestData.coverMedia : [],
-    documents: Array.isArray(helpRequestData.documents) ? helpRequestData.documents : [],
+    coverMedia: normalizeCoverMedia(helpRequestData?.coverMedia),
+    documents: normalizeDocuments(helpRequestData?.documents),
     deletedDocumentIds: [],
     fromHelpRequestId: helpRequestId,
   };
+};
+
+const getRouteSeedKey = ({
+  isRejectedEditMode,
+  isEditMode,
+  id,
+  helpRequestId,
+}) => {
+  if (isRejectedEditMode && id) return `rejected:${id}`;
+  if (isEditMode && id) return `draft:${id}`;
+  if (helpRequestId) return `help-request:${helpRequestId}`;
+  return "manual:create";
 };
 
 export function CreateProjectPage() {
@@ -79,78 +119,187 @@ export function CreateProjectPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
-  const isEditMode = Boolean(id || location.pathname.includes("edit"));
-  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
-  useBodyScrollLock(isDiscardModalOpen);
+  const seededKeyRef = useRef("");
+  const [readySeedKey, setReadySeedKey] = useState("");
 
   const queryParams = useMemo(
     () => new URLSearchParams(location.search),
     [location.search],
   );
+
   const helpRequestId = queryParams.get("helpRequestId");
+  const mode = String(queryParams.get("mode") || "").toLowerCase();
+  const resubmit = String(queryParams.get("resubmit") || "").toLowerCase();
 
-  const { currentStep, updateFormData, setProjectId, resetDraft, projectId } =
-    useProjectDraftStore();
+  const isEditMode = Boolean(id || location.pathname.includes("edit"));
+  const isRejectedEditMode =
+    Boolean(id) &&
+    isEditMode &&
+    (mode === "rejected" || resubmit === "true" || resubmit === "1");
 
-  const { data: draftData, isLoading, isError } = useProjectDraftDetail(id);
+  const expectedSeedKey = useMemo(
+    () =>
+      getRouteSeedKey({
+        isRejectedEditMode,
+        isEditMode,
+        id,
+        helpRequestId,
+      }),
+    [isRejectedEditMode, isEditMode, id, helpRequestId],
+  );
+
+  const [isDiscardModalOpen, setIsDiscardModalOpen] = useState(false);
+  useBodyScrollLock(isDiscardModalOpen);
+
+  const {
+    currentStep,
+    updateFormData,
+    resetDraft,
+    seedDraftFromProject,
+    editMode,
+    editingRejectedProject,
+  } = useProjectDraftStore();
+
+  const {
+    data: draftData,
+    isLoading: isDraftLoading,
+    isError: isDraftError,
+  } = useProjectDraftDetail(isRejectedEditMode ? null : id);
+
+  const {
+    data: rejectedSeedData,
+    isLoading: isRejectedSeedLoading,
+    isError: isRejectedSeedError,
+  } = useRejectedProjectEditSeed(id, isRejectedEditMode);
+
   const {
     data: helpRequestData,
     isLoading: isHelpRequestLoading,
     isError: isHelpRequestError,
   } = useHelpRequestAsProjectData(helpRequestId);
 
+  /*
+    Quan trọng:
+    Khi đổi từ helpRequest A sang helpRequest B, component có thể không unmount.
+    Phải reset store ngay theo route key mới để tránh Step1/Step2 auto-save bằng dữ liệu cũ.
+  */
   useEffect(() => {
-    if (!isEditMode && !helpRequestId) {
+    seededKeyRef.current = "";
+    setReadySeedKey("");
+
+    resetDraft();
+
+    if (expectedSeedKey === "manual:create") {
+      setReadySeedKey(expectedSeedKey);
+    }
+  }, [expectedSeedKey, resetDraft]);
+
+  useEffect(() => {
+    if (expectedSeedKey === "manual:create") {
       return;
     }
 
-    if (isEditMode && draftData) {
-      resetDraft();
-      updateFormData(buildDraftFormData(draftData));
-      setProjectId(id);
+    if (seededKeyRef.current === expectedSeedKey) {
       return;
     }
 
-    if (helpRequestId && helpRequestData) {
-      if (projectId) {
-        resetDraft();
-      }
+    if (isRejectedEditMode) {
+      if (!rejectedSeedData?.project) return;
+
+      seededKeyRef.current = expectedSeedKey;
+
+      seedDraftFromProject({
+        projectId: id,
+        formData:
+          rejectedSeedData.formData ||
+          buildProjectFormData(rejectedSeedData.project),
+        mode: "rejected",
+        step: 1,
+      });
+
+      setReadySeedKey(expectedSeedKey);
+      return;
+    }
+
+    if (isEditMode && !isRejectedEditMode) {
+      if (!draftData) return;
+
+      seededKeyRef.current = expectedSeedKey;
+
+      seedDraftFromProject({
+        projectId: id,
+        formData: buildProjectFormData(draftData),
+        mode: "draft",
+        step: 1,
+      });
+
+      setReadySeedKey(expectedSeedKey);
+      return;
+    }
+
+    if (helpRequestId) {
+      if (!helpRequestData) return;
+
+      seededKeyRef.current = expectedSeedKey;
+
+      /*
+        Với flow tạo project từ NeedHelp:
+        - luôn bắt đầu bằng projectId null
+        - luôn seed đúng form theo helpRequestId hiện tại
+        - không reuse draft/form/projectId cũ trong zustand
+      */
       updateFormData(buildHelpRequestFormData(helpRequestData, helpRequestId));
+
+      setReadySeedKey(expectedSeedKey);
     }
   }, [
+    expectedSeedKey,
+    isRejectedEditMode,
     isEditMode,
+    rejectedSeedData,
     draftData,
     helpRequestId,
     helpRequestData,
     id,
-    projectId,
-    resetDraft,
-    setProjectId,
+    seedDraftFromProject,
     updateFormData,
   ]);
 
   const handleDiscardDraft = () => {
     resetDraft();
     setIsDiscardModalOpen(false);
-    toast.success("Đã hủy bản nháp thành công");
+    toast.success(
+      editingRejectedProject
+        ? "Đã hủy chỉnh sửa dự án bị từ chối."
+        : "Đã hủy bản nháp thành công.",
+    );
     navigate("/projects");
   };
 
-  const isPageReady = !isEditMode && !helpRequestId
-    ? true
-    : Boolean((isEditMode && draftData) || (helpRequestId && helpRequestData));
+  const isLoading =
+    readySeedKey !== expectedSeedKey ||
+    (isRejectedEditMode && isRejectedSeedLoading) ||
+    (!isRejectedEditMode && isEditMode && isDraftLoading) ||
+    (Boolean(helpRequestId) && isHelpRequestLoading);
 
-  if ((isEditMode && isLoading) || (helpRequestId && isHelpRequestLoading)) {
+  const isError =
+    (isRejectedEditMode && isRejectedSeedError) ||
+    (!isRejectedEditMode && isEditMode && isDraftError) ||
+    (Boolean(helpRequestId) && isHelpRequestError);
+
+  const isPageReady = readySeedKey === expectedSeedKey;
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-bold text-slate-500 animate-pulse">
+      <div className="flex min-h-screen items-center justify-center font-bold text-slate-500 animate-pulse">
         Đang đồng bộ dữ liệu từ máy chủ...
       </div>
     );
   }
 
-  if ((isEditMode && isError) || (helpRequestId && isHelpRequestError)) {
+  if (isError) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-bold text-red-500">
+      <div className="flex min-h-screen items-center justify-center px-4 text-center font-bold text-red-500">
         Lỗi: Không tìm thấy dữ liệu hoặc bạn không có quyền truy cập.
       </div>
     );
@@ -159,20 +308,31 @@ export function CreateProjectPage() {
   if (!isPageReady) return null;
 
   return (
-    <div className="bg-[#f3f4f6] py-8 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div className="flex items-center w-full max-w-2xl relative">
+    <div className="min-h-screen bg-[#f3f4f6] py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {editingRejectedProject || editMode === "rejected" ? (
+          <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-amber-900">
+            <p className="font-bold">Bạn đang chỉnh sửa dự án đã bị từ chối.</p>
+            <p className="mt-1">
+              Hệ thống đã tự động điền lại toàn bộ dữ liệu cũ của dự án vào
+              biểu mẫu. Sau khi chỉnh sửa, hãy gửi lại để Ban quản trị kiểm
+              duyệt.
+            </p>
+          </div>
+        ) : null}
+
+        <div className="mb-8 flex items-center justify-between">
+          <div className="relative flex w-full max-w-2xl items-center">
             {STEPS.map((step, index) => {
               const isActive = currentStep === step.id;
               const isCompleted = currentStep > step.id;
               const isLast = index === STEPS.length - 1;
 
               return (
-                <div key={step.id} className="flex items-center flex-1">
-                  <div className="flex flex-col items-center flex-1 relative z-10">
+                <div key={step.id} className="flex flex-1 items-center">
+                  <div className="relative z-10 flex flex-1 flex-col items-center">
                     <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shadow-md transition-all duration-300 ${
+                      className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold shadow-md transition-all duration-300 ${
                         isActive || isCompleted
                           ? "bg-[#fbbf24] text-white"
                           : "bg-slate-200 text-slate-500"
@@ -182,7 +342,7 @@ export function CreateProjectPage() {
                     </div>
 
                     <span
-                      className={`text-sm mt-2 absolute top-8 whitespace-nowrap transition-colors ${
+                      className={`absolute top-8 mt-2 whitespace-nowrap text-sm transition-colors ${
                         isActive
                           ? "font-bold text-slate-900"
                           : "font-medium text-slate-500"
@@ -194,7 +354,7 @@ export function CreateProjectPage() {
 
                   {!isLast ? (
                     <div
-                      className={`h-1 flex-1 -mx-4 rounded-full z-0 transition-colors duration-300 ${
+                      className={`z-0 -mx-4 h-1 flex-1 rounded-full transition-colors duration-300 ${
                         isCompleted ? "bg-[#fbbf24]" : "bg-slate-200"
                       }`}
                     />
@@ -204,52 +364,64 @@ export function CreateProjectPage() {
             })}
           </div>
 
-          <div className="hidden md:flex items-center text-sm text-slate-500 gap-1.5 ml-8 mt-2">
+          <div className="ml-8 mt-2 hidden items-center gap-1.5 text-sm text-slate-500 md:flex">
             <CheckCircle2 size={18} className="text-slate-400" />
-            Vừa lưu bản nháp
+            {editingRejectedProject || editMode === "rejected"
+              ? "Đang chỉnh sửa để gửi lại"
+              : "Vừa lưu bản nháp"}
 
             <span className="mx-2 text-slate-300">|</span>
             <button
+              type="button"
               onClick={() => setIsDiscardModalOpen(true)}
-              className="flex items-center gap-1 text-red-500 hover:text-red-600 font-medium transition-colors"
+              className="flex items-center gap-1 font-medium text-red-500 transition-colors hover:text-red-600"
             >
               <Trash2 size={14} />
-              Hủy bản nháp
+              {editingRejectedProject || editMode === "rejected"
+                ? "Hủy chỉnh sửa"
+                : "Hủy bản nháp"}
             </button>
           </div>
         </div>
 
-        <div className="mt-12 pb-32">
+        <div className="mt-12 pb-32" key={expectedSeedKey}>
           {currentStep === 1 ? <Step1Story /> : null}
           {currentStep === 2 ? <Step2Budget /> : null}
           {currentStep === 3 ? <Step3Preview /> : null}
         </div>
 
         {isDiscardModalOpen ? (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60">
-            <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-150">
-              <div className="flex items-center justify-center w-12 h-12 bg-red-50 rounded-full mb-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4">
+            <div className="animate-in fade-in zoom-in w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl duration-150">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-50">
                 <AlertTriangle className="text-red-500" size={24} />
               </div>
 
-              <h3 className="text-xl font-bold text-slate-900 mb-2">
-                Hủy bản nháp dự án?
+              <h3 className="mb-2 text-xl font-bold text-slate-900">
+                {editingRejectedProject || editMode === "rejected"
+                  ? "Hủy chỉnh sửa dự án?"
+                  : "Hủy bản nháp dự án?"}
               </h3>
-              <p className="text-slate-600 mb-6">
-                Hành động này sẽ xóa toàn bộ thông tin bạn đã nhập và không thể hoàn tác.
-                Bạn có chắc chắn muốn bắt đầu lại từ đầu không?
+
+              <p className="mb-6 text-slate-600">
+                {editingRejectedProject || editMode === "rejected"
+                  ? "Các thay đổi bạn vừa chỉnh sửa sẽ không được lưu. Dữ liệu dự án gốc vẫn còn trên hệ thống."
+                  : "Hành động này sẽ xóa toàn bộ thông tin bạn đã nhập và không thể hoàn tác. Bạn có chắc chắn muốn bắt đầu lại từ đầu không?"}
               </p>
 
               <div className="flex gap-3">
                 <button
+                  type="button"
                   onClick={() => setIsDiscardModalOpen(false)}
-                  className="flex-1 px-4 py-2.5 font-bold text-slate-700 bg-slate-100 rounded-xl hover:bg-slate-200 transition-colors"
+                  className="flex-1 rounded-xl bg-slate-100 px-4 py-2.5 font-bold text-slate-700 transition-colors hover:bg-slate-200"
                 >
                   Tiếp tục soạn thảo
                 </button>
+
                 <button
+                  type="button"
                   onClick={handleDiscardDraft}
-                  className="flex-1 px-4 py-2.5 font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors shadow-lg shadow-red-500/20"
+                  className="flex-1 rounded-xl bg-red-500 px-4 py-2.5 font-bold text-white shadow-lg shadow-red-500/20 transition-colors hover:bg-red-600"
                 >
                   Xác nhận hủy
                 </button>

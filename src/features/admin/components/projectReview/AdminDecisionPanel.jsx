@@ -19,6 +19,7 @@ export default function AdminDecisionPanel({
   onReasonChange,
   onDecision,
   isSubmitting,
+  isDecisionCompleted = false,
   aiIsCurrent,
   aiStatus,
   revisionSuggestions = [],
@@ -95,10 +96,11 @@ export default function AdminDecisionPanel({
               <input
                 type="checkbox"
                 checked={Boolean(checklist[key])}
+                disabled={isDecisionCompleted}
                 onChange={(event) =>
                   onChecklistChange(key, event.target.checked)
                 }
-                className="mt-1 h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400"
+                className="mt-1 h-4 w-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400 disabled:cursor-not-allowed disabled:opacity-60"
               />
 
               <div className="flex-1">
@@ -117,7 +119,7 @@ export default function AdminDecisionPanel({
         })}
       </div>
 
-      {aiStateWarning && (
+      {aiStateWarning && !isDecisionCompleted && (
         <div className="mt-4 flex gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm leading-6 text-amber-900">
           <AlertTriangle size={16} className="mt-0.5 shrink-0" />
           <p>{aiStateWarning}</p>
@@ -129,22 +131,25 @@ export default function AdminDecisionPanel({
 
         <textarea
           value={decisionReason}
+          disabled={isDecisionCompleted}
           onChange={(event) => onReasonChange(event.target.value)}
           rows={8}
-          className="mt-2 w-full rounded-xl border border-slate-200 p-3 text-sm leading-6 outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
+          className="mt-2 w-full rounded-xl border border-slate-200 p-3 text-sm leading-6 outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-500"
           placeholder="Nhập phản hồi cho organizer khi yêu cầu chỉnh sửa hoặc từ chối."
         />
 
-        <button
-          type="button"
-          onClick={onOpenFeedbackModal}
-          className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-100"
-        >
-          Soạn phản hồi chi tiết
-        </button>
+        {!isDecisionCompleted && (
+          <button
+            type="button"
+            onClick={onOpenFeedbackModal}
+            className="mt-2 inline-flex w-full items-center justify-center rounded-xl border border-amber-300 bg-amber-50 px-4 py-2 text-sm font-bold text-amber-800 hover:bg-amber-100"
+          >
+            Soạn phản hồi chi tiết
+          </button>
+        )}
       </label>
 
-      {revisionSuggestions.length ? (
+      {!isDecisionCompleted && revisionSuggestions.length ? (
         <div className="mt-3 space-y-2">
           <p className="text-xs font-bold uppercase text-slate-500">
             Gợi ý phản hồi từ AI
@@ -164,39 +169,45 @@ export default function AdminDecisionPanel({
         </div>
       ) : null}
 
-      <div className="mt-5 grid gap-2">
-        <button
-          type="button"
-          disabled={isSubmitting || !allComplete}
-          onClick={() => onDecision("APPROVED")}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 text-sm font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <CheckCircle2 size={16} />
-          Phê duyệt
-        </button>
+      {isDecisionCompleted ? (
+        <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold leading-6 text-emerald-700">
+          Quyết định kiểm duyệt đã được ghi nhận.
+        </div>
+      ) : (
+        <div className="mt-5 grid gap-2">
+          <button
+            type="button"
+            disabled={isSubmitting || !allComplete}
+            onClick={() => onDecision("APPROVED")}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-green-600 px-4 text-sm font-bold text-white hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <CheckCircle2 size={16} />
+            Phê duyệt
+          </button>
 
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={() => onDecision("REVISION_REQUESTED")}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-950 hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <Send size={16} />
-          Yêu cầu chỉnh sửa
-        </button>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => onDecision("REVISION_REQUESTED")}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-bold text-slate-950 hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <Send size={16} />
+            Yêu cầu chỉnh sửa
+          </button>
 
-        <button
-          type="button"
-          disabled={isSubmitting}
-          onClick={() => onDecision("REJECTED")}
-          className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          <XCircle size={16} />
-          Từ chối
-        </button>
-      </div>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={() => onDecision("REJECTED")}
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 text-sm font-bold text-red-700 hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <XCircle size={16} />
+            Từ chối
+          </button>
+        </div>
+      )}
 
-      {!allComplete && (
+      {!allComplete && !isDecisionCompleted && (
         <p className="mt-3 text-xs leading-5 text-slate-500">
           Cần hoàn tất toàn bộ checklist trước khi phê duyệt. Vẫn có thể yêu cầu
           chỉnh sửa hoặc từ chối nếu phát hiện rủi ro.

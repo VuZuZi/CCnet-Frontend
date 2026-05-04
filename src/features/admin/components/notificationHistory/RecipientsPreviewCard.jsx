@@ -11,7 +11,7 @@ function RoleBadge({ role }) {
 
   const labelMap = {
     admin: "Quản trị viên",
-    organizer: "Nhà tổ chức",
+    organizer: "Tổ chức",
     user: "Người dùng",
   };
 
