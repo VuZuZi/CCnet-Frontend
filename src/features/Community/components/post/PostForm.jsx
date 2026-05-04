@@ -18,6 +18,7 @@ const UserAvatar = ({ user }) => {
   const initial = (user?.fullName || user?.username || "U")
     .charAt(0)
     .toUpperCase();
+
   return (
     <div className="size-10 rounded-full bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center shrink-0 ring-2 ring-yellow-50">
       {initial}
@@ -46,7 +47,11 @@ const AttachmentGallery = ({ attachments, onRemove }) => {
           <div
             key={idx}
             className={`group relative overflow-hidden bg-slate-100 ${
-              singleItem ? "aspect-[4/3]" : idx === 0 && attachments.length === 3 ? "row-span-2 aspect-[4/5]" : "aspect-square"
+              singleItem
+                ? "aspect-[4/3]"
+                : idx === 0 && attachments.length === 3
+                  ? "row-span-2 aspect-[4/5]"
+                  : "aspect-square"
             }`}
           >
             {isVideo ? (
@@ -117,15 +122,18 @@ const PostForm = ({
   }, [attachments]);
 
   const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
+    const selectedFiles = Array.from(e.target.files || []);
+
     if (attachments.length + selectedFiles.length > 5) {
       return alert("Tối đa 5 file ảnh/video.");
     }
+
     const newAtts = selectedFiles.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
       type: file.type,
     }));
+
     setAttachments((prev) => [...prev, ...newAtts]);
     e.target.value = null;
   };
@@ -134,23 +142,51 @@ const PostForm = ({
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const buildSafeSharedItem = (item) => {
+    if (!item) return null;
+
+    return {
+      ...item,
+
+      // Phòng trường hợp title quá dài
+      title: item.title ? String(item.title).slice(0, 200) : "",
+
+      // Fix lỗi: sharedEntity.description vượt quá 500 ký tự
+      description: item.description
+        ? String(item.description).slice(0, 500)
+        : "",
+
+      // Các field text khác cũng nên ép kiểu string an toàn
+      ownerName: item.ownerName ? String(item.ownerName).slice(0, 100) : "",
+      location: item.location ? String(item.location).slice(0, 200) : "",
+      endDateText: item.endDateText ? String(item.endDateText).slice(0, 100) : "",
+    };
+  };
+
   const handlePost = () => {
     if (
       (!content.trim() && attachments.length === 0 && !sharedItem) ||
-      isOverLimit
-    )
+      isOverLimit ||
+      createPost?.isPending
+    ) {
       return;
+    }
 
     const formData = new FormData();
+
     formData.append("content", content.trim());
     formData.append("privacy", privacy);
 
     if (sharedItem) {
       const postType =
         sharedItem.entityModel === "Project" ? "share_project" : "need_help";
+
+      const safeSharedItem = buildSafeSharedItem(sharedItem);
+
       formData.append("type", postType);
-      console.log("DỮ LIỆU CHUẨN BỊ GỬI LÊN SERVER:", sharedItem);
-      formData.append("sharedEntity", JSON.stringify(sharedItem));
+      formData.append("sharedEntity", JSON.stringify(safeSharedItem));
+
+      console.log("DỮ LIỆU CHUẨN BỊ GỬI LÊN SERVER:", safeSharedItem);
     } else {
       formData.append("type", "normal");
       attachments.forEach((att) => formData.append("images", att.file));
@@ -160,6 +196,7 @@ const PostForm = ({
       onSuccess: () => {
         setContent("");
         setAttachments([]);
+
         if (onPostSuccess) onPostSuccess();
       },
     });
@@ -175,12 +212,30 @@ const PostForm = ({
     : `${user?.fullName || "Bạn"} đang nghĩ gì vậy?`;
 
   const privacyOptions = [
-    { value: "public", label: "Công khai", description: "Ai cũng xem được", icon: Globe2 },
-    { value: "private", label: "Riêng tư", description: "Chỉ người theo dõi mới xem", icon: Lock },
+    {
+      value: "public",
+      label: "Công khai",
+      description: "Ai cũng xem được",
+      icon: Globe2,
+    },
+    {
+      value: "private",
+      label: "Riêng tư",
+      description: "Chỉ người theo dõi mới xem",
+      icon: Lock,
+    },
   ];
 
   return (
-    <div className={`relative ${embedded ? "w-full" : `bg-white rounded-[28px] border border-slate-200 shadow-sm mb-6 ${compact ? "p-4 sm:p-5" : "p-5 sm:p-6"}`}`}>
+    <div
+      className={`relative ${
+        embedded
+          ? "w-full"
+          : `bg-white rounded-[28px] border border-slate-200 shadow-sm mb-6 ${
+              compact ? "p-4 sm:p-5" : "p-5 sm:p-6"
+            }`
+      }`}
+    >
       <div className={`flex gap-4 ${embedded ? "" : ""}`}>
         <UserAvatar user={user} />
 
@@ -188,7 +243,9 @@ const PostForm = ({
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-black text-slate-900">Tạo bài viết</p>
-              <p className="text-xs text-slate-500">Chia sẻ ngay trên tường cá nhân hoặc bảng tin</p>
+              <p className="text-xs text-slate-500">
+                Chia sẻ ngay trên tường cá nhân hoặc bảng tin
+              </p>
             </div>
 
             {showPrivacySelector && (
@@ -250,10 +307,10 @@ const PostForm = ({
         </div>
       </div>
 
-      {/* Khối 2: Thẻ Preview nằm dưới, chiếm full chiều rộng (kéo ra lề trái) */}
       {sharedItem && (
         <div className="relative mt-4">
           <SharedEntityCard entity={sharedItem} isPreview={true} />
+
           {onCancelShare && (
             <button
               onClick={onCancelShare}
@@ -266,7 +323,6 @@ const PostForm = ({
         </div>
       )}
 
-      {/* Input File Ẩn */}
       <input
         type="file"
         multiple
@@ -276,11 +332,15 @@ const PostForm = ({
         className="hidden"
       />
 
-      <div className={`flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-4 pt-4 border-t border-slate-100 ${embedded ? "pb-0" : ""}`}>
+      <div
+        className={`flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-4 pt-4 border-t border-slate-100 ${
+          embedded ? "pb-0" : ""
+        }`}
+      >
         <div>
           {!sharedItem && (
             <button
-              onClick={() => fileInputRef.current.click()}
+              onClick={() => fileInputRef.current?.click()}
               type="button"
               className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors font-semibold text-xs"
             >
