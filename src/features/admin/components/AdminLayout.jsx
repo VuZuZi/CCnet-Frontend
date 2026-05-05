@@ -8,7 +8,6 @@ import {
   authSelectors,
 } from "@/features/auth/stores/useAuthStore";
 import { useLogout } from "@/features/auth/hooks/useLogout";
-import { LanguageSwitcher } from "@/i18n/components/LanguageSwitcher";
 import NavbarNotificationAction from "@/features/notification/components/NavbarNotificationAction";
 import Sidebar from "./Sidebar";
 
@@ -83,7 +82,6 @@ export function AdminLayout() {
               </div>
 
               <NavbarNotificationAction />
-              <LanguageSwitcher />
 
               <button
                 type="button"
