@@ -54,7 +54,7 @@ export function HybridMediaDropzone({
     requireCamera = true,
     maxFiles = 10,
     context = 'project_evidence',
-    mode = 'hybrid' // 'hybrid' | 'upload_only'
+    mode = 'hybrid' // 'hybrid' | 'upload_only' | 'camera_only'
 }) {
     const { upload, isUploading, progress } = useHybridUploader();
     const toast = useToast();
@@ -62,6 +62,9 @@ export function HybridMediaDropzone({
     const [isCameraPhoto, setIsCameraPhoto] = useState(false);
 
     const isHybrid = mode === 'hybrid';
+    const isCameraOnly = mode === 'camera_only';
+    const canUseCamera = isHybrid || isCameraOnly;
+    const canUseUpload = isHybrid || mode === 'upload_only';
     const cameraPhotosCount = value.filter(m => m.isCamera).length;
 
     const handleFileChange = useCallback(async (e, source = 'gallery') => {
@@ -110,7 +113,7 @@ export function HybridMediaDropzone({
     return (
         <div className="space-y-4">
             <div className={clsx("grid gap-3", isHybrid ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
-                {isHybrid && (
+                {canUseCamera && (
                     <button
                         type="button"
                         onClick={triggerCamera}
@@ -134,7 +137,7 @@ export function HybridMediaDropzone({
                     </button>
                 )}
 
-                <div className="relative">
+                <div className={clsx("relative", !canUseUpload && "hidden")}>
                     <input
                         type="file"
                         multiple
@@ -160,7 +163,7 @@ export function HybridMediaDropzone({
                 </div>
             </div>
 
-            {isHybrid && (
+            {canUseCamera && (
                 <input
                     ref={fileInputRef}
                     type="file"
@@ -246,7 +249,7 @@ export function HybridMediaDropzone({
                 </div>
             )}
 
-            {isHybrid && requireCamera && cameraPhotosCount === 0 && (
+            {canUseCamera && requireCamera && cameraPhotosCount === 0 && (
                 <div className="flex items-center gap-2 rounded-xl bg-amber-50 p-3 text-xs font-medium text-amber-700 border border-amber-100">
                     <Camera size={14} className="flex-shrink-0" />
                     <span>Hệ thống yêu cầu ít nhất 01 ảnh chụp trực tiếp tại hiện trường để xác thực tọa độ GPS.</span>

@@ -5,6 +5,14 @@ import { GLOBAL_QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { getErrorMessage } from '@/shared/lib/httpClient';
 
+const getProjectIdFromResponse = (data, variables = {}) =>
+    data?.projectId?._id ||
+    data?.projectId ||
+    data?.request?.projectId?._id ||
+    data?.request?.projectId ||
+    variables.projectId ||
+    null;
+
 export const useCreateDisbursementMutation = (options = {}) => {
     const queryClient = useQueryClient();
     const toast = useToast();
@@ -18,7 +26,7 @@ export const useCreateDisbursementMutation = (options = {}) => {
             
             queryClient.invalidateQueries({ queryKey: DISBURSEMENT_QUERY_KEYS.lists() });
             
-            const projectId = data?.projectId?._id || data?.projectId || variables.projectId;
+            const projectId = getProjectIdFromResponse(data, variables);
             if (projectId) {
                 queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
             }
@@ -48,7 +56,7 @@ export const useApproveDisbursementMutation = (options = {}) => {
             toast.success('Phê duyệt yêu cầu giải ngân thành công!');
             queryClient.invalidateQueries({ queryKey: DISBURSEMENT_QUERY_KEYS.detail(variables.id) });
             
-            const projectId = data?.projectId?._id || data?.projectId;
+            const projectId = getProjectIdFromResponse(data);
             if (projectId) {
                 queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
             }
@@ -82,7 +90,7 @@ export const useTransferActionMutation = (actionType, options = {}) => {
             toast.success(actionType === 'confirm' ? 'Xác nhận chuyển khoản thành công!' : 'Đã báo lỗi chuyển khoản cho tổ chức!');
             queryClient.invalidateQueries({ queryKey: DISBURSEMENT_QUERY_KEYS.detail(variables.id) });
             
-            const projectId = data?.projectId?._id || data?.projectId;
+            const projectId = getProjectIdFromResponse(data);
             if (projectId) {
                 queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
             }
@@ -112,7 +120,7 @@ export const useUpdateDisbursementBankMutation = (options = {}) => {
             toast.success('Đã cập nhật tài khoản nhận tiền mới!');
             queryClient.invalidateQueries({ queryKey: DISBURSEMENT_QUERY_KEYS.detail(variables.id) });
             
-            const projectId = data?.projectId?._id || data?.projectId;
+            const projectId = getProjectIdFromResponse(data);
             if (projectId) {
                 queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.PROJECT_DETAIL(projectId) });
             }

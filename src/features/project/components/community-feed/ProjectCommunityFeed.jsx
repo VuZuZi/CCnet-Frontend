@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Sparkles, Lock, FileText } from "lucide-react";
 
@@ -19,12 +19,10 @@ import {
   getProjectFeedErrorMessage,
   getProjectFeedPermissions,
   normalizeProjectFeedId,
+  validateProjectFeedMediaFile,
 } from "./utils/projectFeed.utils";
 
-const VOLUNTEER_FEED_ALLOWED_STATUSES = new Set([
-  "APPROVED",
-  "WITHDRAW_REQUESTED",
-]);
+const VOLUNTEER_FEED_ALLOWED_STATUSES = new Set(["APPROVED"]);
 
 export function ProjectCommunityFeed({
   project,
@@ -44,6 +42,16 @@ export function ProjectCommunityFeed({
   const [postMedia, setPostMedia] = useState(null);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    const previewUrl = postMedia?.preview;
+
+    return () => {
+      if (typeof previewUrl === "string" && previewUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [postMedia?.preview]);
 
   const shouldFetchApplication =
     Boolean(projectId && userId && !isOrganizer) &&
@@ -103,6 +111,15 @@ export function ProjectCommunityFeed({
       return;
     }
 
+    if (postMedia?.file) {
+      const mediaError = validateProjectFeedMediaFile(postMedia.file);
+      if (mediaError) {
+        toast.error(mediaError);
+        setPostMedia(null);
+        return;
+      }
+    }
+
     try {
       const formData = new FormData();
       formData.append("content", content);
@@ -125,35 +142,27 @@ export function ProjectCommunityFeed({
     const file = event.target.files?.[0];
     if (!file) return;
 
+    const mediaError = validateProjectFeedMediaFile(file);
+    if (mediaError) {
+      toast.error(mediaError);
+      setPostMedia(null);
+      event.target.value = "";
+      return;
+    }
+
     const isImage = file.type.startsWith("image/");
-    const isVideo = file.type.startsWith("video/");
 
-    if (!isImage && !isVideo) {
-      toast.error("Chỉ hỗ trợ ảnh và video.");
-      return;
-    }
-
-    if (file.size > 50 * 1024 * 1024) {
-      toast.error("Tệp quá lớn. Tối đa 50MB.");
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = (loadEvent) => {
-      setPostMedia({
-        file,
-        preview: loadEvent.target?.result,
-        type: isImage ? "image" : "video",
-      });
-    };
-    reader.readAsDataURL(file);
+    setPostMedia({
+      file,
+      preview: URL.createObjectURL(file),
+      type: isImage ? "image" : "video",
+    });
+    event.target.value = "";
   };
 
   const handleCreateComment = async (postId) => {
     if (!canEngage) {
-      toast.error(
-        "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể bình luận."
-      );
+      toast.error("Bạn cần đăng nhập để bình luận.");
       return;
     }
 
@@ -182,7 +191,10 @@ export function ProjectCommunityFeed({
   const postLockedPlaceholder =
     "Chỉ chủ dự án và tình nguyện viên đã được duyệt mới có thể đăng bài trong dự án này.";
   const engageLockedPlaceholder =
-    "Chỉ chủ dự án và tình nguyện viên đã được duyệt mới có thể tương tác...";
+    "Đăng nhập để bình luận...";
+  const permissionNotice = canEngage
+    ? "Bạn có thể bình luận và thả tim. Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể đăng bài và tải media."
+    : "Đăng nhập để bình luận hoặc thả tim. Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể đăng bài và tải media.";
 
   return (
     <section className="space-y-5">
@@ -199,8 +211,8 @@ export function ProjectCommunityFeed({
             </h3>
 
             <p className="mt-2 max-w-[640px] text-sm leading-6 text-slate-600">
-              Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới được đăng bài,
-              bình luận và thả tim trong bảng tin.
+              Chủ dự án và tình nguyện viên đã được duyệt có thể đăng cập nhật;
+              người dùng đã đăng nhập có thể bình luận và thả tim.
             </p>
           </div>
 
@@ -290,10 +302,7 @@ export function ProjectCommunityFeed({
         <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-4 text-sm text-amber-800">
           <div className="flex items-start gap-2">
             <Lock size={16} className="mt-0.5" />
-            <p>
-              Bạn cần là chủ dự án hoặc tình nguyện viên đã được duyệt để đăng bài và
-              tương tác.
-            </p>
+            <p>{permissionNotice}</p>
           </div>
         </div>
       )}

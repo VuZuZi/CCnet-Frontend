@@ -25,6 +25,7 @@ export function MilestoneAccordionItem({
     evidences = [],
     disbursementRequests = [],
   } = milestone;
+  const isNonFinancialMilestone = Number(targetAmount || 0) <= 0;
 
   return (
     <div className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm transition-all hover:border-slate-200">
@@ -50,7 +51,7 @@ export function MilestoneAccordionItem({
           <div>
             <h4 className="font-bold text-slate-900">{title}</h4>
             <p className="text-xs text-slate-500">
-              Ngan sach moc: {formatProjectCurrencyVND(targetAmount)}
+              {isNonFinancialMilestone ? "Moc khong co ngan sach" : `Ngan sach moc: ${formatProjectCurrencyVND(targetAmount)}`}
             </p>
           </div>
         </div>
@@ -63,7 +64,10 @@ export function MilestoneAccordionItem({
       </button>
 
       {isOpen && (
-        <div className="grid grid-cols-1 gap-6 px-5 pb-5 duration-300 animate-in slide-in-from-top-2 lg:grid-cols-2">
+        <div className={clsx(
+          "grid grid-cols-1 gap-6 px-5 pb-5 duration-300 animate-in slide-in-from-top-2",
+          !isNonFinancialMilestone && "lg:grid-cols-2",
+        )}>
           <div className="space-y-3">
             <h5 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
               <FileText size={12} /> Bao cao nghiem thu ({evidences.length})
@@ -98,6 +102,7 @@ export function MilestoneAccordionItem({
             )}
           </div>
 
+          {!isNonFinancialMilestone && (
           <div className="space-y-3">
             <h5 className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
               <Wallet size={12} /> Lenh giai ngan ({disbursementRequests.length})
@@ -192,6 +197,7 @@ export function MilestoneAccordionItem({
               </p>
             )}
           </div>
+          )}
         </div>
       )}
     </div>

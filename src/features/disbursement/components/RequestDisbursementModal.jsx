@@ -27,11 +27,13 @@ export function RequestDisbursementModal({ project, milestone, onClose }) {
     };
 
     return (
-        <Modal open onClose={onClose} title="Yêu cầu giải ngân ngân sách" size="max-w-md">
+        <Modal open onClose={onClose} title={requiresDisbursement ? "Yêu cầu giải ngân" : "Mốc không có ngân sách"} size="max-w-md">
             <div className="space-y-6">
                 <div className="rounded-2xl bg-slate-900 p-6 text-white overflow-hidden relative shadow-lg">
                     <Wallet className="absolute -right-4 -bottom-4 text-white/5" size={120} />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Số tiền cần giải ngân</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+                        {requiresDisbursement ? "Số tiền cần giải ngân" : "Mốc không có ngân sách"}
+                    </p>
                     <h3 className="mt-2 text-3xl font-black">{formatProjectCurrencyVND(requiredDisbursementAmount)}</h3>
                     
                     <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
@@ -46,7 +48,7 @@ export function RequestDisbursementModal({ project, milestone, onClose }) {
                     <div className="rounded-xl bg-slate-50 p-4 border border-slate-200 flex gap-3">
                         <Info className="text-slate-500 shrink-0 mt-0.5" size={18} />
                         <p className="text-[11px] text-slate-700 leading-relaxed font-medium">
-                            Mốc này không có ngân sách (0đ), bạn không cần gửi yêu cầu giải ngân.
+                            Mốc này không có ngân sách (0đ), bạn hãy gửi bằng chứng nghiệm thu để admin duyệt.
                         </p>
                     </div>
                 ) : hasNoWithdrawableBalance ? (
