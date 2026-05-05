@@ -28,6 +28,49 @@ const isOrganizerProfile = (user) => {
   return role === "organizer" || Number(user?.kyc?.tier || 0) >= 2;
 };
 
+function highlightAndScrollToProfilePost(postId) {
+  if (!postId) return;
+
+  const targetId = `post-${postId}`;
+  let attempts = 0;
+  const maxAttempts = 16;
+
+  const run = () => {
+    const element = document.getElementById(targetId);
+
+    if (!element) {
+      attempts += 1;
+      if (attempts < maxAttempts) {
+        window.setTimeout(run, 250);
+      }
+      return;
+    }
+
+    element.scrollIntoView({
+      behavior: "smooth",
+      block: "center",
+    });
+
+    element.classList.add(
+      "ring-2",
+      "ring-amber-400",
+      "ring-offset-2",
+      "rounded-2xl",
+    );
+
+    window.setTimeout(() => {
+      element.classList.remove(
+        "ring-2",
+        "ring-amber-400",
+        "ring-offset-2",
+        "rounded-2xl",
+      );
+    }, 2600);
+  };
+
+  run();
+}
+
 function OrganizerOverviewCard({ user }) {
   if (!isOrganizerProfile(user)) return null;
 
@@ -152,6 +195,7 @@ export function UserProfilePage() {
   const [financeTab, setFinanceTab] = useState(() => resolveFinanceTab(searchParams));
   const currentView = searchParams.get('view');
   const showWalletView = isOwnProfile && currentView === 'wallet';
+  const targetPostId = searchParams.get('postId') || '';
 
   useEffect(() => {
     if (!showWalletView) return;
@@ -166,6 +210,11 @@ export function UserProfilePage() {
       setSearchParams(nextParams, { replace: true });
     }
   }, [showWalletView, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (showWalletView || !targetPostId) return;
+    highlightAndScrollToProfilePost(targetPostId);
+  }, [showWalletView, targetPostId]);
 
   const handleFinanceTabChange = (tab) => {
     setFinanceTab(tab);

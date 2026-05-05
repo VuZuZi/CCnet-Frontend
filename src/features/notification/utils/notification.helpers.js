@@ -61,6 +61,8 @@ export function getNotificationLabel(type) {
       return 'Phản ứng bài viết';
 
     case 'post_commented':
+    case 'comment_replied':
+    case 'comment_reacted':
       return 'Bình luận bài viết';
 
     default:
@@ -112,6 +114,8 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
 
     case 'post_reacted':
     case 'post_commented':
+    case 'comment_replied':
+    case 'comment_reacted':
       return 'Mở bài viết';
 
     case 'organizer_request_submitted':
@@ -139,6 +143,8 @@ export function shouldPreferRelatedNavigation(type, actionUrl) {
     case 'follow_created':
     case 'post_reacted':
     case 'post_commented':
+    case 'comment_replied':
+    case 'comment_reacted':
     case 'help_request_assigned':
     case 'help_request_reassigned':
     case 'help_request_verified':

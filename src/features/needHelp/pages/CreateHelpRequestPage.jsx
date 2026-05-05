@@ -237,6 +237,7 @@ export function CreateHelpRequestPage() {
                       }}
                       uploadContext="help-request"
                       appearance="cover"
+                      showFileNames={false}
                     />
                   )}
                 />

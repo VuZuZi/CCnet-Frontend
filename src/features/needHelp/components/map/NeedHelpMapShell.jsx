@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronLeft, PanelLeftOpen } from 'lucide-react';
-import { toast } from 'react-toastify';
+import { useToast } from '@/shared/contexts/ToastContext';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 import { useHelpRequestMapViewport } from '../../hooks/useHelpRequestQueries';
 import {
@@ -143,6 +143,7 @@ const normalizeViewportForQuery = (viewport) => {
 };
 
 export default function NeedHelpMapShell() {
+  const toast = useToast();
   const [filters, setFilters] = useState(INITIAL_FILTERS);
   const [localSearch, setLocalSearch] = useState('');
   const debouncedSearch = useDebounce(localSearch, 250);
@@ -321,7 +322,7 @@ export default function NeedHelpMapShell() {
         maximumAge: 60000,
       }
     );
-  }, []);
+  }, [toast]);
 
   const handleResetVietnam = useCallback(() => {
     resetSelection();

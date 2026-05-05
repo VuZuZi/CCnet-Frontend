@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, PanelLeftOpen } from "lucide-react";
-import { toast } from "react-toastify";
+import { useToast } from "@/shared/contexts/ToastContext";
 
 import { useProjectMapQuery } from "../../hooks/useProjectMapQueries";
 import {
@@ -20,6 +20,7 @@ const DEFAULT_FILTERS = {
 };
 
 export default function ProjectMapShell() {
+  const toast = useToast();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [searchInput, setSearchInput] = useState("");
   const [viewport, setViewport] = useState(null);
@@ -185,7 +186,7 @@ export default function ProjectMapShell() {
         maximumAge: 60000,
       }
     );
-  }, []);
+  }, [toast]);
 
   const handleResetVietnam = useCallback(() => {
     resetSelection();

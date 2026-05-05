@@ -2,10 +2,8 @@ import { createPortal } from 'react-dom';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  ChevronDown,
   LayoutDashboard,
   LogOut,
-  User as UserIcon,
   Wallet,
 } from 'lucide-react';
 import { ROUTES } from '@/shared/constants/routes';
@@ -115,20 +113,12 @@ export function NavbarUserDropdown({ user, onLogout }) {
         <button
           type="button"
           onClick={handleToggle}
-          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+          className="flex h-11 w-11 items-center justify-center rounded-full transition hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-amber-400/60"
           aria-expanded={isOpen}
           aria-haspopup="menu"
+          aria-label="Menu tài khoản"
         >
           <Avatar user={user} size="sm" />
-          <div className="hidden text-left leading-tight lg:block">
-            <span className="block text-sm font-bold text-slate-900">
-              {user?.fullName || 'Alex Doe'}
-            </span>
-            <span className="block text-xs capitalize text-slate-500">
-              {getRoleLabel(user?.role, 'Nhà tài trợ')}
-            </span>
-          </div>
-          <ChevronDown className="hidden text-slate-400 lg:block" size={16} />
         </button>
       </div>
 
@@ -145,15 +135,25 @@ export function NavbarUserDropdown({ user, onLogout }) {
               <div
                 ref={panelRef}
                 style={panelStyle}
-                className="animate-in fade-in slide-in-from-top-2 w-56 rounded-xl border border-slate-100 bg-white py-2 shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
+                className="animate-in fade-in slide-in-from-top-2 w-72 rounded-xl border border-slate-100 bg-white py-2 shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
               >
                 <Link
                   to={ROUTES.PROFILE}
                   onClick={() => setIsOpen(false)}
-                  className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50 hover:text-slate-900"
+                  className="flex min-w-0 items-center gap-3 px-4 py-3 transition-colors hover:bg-slate-50"
                 >
-                  <UserIcon size={16} /> Hồ sơ
+                  <Avatar user={user} size="md" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-bold text-slate-900">
+                      {user?.fullName || 'Người dùng'}
+                    </span>
+                    <span className="block truncate text-xs font-medium capitalize text-slate-500">
+                      {getRoleLabel(user?.role, 'Nhà tài trợ')}
+                    </span>
+                  </span>
                 </Link>
+
+                <div className="mx-4 my-1 h-px bg-slate-100" />
 
                 <Link
                   to={`${ROUTES.PROFILE}?view=wallet`}
