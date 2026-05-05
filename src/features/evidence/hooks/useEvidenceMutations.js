@@ -5,6 +5,24 @@ import { GLOBAL_QUERY_KEYS } from '@/shared/constants/queryKeys';
 import { useToast } from '@/shared/contexts/ToastContext';
 import { getErrorMessage } from '@/shared/lib/httpClient';
 
+const unwrapEvidenceResult = (data) =>
+    data?.evidence || data?.data?.evidence || data?.data || data || {};
+
+const getSubmitSuccessMessage = (data) => {
+    const result = unwrapEvidenceResult(data);
+
+    if (result?.isAutoPass) {
+        return 'Mốc đã được nghiệm thu tự động bằng ảnh và vị trí hiện trường.';
+    }
+    if (result?.gpsFailureReason === 'MISSING_LOCATION') {
+        return 'Không lấy được vị trí hiện tại. Bạn vẫn có thể tải ảnh bằng chứng để admin duyệt thủ công.';
+    }
+    if (result?.gpsFailureReason === 'OUT_OF_RANGE') {
+        return 'Vị trí chưa khớp với khu vực thực hiện mốc. Bằng chứng đã được gửi để admin duyệt thủ công.';
+    }
+    return 'Bằng chứng đã được gửi và đang chờ admin duyệt.';
+};
+
 export const useSubmitEvidenceMutation = () => {
     const queryClient = useQueryClient();
     const toast = useToast();
@@ -13,7 +31,7 @@ export const useSubmitEvidenceMutation = () => {
         mutationFn: evidenceAPI.submitEvidence,
         retry: false,
         onSuccess: (data, variables) => {
-            toast.success('Đã nộp báo cáo nghiệm thu thành công. Đang chờ phê duyệt!');
+            toast.success(getSubmitSuccessMessage(data));
             queryClient.invalidateQueries({ queryKey: EVIDENCE_QUERY_KEYS.lists() });
             
             // Đồng bộ trạng thái Project Detail (Sửa lỗi Tab không update)
@@ -36,7 +54,7 @@ export const useUpdateEvidenceMutation = () => {
         mutationFn: ({ id, payload }) => evidenceAPI.updateEvidence(id, payload),
         retry: false,
         onSuccess: (data, variables) => {
-            toast.success('Đã nộp lại báo cáo thành công!');
+            toast.success(getSubmitSuccessMessage(data));
             queryClient.invalidateQueries({ queryKey: EVIDENCE_QUERY_KEYS.detail(variables.id) });
             queryClient.invalidateQueries({ queryKey: EVIDENCE_QUERY_KEYS.lists() });
             
@@ -58,23 +76,7 @@ export const useReviewEvidenceMutation = () => {
     return useMutation({
         mutationFn: ({ id, payload }) => evidenceAPI.reviewEvidence(id, payload),
         retry: false,
-        onMutate: async ({ id, payload }) => {
-            await queryClient.cancelQueries({ queryKey: EVIDENCE_QUERY_KEYS.detail(id) });
-            const previousEvidence = queryClient.getQueryData(EVIDENCE_QUERY_KEYS.detail(id));
-
-            if (previousEvidence) {
-                queryClient.setQueryData(EVIDENCE_QUERY_KEYS.detail(id), {
-                    ...previousEvidence,
-                    status: payload.status,
-                    reviewNotes: payload.reviewNotes
-                });
-            }
-            return { previousEvidence };
-        },
-        onError: (error, variables, context) => {
-            if (context?.previousEvidence) {
-                queryClient.setQueryData(EVIDENCE_QUERY_KEYS.detail(variables.id), context.previousEvidence);
-            }
+        onError: (error) => {
             toast.error(getErrorMessage(error) || 'Thao tác kiểm duyệt thất bại.');
         },
         onSettled: (data, error, variables) => {

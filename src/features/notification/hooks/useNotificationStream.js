@@ -6,6 +6,8 @@ import { GLOBAL_QUERY_KEYS } from "@/shared/constants/queryKeys";
 import { globalEventBus, APP_EVENTS } from "@/shared/lib/eventBus";
 import {
   HELP_REQUEST_REALTIME_TYPES,
+  DISBURSEMENT_REALTIME_TYPES,
+  MILESTONE_REALTIME_TYPES,
   NOTIFICATION_QUERY_KEYS,
   NOTIFICATION_SSE_EVENTS,
   REALTIME_NOTIFICATION_TYPES,
@@ -26,6 +28,9 @@ import {
   ADMIN_STATS_QUERY_KEY,
 } from "@/features/admin/constants/admin.queryKeys";
 import { ADMIN_PROJECT_REVIEW_QUERY_KEYS } from "@/features/admin/constants/adminProjectReview.queryKeys";
+import { ADMIN_FINANCE_QUERY_KEYS } from "@/features/adminFinance/constants/adminFinance.queryKeys";
+import { EVIDENCE_QUERY_KEYS } from "@/features/evidence/constants/evidence.queryKeys";
+import { DISBURSEMENT_QUERY_KEYS } from "@/features/disbursement/constants/disbursement.queryKeys";
 
 const SESSION_REQUEST_COOLDOWN_MS = 2000;
 const MAX_RECONNECT_DELAY_MS = 30000;
@@ -445,6 +450,100 @@ function getPayloadProjectStatus({ item, payload }) {
   );
 }
 
+function getPayloadMetadata({ item, payload }) {
+  return {
+    ...(payload?.metadata || {}),
+    ...(payload?.notification?.metadata || {}),
+    ...(item?.metadata || {}),
+  };
+}
+
+function getPayloadRealtimeType({ item, payload }) {
+  const metadata = getPayloadMetadata({ item, payload });
+  return metadata.realtimeType || metadata.domainEvent || item?.type || payload?.type || "";
+}
+
+function invalidateMilestoneRealtimeQueries(queryClient, { item, payload }) {
+  const metadata = getPayloadMetadata({ item, payload });
+  const projectId = getPayloadProjectId({ item, payload });
+  const evidenceId = metadata.evidenceId || item?.entityId || payload?.notification?.entityId || null;
+  const milestoneId = metadata.milestoneId || null;
+
+  queryClient.invalidateQueries({ queryKey: EVIDENCE_QUERY_KEYS.all, exact: false });
+  queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_QUERY_KEYS.all, exact: false });
+
+  if (evidenceId) {
+    queryClient.invalidateQueries({
+      queryKey: EVIDENCE_QUERY_KEYS.detail(evidenceId),
+      exact: false,
+    });
+  }
+
+  if (projectId && milestoneId) {
+    queryClient.invalidateQueries({
+      queryKey: EVIDENCE_QUERY_KEYS.public(projectId, milestoneId),
+      exact: false,
+    });
+  }
+
+  if (projectId) {
+    queryClient.invalidateQueries({
+      queryKey: ADMIN_FINANCE_QUERY_KEYS.detail(projectId),
+      exact: false,
+    });
+  }
+
+  invalidateProjectQueries(queryClient, projectId);
+
+  queryClient.refetchQueries({
+    queryKey: EVIDENCE_QUERY_KEYS.all,
+    exact: false,
+    type: "active",
+  });
+  queryClient.refetchQueries({
+    queryKey: ADMIN_FINANCE_QUERY_KEYS.all,
+    exact: false,
+    type: "active",
+  });
+}
+
+function invalidateDisbursementRealtimeQueries(queryClient, { item, payload }) {
+  const metadata = getPayloadMetadata({ item, payload });
+  const projectId = getPayloadProjectId({ item, payload });
+  const disbursementRequestId =
+    metadata.disbursementRequestId || item?.entityId || payload?.notification?.entityId || null;
+
+  queryClient.invalidateQueries({ queryKey: DISBURSEMENT_QUERY_KEYS.all, exact: false });
+  queryClient.invalidateQueries({ queryKey: ADMIN_FINANCE_QUERY_KEYS.all, exact: false });
+
+  if (disbursementRequestId) {
+    queryClient.invalidateQueries({
+      queryKey: DISBURSEMENT_QUERY_KEYS.detail(disbursementRequestId),
+      exact: false,
+    });
+  }
+
+  if (projectId) {
+    queryClient.invalidateQueries({
+      queryKey: ADMIN_FINANCE_QUERY_KEYS.detail(projectId),
+      exact: false,
+    });
+  }
+
+  invalidateProjectQueries(queryClient, projectId);
+
+  queryClient.refetchQueries({
+    queryKey: DISBURSEMENT_QUERY_KEYS.all,
+    exact: false,
+    type: "active",
+  });
+  queryClient.refetchQueries({
+    queryKey: ADMIN_FINANCE_QUERY_KEYS.all,
+    exact: false,
+    type: "active",
+  });
+}
+
 const runtime = {
   eventSource: null,
   reconnectTimer: null,
@@ -591,6 +690,15 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       const projectId = getPayloadProjectId({ item, payload });
       const helpRequestId = getPayloadHelpRequestId({ item, payload });
       const nextStatus = getPayloadProjectStatus({ item, payload });
+      const realtimeType = getPayloadRealtimeType({ item, payload });
+
+      if (MILESTONE_REALTIME_TYPES.includes(realtimeType)) {
+        invalidateMilestoneRealtimeQueries(queryClient, { item, payload });
+      }
+
+      if (DISBURSEMENT_REALTIME_TYPES.includes(realtimeType)) {
+        invalidateDisbursementRealtimeQueries(queryClient, { item, payload });
+      }
 
       if (HELP_REQUEST_REALTIME_TYPES.includes(item.type)) {
         invalidateHelpRequestQueries(queryClient, helpRequestId);

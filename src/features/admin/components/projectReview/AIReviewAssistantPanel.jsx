@@ -309,7 +309,7 @@ export default function AIReviewAssistantPanel({
           className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-4 text-sm font-bold text-amber-700 hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RefreshCw size={16} className={isRetrying ? "animate-spin" : ""} />
-          {RETRY_BLOCKED_STATES.includes(status) ? "Đang xử lý…" : "Chạy lại"}
+          {RETRY_BLOCKED_STATES.includes(status) ? "Đang xử lý…" : "Phân tích"}
         </button>
       </div>
 

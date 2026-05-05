@@ -9,20 +9,20 @@ import { formatProjectCurrencyVND } from '@/features/project/utils/projectDispla
 import { useToast } from '@/shared/contexts/ToastContext';
 import { Info } from 'lucide-react';
 
-export function SubmitEvidenceModal({ project, milestone, onClose }) {
+export function SubmitEvidenceModal({ project, milestone, onClose, submissionMode = 'MANUAL_UPLOAD' }) {
     const { mutate: submit, isPending } = useSubmitEvidenceMutation();
     const toast = useToast();
+    const isFinancialMilestone = Number(milestone?.targetAmount || 0) > 0;
+    const requiresFinancial = project.projectType === 'FUNDED' && isFinancialMilestone;
+    const evidenceSubmissionMode = requiresFinancial ? 'MANUAL_UPLOAD' : submissionMode;
 
     const { register, handleSubmit, setValue, formState: { errors } } = useForm({
         resolver: zodResolver(evidenceSubmitSchema),
-        defaultValues: { mediaIds: [], receiptMediaIds: [], spentAmount: '' }
+        defaultValues: { mediaIds: [], receiptMediaIds: [], spentAmount: '', submissionMode: evidenceSubmissionMode }
     });
 
     const [fullMedias, setFullMedias] = useState([]);
     const [fullReceipts, setFullReceipts] = useState([]);
-
-    const isFinancialMilestone = Number(milestone?.targetAmount || 0) > 0;
-    const requiresFinancial = project.projectType === 'FUNDED' && isFinancialMilestone;
 
     const handleMediaChange = (newMedias) => {
         setFullMedias(newMedias);
@@ -45,6 +45,7 @@ export function SubmitEvidenceModal({ project, milestone, onClose }) {
 
         const payload = {
             ...data,
+            submissionMode: evidenceSubmissionMode,
             projectId: project._id,
             milestoneId: milestone.milestoneId
         };
@@ -111,7 +112,7 @@ export function SubmitEvidenceModal({ project, milestone, onClose }) {
                                 value={fullMedias}
                                 onChange={handleMediaChange}
                                 context="milestone_evidence"
-                                mode="hybrid" // Chế độ có yêu cầu Camera để Auto-Pass
+                                mode={evidenceSubmissionMode === 'GPS_CHECKIN' ? 'camera_only' : 'upload_only'}
                             />
                         </div>
                     </>
