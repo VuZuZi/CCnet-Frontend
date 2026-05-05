@@ -87,11 +87,7 @@ export default function AdminProjectCardHeader({
           </div>
 
           <div className="flex w-full shrink-0 flex-col items-end gap-2.5 xl:w-[220px]">
-            <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-right text-xs font-semibold leading-5 text-amber-800">
-              {reviewStage
-                ? "Mở cockpit kiểm duyệt để quyết định phê duyệt, yêu cầu chỉnh sửa hoặc từ chối."
-                : "Dùng thao tác vòng đời để tạm dừng, yêu cầu cập nhật, tiếp tục, hoàn thành hoặc hủy dự án."}
-            </p>
+          
             <button
               type="button"
               onClick={() => onOpenHistory(project)}

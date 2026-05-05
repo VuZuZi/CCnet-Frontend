@@ -7,6 +7,7 @@ export const evidenceSubmitSchema = z.object({
         .max(2000, "Tối đa 2000 ký tự."),
     mediaIds: z.array(z.string()).optional().default([]),
     receiptMediaIds: z.array(z.string()).optional().default([]),
+    submissionMode: z.enum(["GPS_CHECKIN", "MANUAL_UPLOAD"]).optional(),
     spentAmount: z.union([z.coerce.number().min(0, "Số tiền không được nhỏ hơn 0"), z.literal('')]).optional()
 });
 

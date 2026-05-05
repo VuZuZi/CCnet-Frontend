@@ -37,6 +37,7 @@ export function DonationHistoryList() {
 
     return (
         <div className="space-y-6">
+            {/* Tạm ẩn tính năng tra soát giao dịch
             <div className="flex flex-col md:flex-row items-center justify-between gap-4 p-5 bg-gradient-to-r from-slate-900 to-slate-800 rounded-[28px] text-white shadow-xl shadow-slate-200">
                 <div className="flex items-center gap-4">
                     <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center backdrop-blur-md">
@@ -54,18 +55,21 @@ export function DonationHistoryList() {
                     Tra soát biên lai <ChevronRight size={16} />
                 </button>
             </div>
+            */}
 
             {donations.length === 0 ? (
                 <div className="py-20 text-center bg-white rounded-[32px] border border-dashed border-slate-200">
                     <History className="mx-auto text-slate-200 mb-4" size={56} />
                     <p className="text-slate-500 font-bold text-lg">Lịch sử trống</p>
                     <p className="text-slate-400 text-sm mb-6">Bạn chưa có giao dịch quyên góp nào.</p>
+                    {/* Tạm ẩn tính năng tra soát giao dịch
                     <button
                         onClick={() => setIsClaimModalOpen(true)}
                         className="text-amber-600 font-bold hover:underline"
                     >
                         Thử tra soát giao dịch cũ?
                     </button>
+                    */}
                 </div>
             ) : (
                 <div className="grid gap-4 w-full max-w-full">
