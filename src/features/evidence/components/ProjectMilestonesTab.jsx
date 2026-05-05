@@ -12,6 +12,7 @@ import clsx from 'clsx';
 
 export function ProjectMilestonesTab({ project, isOrganizer }) {
     const [selectedMilestone, setSelectedMilestone] = useState(null);
+    const [evidenceSubmissionMode, setEvidenceSubmissionMode] = useState('MANUAL_UPLOAD');
     const [disbursementTarget, setDisbursementTarget] = useState(null);
     const [rescueTarget, setRescueTarget] = useState(null);
     // [NEW] State để quản lý modal view cho Public/Donor
@@ -28,7 +29,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                 <div>
                     <h3 className="text-lg font-black uppercase tracking-tight">Sổ Cái Minh Bạch</h3>
                     <p className="text-xs text-slate-400 mt-1">
-                        {isVolunteerOnly ? 'Theo dõi Lộ trình và Bằng chứng thực tế' : 'Mô hình Tạm ứng cuốn chiếu: Rút tiền -> Thực thi -> Nghiệm thu'}
+                        {isVolunteerOnly ? 'Theo dõi Lộ trình và Bằng chứng thực tế' : 'Mô hình Tạm ứng cuốn chiếu: Tạm ứng -> Thực thi -> Nghiệm thu'}
                     </p>
                 </div>
                 {!isVolunteerOnly && project?.financialOverview && (
@@ -62,6 +63,7 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                     const previousMilestone = idx > 0 ? milestones[idx - 1] : null;
                     const isPreviousMilestoneCompleted = previousMilestone?.status === 'COMPLETED';
                     const isCurrentMilestonePending = ms?.status === 'PENDING';
+                    const isLocked = idx > 0 && !isPreviousMilestoneCompleted;
                     const requiredDisbursementAmount = Number(
                         ms?.requiredDisbursementAmount ?? ms?.targetAmount ?? 0
                     );
@@ -80,8 +82,20 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                             isOrganizer={isOrganizer}
                             isVolunteerOnly={isVolunteerOnly}
                             canRequestDisbursement={canRequestDisbursement}
+                            isLocked={isLocked}
                             isProjectExecuting={isProjectExecuting}
-                            onNopNghiemThu={() => setSelectedMilestone(ms)}
+                            onGpsCheckin={() => {
+                                setEvidenceSubmissionMode('GPS_CHECKIN');
+                                setSelectedMilestone(ms);
+                            }}
+                            onManualEvidenceUpload={() => {
+                                setEvidenceSubmissionMode('MANUAL_UPLOAD');
+                                setSelectedMilestone(ms);
+                            }}
+                            onFinancialEvidenceUpload={() => {
+                                setEvidenceSubmissionMode('MANUAL_UPLOAD');
+                                setSelectedMilestone(ms);
+                            }}
                             onYeuCauGiaiNgan={() => setDisbursementTarget(ms)}
                             onCuuHo={() => setRescueTarget(ms)}
                             onXemBaoCao={() => setPublicEvidenceTarget(ms)} // [NEW] Truyền prop
@@ -95,7 +109,11 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
                 <SubmitEvidenceModal
                     project={project}
                     milestone={selectedMilestone}
-                    onClose={() => setSelectedMilestone(null)}
+                    submissionMode={evidenceSubmissionMode}
+                    onClose={() => {
+                        setSelectedMilestone(null);
+                        setEvidenceSubmissionMode('MANUAL_UPLOAD');
+                    }}
                 />
             )}
 
@@ -127,22 +145,45 @@ export function ProjectMilestonesTab({ project, isOrganizer }) {
 }
 
 // --- Sub-component cho từng dòng Sổ cái ---
-function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canRequestDisbursement, isProjectExecuting, onNopNghiemThu, onYeuCauGiaiNgan, onCuuHo, onXemBaoCao }) {
+function MilestoneLedgerItem({
+    ms,
+    index,
+    isOrganizer,
+    isVolunteerOnly,
+    canRequestDisbursement,
+    isLocked,
+    isProjectExecuting,
+    onGpsCheckin,
+    onManualEvidenceUpload,
+    onFinancialEvidenceUpload,
+    onYeuCauGiaiNgan,
+    onCuuHo,
+    onXemBaoCao
+}) {
     const isCompleted = ms.status === 'COMPLETED';
+    const targetAmount = Number(ms?.targetAmount || 0);
+    const isNonFinancialMilestone = targetAmount <= 0;
     const requiredDisbursementAmount = Number(
         ms?.requiredDisbursementAmount ?? ms?.targetAmount ?? 0
     );
-    const isDisbursementRequired = !isVolunteerOnly && requiredDisbursementAmount > 0;
+    const isFinancialMilestone = !isVolunteerOnly && targetAmount > 0;
+    const isDisbursementRequired = isFinancialMilestone && requiredDisbursementAmount > 0;
     
     const evStatus = ms.evidenceStatus || 'NOT_SUBMITTED';
     const disStatus = ms.disbursementStatus || 'NOT_STARTED';
     
     const hasActiveDisbursement = ['PENDING', 'APPROVED_PENDING_TRANSFER', 'COMPLETED', 'HOLD'].includes(disStatus);
     const isDisbursementCompleted = disStatus === 'COMPLETED';
-    const canSubmitEvidence =
+    const canSubmitBase =
         isOrganizer &&
-        (evStatus === 'NOT_SUBMITTED' || evStatus === 'REVISION_REQUESTED') &&
-        (isVolunteerOnly || !isDisbursementRequired || isDisbursementCompleted);
+        !isLocked &&
+        isProjectExecuting &&
+        (evStatus === 'NOT_SUBMITTED' || evStatus === 'REVISION_REQUESTED');
+    const canSubmitNonFinancialEvidence = canSubmitBase && isNonFinancialMilestone;
+    const canSubmitFinancialEvidence =
+        canSubmitBase &&
+        isFinancialMilestone &&
+        (!isDisbursementRequired || isDisbursementCompleted);
 
     return (
         <div className="relative flex gap-6 pl-0 sm:pl-2 animate-in slide-in-from-left-4 duration-500">
@@ -163,16 +204,26 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                     </div>
                     {!isVolunteerOnly && (
                         <div className="bg-slate-100 px-3 py-1.5 rounded-xl shrink-0 text-right">
-                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Ngân sách tạm ứng</p>
+                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-tighter">
+                                {isNonFinancialMilestone ? 'Mốc không có ngân sách' : 'Ngân sách tạm ứng'}
+                            </p>
                             <p className="text-sm font-black text-slate-900">{formatProjectCurrencyVND(ms.targetAmount)}</p>
                         </div>
                     )}
                 </div>
 
-                <div className={clsx("grid gap-3", isVolunteerOnly ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2")}>
+                {isLocked && (
+                    <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs font-bold text-slate-500">
+                        <Lock size={14} />
+                        Mốc trước cần được nghiệm thu trước khi thực hiện mốc này.
+                    </div>
+                )}
+
+                {!isLocked && (
+                <div className={clsx("grid gap-3", isFinancialMilestone ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1")}>
                     
-                    {/* Block: Dòng tiền (Rút tiền trước) */}
-                    {!isVolunteerOnly && (
+                    {/* Block: financial milestone funding */}
+                    {isFinancialMilestone && (
                         <div className={clsx(
                             "rounded-2xl border p-4 transition-all flex flex-col justify-between",
                             disStatus === 'HOLD' ? "bg-red-50 border-red-200" : "bg-blue-50/30 border-blue-100"
@@ -187,14 +238,14 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                             <div className="flex gap-2">
                                 {isOrganizer && !isDisbursementRequired && (
                                     <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-500 text-[10px] font-bold uppercase tracking-tight cursor-default">
-                                        Mốc 0đ không cần yêu cầu giải ngân
+                                        Mốc này dùng số dư từ mốc trước.
                                     </div>
                                 )}
 
                                 {isOrganizer && isDisbursementRequired && !hasActiveDisbursement && (
                                     canRequestDisbursement ? (
                                         <button onClick={onYeuCauGiaiNgan} className="w-full py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 shadow-md transition-colors">
-                                            Yêu cầu rút tiền
+                                            Yêu cầu giải ngân
                                         </button>
                                     ) : (
                                         <div className="flex w-full items-center justify-center gap-1.5 py-2 rounded-xl bg-slate-100 text-slate-400 text-[10px] font-bold uppercase tracking-tight cursor-not-allowed">
@@ -227,10 +278,27 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                         
                         <div className="space-y-2 mt-auto">
                             {/* Nút dành cho Organizer nộp / sửa báo cáo */}
-                            {canSubmitEvidence && (
-                                <button onClick={onNopNghiemThu} className="w-full py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
-                                    {evStatus === 'REVISION_REQUESTED' ? 'Nộp lại báo cáo' : 'Nộp báo cáo + Hóa đơn'}
+                            {canSubmitNonFinancialEvidence && (
+                                <div className="grid gap-2 sm:grid-cols-2">
+                                    <button onClick={onGpsCheckin} className="w-full py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all shadow-sm">
+                                        Chụp ảnh nghiệm thu tại hiện trường
+                                    </button>
+                                    <button onClick={onManualEvidenceUpload} className="w-full py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                                        Tải ảnh bằng chứng để admin duyệt
+                                    </button>
+                                </div>
+                            )}
+
+                            {canSubmitFinancialEvidence && (
+                                <button onClick={onFinancialEvidenceUpload} className="w-full py-2 rounded-xl bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-900 hover:text-white transition-all shadow-sm">
+                                    Nộp báo cáo chi tiêu
                                 </button>
+                            )}
+
+                            {evStatus === 'PENDING' && (
+                                <div className="rounded-xl bg-amber-50 p-3 text-xs font-bold text-amber-700 border border-amber-100">
+                                    Bằng chứng đã được gửi và đang chờ admin duyệt.
+                                </div>
                             )}
 
                             {/* [NEW] Nút Xem chi tiết cho BẤT KỲ AI nếu báo cáo đã duyệt */}
@@ -249,6 +317,7 @@ function MilestoneLedgerItem({ ms, index, isOrganizer, isVolunteerOnly, canReque
                         </div>
                     </div>
                 </div>
+                )}
             </div>
         </div>
     );
