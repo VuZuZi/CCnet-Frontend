@@ -4,12 +4,14 @@ import { useAuthStore } from "../../../auth/stores/useAuthStore";
 import { Globe2, Lock, ImagePlus, SendHorizontal } from "lucide-react";
 import { SharedEntityCard } from "./SharedEntityCard";
 
-// --- Sub-component Avatar ---
+const MAX_IMAGES = 5;
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+
 const UserAvatar = ({ user }) => {
   if (user?.avatar) {
     return (
       <div
-        className="size-10 rounded-full ring-2 ring-primary/10 bg-cover bg-center shrink-0"
+        className="size-10 shrink-0 rounded-full bg-cover bg-center ring-2 ring-primary/10"
         style={{ backgroundImage: `url("${user.avatar}")` }}
       />
     );
@@ -18,52 +20,58 @@ const UserAvatar = ({ user }) => {
   const initial = (user?.fullName || user?.username || "U")
     .charAt(0)
     .toUpperCase();
+
   return (
-    <div className="size-10 rounded-full bg-yellow-100 text-yellow-700 font-bold flex items-center justify-center shrink-0 ring-2 ring-yellow-50">
+    <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-yellow-100 font-bold text-yellow-700 ring-2 ring-yellow-50">
       {initial}
     </div>
   );
 };
 
-// --- Sub-component Gallery ảnh ---
 const AttachmentGallery = ({ attachments, onRemove }) => {
   if (!attachments.length) return null;
 
-  const visibleAttachments = attachments.slice(0, 4);
+  const visibleAttachments = attachments.slice(0, MAX_IMAGES);
   const remainingCount = attachments.length - visibleAttachments.length;
-  const singleItem = visibleAttachments.length === 1;
+  const count = visibleAttachments.length;
+
+  const getGridClass = () => {
+    if (count === 1) return "grid-cols-1";
+    if (count === 2) return "grid-cols-2";
+    return "grid-cols-2";
+  };
+
+  const getItemClass = (index) => {
+    if (count === 1) {
+      return "h-[260px] sm:h-[320px]";
+    }
+
+    if (count === 2) {
+      return "h-[190px] sm:h-[240px]";
+    }
+
+    if (count === 3 && index === 0) {
+      return "row-span-2 h-[260px] sm:h-[320px]";
+    }
+
+    return "h-[125px] sm:h-[156px]";
+  };
 
   return (
-    <div
-      className={`mt-4 grid gap-2 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 ${
-        singleItem ? "grid-cols-1" : "grid-cols-2"
-      }`}
-    >
-      {visibleAttachments.map((att, idx) => {
-        const isVideo = att.type.startsWith("video/");
-
-        return (
+    <div className="mt-4 max-h-[360px] overflow-y-auto rounded-2xl border border-slate-200 bg-slate-50 p-2">
+      <div className={`grid gap-2 ${getGridClass()}`}>
+        {visibleAttachments.map((att, idx) => (
           <div
-            key={idx}
-            className={`group relative overflow-hidden bg-slate-100 ${
-              singleItem ? "aspect-[4/3]" : idx === 0 && attachments.length === 3 ? "row-span-2 aspect-[4/5]" : "aspect-square"
-            }`}
+            key={`${att.file.name}-${idx}`}
+            className={`group relative overflow-hidden rounded-xl bg-slate-100 ${getItemClass(idx)}`}
           >
-            {isVideo ? (
-              <video
-                src={att.preview}
-                className="h-full w-full object-cover"
-                controls
-              />
-            ) : (
-              <img
-                src={att.preview}
-                alt="xem trước"
-                className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-              />
-            )}
+            <img
+              src={att.preview}
+              alt={att.file.name || "Ảnh xem trước"}
+              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+            />
 
-            {remainingCount > 0 && idx === 3 ? (
+            {remainingCount > 0 && idx === MAX_IMAGES - 1 ? (
               <div className="absolute inset-0 flex items-center justify-center bg-black/40 text-2xl font-black text-white backdrop-blur-[1px]">
                 +{remainingCount}
               </div>
@@ -72,18 +80,18 @@ const AttachmentGallery = ({ attachments, onRemove }) => {
             <button
               type="button"
               onClick={() => onRemove(idx)}
-              className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-black/55 text-white opacity-0 shadow-md transition-opacity hover:bg-red-500 group-hover:opacity-100"
+              className="absolute right-2 top-2 flex size-8 items-center justify-center rounded-full bg-black/55 text-white opacity-100 shadow-md transition hover:bg-red-500 sm:opacity-0 sm:group-hover:opacity-100"
+              aria-label="Xóa ảnh"
             >
               ✕
             </button>
           </div>
-        );
-      })}
+        ))}
+      </div>
     </div>
   );
 };
 
-// --- Component PostForm CHÍNH ---
 const PostForm = ({
   sharedItem = null,
   initialContent = "",
@@ -113,53 +121,111 @@ const PostForm = ({
   }, [defaultPrivacy]);
 
   useEffect(() => {
-    return () => attachments.forEach((att) => URL.revokeObjectURL(att.preview));
+    return () => {
+      attachments.forEach((att) => URL.revokeObjectURL(att.preview));
+    };
   }, [attachments]);
 
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    if (attachments.length + selectedFiles.length > 5) {
-      return alert("Tối đa 5 file ảnh/video.");
+  const handleFileChange = (event) => {
+    const selectedFiles = Array.from(event.target.files || []);
+
+    if (!selectedFiles.length) return;
+
+    const imageFiles = selectedFiles.filter((file) =>
+      file.type.startsWith("image/"),
+    );
+
+    if (imageFiles.length !== selectedFiles.length) {
+      alert("Hiện tại bài viết cộng đồng chỉ hỗ trợ ảnh. Vui lòng chọn file ảnh.");
+      event.target.value = null;
+      return;
     }
-    const newAtts = selectedFiles.map((file) => ({
+
+    const oversizedFile = imageFiles.find((file) => file.size > MAX_IMAGE_SIZE);
+    if (oversizedFile) {
+      alert("Mỗi ảnh tối đa 5MB.");
+      event.target.value = null;
+      return;
+    }
+
+    if (attachments.length + imageFiles.length > MAX_IMAGES) {
+      alert(`Tối đa ${MAX_IMAGES} ảnh mỗi bài viết.`);
+      event.target.value = null;
+      return;
+    }
+
+    const newAttachments = imageFiles.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
       type: file.type,
     }));
-    setAttachments((prev) => [...prev, ...newAtts]);
-    e.target.value = null;
+
+    setAttachments((prev) => [...prev, ...newAttachments]);
+    event.target.value = null;
   };
 
   const handleRemoveAttachment = (index) => {
-    setAttachments((prev) => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => {
+      const removed = prev[index];
+
+      if (removed?.preview) {
+        URL.revokeObjectURL(removed.preview);
+      }
+
+      return prev.filter((_, i) => i !== index);
+    });
+  };
+
+  const buildSafeSharedItem = (item) => {
+    if (!item) return null;
+
+    return {
+      ...item,
+      title: item.title ? String(item.title).slice(0, 200) : "",
+      description: item.description ? String(item.description).slice(0, 500) : "",
+      ownerName: item.ownerName ? String(item.ownerName).slice(0, 100) : "",
+      location: item.location ? String(item.location).slice(0, 200) : "",
+      endDateText: item.endDateText
+        ? String(item.endDateText).slice(0, 100)
+        : "",
+    };
   };
 
   const handlePost = () => {
     if (
       (!content.trim() && attachments.length === 0 && !sharedItem) ||
-      isOverLimit
-    )
+      isOverLimit ||
+      createPost?.isPending
+    ) {
       return;
+    }
 
     const formData = new FormData();
+
     formData.append("content", content.trim());
     formData.append("privacy", privacy);
 
     if (sharedItem) {
       const postType =
         sharedItem.entityModel === "Project" ? "share_project" : "need_help";
+
+      const safeSharedItem = buildSafeSharedItem(sharedItem);
+
       formData.append("type", postType);
-      console.log("DỮ LIỆU CHUẨN BỊ GỬI LÊN SERVER:", sharedItem);
-      formData.append("sharedEntity", JSON.stringify(sharedItem));
+      formData.append("sharedEntity", JSON.stringify(safeSharedItem));
     } else {
       formData.append("type", "normal");
-      attachments.forEach((att) => formData.append("images", att.file));
+      attachments.forEach((att) => {
+        formData.append("images", att.file);
+      });
     }
 
     createPost.mutate(formData, {
       onSuccess: () => {
+        attachments.forEach((att) => URL.revokeObjectURL(att.preview));
         setContent("");
         setAttachments([]);
+
         if (onPostSuccess) onPostSuccess();
       },
     });
@@ -175,24 +241,44 @@ const PostForm = ({
     : `${user?.fullName || "Bạn"} đang nghĩ gì vậy?`;
 
   const privacyOptions = [
-    { value: "public", label: "Công khai", description: "Ai cũng xem được", icon: Globe2 },
-    { value: "private", label: "Riêng tư", description: "Chỉ người theo dõi mới xem", icon: Lock },
+    {
+      value: "public",
+      label: "Công khai",
+      description: "Ai cũng xem được",
+      icon: Globe2,
+    },
+    {
+      value: "private",
+      label: "Riêng tư",
+      description: "Chỉ người theo dõi mới xem",
+      icon: Lock,
+    },
   ];
 
   return (
-    <div className={`relative ${embedded ? "w-full" : `bg-white rounded-[28px] border border-slate-200 shadow-sm mb-6 ${compact ? "p-4 sm:p-5" : "p-5 sm:p-6"}`}`}>
-      <div className={`flex gap-4 ${embedded ? "" : ""}`}>
+    <div
+      className={`relative ${
+        embedded
+          ? "w-full"
+          : `mb-6 rounded-[28px] border border-slate-200 bg-white shadow-sm ${
+              compact ? "p-4 sm:p-5" : "p-5 sm:p-6"
+            }`
+      }`}
+    >
+      <div className="flex gap-4">
         <UserAvatar user={user} />
 
-        <div className="flex-1 min-w-0">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <div>
+        <div className="min-w-0 flex-1">
+          <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <p className="text-sm font-black text-slate-900">Tạo bài viết</p>
-              <p className="text-xs text-slate-500">Chia sẻ ngay trên tường cá nhân hoặc bảng tin</p>
+              <p className="text-xs text-slate-500">
+                Chia sẻ ngay trên tường cá nhân hoặc bảng tin
+              </p>
             </div>
 
             {showPrivacySelector && (
-              <div className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1">
+              <div className="flex w-fit items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-1">
                 {privacyOptions.map((option) => {
                   const Icon = option.icon;
                   const isActive = privacy === option.value;
@@ -219,19 +305,19 @@ const PostForm = ({
           </div>
 
           <textarea
-            className={`w-full bg-slate-50 border rounded-2xl px-4 py-3 text-sm focus:ring-2 resize-none outline-none transition-all placeholder:text-slate-400 min-h-[110px] ${
+            className={`max-h-[180px] min-h-[110px] w-full resize-none rounded-2xl border bg-slate-50 px-4 py-3 text-sm outline-none transition-all placeholder:text-slate-400 focus:ring-2 ${
               isOverLimit
-                ? "border-red-400 focus:ring-red-400/20 text-red-600 bg-red-50/50"
+                ? "border-red-400 bg-red-50/50 text-red-600 focus:ring-red-400/20"
                 : "border-transparent focus:ring-amber-400/20"
             }`}
             placeholder={placeholderText}
             rows="2"
             value={content}
-            onChange={(e) => setContent(e.target.value)}
+            onChange={(event) => setContent(event.target.value)}
           />
 
           <div
-            className={`flex justify-end items-center mt-1 text-xs font-medium transition-colors ${
+            className={`mt-1 flex items-center justify-end text-xs font-medium transition-colors ${
               isOverLimit ? "text-red-500" : "text-slate-400"
             }`}
           >
@@ -250,15 +336,16 @@ const PostForm = ({
         </div>
       </div>
 
-      {/* Khối 2: Thẻ Preview nằm dưới, chiếm full chiều rộng (kéo ra lề trái) */}
       {sharedItem && (
-        <div className="relative mt-4">
-          <SharedEntityCard entity={sharedItem} isPreview={true} />
+        <div className="relative mt-4 max-h-[360px] overflow-y-auto">
+          <SharedEntityCard entity={sharedItem} isPreview />
+
           {onCancelShare && (
             <button
               onClick={onCancelShare}
               type="button"
-              className="absolute -top-2 -right-2 z-30 size-7 flex items-center justify-center rounded-full bg-slate-800 text-white hover:bg-red-500 shadow-lg transition-all hover:scale-110 active:scale-95"
+              className="absolute -right-2 -top-2 z-30 flex size-7 items-center justify-center rounded-full bg-slate-800 text-white shadow-lg transition-all hover:scale-110 hover:bg-red-500 active:scale-95"
+              aria-label="Hủy chia sẻ"
             >
               ✕
             </button>
@@ -266,36 +353,39 @@ const PostForm = ({
         </div>
       )}
 
-      {/* Input File Ẩn */}
       <input
         type="file"
         multiple
-        accept="image/*,video/*"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         ref={fileInputRef}
         onChange={handleFileChange}
         className="hidden"
       />
 
-      <div className={`flex flex-col gap-3 md:flex-row md:items-center md:justify-between mt-4 pt-4 border-t border-slate-100 ${embedded ? "pb-0" : ""}`}>
+      <div
+        className={`mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 md:flex-row md:items-center md:justify-between ${
+          embedded ? "pb-0" : ""
+        }`}
+      >
         <div>
           {!sharedItem && (
             <button
-              onClick={() => fileInputRef.current.click()}
+              onClick={() => fileInputRef.current?.click()}
               type="button"
-              className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-slate-600 hover:bg-slate-50 transition-colors font-semibold text-xs"
+              className="inline-flex items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50"
             >
               <ImagePlus size={16} className="text-amber-500" />
-              Ảnh/Video
+              Ảnh
             </button>
           )}
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={handlePost}
             disabled={isPostDisabled}
-            className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-slate-900 shadow-sm shadow-amber-400/30 transition-all hover:bg-amber-500 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded-2xl bg-amber-400 px-5 py-3 text-sm font-black text-slate-900 shadow-sm shadow-amber-400/30 transition-all hover:bg-amber-500 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <SendHorizontal size={16} />
             {createPost?.isPending ? "Đang đăng..." : "Đăng bài"}
