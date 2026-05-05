@@ -1,4 +1,4 @@
-import { Edit2, ImageIcon } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 
 const PLACEHOLDER_IMAGE =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='600'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23f3f4f6;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23e5e7eb;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='1200' height='600' fill='url(%23grad)'/%3E%3Ctext x='50%25' y='50%25' font-family='Arial, sans-serif' font-size='32' fill='%23999' text-anchor='middle' dominant-baseline='middle'%3ECh%C6%B0a%20c%C3%B3%20%E1%BA%A3nh%20%C4%91%E1%BA%A1i%20di%E1%BB%87n%3C/text%3E%3C/svg%3E";
@@ -11,7 +11,7 @@ const getProjectCoverUrl = (project) => {
   return PLACEHOLDER_IMAGE;
 };
 
-export function ProjectCover({ project, isOrganizer }) {
+export function ProjectCover({ project }) {
   const coverUrl = getProjectCoverUrl(project);
 
   return (
@@ -30,12 +30,6 @@ export function ProjectCover({ project, isOrganizer }) {
           Hình ảnh dự án
         </div>
 
-        {isOrganizer ? (
-          <button className="absolute right-5 top-5 inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/15 px-4 py-2 text-xs font-bold text-white backdrop-blur-md transition hover:bg-white/25">
-            <Edit2 className="h-4 w-4" />
-            Chỉnh sửa media
-          </button>
-        ) : null}
       </div>
     </div>
   );

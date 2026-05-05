@@ -360,6 +360,7 @@ export function EditHelpRequestPage() {
                       }}
                       uploadContext="help-request"
                       appearance="cover"
+                      showFileNames={false}
                     />
                   )}
                 />

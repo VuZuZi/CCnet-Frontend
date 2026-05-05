@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 
 import { formatDate, formatVND } from "@/shared/lib/formatters";
-import { StatusBadge } from "./detail/StatusBadge";
 import {
   HELP_REQUEST_CATEGORIES,
   URGENCY_LEVELS,
@@ -69,6 +68,25 @@ function getRequesterName(requesterId) {
   return "Người yêu cầu từ cộng đồng";
 }
 
+function getMediaUrl(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  return value.url || value.secure_url || value.path || "";
+}
+
+function getRequesterAvatar(requesterId) {
+  if (!requesterId || typeof requesterId !== "object") return "";
+
+  return (
+    getMediaUrl(requesterId.avatar) ||
+    getMediaUrl(requesterId.avatarUrl) ||
+    getMediaUrl(requesterId.photoURL) ||
+    getMediaUrl(requesterId.profileImage) ||
+    getMediaUrl(requesterId.user?.avatar) ||
+    ""
+  );
+}
+
 function HelpRequestCard({ helpRequest, onShare }) {
   const {
     _id,
@@ -79,13 +97,13 @@ function HelpRequestCard({ helpRequest, onShare }) {
     location,
     amountNeeded,
     createdAt,
-    status,
     evidences = [],
     requesterId,
   } = helpRequest || {};
 
   const coverImage = getCoverImage(evidences);
   const requesterName = getRequesterName(requesterId);
+  const requesterAvatar = getRequesterAvatar(requesterId);
   const categoryLabel = CATEGORY_LABELS[category] || "Khác";
   const urgency = URGENCY_MAP[urgencyLevel];
   const compactAmount = formatCompactAmount(amountNeeded);
@@ -148,14 +166,7 @@ function HelpRequestCard({ helpRequest, onShare }) {
           </span>
         </div>
 
-        {/* Status Bottom */}
-        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/60 via-slate-900/20 to-transparent p-3 pt-12">
-          <StatusBadge
-            status={status}
-            size="sm"
-            className="bg-white/95 shadow-sm"
-          />
-        </div>
+        <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-slate-900/45 via-slate-900/10 to-transparent" />
       </div>
 
       {/* 2. Phần Nội dung Chi tiết */}
@@ -197,9 +208,17 @@ function HelpRequestCard({ helpRequest, onShare }) {
         {/* 3. Phần Footer (Tác giả & Nút Action) */}
         <div className="mt-auto flex items-center justify-between border-t border-slate-100 pt-4">
           <div className="flex items-center gap-2 overflow-hidden">
-            <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-500">
-              {requesterName.charAt(0).toUpperCase()}
-            </div>
+            {requesterAvatar ? (
+              <img
+                src={requesterAvatar}
+                alt={requesterName}
+                className="size-8 shrink-0 rounded-full bg-slate-200 object-cover ring-2 ring-white"
+              />
+            ) : (
+              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-bold text-slate-500">
+                {requesterName.charAt(0).toUpperCase()}
+              </div>
+            )}
             <div className="min-w-0">
               <p className="truncate text-xs font-bold text-slate-900">
                 {requesterName}

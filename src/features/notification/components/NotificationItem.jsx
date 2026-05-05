@@ -96,6 +96,8 @@ function getTypeIcon(type) {
       return Heart;
 
     case "post_commented":
+    case "comment_replied":
+    case "comment_reacted":
       return MessageCircle;
 
     case "volunteer_applied":
@@ -165,6 +167,8 @@ function getTypeLabel(type) {
 
     case "post_reacted":
     case "post_commented":
+    case "comment_replied":
+    case "comment_reacted":
       return "Bài viết";
 
     case "volunteer_applied":
@@ -285,7 +289,10 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
     : rejectedEditUrl || item.actionUrl;
 
   const hasRelatedAction = Boolean(resolvedActionUrl);
-  const canOpenDetail = Boolean(item.id);
+  const prefersRelatedNavigation = Boolean(
+    item.prefersRelatedNavigation && resolvedActionUrl,
+  );
+  const canOpenDetail = Boolean(item.id && item.canOpenDetail !== false);
 
   const primaryActionLabel = isDeletedProject
     ? "Xem workspace"
@@ -321,13 +328,20 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
   };
 
   const handleCardClick = () => {
+    if (prefersRelatedNavigation) {
+      markReadIfNeeded();
+      onClose?.();
+      navigate(resolvedActionUrl);
+      return;
+    }
+
     if (canOpenDetail) {
       openNotificationDetail();
     }
   };
 
   const handleCardKeyDown = (event) => {
-    if (!canOpenDetail) return;
+    if (!canOpenDetail && !prefersRelatedNavigation) return;
 
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -335,7 +349,7 @@ export default function NotificationItem({ item, onRead, onDelete, onClose }) {
     }
   };
 
-  const isInteractive = canOpenDetail;
+  const isInteractive = canOpenDetail || prefersRelatedNavigation;
 
   return (
     <div

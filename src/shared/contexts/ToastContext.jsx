@@ -1,9 +1,10 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { CheckCircle2, AlertCircle, Info, AlertTriangle, X } from 'lucide-react';
 import { cn } from '@/shared/components/ui/Button/Button';
 
 const ToastContext = createContext(null);
+const DUPLICATE_TOAST_WINDOW_MS = 2500;
 
 const ToastItem = ({ id, message, variant, duration, onRemove }) => {
   const [isShowing, setIsShowing] = useState(false);
@@ -93,10 +94,36 @@ ToastItem.propTypes = {
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
+  const recentToastKeysRef = useRef(new Map());
 
   const addToast = useCallback((message, variant = 'info', duration = 4000) => {
+    const text = String(message || '').trim();
+    if (!text) return;
+
+    const now = Date.now();
+    const dedupeKey = `${variant}:${text}`;
+    const lastShownAt = recentToastKeysRef.current.get(dedupeKey) || 0;
+
+    if (now - lastShownAt < DUPLICATE_TOAST_WINDOW_MS) {
+      return;
+    }
+
+    for (const [key, shownAt] of recentToastKeysRef.current.entries()) {
+      if (now - shownAt > 60000) {
+        recentToastKeysRef.current.delete(key);
+      }
+    }
+
+    recentToastKeysRef.current.set(dedupeKey, now);
+
     const id = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    setToasts((prev) => [...prev, { id, message, variant, duration }]);
+    setToasts((prev) => {
+      if (prev.some((toast) => toast.message === text && toast.variant === variant)) {
+        return prev;
+      }
+
+      return [...prev, { id, message: text, variant, duration }];
+    });
   }, []);
 
   const removeToast = useCallback((id) => {

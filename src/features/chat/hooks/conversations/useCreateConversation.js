@@ -18,7 +18,6 @@ export function useCreateConversation() {
       }
 
       queryClient.invalidateQueries({ queryKey: chatKeys.conversations() });
-      toast.success('Đã tạo cuộc trò chuyện');
     },
     onError: (error) => {
       toast.error(getErrorMessage(error));

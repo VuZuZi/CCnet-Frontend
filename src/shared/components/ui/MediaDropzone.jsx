@@ -13,7 +13,8 @@ export function MediaDropzone({
     maxFiles = 5,
     accept = { 'image/*': [] },
     uploadContext = 'general',
-    appearance = 'general'
+    appearance = 'general',
+    showFileNames = true
 }) {
     const [uploadingFiles, setUploadingFiles] = useState({});
     const toast = useToast();
@@ -202,7 +203,9 @@ export function MediaDropzone({
                         <Loader2 className="animate-spin text-blue-500 shrink-0" size={16} />
                     )}
                     <div className="flex-1 min-w-0">
-                        <p className={`text-xs font-medium truncate ${uploadItem.error ? 'text-red-700' : 'text-slate-700'}`}>{uploadItem.file.name}</p>
+                        {showFileNames ? (
+                            <p className={`text-xs font-medium truncate ${uploadItem.error ? 'text-red-700' : 'text-slate-700'}`}>{uploadItem.file.name}</p>
+                        ) : null}
                         <div className={`w-full rounded-full h-1 mt-1.5 ${uploadItem.error ? 'bg-red-200' : 'bg-blue-200'}`}>
                             <div className={`h-1 rounded-full transition-all duration-300 ${uploadItem.error ? 'bg-red-500' : 'bg-blue-600'}`} style={{ width: `${uploadItem.progress}%` }}></div>
                         </div>
@@ -215,8 +218,10 @@ export function MediaDropzone({
                 <div className={appearance === 'cover' ? "grid grid-cols-2 gap-4" : "flex flex-wrap gap-2 pt-2"}>
                     {value.map((mediaObj, idx) => {
                         const url = typeof mediaObj === 'string' ? mediaObj : mediaObj.url;
-                        const originalName = typeof mediaObj === 'string' ? 'tập_tin_media' : mediaObj.originalName;
                         const isImage = url?.match(/\.(jpeg|jpg|gif|png|webp)$/i) || url?.includes('image/upload');
+                        const originalName = showFileNames
+                            ? (typeof mediaObj === 'string' ? 'media_file' : mediaObj.originalName)
+                            : (isImage ? `Ảnh ${idx + 1}` : `Tệp ${idx + 1}`);
 
                         if (appearance === 'cover') {
                             return (

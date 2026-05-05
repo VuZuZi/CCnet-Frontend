@@ -10,7 +10,6 @@ import {
 import { useLogout } from "@/features/auth/hooks/useLogout";
 import { LanguageSwitcher } from "@/i18n/components/LanguageSwitcher";
 import NavbarNotificationAction from "@/features/notification/components/NavbarNotificationAction";
-import NotificationStreamBootstrap from "@/features/notification/components/NotificationStreamBootstrap";
 import Sidebar from "./Sidebar";
 
 export function AdminLayout() {
@@ -41,8 +40,6 @@ export function AdminLayout() {
 
   return (
     <div className="ccnet-admin-shell bg-slate-50 text-slate-900">
-      <NotificationStreamBootstrap />
-
       {isSidebarOpen ? (
         <button
           type="button"

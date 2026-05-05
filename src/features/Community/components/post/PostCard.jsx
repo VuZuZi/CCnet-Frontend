@@ -186,7 +186,11 @@ const PostCard = ({ post, currentUserId, onReport }) => {
 
   return (
     <>
-      <article className="bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden w-full min-w-0 hover:shadow-md transition-shadow duration-300">
+      <article
+        id={post?._id ? `post-${post._id}` : undefined}
+        data-post-id={post?._id || undefined}
+        className="scroll-mt-24 bg-white rounded-2xl shadow-sm border border-slate-100 mb-6 overflow-hidden w-full min-w-0 hover:shadow-md transition-shadow duration-300"
+      >
         <div className="px-5 pt-4 pb-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar user={post.author} />

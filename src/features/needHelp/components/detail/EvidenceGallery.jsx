@@ -88,16 +88,13 @@ export function EvidenceGallery({ evidences = [] }) {
               >
                 <img
                   src={evidence.url}
-                  alt={evidence.originalName || `Minh chứng ${index + 1}`}
+                  alt={`Minh chứng ${index + 1}`}
                   className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
 
                 <div className="absolute inset-0 bg-slate-950/0 transition-colors duration-300 group-hover:bg-slate-950/35" />
 
-                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-slate-950/70 to-transparent px-3 py-3">
-                  <span className="line-clamp-1 text-xs font-medium text-white">
-                    {evidence.originalName || `Ảnh ${index + 1}`}
-                  </span>
+                <div className="absolute inset-x-0 bottom-0 flex justify-end bg-gradient-to-t from-slate-950/70 to-transparent px-3 py-3">
                   <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur">
                     <ZoomIn size={15} />
                   </span>
@@ -120,7 +117,7 @@ export function EvidenceGallery({ evidences = [] }) {
                 <span className="inline-flex min-w-0 items-center gap-3 text-slate-700">
                   <PlayCircle size={17} className="shrink-0 text-sky-600" />
                   <span className="truncate font-medium">
-                    {video.originalName || `Video minh chứng ${index + 1}`}
+                    {`Video minh chứng ${index + 1}`}
                   </span>
                 </span>
                 <ExternalLink size={15} className="shrink-0 text-slate-400" />
@@ -142,7 +139,7 @@ export function EvidenceGallery({ evidences = [] }) {
                 <span className="inline-flex min-w-0 items-center gap-3 text-slate-700">
                   <FileText size={17} className="shrink-0 text-amber-600" />
                   <span className="truncate font-medium">
-                    {document.originalName || `Tài liệu ${index + 1}`}
+                    {`Tài liệu ${index + 1}`}
                   </span>
                 </span>
                 <ExternalLink size={15} className="shrink-0 text-slate-400" />

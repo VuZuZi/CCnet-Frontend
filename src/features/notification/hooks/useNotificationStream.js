@@ -787,7 +787,9 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         item.type === REALTIME_NOTIFICATION_TYPES.TRANSACTION_FAILED
       ) {
         if (item.type === REALTIME_NOTIFICATION_TYPES.DONATION_SUCCESSFUL) {
-          toast.success("🎉 Giao dịch thành công! Dự án vừa nhận được đóng góp.");
+          if (item.id) {
+            toast.success("Dự án vừa nhận được đóng góp.");
+          }
 
           queryClient.invalidateQueries({ queryKey: GLOBAL_QUERY_KEYS.WALLET_ME });
           queryClient.invalidateQueries({
@@ -841,10 +843,6 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
       }
 
       if (item.type === REALTIME_NOTIFICATION_TYPES.REFUND_REQUEST_SUBMITTED) {
-        toast.success(
-          "Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xem xét và phản hồi sớm nhất.",
-        );
-
         queryClient.invalidateQueries({
           queryKey: TRANSACTION_QUERY_KEYS.myDonations(),
         });
