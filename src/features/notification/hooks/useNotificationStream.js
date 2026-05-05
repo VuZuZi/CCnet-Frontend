@@ -22,6 +22,7 @@ import {
   PROJECT_QUERY_KEYS,
 } from "@/features/project/hooks/useProjectQueries";
 import { volunteerQueryKeys } from "@/features/volunteer/hooks/useVolunteerQueries";
+import { volunteerEngagementQueryKeys } from "@/features/volunteer/hooks/useVolunteerEngagementQueries";
 import {
   ADMIN_QUERY_KEYS,
   ADMIN_PROJECTS_QUERY_KEY,
@@ -46,6 +47,23 @@ const PROJECT_STATUS_REALTIME_TYPES = [
   REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_COMPLETED,
   REALTIME_NOTIFICATION_TYPES.PROJECT_AI_REVIEW_FAILED,
 ].filter(Boolean);
+
+const PROJECT_METADATA_REALTIME_TYPES = new Set([
+  "evidence_reviewed",
+  "milestone_completed",
+  "project_completion_synced",
+]);
+
+const VOLUNTEER_REVIEW_REALTIME_TYPES = [
+  REALTIME_NOTIFICATION_TYPES.VOLUNTEER_REVIEW_REQUIRED,
+  REALTIME_NOTIFICATION_TYPES.VOLUNTEER_REVIEW_SUBMITTED,
+].filter(Boolean);
+
+const COMPLETED_PROJECT_STATUSES = new Set([
+  "COMPLETED",
+  "COMPLETED_SUCCESSFULLY",
+  "COMPLETED_PARTIAL",
+]);
 
 function patchNotificationListQueries(queryClient, updater) {
   queryClient.setQueriesData({ queryKey: NOTIFICATION_QUERY_KEYS.list }, (previous) => {
@@ -408,6 +426,45 @@ function invalidateVolunteerQueries(queryClient, projectId = null) {
   invalidateProjectQueries(queryClient, projectId);
 }
 
+function invalidateVolunteerReviewQueries(queryClient, projectId = null) {
+  if (projectId) {
+    queryClient.invalidateQueries({
+      queryKey: volunteerEngagementQueryKeys.projectReviews(projectId),
+      exact: false,
+    });
+
+    queryClient.invalidateQueries({
+      queryKey: volunteerEngagementQueryKeys.myProjectReview(projectId),
+      exact: false,
+    });
+
+    queryClient.refetchQueries({
+      queryKey: volunteerEngagementQueryKeys.projectReviews(projectId),
+      exact: false,
+      type: "active",
+    });
+
+    queryClient.refetchQueries({
+      queryKey: volunteerEngagementQueryKeys.myProjectReview(projectId),
+      exact: false,
+      type: "active",
+    });
+  } else {
+    queryClient.invalidateQueries({
+      queryKey: ["volunteer-engagement"],
+      exact: false,
+    });
+
+    queryClient.refetchQueries({
+      queryKey: ["volunteer-engagement"],
+      exact: false,
+      type: "active",
+    });
+  }
+
+  invalidateVolunteerQueries(queryClient, projectId);
+}
+
 function getPayloadProjectId({ item, payload }) {
   return (
     item?.metadata?.projectId ||
@@ -440,10 +497,13 @@ function getPayloadHelpRequestId({ item, payload }) {
 
 function getPayloadProjectStatus({ item, payload }) {
   return (
+    item?.metadata?.projectStatus ||
     item?.metadata?.status ||
     item?.status ||
+    payload?.notification?.metadata?.projectStatus ||
     payload?.notification?.metadata?.status ||
     payload?.notification?.status ||
+    payload?.metadata?.projectStatus ||
     payload?.metadata?.status ||
     payload?.status ||
     null
@@ -460,7 +520,23 @@ function getPayloadMetadata({ item, payload }) {
 
 function getPayloadRealtimeType({ item, payload }) {
   const metadata = getPayloadMetadata({ item, payload });
-  return metadata.realtimeType || metadata.domainEvent || item?.type || payload?.type || "";
+  return String(
+    metadata.realtimeType ||
+      metadata.domainEvent ||
+      item?.type ||
+      payload?.type ||
+      "",
+  ).toLowerCase();
+}
+
+function isProjectMetadataRealtime({ item, payload, nextStatus, projectId }) {
+  if (!projectId) return false;
+
+  const realtimeType = getPayloadRealtimeType({ item, payload });
+  if (PROJECT_METADATA_REALTIME_TYPES.has(realtimeType)) return true;
+
+  const normalizedStatus = String(nextStatus || "").toUpperCase();
+  return COMPLETED_PROJECT_STATUSES.has(normalizedStatus);
 }
 
 function invalidateMilestoneRealtimeQueries(queryClient, { item, payload }) {
@@ -765,7 +841,14 @@ export function useNotificationStream({ enabled = true, userId = null } = {}) {
         invalidateVolunteerQueries(queryClient, projectId);
       }
 
-      if (PROJECT_STATUS_REALTIME_TYPES.includes(item.type)) {
+      if (VOLUNTEER_REVIEW_REALTIME_TYPES.includes(item.type)) {
+        invalidateVolunteerReviewQueries(queryClient, projectId);
+      }
+
+      if (
+        PROJECT_STATUS_REALTIME_TYPES.includes(item.type) ||
+        isProjectMetadataRealtime({ item, payload, nextStatus, projectId })
+      ) {
         patchProjectQueries(queryClient, projectId, nextStatus);
 
         queryClient.invalidateQueries({

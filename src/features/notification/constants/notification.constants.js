@@ -50,6 +50,9 @@ export const REALTIME_NOTIFICATION_TYPES = Object.freeze({
   VOLUNTEER_WITHDRAW_APPROVED: "volunteer_withdraw_approved",
   VOLUNTEER_WITHDRAW_REJECTED: "volunteer_withdraw_rejected",
 
+  VOLUNTEER_REVIEW_REQUIRED: "volunteer_review_required",
+  VOLUNTEER_REVIEW_SUBMITTED: "volunteer_review_submitted",
+
   EVIDENCE_SUBMITTED_MANUAL: "evidence_submitted_manual",
   EVIDENCE_AUTO_APPROVED_GPS: "evidence_auto_approved_gps",
   EVIDENCE_REVIEWED: "evidence_reviewed",
