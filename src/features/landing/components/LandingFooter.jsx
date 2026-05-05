@@ -1,52 +1,71 @@
-import { Link } from 'react-router-dom'
-import PropTypes from 'prop-types'
+import { Link } from "react-router-dom";
+import PropTypes from "prop-types";
+import { HeartHandshake } from "lucide-react";
 
-export function LandingFooter({ navigation }) {
+const defaultNavigation = {
+  "Ủng hộ": [
+    { label: "Chiến dịch", path: "/projects" },
+    { label: "Đồng hành", path: "/need-help" },
+    { label: "Tổ chức gây quỹ", path: "/organizer/apply" },
+    { label: "Cá nhân gây quỹ", path: "/register" },
+  ],
+  "Gây quỹ": [
+    { label: "Bắt đầu", path: "/projects/create" },
+  ],
+  "Khám phá": [
+    { label: "Bản đồ thiện nguyện", path: "/projects/map" },
+    { label: "Sự kiện thiện nguyện", path: "/community" },
+    { label: "Bảng tin", path: "/community" },
+    { label: "Tin tức", path: "/community" },
+  ],
+  "Giới thiệu": [
+    { label: "Về thiện nguyện", path: "/about" },
+    { label: "Hỏi đáp", path: "/about" },
+    { label: "Điều khoản sử dụng", path: "/terms" },
+    { label: "Chính sách bảo mật", path: "/privacy" },
+  ],
+};
+
+export function LandingFooter({ navigation = defaultNavigation }) {
   return (
-    <footer className="bg-white border-t border-light-gray pt-16 pb-8">
-      <div className="w-full max-w-[1200px] mx-auto px-4">
-        
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 mb-8">
-          <div className="md:col-span-4 mb-8 md:mb-0">
-            <div className="flex items-center mb-4">
-               <span className="font-bold text-2xl text-black">CCNet</span>
-            </div>
-            <p className="text-gray">Hệ thống quản lý hiện đại cho các nhóm hiện đại.</p>
-          </div>
-          
-          <div className="md:col-span-8">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
-              {Object.entries(navigation).map(([key, links]) => (
-                <div key={key}>
-                  <h6 className="font-bold mb-4 capitalize text-black">{key}</h6>
-                  <ul className="list-none p-0 m-0">
-                    {links.map((link) => (
-                      <li className="mb-2" key={link.path}>
-                        <Link 
-                          to={link.path} 
-                          className="text-gray no-underline block transition-colors duration-200 hover:text-orange"
-                        >
-                          {link.label}
-                        </Link>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        
-        <hr className="my-8 border-light-gray" />
-        
-        <div className="text-center text-gray text-sm">
-          © {new Date().getFullYear()} CCNet. Bảo lưu mọi quyền.
+    <footer className="border-t border-slate-100 bg-white">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-12 sm:py-14 lg:flex-row lg:gap-16">
+        <Link
+          to="/"
+          className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[24px] text-orange-600 transition hover:bg-orange-50"
+          aria-label="CCNet"
+        >
+          <HeartHandshake size={54} strokeWidth={2.6} />
+        </Link>
+
+        <div className="grid flex-1 grid-cols-1 gap-9 sm:grid-cols-2 lg:grid-cols-4">
+          {Object.entries(navigation).map(([title, links]) => (
+            <nav key={title} aria-label={title}>
+              <h2 className="text-lg font-black text-slate-900">{title}</h2>
+              <ul className="mt-5 space-y-4">
+                {links.map((link) => (
+                  <li key={`${title}-${link.path}-${link.label}`}>
+                    <Link
+                      to={link.path}
+                      className="block text-base font-medium text-slate-500 transition-colors hover:text-orange-600"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
         </div>
       </div>
+
+      <div className="border-t border-slate-100 px-6 py-5 text-center text-sm font-medium text-slate-400">
+        © {new Date().getFullYear()} CCNet. Bảo lưu mọi quyền.
+      </div>
     </footer>
-  )
+  );
 }
 
 LandingFooter.propTypes = {
-  navigation: PropTypes.object.isRequired
-}
+  navigation: PropTypes.object,
+};

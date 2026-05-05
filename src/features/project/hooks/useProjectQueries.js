@@ -9,6 +9,7 @@ const CATEGORY_VALUES = [
   "THIEN_TAI",
   "XAY_DUNG",
 ];
+export const PROJECT_EXPLORE_PAGE_SIZE = 9;
 
 const FEED_BASE_KEY = ["projectFeedPosts"];
 
@@ -26,6 +27,14 @@ export const PROJECT_QUERY_KEYS = {
     ...PROJECT_BASE_KEY,
     "explore",
     cleanProjectFilters(filters),
+  ],
+
+  explorePage: (filters = {}, page = 1, limit = PROJECT_EXPLORE_PAGE_SIZE) => [
+    ...PROJECT_BASE_KEY,
+    "explore-page",
+    cleanProjectFilters(filters),
+    Number(page || 1),
+    Number(limit || PROJECT_EXPLORE_PAGE_SIZE),
   ],
 
   workspace: (filters = {}) => [
@@ -70,7 +79,7 @@ export const useExploreProjects = (filters = {}) => {
       projectAPI.getExplore({
         ...cleanedFilters,
         page: pageParam,
-        limit: 9,
+        limit: PROJECT_EXPLORE_PAGE_SIZE,
       }),
     getNextPageParam: (lastPage) => {
       const currentPage = Number(lastPage?.pagination?.currentPage || 1);
@@ -190,6 +199,26 @@ export const useWorkspaceProjects = (filters = {}) => {
   return useQuery({
     queryKey: PROJECT_QUERY_KEYS.workspace(cleanedFilters),
     queryFn: () => projectAPI.getWorkspaceProjects(cleanedFilters),
+    staleTime: 60 * 1000,
+    placeholderData: (previousData) => previousData,
+  });
+};
+
+export const useExploreProjectsPage = (
+  filters = {},
+  page = 1,
+  limit = PROJECT_EXPLORE_PAGE_SIZE,
+) => {
+  const cleanedFilters = cleanProjectFilters(filters);
+
+  return useQuery({
+    queryKey: PROJECT_QUERY_KEYS.explorePage(cleanedFilters, page, limit),
+    queryFn: () =>
+      projectAPI.getExplore({
+        ...cleanedFilters,
+        page,
+        limit,
+      }),
     staleTime: 60 * 1000,
     placeholderData: (previousData) => previousData,
   });

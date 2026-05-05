@@ -22,24 +22,6 @@ import {
 import { projectAPI } from "@/features/project/api/projectAPI";
 import { SupportDonationCard } from "@/features/transaction/components/SupportDonationCard";
 
-const navigation = {
-  chung: [
-    { label: "Trang chủ", path: "/" },
-    { label: "Dự án", path: "/projects" },
-    { label: "Cộng đồng", path: "/community" },
-  ],
-  thongtin: [
-    { label: "Về CCNet", path: "/about" },
-    { label: "Điều khoản", path: "/terms" },
-    { label: "Bảo mật", path: "/privacy" },
-  ],
-  donghanh: [
-    { label: "Ủng hộ duy trì", path: "/about" },
-    { label: "Đăng ký", path: "/register" },
-    { label: "Đăng nhập", path: "/login" },
-  ],
-};
-
 const formatCurrencyShort = (value) => {
   const numericValue = Number(value || 0);
 
@@ -216,7 +198,7 @@ export function LandingPage() {
       <SupportSection supportBalance={Number(metrics?.webSupportFundBalance || 0)} />
 
       <CTASection />
-      <LandingFooter navigation={navigation} />
+      <LandingFooter />
     </div>
   );
 }
@@ -233,6 +215,7 @@ function HeroSection({ metrics }) {
         <div className="max-w-3xl text-left">
           <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
             Gửi trọn niềm tin
+            
             <span className="bg-[linear-gradient(90deg,#FBBF24_0%,#FDA4AF_100%)] bg-clip-text text-transparent">
               {" "}
               cùng cộng đồng

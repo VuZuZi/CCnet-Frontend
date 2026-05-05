@@ -7,6 +7,18 @@ export const authEvents = new EventTarget();
 
 const httpClient = axios.create(apiConfig);
 
+const isBannedAccountError = (error) => {
+  const status = error.response?.status;
+  const message = String(error.response?.data?.message || "").toLowerCase();
+
+  return (
+    status === 403 &&
+    (message.includes("banned") ||
+      message.includes("deactivated") ||
+      message.includes("account is inactive"))
+  );
+};
+
 httpClient.interceptors.request.use(
   (config) => {
     const token = tokenManager.getAccessToken();
@@ -46,7 +58,15 @@ const processQueue = (error, token = null) => {
 httpClient.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config || {};
+
+    if (isBannedAccountError(error)) {
+      tokenManager.removeAccessToken();
+      authEvents.dispatchEvent(
+        new CustomEvent("logout", { detail: { reason: "banned" } })
+      );
+      return Promise.reject(error);
+    }
 
     if (!originalRequest._retryCount) originalRequest._retryCount = 0;
     const shouldRetry = apiConfig.retry?.shouldRetry?.(error) && originalRequest._retryCount < apiConfig.retry.maxRetries;
