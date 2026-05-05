@@ -31,6 +31,8 @@ export function getNotificationLabel(type) {
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
+    case 'volunteer_review_required':
+    case 'volunteer_review_submitted':
       return 'Tình nguyện viên';
 
     case 'help_request_assigned':
@@ -107,7 +109,11 @@ export function getNotificationPrimaryActionLabel(type, actionUrl) {
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
+    case 'volunteer_review_submitted':
       return 'Mở dự án';
+
+    case 'volunteer_review_required':
+      return 'Đánh giá volunteer';
 
     case 'follow_created':
       return 'Mở những người theo dõi';
@@ -154,6 +160,8 @@ export function shouldPreferRelatedNavigation(type, actionUrl) {
     case 'volunteer_withdraw_requested':
     case 'volunteer_withdraw_approved':
     case 'volunteer_withdraw_rejected':
+    case 'volunteer_review_required':
+    case 'volunteer_review_submitted':
     case 'organizer_request_submitted':
     case 'organizer_request_updated':
     case 'organizer_request_approved':

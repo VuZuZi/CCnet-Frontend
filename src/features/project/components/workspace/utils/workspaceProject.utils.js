@@ -31,7 +31,12 @@ export const STATUS_LABELS = {
   UPDATING: "Đang cập nhật",
   PAUSED: "Tạm dừng",
   COMPLETED: "Hoàn thành",
+  COMPLETED_SUCCESSFULLY: "Hoàn thành",
+  COMPLETED_PARTIAL: "Hoàn thành một phần",
   CANCELLED: "Đã hủy",
+  CANCELLED_BY_PLATFORM: "Đã hủy",
+  CANCELLED_BY_ORGANIZER: "Đã hủy",
+  CANCELLED_FRAUD: "Đã hủy",
 };
 
 export const getWorkspaceTypeLabel = (projectType) =>

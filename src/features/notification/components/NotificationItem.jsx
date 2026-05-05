@@ -106,6 +106,8 @@ function getTypeIcon(type) {
     case "volunteer_withdraw_requested":
     case "volunteer_withdraw_approved":
     case "volunteer_withdraw_rejected":
+    case "volunteer_review_required":
+    case "volunteer_review_submitted":
       return Bell;
 
     case "refund_request_submitted":
@@ -177,6 +179,8 @@ function getTypeLabel(type) {
     case "volunteer_withdraw_requested":
     case "volunteer_withdraw_approved":
     case "volunteer_withdraw_rejected":
+    case "volunteer_review_required":
+    case "volunteer_review_submitted":
       return "Tình nguyện viên";
 
     case "refund_request_submitted":

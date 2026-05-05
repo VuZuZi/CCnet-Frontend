@@ -64,6 +64,10 @@ function getTypeIcon(type) {
     case "help_request_assignment_responded":
       return HeartHandshake;
 
+    case "volunteer_review_required":
+    case "volunteer_review_submitted":
+      return Bell;
+
     default:
       return Bell;
   }
@@ -117,6 +121,8 @@ function getTypeLabel(type) {
     case "volunteer_withdraw_requested":
     case "volunteer_withdraw_approved":
     case "volunteer_withdraw_rejected":
+    case "volunteer_review_required":
+    case "volunteer_review_submitted":
       return "Tình nguyện viên";
 
     default:

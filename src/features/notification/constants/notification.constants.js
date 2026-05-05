@@ -49,6 +49,9 @@ export const REALTIME_NOTIFICATION_TYPES = Object.freeze({
   VOLUNTEER_WITHDRAW_REQUESTED: "volunteer_withdraw_requested",
   VOLUNTEER_WITHDRAW_APPROVED: "volunteer_withdraw_approved",
   VOLUNTEER_WITHDRAW_REJECTED: "volunteer_withdraw_rejected",
+
+  VOLUNTEER_REVIEW_REQUIRED: "volunteer_review_required",
+  VOLUNTEER_REVIEW_SUBMITTED: "volunteer_review_submitted",
 });
 
 export const HELP_REQUEST_REALTIME_TYPES = Object.freeze([
