@@ -17,7 +17,7 @@ export function RefundModal({ isOpen, onClose, transaction }) {
 
     if (!transaction) return null;
 
-    const penaltyRate = 0.02; 
+    const penaltyRate = 0.01;
     const originalAmount = transaction.amount;
     const penaltyFee = Math.round(originalAmount * penaltyRate);
     const refundAmount = originalAmount - penaltyFee;
@@ -65,7 +65,7 @@ export function RefundModal({ isOpen, onClose, transaction }) {
                 <div className="flex items-start gap-2 rounded-xl bg-emerald-50 p-3">
                     <ShieldCheck className="text-emerald-600 mt-0.5" size={16} />
                     <p className="text-xs text-emerald-700 font-medium">
-                        Yêu cầu hoàn tiền sẽ được quản trị viên kiểm tra và duyệt. Sau khi duyệt, {refundAmount.toLocaleString()}đ sẽ về ví của bạn và {penaltyFee.toLocaleString()}đ được giữ lại làm phí duy trì nền tảng.
+                        Yêu cầu hoàn tiền sẽ được quản trị viên kiểm tra và duyệt. Sau khi duyệt, {refundAmount.toLocaleString()}đ sẽ về ví của bạn và {penaltyFee.toLocaleString()}đ được giữ lại dự án.
                     </p>
                 </div>
 

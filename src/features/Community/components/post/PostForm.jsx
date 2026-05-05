@@ -6,6 +6,7 @@ import { SharedEntityCard } from "./SharedEntityCard";
 
 const MAX_IMAGES = 5;
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
+const MAX_CONTENT_LENGTH = 5000;
 
 const UserAvatar = ({ user }) => {
   if (user?.avatar) {
@@ -110,7 +111,7 @@ const PostForm = ({
   const { user } = useAuthStore();
   const { createPost } = usePostMutations();
 
-  const isOverLimit = content.length > 300;
+  const isOverLimit = content.length > MAX_CONTENT_LENGTH;
 
   useEffect(() => {
     setContent(initialContent);
@@ -322,9 +323,9 @@ const PostForm = ({
             }`}
           >
             {isOverLimit && (
-              <span className="mr-2">⚠️ Vượt quá giới hạn 300 ký tự!</span>
+              <span className="mr-2">{"V\u01b0\u1ee3t qu\u00e1 gi\u1edbi h\u1ea1n 5000 k\u00fd t\u1ef1!"}</span>
             )}
-            <span>{content.length}/300</span>
+            <span>{content.length}/{MAX_CONTENT_LENGTH}</span>
           </div>
 
           {!sharedItem && (

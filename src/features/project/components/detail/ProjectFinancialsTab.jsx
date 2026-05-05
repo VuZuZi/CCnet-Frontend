@@ -13,7 +13,7 @@ export function ProjectFinancialsTab({ project }) {
         isLoading
     } = useInfiniteProjectDonors(projectId);
 
-    const donors = data?.pages.flatMap(page => page.donors) || [];
+    const donors = data?.pages.flatMap((page) => page.donors) || [];
     const totalDonors = data?.pages[0]?.pagination?.totalItems || 0;
     const totalRaised = Number(
         project?.financialOverview?.totalRaised ??
@@ -21,6 +21,11 @@ export function ProjectFinancialsTab({ project }) {
         project?.currentAmount ??
         0
     );
+
+    const getDonationMessage = (tx) => {
+        const rawMessage = typeof tx?.message === 'string' ? tx.message.trim() : '';
+        return rawMessage || '';
+    };
 
     if (isLoading) {
         return (
@@ -34,58 +39,67 @@ export function ProjectFinancialsTab({ project }) {
 
     return (
         <div className="space-y-8 p-2 sm:p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="rounded-[24px] bg-emerald-50 border border-emerald-100 p-6">
-                    <div className="flex items-center gap-3 text-emerald-600 mb-2">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="rounded-[24px] border border-emerald-100 bg-emerald-50 p-6">
+                    <div className="mb-2 flex items-center gap-3 text-emerald-600">
                         <Users size={20} />
-                        <span className="text-sm font-bold uppercase tracking-wider">Tổng nhà hảo tâm</span>
+                        <span className="text-sm font-bold uppercase tracking-wider">
+                            Tổng nhà hảo tâm
+                        </span>
                     </div>
                     <p className="text-3xl font-black text-slate-900">
-                        {totalDonors.toLocaleString()} 
-                        <span className="text-lg font-medium text-slate-500"> lượt</span>
+                        {totalDonors.toLocaleString()}
+                        <span className="text-lg font-medium text-slate-500">
+                            lượt
+                        </span>
                     </p>
                 </div>
 
-                <div className="rounded-[24px] bg-amber-50 border border-amber-100 p-6">
-                    <div className="flex items-center gap-3 text-amber-600 mb-2">
+                <div className="rounded-[24px] border border-amber-100 bg-amber-50 p-6">
+                    <div className="mb-2 flex items-center gap-3 text-amber-600">
                         <Heart size={20} />
-                        <span className="text-sm font-bold uppercase tracking-wider">Tiền thực nhận</span>
+                        <span className="text-sm font-bold uppercase tracking-wider">
+                            Tiền thực nhận
+                        </span>
                     </div>
                     <p className="text-3xl font-black text-slate-900">
-                        {totalRaised.toLocaleString()} 
-                        <span className="text-lg font-medium text-slate-500"> đ</span>
+                        {totalRaised.toLocaleString()}
+                        <span className="text-lg font-medium text-slate-500">
+                            đ
+                        </span>
                     </p>
                 </div>
             </div>
 
             <div className="space-y-4">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 px-2">
+                <h3 className="flex items-center gap-2 px-2 text-lg font-bold text-slate-900">
                     Bảng sao kê dòng tiền <ArrowRight size={18} className="text-slate-400" />
                 </h3>
 
                 {donors.length === 0 ? (
                     <div className="py-20 text-center">
-                        <Users className="mx-auto text-slate-200 mb-4" size={48} />
-                        <p className="text-slate-500 font-medium">
+                        <Users className="mx-auto mb-4 text-slate-200" size={48} />
+                        <p className="font-medium text-slate-500">
                             Chưa có dữ liệu đóng góp công khai cho dự án này.
                         </p>
                     </div>
                 ) : (
-                    <div className="divide-y divide-slate-50 border border-slate-100 rounded-[32px] overflow-hidden bg-white">
+                    <div className="divide-y divide-slate-50 overflow-hidden rounded-[32px] border border-slate-100 bg-white">
                         {donors.map((tx) => {
                             const isReversed = tx.reconciled;
+                            const donationMessage = getDonationMessage(tx);
 
                             return (
                                 <div
                                     key={tx._id}
-                                    className={`flex items-center justify-between p-5 transition-colors ${
+                                    className={`flex items-start justify-between gap-4 p-5 transition-colors ${
                                         isReversed
                                             ? 'bg-slate-50/50 opacity-70'
                                             : 'hover:bg-slate-50/50'
                                     }`}
                                 >
-                                    <div className="flex items-center gap-4">
-                                        <div className="h-12 w-12 rounded-full border-2 border-slate-100 overflow-hidden bg-slate-50 flex items-center justify-center">
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border-2 border-slate-100 bg-slate-50">
                                             {tx.donorRef?.avatar ? (
                                                 <img
                                                     src={tx.donorRef.avatar}
@@ -105,16 +119,22 @@ export function ProjectFinancialsTab({ project }) {
                                                         : 'text-slate-900'
                                                 }`}
                                             >
-                                                {tx.donorRef?.fullName || "Nhà hảo tâm"}
+                                                {tx.donorRef?.fullName || 'Nhà hảo tâm'}
                                             </p>
 
-                                            <div className="flex items-center gap-2 text-xs text-slate-400 font-medium mt-0.5">
+                                            <div className="mt-0.5 flex items-center gap-2 text-xs font-medium text-slate-400">
                                                 <Calendar size={12} />
                                                 {formatDistanceToNow(new Date(tx.createdAt), {
                                                     addSuffix: true,
                                                     locale: vi,
                                                 })}
                                             </div>
+
+                                            {donationMessage ? (
+                                                <p className="mt-2 max-w-2xl whitespace-pre-wrap break-words rounded-2xl bg-slate-50 px-3 py-2 text-sm leading-6 text-slate-600">
+                                                    {'"'}{donationMessage}{'"'}
+                                                </p>
+                                            ) : null}
                                         </div>
                                     </div>
 
@@ -127,7 +147,8 @@ export function ProjectFinancialsTab({ project }) {
                                             }`}
                                         >
                                             {isReversed ? '-' : '+'}
-                                            {tx.amount.toLocaleString()}đ
+                                            {tx.amount.toLocaleString()}
+                                            đ
                                         </p>
 
                                         <p
@@ -147,11 +168,11 @@ export function ProjectFinancialsTab({ project }) {
                 )}
 
                 {hasNextPage && (
-                    <div className="pt-4 flex justify-center">
+                    <div className="flex justify-center pt-4">
                         <button
                             onClick={() => fetchNextPage()}
                             disabled={isFetchingNextPage}
-                            className="flex items-center gap-2 px-8 py-3 rounded-2xl bg-slate-900 text-white font-bold text-sm hover:bg-slate-800 transition-all disabled:opacity-50"
+                            className="flex items-center gap-2 rounded-2xl bg-slate-900 px-8 py-3 text-sm font-bold text-white transition-all hover:bg-slate-800 disabled:opacity-50"
                         >
                             {isFetchingNextPage ? (
                                 <>

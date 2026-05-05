@@ -193,6 +193,53 @@ const ImageGrid = ({ images, onImageClick }) => {
   );
 };
 
+const COLLAPSED_TEXT_LENGTH = 420;
+const COLLAPSED_LINE_COUNT = 6;
+
+const ExpandablePostContent = ({ postId, content }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!content) return null;
+
+  const normalizedContent = String(content);
+  const lineCount = normalizedContent.split(/\r?\n/).length;
+  const shouldCollapse =
+    normalizedContent.length > COLLAPSED_TEXT_LENGTH ||
+    lineCount > COLLAPSED_LINE_COUNT;
+
+  return (
+    <div className="w-full">
+      <Link to={`/community/${postId}`} className="block w-full">
+        <p
+          className="text-slate-800 text-[15px] leading-relaxed whitespace-pre-wrap break-words"
+          style={
+            !isExpanded && shouldCollapse
+              ? {
+                  display: "-webkit-box",
+                  WebkitLineClamp: COLLAPSED_LINE_COUNT,
+                  WebkitBoxOrient: "vertical",
+                  overflow: "hidden",
+                }
+              : undefined
+          }
+        >
+          {normalizedContent}
+        </p>
+      </Link>
+
+      {shouldCollapse ? (
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="mt-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-800"
+        >
+          {isExpanded ? "Thu gọn" : "Xem thêm"}
+        </button>
+      ) : null}
+    </div>
+  );
+};
+
 const PostCard = ({ post, currentUserId, onReport }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
@@ -332,11 +379,7 @@ const PostCard = ({ post, currentUserId, onReport }) => {
 
         {post.content && (
           <div className="px-5 pb-3 w-full overflow-hidden">
-            <Link to={`/community/${post._id}`} className="block w-full">
-              <p className="text-slate-800 text-[15px] leading-relaxed whitespace-pre-wrap break-words">
-                {post.content}
-              </p>
-            </Link>
+            <ExpandablePostContent postId={post._id} content={post.content} />
           </div>
         )}
 

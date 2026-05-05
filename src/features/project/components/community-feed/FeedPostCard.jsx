@@ -13,6 +13,52 @@ import {
   getProjectFeedFirstMedia,
   normalizeProjectFeedId,
 } from "./utils/projectFeed.utils";
+import { useState } from "react";
+
+const COLLAPSED_TEXT_LENGTH = 420;
+const COLLAPSED_LINE_COUNT = 6;
+
+function ExpandableFeedContent({ content }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  if (!content) return null;
+
+  const normalizedContent = String(content);
+  const lineCount = normalizedContent.split(/\r?\n/).length;
+  const shouldCollapse =
+    normalizedContent.length > COLLAPSED_TEXT_LENGTH ||
+    lineCount > COLLAPSED_LINE_COUNT;
+
+  return (
+    <div>
+      <p
+        className="whitespace-pre-wrap break-words text-slate-700 [overflow-wrap:anywhere]"
+        style={
+          !isExpanded && shouldCollapse
+            ? {
+                display: "-webkit-box",
+                WebkitLineClamp: COLLAPSED_LINE_COUNT,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }
+            : undefined
+        }
+      >
+        {normalizedContent}
+      </p>
+
+      {shouldCollapse ? (
+        <button
+          type="button"
+          onClick={() => setIsExpanded((prev) => !prev)}
+          className="mt-2 text-sm font-bold text-slate-500 transition-colors hover:text-slate-800"
+        >
+          {isExpanded ? "Thu gọn" : "Xem thêm"}
+        </button>
+      ) : null}
+    </div>
+  );
+}
 
 export function FeedPostCard({
   post,
@@ -70,9 +116,7 @@ export function FeedPostCard({
         </button>
       </div>
 
-      <p className="whitespace-pre-wrap break-words text-slate-700 [overflow-wrap:anywhere]">
-        {post.content}
-      </p>
+      <ExpandableFeedContent content={post.content} />
 
       {media ? <FeedMediaPreview media={media} /> : null}
 
