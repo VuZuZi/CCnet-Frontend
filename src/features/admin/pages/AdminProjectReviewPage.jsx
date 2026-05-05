@@ -80,8 +80,11 @@ const REVIEWABLE_STATUSES = new Set([
 
 const MAX_DECISION_REASON_LENGTH = 3900;
 
+const limitDecisionReason = (value) =>
+  String(value || "").slice(0, MAX_DECISION_REASON_LENGTH);
+
 const clampDecisionReason = (value) =>
-  String(value || "").trim().slice(0, MAX_DECISION_REASON_LENGTH);
+  limitDecisionReason(value).trim();
 
 const groupFindings = (findings = []) => {
   const bySection = {};
@@ -368,7 +371,7 @@ export default function AdminProjectReviewPage() {
             onChecklistChange={updateChecklist}
             decisionReason={decisionReason}
             onReasonChange={(value) =>
-              setDecisionReason(clampDecisionReason(value))
+              setDecisionReason(limitDecisionReason(value))
             }
             onDecision={submitDecision}
             isSubmitting={isDeciding}
@@ -386,7 +389,7 @@ export default function AdminProjectReviewPage() {
         open={Boolean(pendingApprovalPayload)}
         reason={manualBypassReason}
         onReasonChange={(value) =>
-          setManualBypassReason(clampDecisionReason(value))
+          setManualBypassReason(limitDecisionReason(value))
         }
         onClose={() => setPendingApprovalPayload(null)}
         onConfirm={confirmManualBypassApproval}
