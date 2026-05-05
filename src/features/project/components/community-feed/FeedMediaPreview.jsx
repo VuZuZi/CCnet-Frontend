@@ -1,18 +1,39 @@
+import { useEffect, useState } from "react";
 import { isProjectFeedVideoMedia } from "./utils/projectFeed.utils";
 
 export function FeedMediaPreview({ media }) {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [media?.url]);
+
   if (!media?.url) return null;
 
   if (isProjectFeedVideoMedia(media)) {
+    if (hasError) {
+      return (
+        <div className="flex aspect-video items-center justify-center overflow-hidden rounded-2xl bg-slate-100 text-sm text-slate-500 border border-slate-200">
+          Không tải được video
+        </div>
+      );
+    }
+
     return (
-      <div className="aspect-video overflow-hidden rounded-2xl bg-slate-100">
-        <video className="h-full w-full object-cover" src={media.url} controls />
+      <div className="aspect-video overflow-hidden rounded-2xl bg-slate-100 border border-slate-200">
+        <video
+          className="h-full w-full object-cover"
+          src={media.url}
+          controls
+          preload="metadata"
+          onError={() => setHasError(true)}
+        />
       </div>
     );
   }
 
   return (
-    <div className="aspect-video overflow-hidden rounded-2xl bg-slate-100">
+    <div className="aspect-video overflow-hidden rounded-2xl bg-slate-100 border border-slate-200">
       <img
         alt="Ảnh bài viết"
         className="h-full w-full object-cover"

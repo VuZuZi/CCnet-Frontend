@@ -81,9 +81,7 @@ export function FeedPostCard({
           type="button"
           onClick={() => {
             if (!canEngage) {
-              toast.error(
-                "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể thả tim.",
-              );
+              toast.error("Bạn cần đăng nhập để thả tim.");
               return;
             }
             onTogglePostLike(post._id);
@@ -92,7 +90,7 @@ export function FeedPostCard({
           className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
             post.likedByMe ? "text-red-500" : "text-slate-500 hover:text-red-500"
           }`}
-          title={canEngage ? "Thả tim bài viết" : "Bạn không có quyền thả tim"}
+          title={canEngage ? "Thả tim bài viết" : "Đăng nhập để thả tim"}
         >
           <Heart size={18} />
           {Number(post.likesCount || 0)}

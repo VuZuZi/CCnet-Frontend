@@ -1,5 +1,6 @@
 import { Lock, ImagePlus, SendHorizontal } from "lucide-react";
 import FeedUserAvatar from "./FeedUserAvatar";
+import { PROJECT_FEED_MEDIA_ACCEPT } from "./utils/projectFeed.utils";
 
 export function FeedComposer({
   user,
@@ -15,6 +16,37 @@ export function FeedComposer({
   fileInputRef,
   postLockedPlaceholder,
 }) {
+  if (!canPost) {
+    return (
+      <div className="rounded-[28px] border border-amber-200 bg-amber-50/70 p-4 shadow-sm sm:p-6">
+        <div className="flex items-start gap-3 sm:gap-4">
+          <FeedUserAvatar user={user} />
+
+          <div className="flex-1">
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.08em] text-amber-700">
+              <Lock size={14} />
+              Quyền đăng bài bị giới hạn
+            </div>
+
+            <p className="mt-2 text-sm leading-6 text-amber-800">
+              {postLockedPlaceholder}
+            </p>
+
+            <div className="mt-4">
+              <button
+                type="button"
+                onClick={onDonateClick}
+                className="rounded-xl bg-primary px-4 py-2 text-sm font-bold text-black shadow-sm transition-colors hover:bg-primary-hover"
+              >
+                Ủng hộ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-[28px] border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
       <div className="flex items-start gap-3 sm:gap-4">
@@ -61,6 +93,7 @@ export function FeedComposer({
                   className="max-h-80 w-full object-cover"
                   src={postMedia.preview}
                   controls
+                  preload="metadata"
                 />
               )}
 
@@ -94,7 +127,7 @@ export function FeedComposer({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*,video/*"
+                accept={PROJECT_FEED_MEDIA_ACCEPT}
                 onChange={onMediaUpload}
                 className="hidden"
               />

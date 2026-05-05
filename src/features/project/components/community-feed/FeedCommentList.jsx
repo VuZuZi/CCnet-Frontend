@@ -47,9 +47,7 @@ export function FeedCommentList({
                 type="button"
                 onClick={() => {
                   if (!canEngage) {
-                    toast.error(
-                      "Chỉ chủ dự án hoặc tình nguyện viên đã được duyệt mới có thể thả tim.",
-                    );
+                    toast.error("Bạn cần đăng nhập để thả tim.");
                     return;
                   }
                   onToggleCommentLike(comment._id);
@@ -60,7 +58,7 @@ export function FeedCommentList({
                     ? "text-red-500"
                     : "text-slate-400 hover:text-red-500"
                 }`}
-                title={canEngage ? "Thả tim bình luận" : "Bạn không có quyền thả tim"}
+                title={canEngage ? "Thả tim bình luận" : "Đăng nhập để thả tim"}
               >
                 <Heart size={14} />
                 {Number(comment.likesCount || 0)}

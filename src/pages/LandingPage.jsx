@@ -4,11 +4,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   HeartHandshake,
-  Shield,
-  Sparkles,
   TrendingUp,
   UsersRound,
 } from "lucide-react";
+
+import heroBg from "@/assets/landing/hero-community.jpg";
 
 import { ROUTES } from "@/shared/constants/routes";
 import { Button } from "@/shared/components/ui/Button/Button";
@@ -188,7 +188,7 @@ export function LandingPage() {
   );
 
   return (
-    <div className="overflow-hidden bg-[linear-gradient(180deg,#fffdf8_0%,#fff7ea_22%,#ffffff_44%,#f8fbff_100%)] pt-20">
+    <div className="overflow-hidden bg-[linear-gradient(180deg,#fffdf8_0%,#fff7ea_22%,#ffffff_44%,#f8fbff_100%)]">
       <HeroSection metrics={metrics} />
       <section className="px-6 py-8 sm:py-10">
         <div className="mx-auto grid max-w-6xl gap-5 md:grid-cols-2 xl:grid-cols-4">
@@ -223,24 +223,24 @@ export function LandingPage() {
 
 function HeroSection({ metrics }) {
   return (
-    <section className="relative px-6 pb-24 pt-16 sm:pt-20">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 lg:grid-cols-[1.15fr_0.85fr]">
-        <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-white/80 px-4 py-2 text-[11px] font-black uppercase tracking-[0.14em] text-amber-700 shadow-sm backdrop-blur">
-            <Sparkles size={14} />
-            Mạng lưới gây quỹ minh bạch theo thời gian thực
-          </div>
-
-          <h1 className="mt-6 max-w-4xl text-5xl font-black tracking-tight text-slate-900 sm:text-6xl lg:text-7xl">
+    <section 
+      className="relative flex min-h-[78vh] w-full items-center bg-slate-900 bg-cover bg-center bg-no-repeat px-6 py-24 sm:min-h-[85vh]"
+      style={{ backgroundImage: `url(${heroBg})` }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-transparent sm:bg-gradient-to-r sm:from-black/85 sm:via-black/60 sm:to-transparent" />
+      
+      <div className="relative z-10 mx-auto w-full max-w-6xl">
+        <div className="max-w-3xl text-left">
+          <h1 className="text-5xl font-black tracking-tight text-white sm:text-6xl lg:text-7xl">
             Gửi trọn niềm tin
-            <span className="bg-[linear-gradient(90deg,#F59E0B_0%,#FB7185_100%)] bg-clip-text text-transparent">
+            <span className="bg-[linear-gradient(90deg,#FBBF24_0%,#FDA4AF_100%)] bg-clip-text text-transparent">
               {" "}
               cùng cộng đồng
             </span>
             {" "}.
           </h1>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">
             CCNet kết nối tổ chức và tình nguyện viên trên cùng một
             nền tảng. Quyên góp, giải ngân và tiến độ dự án đều được theo dõi
             rõ ràng thay vì chỉ dừng ở lời hứa.
@@ -260,71 +260,26 @@ function HeroSection({ metrics }) {
               <Button
                 variant="outline"
                 size="lg"
-                className="w-full bg-white/90 hover:bg-white sm:w-auto"
+                className="w-full border-white/20 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 sm:w-auto"
               >
                 Khám phá dự án
               </Button>
             </Link>
           </div>
 
-          <div className="mt-10 flex flex-wrap gap-3 text-sm font-semibold text-slate-500">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-              <TrendingUp size={16} className="text-amber-600" />
+          <div className="mt-10 flex flex-wrap gap-3 text-sm font-semibold text-slate-200">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 shadow-sm backdrop-blur-sm">
+              <TrendingUp size={16} className="text-amber-400" />
               Ghi nhận {formatCurrencyShort(metrics?.totalFundsRaised || 0)}
             </span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 shadow-sm">
-              <UsersRound size={16} className="text-sky-600" />
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 shadow-sm backdrop-blur-sm">
+              <UsersRound size={16} className="text-sky-300" />
               {formatInteger(metrics?.totalSupporters || 0)} nhà ủng hộ
             </span>
           </div>
         </div>
-
-        <div className="relative">
-          <div className="absolute -left-10 top-10 h-40 w-40 rounded-full bg-amber-300/50 blur-[80px]" />
-          <div className="absolute bottom-4 right-0 h-48 w-48 rounded-full bg-sky-200/70 blur-[90px]" />
-
-          <div className="relative overflow-hidden rounded-[36px] border border-white/70 bg-[linear-gradient(145deg,#0f172a_0%,#1f2937_54%,#334155_100%)] p-7 text-white shadow-[0_30px_90px_rgba(15,23,42,0.24)]">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs font-black uppercase tracking-[0.16em] text-amber-300">
-                  Bảng nhịp hệ thống
-                </p>
-                <p className="mt-2 text-2xl font-black">
-                  Dòng tiền minh bạch hơn
-                </p>
-              </div>
-              <Shield className="text-amber-300" size={34} strokeWidth={1.8} />
-            </div>
-
-            <div className="mt-8 space-y-4">
-              <HeroMetric
-                label="Dự án công khai"
-                value={formatInteger(metrics?.totalProjects || 0)}
-              />
-              <HeroMetric
-                label="Tình nguyện viên đang tham gia"
-                value={formatInteger(metrics?.totalVolunteers || 0)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-full">
-        <div className="absolute left-1/2 top-0 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-amber-200/50 blur-[140px]" />
       </div>
     </section>
-  );
-}
-
-function HeroMetric({ label, value }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-4">
-      <p className="text-xs font-bold uppercase tracking-[0.12em] text-slate-300">
-        {label}
-      </p>
-      <p className="mt-2 text-xl font-black text-white">{value}</p>
-    </div>
   );
 }
 
